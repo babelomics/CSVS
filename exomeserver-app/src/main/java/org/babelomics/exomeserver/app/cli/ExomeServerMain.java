@@ -139,11 +139,15 @@ public class ExomeServerMain {
         List<Task<Variant>> taskList = new SortedList<>();
         List<VariantWriter> writers = new ArrayList<>();
 
-
-        taskList.add(new VariantStatsTask(reader, source));
-
         VariantWriter jsonWriter = new ExomeServerJsonWriter(source, outdir);
-        jsonWriter.includeStats(true);
+
+
+        if (source.getAggregation() == VariantSource.Aggregation.NONE) {
+            taskList.add(new VariantStatsTask(reader, source));
+            jsonWriter.includeStats(true);
+        } else {
+            jsonWriter.includeStats(false);
+        }
         jsonWriter.includeEffect(false);
         jsonWriter.includeSamples(false);
 
