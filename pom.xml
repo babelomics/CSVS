@@ -12,6 +12,7 @@
     <modules>
         <module>exomeserver-lib</module>
         <module>exomeserver-server</module>
+        <module>exomeserver-app</module>
     </modules>
 
     <properties>

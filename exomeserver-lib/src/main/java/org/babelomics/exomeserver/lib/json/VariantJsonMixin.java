@@ -12,9 +12,9 @@ import java.util.Set;
 public abstract class VariantJsonMixin {
 
     @JsonIgnore
-    public abstract VariantAnnotation getAnnotation();
+    abstract VariantAnnotation getAnnotation();
 
     @JsonIgnore
-    public abstract Map<String, Set<String>> getHgvs();
+    abstract Map<String, Set<String>> getHgvs();
 
 }
