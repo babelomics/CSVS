@@ -17,10 +17,10 @@ import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResponse;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.opencga.lib.auth.IllegalOpenCGACredentialsException;
+import org.opencb.opencga.lib.auth.MongoCredentials;
 import org.opencb.opencga.lib.common.Config;
-import org.opencb.opencga.storage.core.variant.io.json.GenotypeJsonMixin;
-import org.opencb.opencga.storage.core.variant.io.json.VariantSourceJsonMixin;
-import org.opencb.opencga.storage.mongodb.utils.MongoCredentials;
+import org.opencb.opencga.storage.variant.json.GenotypeJsonMixin;
+import org.opencb.opencga.storage.variant.json.VariantSourceJsonMixin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

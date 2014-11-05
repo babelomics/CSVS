@@ -33,16 +33,14 @@
             <groupId>org.opencb.opencga</groupId>
             <artifactId>opencga-analysis</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.opencb.opencga</groupId>
-            <artifactId>opencga-storage-mongodb</artifactId>
-            <version>${opencga.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.opencb.opencga</groupId>
-            <artifactId>opencga-catalog</artifactId>
-            <version>${opencga.version}</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.opencb.opencga</groupId>-->
+            <!--<artifactId>opencga-storage-mongodb</artifactId>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>org.opencb.opencga</groupId>-->
+            <!--<artifactId>opencga-catalog</artifactId>-->
+        <!--</dependency>-->
 
         <!--<dependency>-->
         <!--<groupId>org.opencb.variant</groupId>-->

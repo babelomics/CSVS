@@ -7,7 +7,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.opencga.lib.auth.IllegalOpenCGACredentialsException;
-import org.opencb.opencga.storage.mongodb.variant.VariantMongoDBAdaptor;
+import org.opencb.opencga.storage.variant.mongodb.VariantMongoDBAdaptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;

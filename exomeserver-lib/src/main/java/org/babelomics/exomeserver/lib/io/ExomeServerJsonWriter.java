@@ -13,9 +13,9 @@ import org.opencb.biodata.models.variant.ArchivedVariantFile;
 import org.opencb.biodata.models.variant.VariantSource;
 import org.opencb.biodata.models.variant.effect.VariantAnnotation;
 import org.opencb.biodata.models.variant.stats.VariantStats;
-import org.opencb.opencga.storage.core.variant.io.json.GenotypeJsonMixin;
-import org.opencb.opencga.storage.core.variant.io.json.VariantJsonWriter;
-import org.opencb.opencga.storage.core.variant.io.json.VariantSourceJsonMixin;
+import org.opencb.opencga.storage.variant.json.GenotypeJsonMixin;
+import org.opencb.opencga.storage.variant.json.VariantJsonWriter;
+import org.opencb.opencga.storage.variant.json.VariantSourceJsonMixin;
 
 import javax.ws.rs.core.Variant;
 import java.io.FileOutputStream;
