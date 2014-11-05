@@ -97,7 +97,6 @@ public class ExomeServerWSServer {
         jsonObjectMapper.addMixInAnnotations(VariantAnnotation.class, VariantAnnotationJsonMixin.class);
         jsonObjectMapper.addMixInAnnotations(Variant.class, VariantJsonMixin.class);
         jsonObjectWriter = jsonObjectMapper.writer();
-        jsonObjectWriter = jsonObjectMapper.writer();
 
     }
 
