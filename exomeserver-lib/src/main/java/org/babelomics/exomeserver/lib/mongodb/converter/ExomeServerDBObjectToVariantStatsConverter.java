@@ -1,4 +1,4 @@
-package org.babelomics.exomeserver.lib.mongodb;
+package org.babelomics.exomeserver.lib.mongodb.converter;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * @author Alejandro Alemán Ramos <aaleman@cipf.es>
  */
-public class ExomeServerDBObjectVariantStatsConverter extends DBObjectToVariantStatsConverter {
+public class ExomeServerDBObjectToVariantStatsConverter extends DBObjectToVariantStatsConverter {
 
     @Override
     public VariantStats convertToDataModelType(DBObject object) {
@@ -22,7 +22,7 @@ public class ExomeServerDBObjectVariantStatsConverter extends DBObjectToVariantS
         stats.setMafAllele((String) object.get(MAFALLELE_FIELD));
 //        stats.setMgfGenotype((String) object.get(MGFGENOTYPE_FIELD));
 
-//        stats.setMissingAlleles((int) object.get(MISSALLELE_FIELD));
+//        stats.setMissingAlleles((int) object.get(MISSALLELE_FIELD));DBObjectToVariantSourceConverter
 //        stats.setMissingGenotypes((int) object.get(MISSGENOTYPE_FIELD));
 
         // Genotype counts

@@ -13,7 +13,6 @@ import org.opencb.commons.run.Task;
 import org.opencb.opencga.lib.auth.MongoCredentials;
 import org.opencb.opencga.lib.auth.OpenCGACredentials;
 import org.opencb.opencga.storage.variant.json.VariantJsonReader;
-import org.opencb.opencga.storage.variant.mongodb.VariantMongoWriter;
 import org.opencb.variant.lib.runners.VariantRunner;
 import org.opencb.variant.lib.runners.tasks.VariantStatsTask;
 

@@ -1,7 +1,8 @@
 package org.babelomics.exomeserver.lib.io;
 
 import com.mongodb.*;
-import org.babelomics.exomeserver.lib.mongodb.ExomeServerDBObjectVariantStatsConverter;
+import org.babelomics.exomeserver.lib.mongodb.converter.ExomeServerDBObjectToVariantSourceConverter;
+import org.babelomics.exomeserver.lib.mongodb.converter.ExomeServerDBObjectToVariantStatsConverter;
 import org.opencb.biodata.models.variant.ArchivedVariantFile;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantSource;
@@ -348,8 +349,8 @@ public class ExomeServerVariantMongoWriter extends VariantDBWriter {
                 compressSamples = true;
         }
 
-        sourceConverter = new DBObjectToVariantSourceConverter();
-        statsConverter = new ExomeServerDBObjectVariantStatsConverter();
+        sourceConverter = new ExomeServerDBObjectToVariantSourceConverter();
+        statsConverter = new ExomeServerDBObjectToVariantStatsConverter();
         // TODO Allow to configure samples compression
         archivedVariantFileConverter = new DBObjectToArchivedVariantFileConverter(
                 compressSamples,
