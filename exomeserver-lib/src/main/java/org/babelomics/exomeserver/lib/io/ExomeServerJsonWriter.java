@@ -71,9 +71,9 @@ public class ExomeServerJsonWriter implements VariantWriter {
     @Override
     public boolean pre() {
 
+        jsonObjectMapper.addMixInAnnotations(VariantStats.class, ExomeServerVariantStatsJsonMixin.class);
         jsonObjectMapper.addMixInAnnotations(ArchivedVariantFile.class, ExomeServerArchivedVariantFileJsonMixin.class);
         jsonObjectMapper.addMixInAnnotations(Genotype.class, GenotypeJsonMixin.class);
-        jsonObjectMapper.addMixInAnnotations(VariantStats.class, ExomeServerVariantStatsJsonMixin.class);
         jsonObjectMapper.addMixInAnnotations(VariantSource.class, VariantSourceJsonMixin.class);
         jsonObjectMapper.addMixInAnnotations(VariantAnnotation.class, VariantAnnotationJsonMixin.class);
         jsonObjectMapper.addMixInAnnotations(Variant.class, VariantJsonMixin.class);

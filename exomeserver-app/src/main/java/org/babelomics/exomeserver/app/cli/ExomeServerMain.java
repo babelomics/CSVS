@@ -2,6 +2,7 @@ package org.babelomics.exomeserver.app.cli;
 
 import com.beust.jcommander.ParameterException;
 import org.babelomics.exomeserver.lib.io.ExomeServerJsonWriter;
+import org.babelomics.exomeserver.lib.io.ExomeServerVariantMongoWriter;
 import org.babelomics.exomeserver.lib.tasks.ExomeServerVariantUpdateStatsTask;
 import org.opencb.biodata.formats.variant.io.VariantReader;
 import org.opencb.biodata.formats.variant.io.VariantWriter;
@@ -89,7 +90,7 @@ public class ExomeServerMain {
 
             loadVariants(source, variantsPath, filePath, credentials);
         } else if (command instanceof OptionsParser.CommandAddVariants) {
-            OptionsParser.CommandLoadVariants c = (OptionsParser.CommandLoadVariants) command;
+            OptionsParser.CommandAddVariants c = (OptionsParser.CommandAddVariants) command;
 
             Path variantsPath = Paths.get(c.input + ".variants.json.gz");
             Path filePath = Paths.get(c.input + ".file.json.gz");
@@ -115,7 +116,7 @@ public class ExomeServerMain {
         Properties properties = new Properties();
         properties.load(new InputStreamReader(new FileInputStream(credentialsPath.toString())));
         OpenCGACredentials credentials = new MongoCredentials(properties);
-        VariantWriter mongoWriter = new VariantMongoWriter(source, (MongoCredentials) credentials,
+        VariantWriter mongoWriter = new ExomeServerVariantMongoWriter(source, (MongoCredentials) credentials,
                 properties.getProperty("collection_variants", "variants"),
                 properties.getProperty("collection_files", "files"));
 
@@ -127,6 +128,8 @@ public class ExomeServerMain {
         Task<Variant> updateStats = new ExomeServerVariantUpdateStatsTask((MongoCredentials) credentials, source);
 
         writers.add(mongoWriter);
+
+        taskList.add(updateStats);
 
         VariantRunner variantRunner = new VariantRunner(source, reader, null, writers, taskList, 100);
 
@@ -146,7 +149,7 @@ public class ExomeServerMain {
         Properties properties = new Properties();
         properties.load(new InputStreamReader(new FileInputStream(credentialsPath.toString())));
         OpenCGACredentials credentials = new MongoCredentials(properties);
-        VariantWriter mongoWriter = new VariantMongoWriter(source, (MongoCredentials) credentials,
+        VariantWriter mongoWriter = new ExomeServerVariantMongoWriter(source, (MongoCredentials) credentials,
                 properties.getProperty("collection_variants", "variants"),
                 properties.getProperty("collection_files", "files"));
 

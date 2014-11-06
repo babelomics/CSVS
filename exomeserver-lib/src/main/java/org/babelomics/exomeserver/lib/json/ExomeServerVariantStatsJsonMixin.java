@@ -74,4 +74,10 @@ public abstract class ExomeServerVariantStatsJsonMixin extends VariantStatsJsonM
     @JsonIgnore
     public abstract int getNumSamples();
 
+    @JsonIgnore
+    public abstract float getMgf();
+
+    @JsonIgnore
+    public abstract String getMgfGenotype();
+
 }
