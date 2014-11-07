@@ -1,0 +1,44 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer-fontawesome/polymer-fontawesome.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="form-components/es-position-form-element.html">
+
+
+<polymer-element name="es-filter-form-element">
+    <template>
+        <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
+        <style>
+            :host {
+                display: block;
+                box-sizing: border-box;
+                position: relative;
+                /*height: 100%;*/
+                background-color: #FFFFFF;
+
+                margin: 20px;
+            }
+
+            paper-button {
+                margin: 10px;
+            }
+        </style>
+
+        <div>
+            <form id="filter_form">
+                <content></content>
+                <div id="buttons_container" horizontal layout>
+                    <paper-button raised>Clear</paper-button>
+                    <paper-button raised>Submit</paper-button>
+                </div>
+            </form>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            created: function () {
+            },
+            ready: function () {
+            }
+        });
+    </script>
+</polymer-element>

@@ -1,0 +1,89 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymer-fontawesome/polymer-fontawesome.html">
+<link rel="import" href="../../bower_components/polymer-ui-collapsible/polymer-ui-collapsible.html">
+
+<polymer-element name="es-position-form-element" attributes="headerTitle snpTitle">
+    <template>
+        <link rel="stylesheet" href="../../lib/jsorolla/src/lib/components/jso-style.css">
+        <style>
+            :host {
+                display: block;
+                position: relative;
+                box-sizing: border-box;
+
+                height: 300px;
+            }
+
+            label:after {
+                content: ':';
+            }
+
+            .input_container {
+                margin: 0px;
+                width: 175px;
+                right: auto;
+                top: 0px;
+                /*left: 5px;*/
+                padding: 4px 6px 3px 6px;
+            }
+
+            .input_container input {
+                min-height: 60px;
+            }
+
+            .input_container label {
+                padding-bottom: 5px;
+                padding-left: 1px;
+            }
+
+            #title {
+                background: #e4e7e9;
+                color: #435F7A;
+                font-size: 16px;
+                line-height: 22px;
+
+                /*padding-bottom: 8px;*/
+                /*padding-left: 10px;*/
+                /*padding-right: 10px;*/
+                /*padding-top: 8px;*/
+
+                margin: 10px;
+                padding: 5px;
+            }
+
+        </style>
+
+        <div id="title">{{headerTitle}}</div>
+
+        <div class="input_container" vertical layout>
+            <label>{{snpTitle}}</label>
+            <input id="snp" name="snp" type="text"/>
+        </div>
+
+        <div class="input_container" vertical layout>
+            <label>{{regionTitle}}</label>
+            <input id="region" name="region" type="text" placeholder="1:1-1000000,2:1-1000000"/>
+        </div>
+
+        <div class="input_container" vertical layout>
+            <label>{{geneTitle}}</label>
+            <input id="gene" name="gene" type="text"/>
+        </div>
+
+
+    </template>
+    <script>
+        Polymer({
+            created: function () {
+                this.headerTitle = "Position";
+                this.snpTitle = "SNP id";
+                this.regionTitle = "Chromosomal Location";
+                this.geneTitle = "Gene / Transcript";
+
+
+            },
+            ready: function () {
+            }
+        });
+    </script>
+</polymer-element>

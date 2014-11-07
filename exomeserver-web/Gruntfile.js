@@ -1,9 +1,6 @@
-/*global module:false*/
 module.exports = function (grunt) {
 
-    // Project configuration.
     grunt.initConfig({
-        // Metadata.
         pkg: grunt.file.readJSON('package.json'),
         jsopkg: grunt.file.readJSON('lib/jsorolla/package.json'),
         def: {
@@ -11,12 +8,19 @@ module.exports = function (grunt) {
             build: 'build/<%= pkg.version %>',
             jsorolla: 'lib/jsorolla'
         },
-        // Task configuration.
         concat: {
             dist: {
                 src: [
-                    'src/exome-server-widget.js',
-                    'src/exome-server.js'
+                    //'src/cell-maps-configuration.js',
+                    //
+                    //'src/plugins/**/*.js',
+                    //'src/forms/**/*.js',
+                    //
+                    //'src/visual-attribute-widget/attribute-control/attribute-control.js',
+                    //'src/visual-attribute-widget/attribute-grid/attribute-grid.js',
+                    //'src/visual-attribute-widget/**/*.js',
+                    //
+                    //'src/cell-maps.js'
                 ],
                 dest: '<%= def.build %>/<%= def.name %>.js'
             }
@@ -24,7 +28,6 @@ module.exports = function (grunt) {
         uglify: {
             options: {
                 banner: '/*! <%= def.name %> <%= grunt.template.today("dd-mm-yyyy") %> */\n'
-
             },
             dist: {
                 files: {
@@ -32,84 +35,67 @@ module.exports = function (grunt) {
                 }
             }
         },
-
         copy: {
-            build: {
+            dist: {
                 files: [
-                    {   expand: true, cwd: './src', src: ['es-config.js'], dest: '<%= def.build %>' },
-                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['vendor/**'], dest: '<%= def.build %>' },
-                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['styles/**'], dest: '<%= def.build %>' }, // includes files in path and its subdirs
-                    {   expand: true, cwd: './<%= def.jsorolla %>/build/<%= jsopkg.version %>/genome-viewer', src: ['genome-viewer*.js', 'gv-config.js'], dest: '<%= def.build %>/' },
-                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['worker*'], dest: '<%= def.build %>/' }
+
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['vendor/platform.js'], dest: '<%= def.build %>/'  },
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['vendor/platform.js.map'], dest: '<%= def.build %>/'  },
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['vendor/underscore-min.js'], dest: '<%= def.build %>/'  },
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['vendor/backbone-min.js'], dest: '<%= def.build %>/'  },
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['vendor/backbone-min.map'], dest: '<%= def.build %>/'  },
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['vendor/font-awesome/**'], dest: '<%= def.build %>/'  },
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['vendor/jquery.min.js'], dest: '<%= def.build %>/'  },
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['vendor/jquery.simplecolorpicker.js'], dest: '<%= def.build %>/'  },
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['vendor/jquery.simplecolorpicker.css'], dest: '<%= def.build %>/'  },
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['vendor/rgbcolor.js'], dest: '<%= def.build %>/'  },
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['vendor/canvg.js'], dest: '<%= def.build %>/'  },
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['vendor/xml2json.js'], dest: '<%= def.build %>/'  },
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['vendor/jszip.min.js'], dest: '<%= def.build %>/'  },
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['vendor/xlsx.min.js'], dest: '<%= def.build %>/'  },
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['vendor/jquery.qtip.min.js'], dest: '<%= def.build %>/'  },
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['vendor/jquery.qtip.min.css'], dest: '<%= def.build %>/'  },
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['vendor/jquery.cookie.js'], dest: '<%= def.build %>/'  },
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['vendor/purl.min.js'], dest: '<%= def.build %>/'  },
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['vendor/jquery.sha1.js'], dest: '<%= def.build %>/'  },
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['vendor/ext-5/**'], dest: '<%= def.build %>/'  },
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['vendor/d3.min.js'], dest: '<%= def.build %>/'  },
+
+
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['styles/**'], dest: '<%= def.build %>/'  },
+                    {   expand: true, cwd: './<%= def.jsorolla %>/src/lib', src: ['worker*'], dest: '<%= def.build %>/' },
+
+                    {   expand: true, cwd: './src', src: ['cm-config.js'], dest: '<%= def.build %>/' },
+                    {   expand: true, cwd: './src', src: ['cm-toolbar.html'], dest: '<%= def.build %>/' },
+//                    {   expand: true, cwd: './src', src: ['forms/**'], dest: '<%= def.build %>/' },
+//                    {   expand: true, cwd: './src', src: ['plugins/**'], dest: '<%= def.build %>/' },
+                    {   expand: true, cwd: './src', src: ['example-files/**'], dest: '<%= def.build %>/' },
+
+                    {   expand: true, cwd: './<%= def.jsorolla %>/build/<%= jsopkg.version %>/network-viewer/', src: ['network-viewer*.js', 'nv-config.js'], dest: '<%= def.build %>/' },
+
+                    {   expand: true, cwd: './<%= def.jsorolla %>', src: ['src/lib/components/jso-color-picker.html'], dest: '<%= def.build %>/components', flatten: true}
                 ]
             }
         },
         clean: {
-            build: ["<%= def.build %>/"]
-
+            dist: ['<%= def.build %>/']
         },
-
-        htmlbuild: {
+        processhtml: {
+            options: {
+                strip: true
+            },
             dist: {
-                src: 'src/<%= def.name %>.html',
-                dest: '<%= def.build %>',
-                options: {
-                    beautify: true,
-                    scripts: {
-                        'js': '<%= def.build %>/<%= def.name %>.min.js',
-                        'vendor': [
-                            '<%= def.build %>/vendor/jquery.min.js',
-                            '<%= def.build %>/vendor/underscore*.js',
-                            '<%= def.build %>/vendor/backbone*.js',
-                            '<%= def.build %>/vendor/bootstrap-scoped-dist/js/bootstrap.min.js',
-                            '<%= def.build %>/vendor/typeahead.min.js',
-                            '<%= def.build %>/vendor/jquery.mousewheel*.js',
-                            '<%= def.build %>/vendor/gl-matrix-min*.js',
-                            '<%= def.build %>/vendor/ChemDoodleWeb*.js',
-                            '<%= def.build %>/vendor/jquery.cookie*.js',
-                            '<%= def.build %>/vendor/purl*.js',
-                            '<%= def.build %>/vendor/jquery.sha1*.js',
-                            '<%= def.build %>/vendor/jquery.qtip*.js',
-                            '<%= def.build %>/vendor/rawdeflate*.js',
-
-                        ],
-                        gv: [
-                            '<%= def.build %>/opencga*.min.js',
-                            '<%= def.build %>/genome-viewer*.min.js'
-                        ],
-                        gvconfig: [
-                            '<%= def.build %>/gv-config.js'
-                        ]
-                    },
-                    styles: {
-                        'css': ['<%= def.build %>/styles/css/style.css'],
-                        'vendor': [
-                            '<%= def.build %>/vendor/ChemDoodleWeb*.css',
-                            '<%= def.build %>/vendor/jquery.qtip*.css',
-                            '<%= def.build %>/vendor/bootstrap-scoped-dist/css/bootstrap.min.css',
-                            '<%= def.build %>/vendor/typeahead.js-bootstrap.css'
-                        ]
-                    }
+                files: {
+                    '<%= def.build %>/index.html': ['src/<%= def.name %>.html']
                 }
             }
         },
-        rename: {
-            html: {
-                files: [
-                    {
-                        src: ['<%= def.build %>/<%= def.name %>.html'],
-                        dest: '<%= def.build %>/index.html'}
-                ]
-            }
-        },
-
         hub: {
-            'genome-viewer': {
+            'network-viewer': {
                 src: ['lib/jsorolla/Gruntfile.js'],
-                tasks: ['gv']
+                tasks: ['nv']
             }
         }
-
     });
 
     // These plugins provide necessary tasks.
@@ -119,15 +105,15 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-rename');
-    grunt.loadNpmTasks('grunt-html-build');
+    grunt.loadNpmTasks('grunt-processhtml');
     grunt.loadNpmTasks('grunt-curl');
     grunt.loadNpmTasks('grunt-hub');
 
-    grunt.registerTask('log-deploy', 'Deploy path info', function () {
+    grunt.registerTask('log-deploy', 'Deploy path info', function (version) {
         grunt.log.writeln("DEPLOY COMMAND: scp -r build/" + grunt.config.data.pkg.version + " cafetero@mem16:/httpd/bioinfo/www-apps/exome-server/");
     });
 
     // Default task.
-    grunt.registerTask('default', ['hub', 'clean', 'concat', 'uglify', 'copy', 'htmlbuild', 'rename:html', 'log-deploy']);
+    grunt.registerTask('default', ['hub', 'clean', 'concat', 'uglify', 'copy', 'processhtml', 'log-deploy']);
 
 };

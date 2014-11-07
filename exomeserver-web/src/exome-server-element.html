@@ -1,0 +1,68 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer-fontawesome/polymer-fontawesome.html">
+<link rel="import" href="../bower_components/sortable-table/sortable-table.html">
+
+<link rel="import" href="../lib/jsorolla/src/lib/components/opencga/jso-header.html">
+
+<link rel="import" href="es-filter-form-element.html">
+<link rel="import" href="es-data-grid-element.html">
+
+<polymer-element name="exome-server-element">
+    <template>
+        <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
+        <style>
+            :host {
+                display: block;
+                position: relative;
+                height: 100vh;
+                background-color: #314559;
+
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                cursor: default;
+
+                font-size: 13px;
+            }
+
+            #es-container {
+                position: relative;
+                /*top: 60px; *//* header height */
+                /*bottom: 0;*/
+                /*left: 0;*/
+                /*right: 0;*/
+                height: calc(100vh - 60px);
+            }
+
+        </style>
+        <jso-header appTitle="Exome Server" description="beta desc." allowLogin="false"></jso-header>
+
+        <div id="es-container" horizontal layout>
+            <es-filter-form-element style="width: 200px">
+
+                <es-position-form-element></es-position-form-element>
+                
+            </es-filter-form-element>
+            <es-data-grid-element flex></es-data-grid-element>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            created: function () {
+                this.selectedOption = 'home';
+                this.selectedMenu = '';
+                this.userData;
+
+                this.selectedProject;
+                this.selectedStudy;
+
+            },
+            ready: function () {
+            }
+        });
+    </script>
+</polymer-element>
