@@ -1,7 +1,6 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymer-fontawesome/polymer-fontawesome.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="form-components/es-position-form-element.html">
 
 
 <polymer-element name="es-filter-form-element">
@@ -24,11 +23,11 @@
         </style>
 
         <div>
-            <form id="filter_form">
+            <form id="filter_form" on-submit="{{ testSubmit }} ">
                 <content></content>
                 <div id="buttons_container" horizontal layout>
                     <paper-button raised>Clear</paper-button>
-                    <paper-button raised>Submit</paper-button>
+                    <paper-button raised type="submit">Submit</paper-button>
                 </div>
             </form>
         </div>
@@ -36,8 +35,20 @@
     <script>
         Polymer({
             created: function () {
+
             },
             ready: function () {
+            },
+            clearForm: function () {
+
+                debugger
+                this.$.filter_form
+            },
+            submit: function(){
+              debugger
+            },
+            testSubmit: function(){
+                debugger
             }
         });
     </script>

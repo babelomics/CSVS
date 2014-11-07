@@ -1,13 +1,19 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/core-ajax/core-ajax.html">
+
 <link rel="import" href="../bower_components/polymer-fontawesome/polymer-fontawesome.html">
 <link rel="import" href="../bower_components/sortable-table/sortable-table.html">
+
 
 <link rel="import" href="../lib/jsorolla/src/lib/components/opencga/jso-header.html">
 
 <link rel="import" href="es-filter-form-element.html">
+<link rel="import" href="form-components/es-position-form-element.html">
+<link rel="import" href="form-components/es-studies-form-element.html">
+
 <link rel="import" href="es-data-grid-element.html">
 
-<polymer-element name="exome-server-element">
+<polymer-element name="exome-server-element" attributes="urlPrefix">
     <template>
         <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
         <style>
@@ -40,11 +46,18 @@
         </style>
         <jso-header appTitle="Exome Server" description="beta desc." allowLogin="false"></jso-header>
 
+        <core-ajax
+                auto
+                url= "http://aaleman:8080/exomeserver/rest/studies/list"
+                handleAs="json"
+                on-core-response="{{getStudies}}"></core-ajax>
+
         <div id="es-container" horizontal layout>
             <es-filter-form-element style="width: 200px">
 
                 <es-position-form-element></es-position-form-element>
-                
+                <es-studies-form-element studies="{{ studies }}"></es-studies-form-element>
+
             </es-filter-form-element>
             <es-data-grid-element flex></es-data-grid-element>
         </div>
@@ -60,8 +73,19 @@
                 this.selectedProject;
                 this.selectedStudy;
 
+                this.studies = [];
+
+
             },
             ready: function () {
+
+                var url = this.urlPrefix + "/studies/list";
+                console.log(url);
+            },
+            getStudies: function (event, response) {
+//                debugger
+                this.studies = response.response.response[0].result;
+                console.log(this.studies);
             }
         });
     </script>
