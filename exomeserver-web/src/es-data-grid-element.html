@@ -7,6 +7,8 @@
 <polymer-element name="es-data-grid-element">
     <template>
         <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
+        <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/sortable-table.css">
+
         <style>
             :host {
                 display: block;
@@ -20,12 +22,51 @@
             }
         </style>
 
+        <sortable-table data="{{ variants }}" footerTemplate="defaultPager" pageSize="4">
+            <!--<sortable-column>chromosome</sortable-column>-->
+        </sortable-table>
+
     </template>
     <script>
         Polymer({
             created: function () {
+
+                this.variants = [];
+                this.variantsAxu = [];
+
             },
             ready: function () {
+
+                var me = this;
+                ExomeServerManager.region.variants({
+                    id: '1:1-20000',
+                    request: {
+                        success: function (response) {
+                            try {
+                                var aux = response.response[0].result;
+
+                                me.variants = me._parseVariants(aux);
+                                console.log(me.variants);
+                            } catch (err) {
+                                console.log("Error loading variants: " + err);
+                            }
+                        },
+                        error: function (response) {
+                            console.log("ExomeServerManager.region.variants ERROR");
+                        }
+                    }
+                })
+            },
+            _parseVariants: function (data) {
+
+                var res = data;
+//                for (var i = 0; i < data.length; i++) {
+//                    var obj = data[i];
+//
+//                }
+
+
+                return res;
             }
         });
     </script>

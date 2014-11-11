@@ -9,33 +9,12 @@ var ExomeServerManager = {
         },
         read: function (args) {
             return ExomeServerManager._doRequest(args, 'studies', 'info');
-        },
-        update: function (args) {
-            return ExomeServerManager._doRequest(args, 'studies', 'modify');
-        },
-        create: function (args) {
-            return ExomeServerManager._doRequest(args, 'studies', 'create');
-        },
-        delete: function (args) {
-            return ExomeServerManager._doRequest(args, 'studies', 'delete');
         }
     },
 
-    files: {
-        list: function (args) {
-            return ExomeServerManager._doRequest(args, 'files', 'list');
-        },
-        fetch: function (args) {
-            return ExomeServerManager._doRequest(args, 'files', 'fetch');
-        },
-        read: function (args) {
-            return ExomeServerManager._doRequest(args, 'files', 'info');
-        },
-        delete: function (args) {
-            return ExomeServerManager._doRequest(args, 'files', 'delete');
-        },
-        index: function (args) {
-            return ExomeServerManager._doRequest(args, 'files', 'index');
+    region: {
+        variants: function (args) {
+            return ExomeServerManager._doRequest(args, 'region', 'variants');
         }
     },
 
