@@ -20,15 +20,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-@Path("/region")
-@Api(value = "region", description = "Region")
+@Path("/variants")
+@Api(value = "variants", description = "Variants")
 @Produces(MediaType.APPLICATION_JSON)
-public class RegionWSServer extends ExomeServerWSServer {
+public class VariantsWSServer extends ExomeServerWSServer {
 
     private ExomeServerVariantMongoDBAdaptor variantMongoDbAdaptor;
 
 
-    public RegionWSServer(@DefaultValue("") @PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
+    public VariantsWSServer(@DefaultValue("") @PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws IOException, IllegalOpenCGACredentialsException {
         super(version, uriInfo, hsr);
 
@@ -36,12 +36,16 @@ public class RegionWSServer extends ExomeServerWSServer {
     }
 
     @GET
-    @Path("/{regions}/variants")
+    @Path("/{regions}/fetch")
     @Produces("application/json")
     @ApiOperation(value = "Get Variants By Region")
-    public Response getVariantsByRegion(@ApiParam(value = "regions") @PathParam("regions") String regionId) {
+    public Response getVariantsByRegion(@ApiParam(value = "regions") @PathParam("regions") String regionId,
+                                        @ApiParam(value = "limit") @QueryParam("limit") @DefaultValue("10") int limit,
+                                        @ApiParam(value = "skip") @QueryParam("skip") @DefaultValue("0") int skip) {
 
         queryOptions.put("merge", true);
+        queryOptions.put("limit", limit);
+        queryOptions.put("skip", skip);
 
         // Parse the provided regions. The total size of all regions together 
         // can't excede 1 million positions
