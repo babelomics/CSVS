@@ -2,16 +2,17 @@ package org.babelomics.exomeserver.app.cli;
 
 import com.beust.jcommander.ParameterException;
 import org.babelomics.exomeserver.lib.io.ExomeServerJsonWriter;
+import org.babelomics.exomeserver.lib.io.ExomeServerVariantMongoWriter;
+import org.babelomics.exomeserver.lib.tasks.ExomeServerVariantUpdateStatsTask;
 import org.opencb.biodata.formats.variant.io.VariantReader;
 import org.opencb.biodata.formats.variant.io.VariantWriter;
 import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfReader;
 import org.opencb.biodata.models.variant.*;
 import org.opencb.commons.containers.list.SortedList;
 import org.opencb.commons.run.Task;
+import org.opencb.opencga.lib.auth.MongoCredentials;
 import org.opencb.opencga.lib.auth.OpenCGACredentials;
-import org.opencb.opencga.storage.core.variant.io.json.VariantJsonReader;
-import org.opencb.opencga.storage.mongodb.utils.MongoCredentials;
-import org.opencb.opencga.storage.mongodb.variant.VariantMongoWriter;
+import org.opencb.opencga.storage.variant.json.VariantJsonReader;
 import org.opencb.variant.lib.runners.VariantRunner;
 import org.opencb.variant.lib.runners.tasks.VariantStatsTask;
 
@@ -47,6 +48,9 @@ public class ExomeServerMain {
                     break;
                 case "load-variants":
                     command = parser.getLoadCommand();
+                    break;
+                case "add-variants":
+                    command = parser.getAddCommand();
                     break;
                 default:
                     System.out.println("Command not implemented!!");
@@ -84,9 +88,53 @@ public class ExomeServerMain {
             VariantSource source = new VariantSource(variantsPath.getFileName().toString(), null, null, null, st, VariantSource.Aggregation.NONE);
 
             loadVariants(source, variantsPath, filePath, credentials);
+        } else if (command instanceof OptionsParser.CommandAddVariants) {
+            OptionsParser.CommandAddVariants c = (OptionsParser.CommandAddVariants) command;
+
+            Path variantsPath = Paths.get(c.input + ".variants.json.gz");
+            Path filePath = Paths.get(c.input + ".file.json.gz");
+            Path credentials = Paths.get(c.credentials);
+
+            VariantStudy.StudyType st = VariantStudy.StudyType.CASE_CONTROL;
+
+            VariantSource source = new VariantSource(variantsPath.getFileName().toString(), null, null, null, st, VariantSource.Aggregation.NONE);
+
+            addVariants(source, variantsPath, filePath, credentials);
+
         }
 
+    }
 
+    private static void addVariants(VariantSource source, Path variantsPath, Path filePath, Path credentialsPath) throws IOException {
+        VariantReader reader = new VariantJsonReader(source, variantsPath.toAbsolutePath().toString(), filePath.toAbsolutePath().toString());
+
+
+        List<Task<Variant>> taskList = new SortedList<>();
+        List<VariantWriter> writers = new ArrayList<>();
+
+        Properties properties = new Properties();
+        properties.load(new InputStreamReader(new FileInputStream(credentialsPath.toString())));
+        OpenCGACredentials credentials = new MongoCredentials(properties);
+        VariantWriter mongoWriter = new ExomeServerVariantMongoWriter(source, (MongoCredentials) credentials,
+                properties.getProperty("collection_variants", "variants"),
+                properties.getProperty("collection_files", "files"));
+
+        mongoWriter.includeStats(true);
+        mongoWriter.includeEffect(false);
+        mongoWriter.includeSamples(false);
+
+
+        Task<Variant> updateStats = new ExomeServerVariantUpdateStatsTask((MongoCredentials) credentials, source);
+
+        writers.add(mongoWriter);
+
+        taskList.add(updateStats);
+
+        VariantRunner variantRunner = new VariantRunner(source, reader, null, writers, taskList, 100);
+
+        System.out.println("Loading variants...");
+        variantRunner.run();
+        System.out.println("Variants loaded!");
     }
 
     private static void loadVariants(VariantSource source, Path variantsPath, Path filePath, Path credentialsPath) throws IOException {
@@ -100,7 +148,7 @@ public class ExomeServerMain {
         Properties properties = new Properties();
         properties.load(new InputStreamReader(new FileInputStream(credentialsPath.toString())));
         OpenCGACredentials credentials = new MongoCredentials(properties);
-        VariantWriter mongoWriter = new VariantMongoWriter(source, (MongoCredentials) credentials,
+        VariantWriter mongoWriter = new ExomeServerVariantMongoWriter(source, (MongoCredentials) credentials,
                 properties.getProperty("collection_variants", "variants"),
                 properties.getProperty("collection_files", "files"));
 

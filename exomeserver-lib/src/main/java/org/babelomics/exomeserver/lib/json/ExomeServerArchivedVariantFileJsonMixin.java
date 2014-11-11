@@ -1,7 +1,7 @@
 package org.babelomics.exomeserver.lib.json;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.opencb.opencga.storage.core.variant.io.json.ArchivedVariantFileJsonMixin;
+import org.opencb.opencga.storage.variant.json.ArchivedVariantFileJsonMixin;
 
 import java.util.Map;
 import java.util.Set;

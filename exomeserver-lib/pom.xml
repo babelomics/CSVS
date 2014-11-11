@@ -16,11 +16,22 @@
         <dependency>
             <groupId>org.opencb.biodata</groupId>
             <artifactId>biodata-models</artifactId>
-            <version>0.2.0</version>
+        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.opencb.opencga</groupId>-->
+            <!--<artifactId>opencga-storage-core</artifactId>-->
+        <!--</dependency>-->
+        <dependency>
+            <groupId>org.opencb.datastore</groupId>
+            <artifactId>datastore-mongodb</artifactId>
         </dependency>
         <dependency>
             <groupId>org.opencb.opencga</groupId>
-            <artifactId>opencga-storage-core</artifactId>
+            <artifactId>opencga-storage</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.opencb.opencga</groupId>
+            <artifactId>opencga-lib</artifactId>
         </dependency>
     </dependencies>
 

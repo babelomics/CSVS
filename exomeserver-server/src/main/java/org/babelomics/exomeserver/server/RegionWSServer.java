@@ -4,10 +4,10 @@ package org.babelomics.exomeserver.server;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
+import org.babelomics.exomeserver.lib.mongodb.dbAdaptor.ExomeServerVariantMongoDBAdaptor;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.opencga.lib.auth.IllegalOpenCGACredentialsException;
-import org.opencb.opencga.storage.mongodb.variant.VariantMongoDBAdaptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -25,14 +25,14 @@ import java.util.List;
 @Produces(MediaType.APPLICATION_JSON)
 public class RegionWSServer extends ExomeServerWSServer {
 
-    private VariantMongoDBAdaptor variantMongoDbAdaptor;
+    private ExomeServerVariantMongoDBAdaptor variantMongoDbAdaptor;
 
 
     public RegionWSServer(@DefaultValue("") @PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws IOException, IllegalOpenCGACredentialsException {
         super(version, uriInfo, hsr);
 
-        variantMongoDbAdaptor = new VariantMongoDBAdaptor(credentials);
+        variantMongoDbAdaptor = new ExomeServerVariantMongoDBAdaptor(credentials);
     }
 
     @GET

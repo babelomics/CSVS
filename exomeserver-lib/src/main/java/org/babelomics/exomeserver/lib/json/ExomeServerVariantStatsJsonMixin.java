@@ -2,7 +2,7 @@ package org.babelomics.exomeserver.lib.json;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.opencb.biodata.models.feature.Genotype;
-import org.opencb.opencga.storage.core.variant.io.json.VariantStatsJsonMixin;
+import org.opencb.opencga.storage.variant.json.VariantStatsJsonMixin;
 
 import java.util.Map;
 
@@ -73,5 +73,11 @@ public abstract class ExomeServerVariantStatsJsonMixin extends VariantStatsJsonM
 
     @JsonIgnore
     public abstract int getNumSamples();
+
+    @JsonIgnore
+    public abstract float getMgf();
+
+    @JsonIgnore
+    public abstract String getMgfGenotype();
 
 }

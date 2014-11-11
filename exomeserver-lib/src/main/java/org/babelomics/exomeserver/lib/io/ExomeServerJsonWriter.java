@@ -3,19 +3,15 @@ package org.babelomics.exomeserver.lib.io;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.babelomics.exomeserver.lib.json.ExomeServerArchivedVariantFileJsonMixin;
-import org.babelomics.exomeserver.lib.json.ExomeServerVariantStatsJsonMixin;
-import org.babelomics.exomeserver.lib.json.VariantAnnotationJsonMixin;
-import org.babelomics.exomeserver.lib.json.VariantJsonMixin;
+import org.babelomics.exomeserver.lib.json.*;
 import org.opencb.biodata.formats.variant.io.VariantWriter;
 import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.biodata.models.variant.ArchivedVariantFile;
 import org.opencb.biodata.models.variant.VariantSource;
 import org.opencb.biodata.models.variant.effect.VariantAnnotation;
 import org.opencb.biodata.models.variant.stats.VariantStats;
-import org.opencb.opencga.storage.core.variant.io.json.GenotypeJsonMixin;
-import org.opencb.opencga.storage.core.variant.io.json.VariantJsonWriter;
-import org.opencb.opencga.storage.core.variant.io.json.VariantSourceJsonMixin;
+import org.opencb.opencga.storage.variant.json.GenotypeJsonMixin;
+import org.opencb.opencga.storage.variant.json.VariantJsonWriter;
 
 import javax.ws.rs.core.Variant;
 import java.io.FileOutputStream;
@@ -71,10 +67,10 @@ public class ExomeServerJsonWriter implements VariantWriter {
     @Override
     public boolean pre() {
 
+        jsonObjectMapper.addMixInAnnotations(VariantStats.class, ExomeServerVariantStatsJsonMixin.class);
         jsonObjectMapper.addMixInAnnotations(ArchivedVariantFile.class, ExomeServerArchivedVariantFileJsonMixin.class);
         jsonObjectMapper.addMixInAnnotations(Genotype.class, GenotypeJsonMixin.class);
-        jsonObjectMapper.addMixInAnnotations(VariantStats.class, ExomeServerVariantStatsJsonMixin.class);
-        jsonObjectMapper.addMixInAnnotations(VariantSource.class, VariantSourceJsonMixin.class);
+        jsonObjectMapper.addMixInAnnotations(VariantSource.class, ExomeServerVariantSourceJsonMixin.class);
         jsonObjectMapper.addMixInAnnotations(VariantAnnotation.class, VariantAnnotationJsonMixin.class);
         jsonObjectMapper.addMixInAnnotations(Variant.class, VariantJsonMixin.class);
 

@@ -15,11 +15,13 @@ public class OptionsParser {
 
     private final CommandTransformVariants transform;
     private final CommandLoadVariants load;
+    private final CommandAddVariants add;
 
     public OptionsParser() {
         jcommander = new JCommander();
         jcommander.addCommand(transform = new CommandTransformVariants());
         jcommander.addCommand(load = new CommandLoadVariants());
+        jcommander.addCommand(add = new CommandAddVariants());
     }
 
     interface Command {
@@ -59,6 +61,18 @@ public class OptionsParser {
 
     }
 
+    @Parameters(commandNames = {"add-variants"}, commandDescription = "Add an already generated data model in an existing Study into a backend")
+    class CommandAddVariants implements Command {
+
+        @Parameter(names = {"-i", "--input"}, description = "Prefix of files to save in the selected backend", required = true, arity = 1)
+        String input;
+
+        @Parameter(names = {"-c", "--credentials"}, description = "Path to the file where the backend credentials are stored", required = true, arity = 1)
+        String credentials;
+
+    }
+
+
     String parse(String[] args) throws ParameterException {
         jcommander.parse(args);
         return jcommander.getParsedCommand();
@@ -77,6 +91,8 @@ public class OptionsParser {
     CommandTransformVariants getTransformCommand() {
         return transform;
     }
+
+    CommandAddVariants getAddCommand() { return add; }
 
 
 }

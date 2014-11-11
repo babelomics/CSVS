@@ -33,20 +33,18 @@
             <artifactId>biodata-formats</artifactId>
             <version>0.2.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.opencb.opencga</groupId>
-            <artifactId>opencga-storage-core</artifactId>
-            <version>0.4.0</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.opencb.opencga</groupId>-->
+            <!--<artifactId>opencga-storage-core</artifactId>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>org.babelomics.exomeserver</groupId>
             <artifactId>exomeserver-lib</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.opencb.opencga</groupId>
-            <artifactId>opencga-storage-mongodb</artifactId>
-            <version>0.4.0</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.opencb.opencga</groupId>-->
+            <!--<artifactId>opencga-storage-mongodb</artifactId>-->
+        <!--</dependency>-->
     </dependencies>
 
     <build>
