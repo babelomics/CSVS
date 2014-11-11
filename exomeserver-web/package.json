@@ -1,6 +1,10 @@
 {
     "name": "ExomeServer",
-    "version": "1.0.6",
+    "version": "1.0.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/babelomics/exome-server.git"
+    },
     "devDependencies": {
         "grunt": "~0.4.1",
         "grunt-contrib-concat": "~0.3.0",
