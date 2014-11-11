@@ -1,0 +1,1 @@
+EXOME_SERVER_HOST = "localhost:aaleman/exomeserver/rest"

@@ -20,11 +20,84 @@
             paper-button {
                 margin: 10px;
             }
+
+            label:after {
+                content: ':';
+            }
+
+            .input_container {
+                margin: 0px;
+                width: 175px;
+                right: auto;
+                top: 0px;
+                /*left: 5px;*/
+                padding: 4px 6px 3px 6px;
+            }
+
+            .input_container input {
+                min-height: 60px;
+            }
+
+            .input_container label {
+                padding-bottom: 5px;
+                padding-left: 1px;
+            }
+
+            #headerTitle {
+                background: #e4e7e9;
+                color: #435F7A;
+                font-size: 16px;
+                line-height: 22px;
+
+                /*padding-bottom: 8px;*/
+                /*padding-left: 10px;*/
+                /*padding-right: 10px;*/
+                /*padding-top: 8px;*/
+
+                margin: 10px;
+                padding: 5px;
+            }
+
+            .form_block {
+                height: 300px;
+            }
+
+
         </style>
 
         <div>
             <form id="filter_form" on-submit="{{ testSubmit }} ">
-                <content></content>
+                <div class="form_block">
+                    <div id="headerTitle">Position</div>
+
+                    <div class="input_container" vertical layout>
+                        <label class="input_label">SNP id</label>
+                        <input id="snp" name="snp" type="text"/>
+                    </div>
+
+                    <div class="input_container" vertical layout>
+                        <label class="input_label">Chromosomal Location</label>
+                        <input id="region" name="region" type="text" placeholder="1:1-1000000,2:1-1000000"/>
+                    </div>
+
+                    <div class="input_container" vertical layout>
+                        <label class="input_label">Gene / Transcript</label>
+                        <input id="gene" name="gene" type="text"/>
+                    </div>
+                </div>
+
+                <div class="form_Block">
+                    <div id="headerTitle">Studies</div>
+                    <div class="input_container">
+                        <template repeat="{{ studies }}">
+                            <div horizontal layout>
+                                <input type="checkbox" name="study" value="{{ studyId }}">
+                                <label>{{ studyName }} </label>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
                 <div id="buttons_container" horizontal layout>
                     <paper-button raised>Clear</paper-button>
                     <paper-button raised type="submit">Submit</paper-button>
@@ -36,20 +109,49 @@
         Polymer({
             created: function () {
 
+                this.studies = [];
+
             },
             ready: function () {
+                this.studies = this.getStudies();
+
             },
             clearForm: function () {
 
                 debugger
                 this.$.filter_form
             },
-            submit: function(){
-              debugger
-            },
-            testSubmit: function(){
+            submit: function () {
                 debugger
+            },
+            testSubmit: function () {
+                debugger
+            },
+            getStudies: function (event, response) {
+
+                var me = this;
+
+                ExomeServerManager.studies.list({
+                    request: {
+                        success: function (response) {
+
+                            try {
+                                me.studies = response.response[0].result;
+                            } catch (err) {
+                                console.log("Error loading studies: " + err);
+                                me.studies = [];
+                            }
+
+                        },
+                        error: function (response) {
+                            console.log("ERROR");
+                        }
+                    }
+                })
+
+
             }
+
         });
     </script>
 </polymer-element>
