@@ -7,18 +7,17 @@ import org.opencb.biodata.models.variant.stats.VariantGlobalStats;
 import org.opencb.opencga.storage.variant.mongodb.DBObjectToVariantSourceConverter;
 
 import java.util.Calendar;
+import java.util.Map;
 
 /**
  * @author Cristina Yenyxe Gonzalez Garcia <cyenyxe@ebi.ac.uk>
  */
 public class ExomeServerDBObjectToVariantSourceConverter extends DBObjectToVariantSourceConverter {
+
     @Override
     public VariantSource convertToDataModelType(DBObject object) {
         VariantSource source = new VariantSource((String) object.get(FILENAME_FIELD), (String) object.get(FILEID_FIELD),
                 (String) object.get(STUDYID_FIELD), (String) object.get(STUDYNAME_FIELD));
-
-        // Samples
-//        source.setSamplesPosition((Map) object.get(SAMPLES_FIELD));
 
         // Statistics
         DBObject statsObject = (DBObject) object.get(STATS_FIELD);
@@ -36,10 +35,10 @@ public class ExomeServerDBObjectToVariantSourceConverter extends DBObjectToVaria
         source.setStats(stats);
 
         // Metadata
-//        BasicDBObject metadata = (BasicDBObject) object.get(METADATA_FIELD);
-//        for (Map.Entry<String, Object> o : metadata.entrySet()) {
-//                source.addMetadata(o.getKey(), o.getValue().toString());
-//        }
+        BasicDBObject metadata = (BasicDBObject) object.get(METADATA_FIELD);
+        for (Map.Entry<String, Object> o : metadata.entrySet()) {
+            source.addMetadata(o.getKey(), o.getValue().toString());
+        }
 
         return source;
     }
@@ -52,12 +51,6 @@ public class ExomeServerDBObjectToVariantSourceConverter extends DBObjectToVaria
                 .append(STUDYID_FIELD, object.getStudyId())
                 .append(DATE_FIELD, Calendar.getInstance().getTime());
 //                .append(SAMPLES_FIELD, object.getSamplesPosition());
-
-        // TODO Pending how to manage the consequence type ranking (calculate during reading?)
-//        BasicDBObject cts = new BasicDBObject();
-//        for (Map.Entry<String, Integer> entry : conseqTypes.entrySet()) {
-//            cts.append(entry.getKey(), entry.getValue());
-//        }
 
         // Statistics
         VariantGlobalStats global = object.getStats();
@@ -76,11 +69,15 @@ public class ExomeServerDBObjectToVariantSourceConverter extends DBObjectToVaria
 
         // TODO Save pedigree information
 
-//        Metadata
-//        Map<String, String> meta = object.getMetadata();
-//        DBObject metadataMongo = new BasicDBObject();
-//        studyMongo = studyMongo.append(METADATA_FIELD, metadataMongo);
-//
+        // Metadata
+        Map<String, String> meta = object.getMetadata();
+        DBObject metadataMongo = new BasicDBObject("dis", meta.get("disease"));
+        metadataMongo.put("phe", meta.get("phenotype"));
+        metadataMongo.put("paper", meta.get("paper"));
+        metadataMongo.put("desc", meta.get("desc"));
+        metadataMongo.put("sta", meta.get("sta"));
+
+        studyMongo = studyMongo.append(METADATA_FIELD, metadataMongo);//
         return studyMongo;
     }
 

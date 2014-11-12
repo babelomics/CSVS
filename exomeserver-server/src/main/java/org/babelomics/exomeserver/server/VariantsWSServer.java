@@ -5,7 +5,11 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import org.babelomics.exomeserver.lib.mongodb.dbAdaptor.ExomeServerVariantMongoDBAdaptor;
+import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.biodata.models.feature.Region;
+import org.opencb.biodata.models.variant.ArchivedVariantFile;
+import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.stats.VariantStats;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.opencga.lib.auth.IllegalOpenCGACredentialsException;
 
@@ -18,17 +22,18 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
-@Path("/region")
-@Api(value = "region", description = "Region")
+@Path("/variants")
+@Api(value = "variants", description = "Variants")
 @Produces(MediaType.APPLICATION_JSON)
-public class RegionWSServer extends ExomeServerWSServer {
+public class VariantsWSServer extends ExomeServerWSServer {
 
     private ExomeServerVariantMongoDBAdaptor variantMongoDbAdaptor;
 
 
-    public RegionWSServer(@DefaultValue("") @PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
+    public VariantsWSServer(@DefaultValue("") @PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws IOException, IllegalOpenCGACredentialsException {
         super(version, uriInfo, hsr);
 
@@ -36,12 +41,16 @@ public class RegionWSServer extends ExomeServerWSServer {
     }
 
     @GET
-    @Path("/{regions}/variants")
+    @Path("/{regions}/fetch")
     @Produces("application/json")
     @ApiOperation(value = "Get Variants By Region")
-    public Response getVariantsByRegion(@ApiParam(value = "regions") @PathParam("regions") String regionId) {
+    public Response getVariantsByRegion(@ApiParam(value = "regions") @PathParam("regions") String regionId,
+                                        @ApiParam(value = "limit") @QueryParam("limit") @DefaultValue("10") int limit,
+                                        @ApiParam(value = "skip") @QueryParam("skip") @DefaultValue("0") int skip) {
 
         queryOptions.put("merge", true);
+        queryOptions.put("limit", limit);
+        queryOptions.put("skip", skip);
 
         // Parse the provided regions. The total size of all regions together 
         // can't excede 1 million positions
@@ -55,6 +64,10 @@ public class RegionWSServer extends ExomeServerWSServer {
 
         if (regionsSize <= 1000000) {
             List<QueryResult> allVariantsByRegionList = variantMongoDbAdaptor.getAllVariantsByRegionList(regions, queryOptions);
+
+            transformVariants(allVariantsByRegionList);
+
+
             return createOkResponse(allVariantsByRegionList);
         } else {
             return createErrorResponse("The total size of all regions provided can't exceed 1 million positions. "
@@ -62,9 +75,47 @@ public class RegionWSServer extends ExomeServerWSServer {
         }
     }
 
+    private void transformVariants(List<QueryResult> allVariantsByRegionList) {
+
+
+        for (QueryResult qr : allVariantsByRegionList) {
+            List<Variant> variantList = qr.getResult();
+            List<Variant> newVariantList = new ArrayList<>(variantList.size());
+
+            for (Variant v : variantList) {
+                combineFiles(v.getFiles());
+            }
+
+
+//            qr.setResult(newVariantList);
+
+        }
+    }
+
+    private void combineFiles(Map<String, ArchivedVariantFile> files) {
+        ArchivedVariantFile newAVF = new ArchivedVariantFile("MAF", "MAF");
+        VariantStats stats = new VariantStats();
+        newAVF.setStats(stats);
+
+        for (Map.Entry<String, ArchivedVariantFile> entry : files.entrySet()) {
+            ArchivedVariantFile avf = entry.getValue();
+            for (Map.Entry<Genotype, Integer> o : avf.getStats().getGenotypesCount().entrySet()) {
+                stats.addGenotype(o.getKey(), o.getValue());
+            }
+//            files.remove(entry.getKey());
+        }
+
+        files.clear(); // TODO aaleman: clear all but static studies.
+
+        files.put("MAF", newAVF);
+    }
+
+
     @OPTIONS
     @Path("/{region}/variants")
     public Response getVariantsByRegion() {
         return createOkResponse("");
     }
+
+
 }

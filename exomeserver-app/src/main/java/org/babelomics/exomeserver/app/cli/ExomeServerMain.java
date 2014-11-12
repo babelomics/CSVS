@@ -67,12 +67,19 @@ public class ExomeServerMain {
 
             Path file = Paths.get(c.file);
             Path outdir = Paths.get(c.outdir);
-            String fileId = c.fileId;
-            String studyId = c.studyId;
-            String study = c.study;
+            String fileId = c.study.toUpperCase() + "_" + c.disease.toUpperCase() + "_" + c.phenotype.toUpperCase();
+            String paper = c.paper == null ? "" : c.paper;
+            String description = c.description == null ? "" : c.description;
+
             VariantStudy.StudyType studyType = VariantStudy.StudyType.CASE_CONTROL;
             VariantSource.Aggregation aggregated = c.aggregated;
-            VariantSource source = new VariantSource(file.getFileName().toString(), fileId, studyId, study, studyType, aggregated);
+            VariantSource source = new VariantSource(file.getFileName().toString(), fileId, c.study, c.study, studyType, aggregated);
+
+            source.addMetadata("disease", c.disease);
+            source.addMetadata("phenotype", c.phenotype);
+            source.addMetadata("paper", paper);
+            source.addMetadata("desc", description);
+            source.addMetadata("sta", Boolean.toString(c.staticStudy));
 
             transformVariants(source, file, outdir);
         } else if (command instanceof OptionsParser.CommandLoadVariants) {
