@@ -80,8 +80,8 @@ public abstract class ExomeServerVariantStatsJsonMixin extends VariantStatsJsonM
     @JsonIgnore
     public abstract String getMgfGenotype();
 
-    @JsonIgnore
-    public abstract float getMaf();
+//    @JsonIgnore
+//    public abstract float getMaf();
 
     @JsonIgnore
     public abstract String getMafAllele();

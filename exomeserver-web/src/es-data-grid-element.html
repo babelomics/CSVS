@@ -22,24 +22,99 @@
             }
         </style>
 
-        <sortable-table data="{{ variants }}" footerTemplate="defaultPager" pageSize="4">
-            <!--<sortable-column>chromosome</sortable-column>-->
-        </sortable-table>
+        <!--<sortable-table data="{{ variants }}" footerTemplate="defaultPager" pageSize="4">-->
+            <!--&lt;!&ndash;<sortable-column>chromosome</sortable-column>&ndash;&gt;-->
+        <!--</sortable-table>-->
+
+        <sortable-table data="{{ variants }}" footerTemplate="defaultPager" pageSize="20"
+                        columns="{{ columns }}"></sortable-table>
 
     </template>
     <script>
+
+
         Polymer({
             created: function () {
 
                 this.variants = [];
-                this.variantsAxu = [];
+                this.columns = [
+                    {name: 'chromosome', title: 'Chr'},
+                    {name: 'start', title: 'Position'},
+                    {
+                        name: 'alleles',
+                        title: 'Alleles',
+                        formula: function (row) {
+                            return row.reference + ">" + row.alternate;
+                        }
+                    },
+                    {name: 'id', title: 'Id'},
+                    {
+                        name: 'files_maf_0_0', title: '0/0',
+                        formula: function (row) {
+                            return row.files.MAF.stats.genotypesCount["0/0"];
+                        }
+                    },
+                    {
+                        name: 'files_maf_0_1', title: '0/1',
+                        formula: function (row) {
+                            return row.files.MAF.stats.genotypesCount["0/1"];
+                        }
+                    },
+                    {
+                        name: 'files_maf_1_1', title: '1/1',
+                        formula: function (row) {
+                            return row.files.MAF.stats.genotypesCount["1/1"];
+                        }
+                    },
+                    {
+                        name: 'maf', title: 'MAF',
+                        formula: function (row) {
+                            var genotypes = row.files.MAF.stats.genotypesCount;
+
+                            var count = {};
+                            var total = 0;
+                            var maf = 1;
+                            var mafAllele = -1;
+
+                            Object.keys(genotypes).forEach(function (key) {
+                                var value = genotypes[key];
+                                var splits = key.split(/[/|]/);
+                                for (var i = 0; i < splits.length; i++) {
+                                    var g = splits[i];
+                                    if (!(g in count)) {
+                                        count[g] = 0;
+                                    }
+                                    count[g] += value;
+                                    total += value;
+                                }
+                            });
+
+                            Object.keys(count).forEach(function (key) {
+                                var value = count[key];
+
+                                var auxMaf = value / total;
+                                if (auxMaf < maf) {
+                                    maf = auxMaf;
+                                    mafAllele = key;
+                                }
+
+                            });
+
+                            return maf;
+                        }
+                    },
+
+
+                    {name: 'chromosome', title: "hola"}
+                ]
+                ;
 
             },
             ready: function () {
 
                 var me = this;
                 ExomeServerManager.region.variants({
-                    id: '1:1-20000',
+                    id: '1:1-1000000',
                     request: {
                         success: function (response) {
                             try {
@@ -56,7 +131,8 @@
                         }
                     }
                 })
-            },
+            }
+            ,
             _parseVariants: function (data) {
 
                 var res = data;
@@ -68,6 +144,7 @@
 
                 return res;
             }
-        });
+        })
+        ;
     </script>
 </polymer-element>

@@ -3,7 +3,7 @@
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 
 
-<polymer-element name="es-filter-form-element">
+<polymer-element name="es-filter-form-element" attributes="studies">
     <template>
         <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
         <style>
@@ -91,8 +91,8 @@
                     <div class="input_container">
                         <template repeat="{{ studies }}">
                             <div horizontal layout>
-                                <input type="checkbox" name="study" value="{{ studyId }}">
-                                <label>{{ studyName }} </label>
+                                <input type="checkbox" name="study" value="{{ sid }}">
+                                <label>{{ sname }} </label>
                             </div>
                         </template>
                     </div>
@@ -113,44 +113,15 @@
 
             },
             ready: function () {
-                this.studies = this.getStudies();
-
-            },
-            clearForm: function () {
-
-                debugger
-                this.$.filter_form
             },
             submit: function () {
-                debugger
             },
-            testSubmit: function () {
-                debugger
-            },
-            getStudies: function (event, response) {
+            studiesChanged: function (oldValue, newValue) {
 
-                var me = this;
-
-                ExomeServerManager.studies.list({
-                    request: {
-                        success: function (response) {
-
-                            try {
-                                me.studies = response.response[0].result;
-                            } catch (err) {
-                                console.log("Error loading studies: " + err);
-                                me.studies = [];
-                            }
-
-                        },
-                        error: function (response) {
-                            console.log("ERROR");
-                        }
-                    }
-                })
-
+                this.studies = newValue;
 
             }
+
 
         });
     </script>

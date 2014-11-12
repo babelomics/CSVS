@@ -62,17 +62,17 @@ public class VariantsWSServer extends ExomeServerWSServer {
             regionsSize += r.getEnd() - r.getStart();
         }
 
-        if (regionsSize <= 1000000) {
-            List<QueryResult> allVariantsByRegionList = variantMongoDbAdaptor.getAllVariantsByRegionList(regions, queryOptions);
+//        if (regionsSize <= 1000000) {
+        List<QueryResult> allVariantsByRegionList = variantMongoDbAdaptor.getAllVariantsByRegionList(regions, queryOptions);
 
-            transformVariants(allVariantsByRegionList);
+        transformVariants(allVariantsByRegionList);
 
 
-            return createOkResponse(allVariantsByRegionList);
-        } else {
-            return createErrorResponse("The total size of all regions provided can't exceed 1 million positions. "
-                    + "If you want to browse a larger number of positions, please provide the parameter 'histogram=true'");
-        }
+        return createOkResponse(allVariantsByRegionList);
+//        } else {
+//            return createErrorResponse("The total size of all regions provided can't exceed 1 million positions. "
+//                    + "If you want to browse a larger number of positions, please provide the parameter 'histogram=true'");
+//        }
     }
 
     private void transformVariants(List<QueryResult> allVariantsByRegionList) {
@@ -102,12 +102,17 @@ public class VariantsWSServer extends ExomeServerWSServer {
             for (Map.Entry<Genotype, Integer> o : avf.getStats().getGenotypesCount().entrySet()) {
                 stats.addGenotype(o.getKey(), o.getValue());
             }
-//            files.remove(entry.getKey());
         }
 
         files.clear(); // TODO aaleman: clear all but static studies.
 
+//        recalculeMAF(stats);
+
         files.put("MAF", newAVF);
+    }
+
+    private void recalculeMAF(VariantStats stats) {
+
     }
 
 

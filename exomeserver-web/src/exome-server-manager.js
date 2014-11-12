@@ -14,7 +14,7 @@ var ExomeServerManager = {
 
     region: {
         variants: function (args) {
-            return ExomeServerManager._doRequest(args, 'region', 'variants');
+            return ExomeServerManager._doRequest(args, 'variants', 'fetch');
         }
     },
 
