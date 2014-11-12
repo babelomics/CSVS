@@ -75,6 +75,7 @@ public class ExomeServerDBObjectToVariantSourceConverter extends DBObjectToVaria
         metadataMongo.put("phe", meta.get("phenotype"));
         metadataMongo.put("paper", meta.get("paper"));
         metadataMongo.put("desc", meta.get("desc"));
+        metadataMongo.put("sta", meta.get("sta"));
 
         studyMongo = studyMongo.append(METADATA_FIELD, metadataMongo);//
         return studyMongo;

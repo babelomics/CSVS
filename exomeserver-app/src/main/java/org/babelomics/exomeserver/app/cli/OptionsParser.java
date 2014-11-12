@@ -33,15 +33,9 @@ public class OptionsParser {
         @Parameter(names = {"-i", "--input"}, description = "File to transform into the OpenCGA data model", required = true, arity = 1)
         String file;
 
-//        @Parameter(names = {"-a", "--alias"}, description = "Unique ID for the file to be transformed", required = true, arity = 1)
-//        String fileId;
-
         @Parameter(names = {"-s", "--study"}, description = "Full name of the study where the file is classified", required = true, arity = 1)
         String study;
 
-        //        @Parameter(names = {"--study-alias"}, description = "Unique ID for the study where the file is classified", required = true, arity = 1)
-//        String studyId;
-//
         @Parameter(names = {"-o", "--outdir"}, description = "Directory where output files will be saved", arity = 1)
         String outdir;
 
@@ -56,6 +50,9 @@ public class OptionsParser {
 
         @Parameter(names = {"--description"}, description = "Description", arity = 1)
         String description;
+
+        @Parameter(names = {"--static"}, description = "Static study, its MAF will not be combined", arity = 0)
+        boolean staticStudy;
 
         @Parameter(names = {"--aggregated"}, description = "Aggregated VCF File: basic or EVS (optional)", arity = 1)
         VariantSource.Aggregation aggregated = VariantSource.Aggregation.NONE;
