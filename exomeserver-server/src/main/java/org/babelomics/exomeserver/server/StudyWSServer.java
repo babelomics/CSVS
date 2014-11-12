@@ -5,12 +5,12 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import org.babelomics.exomeserver.lib.mongodb.converter.ExomeServerDBObjectToVariantSourceConverter;
+import org.babelomics.exomeserver.lib.mongodb.dbAdaptor.ExomeServerStudyDBAdaptor;
+import org.babelomics.exomeserver.lib.mongodb.dbAdaptor.ExomeServerStudyMongoDBAdaptor;
 import org.babelomics.exomeserver.lib.mongodb.dbAdaptor.ExomeServerVariantSourceMongoDBAdaptor;
 import org.opencb.datastore.core.QueryResult;
 import org.opencb.opencga.lib.auth.IllegalOpenCGACredentialsException;
-import org.opencb.opencga.storage.variant.StudyDBAdaptor;
 import org.opencb.opencga.storage.variant.VariantSourceDBAdaptor;
-import org.opencb.opencga.storage.variant.mongodb.StudyMongoDBAdaptor;
 
 import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
@@ -29,13 +29,13 @@ import java.io.IOException;
 @Produces(MediaType.APPLICATION_JSON)
 public class StudyWSServer extends ExomeServerWSServer {
 
-    private StudyDBAdaptor studyMongoDbAdaptor;
+    private ExomeServerStudyDBAdaptor studyMongoDbAdaptor;
     private VariantSourceDBAdaptor variantSourceDbAdaptor;
 
     public StudyWSServer(@DefaultValue("") @PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws IOException, IllegalOpenCGACredentialsException, NamingException {
         super(version, uriInfo, hsr);
-        studyMongoDbAdaptor = new StudyMongoDBAdaptor(credentials);
+        studyMongoDbAdaptor = new ExomeServerStudyMongoDBAdaptor(credentials);
         variantSourceDbAdaptor = new ExomeServerVariantSourceMongoDBAdaptor(credentials);
     }
 
@@ -44,9 +44,17 @@ public class StudyWSServer extends ExomeServerWSServer {
     @Produces("application/json")
     @ApiOperation(value = "Get all Studies")
     public Response getStudies() {
-        return createOkResponse(studyMongoDbAdaptor.listStudies());
+        return createOkResponse(studyMongoDbAdaptor.getAllStudies(queryOptions));
     }
 
+
+    @GET
+    @Path("/diseases")
+    @Produces("application/json")
+    @ApiOperation(value = "Get all Diseases")
+    public Response getDiseases() {
+        return createOkResponse(studyMongoDbAdaptor.listDiseases());
+    }
 
     @GET
     @Path("/{study}/files")

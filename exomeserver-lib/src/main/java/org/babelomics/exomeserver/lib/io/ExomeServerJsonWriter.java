@@ -129,6 +129,8 @@ public class ExomeServerJsonWriter implements VariantWriter {
             variantsStream.flush();
             variantsGenerator.flush();
 
+            source.getMetadata().remove("variantFileHeader");
+
             fileGenerator.writeObject(source);
             fileStream.flush();
             fileGenerator.flush();

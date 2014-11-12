@@ -298,7 +298,8 @@ public class ExomeServerVariantMongoWriter extends VariantDBWriter {
 
     private boolean writeSourceSummary(VariantSource source) {
         DBObject studyMongo = sourceConverter.convertToStorageType(source);
-        DBObject query = new BasicDBObject(DBObjectToVariantSourceConverter.FILENAME_FIELD, source.getFileName());
+        String id = source.getStudyId().toUpperCase() + "_" + source.getMetadata().get("disease").toUpperCase() + "_" + source.getMetadata().get("phenotype").toUpperCase();
+        DBObject query = new BasicDBObject(DBObjectToVariantSourceConverter.FILEID_FIELD, id);
         WriteResult wr = filesCollection.update(query, studyMongo, true, false);
 
         return wr.getLastError().ok(); // TODO Is this a proper return statement?
