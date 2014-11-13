@@ -22,10 +22,6 @@
             }
         </style>
 
-        <!--<sortable-table data="{{ variants }}" footerTemplate="defaultPager" pageSize="4">-->
-            <!--&lt;!&ndash;<sortable-column>chromosome</sortable-column>&ndash;&gt;-->
-        <!--</sortable-table>-->
-
         <sortable-table data="{{ variants }}" footerTemplate="defaultPager" pageSize="20"
                         columns="{{ columns }}"></sortable-table>
 
@@ -114,7 +110,10 @@
 
                 var me = this;
                 ExomeServerManager.region.variants({
-                    id: '1:1-1000000',
+                    id: '1:1-10000000',
+                    query: {
+                        limit: 100
+                    },
                     request: {
                         success: function (response) {
                             try {
