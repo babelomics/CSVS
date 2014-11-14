@@ -20,15 +20,12 @@
     "backbone": "~1.1.2",
     "underscore": "~1.7.0",
     "sortable-table": "~0.10.0",
-    "platform": "Polymer/platform#~0.4.2",
-    "paper-button": "Polymer/paper-button#~0.4.2",
-    "core-ajax": "Polymer/core-ajax#~0.4.2"
+    "polymer": "Polymer/polymer#~0.5.0",
+    "core-list": "polymer/core-list#~0.5.0",
+    "paper-button": "Polymer/paper-button#~0.5.1",
+    "core-ajax": "Polymer/core-ajax#~0.5.1"
   },
   "devDependencies": {
     "backbone": "~1.1.2"
-  },
-  "resolutions": {
-    "polymer": "0.5.0",
-    "core-component-page": "^0.5.0"
   }
 }

@@ -1,10 +1,11 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymer-fontawesome/polymer-fontawesome.html">
 <link rel="import" href="../bower_components/sortable-table/sortable-table.html">
-<link rel="import" href="../bower_components/sortable-table/extjs-ajax.html">
+<link rel="import" href="../bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="opencb-ajax.html">
 
 
-<polymer-element name="es-data-grid-element">
+<polymer-element name="es-data-grid-element" attributes="formURL">
     <template>
         <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
         <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/sortable-table.css">
@@ -22,41 +23,126 @@
             }
         </style>
 
-        <sortable-table data="{{ variants }}" footerTemplate="defaultPager" pageSize="4">
-            <!--<sortable-column>chromosome</sortable-column>-->
+        <sortable-table footerTemplate="defaultPager" pageSize="10" columns="{{ columns }}" loading="true">
+            <opencb-ajax id="opencbAjax"
+                         role="datasource"
+                         url="{{ formURL }}"
+                         start=0
+                         length=10
+            </opencb-ajax>
         </sortable-table>
 
     </template>
     <script>
+
+
         Polymer({
             created: function () {
 
                 this.variants = [];
-                this.variantsAxu = [];
+                this.columns = [
+                    {name: 'chromosome', title: 'Chr'},
+                    {name: 'start', title: 'Position'},
+                    {
+                        name: 'alleles',
+                        title: 'Alleles',
+                        formula: function (row) {
+                            return row.reference + ">" + row.alternate;
+                        }
+                    },
+                    {name: 'id', title: 'Id'},
+                    {
+                        name: 'files_maf_0_0', title: '0/0',
+                        formula: function (row) {
+                            return row.files.MAF.stats.genotypesCount["0/0"];
+                        }
+                    },
+                    {
+                        name: 'files_maf_0_1', title: '0/1',
+                        formula: function (row) {
+                            return row.files.MAF.stats.genotypesCount["0/1"];
+                        }
+                    },
+                    {
+                        name: 'files_maf_1_1', title: '1/1',
+                        formula: function (row) {
+                            return row.files.MAF.stats.genotypesCount["1/1"];
+                        }
+                    },
+                    {
+                        name: 'maf', title: 'MAF',
+                        formula: function (row) {
+                            var genotypes = row.files.MAF.stats.genotypesCount;
+
+                            var count = {};
+                            var total = 0;
+                            var maf = 1;
+                            var mafAllele = -1;
+
+                            Object.keys(genotypes).forEach(function (key) {
+                                var value = genotypes[key];
+                                var splits = key.split(/[/|]/);
+                                for (var i = 0; i < splits.length; i++) {
+                                    var g = splits[i];
+                                    if (!(g in count)) {
+                                        count[g] = 0;
+                                    }
+                                    count[g] += value;
+                                    total += value;
+                                }
+                            });
+
+                            Object.keys(count).forEach(function (key) {
+                                var value = count[key];
+
+                                var auxMaf = value / total;
+                                if (auxMaf < maf) {
+                                    maf = auxMaf;
+                                    mafAllele = key;
+                                }
+
+                            });
+
+                            return maf;
+                        }
+                    },
+
+
+                    {name: 'chromosome', title: "hola"}
+                ]
+                ;
+
+            },
+            formURLChanged: function (oldValue, newValue) {
+
 
             },
             ready: function () {
 
                 var me = this;
-                ExomeServerManager.region.variants({
-                    id: '1:1-20000',
-                    request: {
-                        success: function (response) {
-                            try {
-                                var aux = response.response[0].result;
-
-                                me.variants = me._parseVariants(aux);
-                                console.log(me.variants);
-                            } catch (err) {
-                                console.log("Error loading variants: " + err);
-                            }
-                        },
-                        error: function (response) {
-                            console.log("ExomeServerManager.region.variants ERROR");
-                        }
-                    }
-                })
-            },
+//                ExomeServerManager.region.variants({
+//                    id: '1:1-10000000',
+//                    query: {
+//                        limit: 100
+//                    },
+//                    request: {
+//                        success: function (response) {
+//                            try {
+//                                var aux = response.response[0].result;
+//
+//                                me.variants = me._parseVariants(aux);
+//                                console.log(me.variants);
+//                            } catch (err) {
+//                                console.log("Error loading variants: " + err);
+//                            }
+//                        },
+//                        error: function (response) {
+//                            console.log("ExomeServerManager.region.variants ERROR");
+//                        }
+//                    }
+//                })
+            }
+            ,
             _parseVariants: function (data) {
 
                 var res = data;
@@ -68,6 +154,7 @@
 
                 return res;
             }
-        });
+        })
+        ;
     </script>
 </polymer-element>

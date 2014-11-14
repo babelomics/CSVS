@@ -1,1 +1,1 @@
-EXOME_SERVER_HOST = "localhost:aaleman/exomeserver/rest"
+EXOME_SERVER_HOST = "http://localhost:aaleman/exomeserver/rest"

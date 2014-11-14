@@ -46,6 +46,13 @@ public class ExomeServerStudyMongoDBAdaptor implements ExomeServerStudyDBAdaptor
         return coll.find(qb.get(), options, null, returnFields);
     }
 
+    public QueryResult getAllFileId(QueryOptions options) {
+        MongoDBCollection coll = this.db.getCollection("files");
+        QueryBuilder qb = QueryBuilder.start();
+        DBObject returnFields = new BasicDBObject("_id", Integer.valueOf(0)).append("fid", Integer.valueOf(1));
+        return coll.find(qb.get(), options, null, returnFields);
+    }
+
     public QueryResult findStudyNameOrStudyId(String study, QueryOptions options) {
         MongoDBCollection coll = this.db.getCollection("files");
         QueryBuilder qb = QueryBuilder.start();

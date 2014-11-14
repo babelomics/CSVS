@@ -1,9 +1,9 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymer-fontawesome/polymer-fontawesome.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/core-list/core-list.html">
 
-
-<polymer-element name="es-filter-form-element">
+<polymer-element name="es-filter-form-element" attributes="studies formURL">
     <template>
         <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
         <style>
@@ -11,7 +11,6 @@
                 display: block;
                 box-sizing: border-box;
                 position: relative;
-                /*height: 100%;*/
                 background-color: #FFFFFF;
 
                 margin: 20px;
@@ -35,7 +34,7 @@
             }
 
             .input_container input {
-                min-height: 60px;
+                min-height: 50px;
             }
 
             .input_container label {
@@ -49,25 +48,39 @@
                 font-size: 16px;
                 line-height: 22px;
 
-                /*padding-bottom: 8px;*/
-                /*padding-left: 10px;*/
-                /*padding-right: 10px;*/
-                /*padding-top: 8px;*/
-
                 margin: 10px;
                 padding: 5px;
             }
 
-            .form_block {
-                height: 300px;
+            .position_filter {
+                width: 200px;
             }
 
+            .sdp_block {
+                width: 300px;
+                height: 200px;
+                border-style: solid;
+                border-width: 1px;
+                margin-right: 10px;
+            }
+
+            .row {
+                height: 20px;
+            }
+
+            core-list {
+                height: 150px;
+            }
+
+            .filter_box {
+                margin-top: 5px;
+            }
 
         </style>
 
-        <div>
-            <form id="filter_form" on-submit="{{ testSubmit }} ">
-                <div class="form_block">
+        <form id="filter_form" vertical layout>
+            <div horizontal layout>
+                <div class="position_filter">
                     <div id="headerTitle">Position</div>
 
                     <div class="input_container" vertical layout>
@@ -77,7 +90,9 @@
 
                     <div class="input_container" vertical layout>
                         <label class="input_label">Chromosomal Location</label>
-                        <input id="region" name="region" type="text" placeholder="1:1-1000000,2:1-1000000"/>
+
+                        <input id="region" name="region" type="text" placeholder="1:1-1000000,2:1-1000000"
+                               value="{{ regionValue }}"/>
                     </div>
 
                     <div class="input_container" vertical layout>
@@ -85,72 +100,264 @@
                         <input id="gene" name="gene" type="text"/>
                     </div>
                 </div>
-
-                <div class="form_Block">
+                <div flex>
                     <div id="headerTitle">Studies</div>
-                    <div class="input_container">
-                        <template repeat="{{ studies }}">
-                            <div horizontal layout>
-                                <input type="checkbox" name="study" value="{{ studyId }}">
-                                <label>{{ studyName }} </label>
+                    <div horizontal layout>
+                        <div class="sdp_block" id="studies_div">
+
+                            <core-list data="{{ studyNames }}" height="20px">
+                                <template>
+                                    <div class="row">
+                                        <input type="checkbox" name="study" value="{{ model.name }}"
+                                               on-click="{{ studyClick }}"/>{{
+                                        model.name }}
+                                    </div>
+                                </template>
+                            </core-list>
+                            <div class="filter_box">
+                                <input type="text" on-keyup="{{ studyKeyUp }}" placeholder="Filter:"/>
                             </div>
-                        </template>
+
+
+                        </div>
+                        <div class="sdp_block" id="diseases_div">
+                            <core-list data="{{ diseases }}" height="20px">
+                                <template>
+                                    <div class="row">
+                                        <input type="checkbox" name="disease" value="{{ model.name }}"
+                                               on-click="{{ diseaseClick }}"/>{{
+                                        model.name }}
+                                    </div>
+                                </template>
+                            </core-list>
+                            <div class="filter_box">
+                                <input type="text" on-keyup="{{ diseaseKeyUp }}" placeholder="Filter:"/>
+                            </div>
+                        </div>
+                        <div class="sdp_block" id="phenotypes_div">
+                            <core-list data="{{ phenotype }}" height="20px">
+                                <template>
+                                    <div class="row">
+                                        <input type="checkbox" name="phenotype" value="{{ model.name }}"
+                                               on-click="{{ phenotypeClick }}"/>{{
+                                        model.name }}
+                                    </div>
+                                </template>
+                            </core-list>
+                            <div class="filter_box">
+                                <input type="text" on-keyup="{{ phenotypeKeyUp }}" placeholder="Filter:"/>
+                            </div>
+                        </div>
+                        <div class="sdp_block" id="log_div">
+                            <core-list data="{{ log }}" height="20px">
+                                <template>
+                                    <div class="row">{{ model.log }}</div>
+                                </template>
+                            </core-list>
+                        </div>
+
                     </div>
                 </div>
 
-                <div id="buttons_container" horizontal layout>
-                    <paper-button raised>Clear</paper-button>
-                    <paper-button raised type="submit">Submit</paper-button>
-                </div>
-            </form>
-        </div>
+            </div>
+            <div id="buttons_container" horizontal layout>
+                <paper-button raised>Clear</paper-button>
+                <paper-button raised on-click="{{ submitForm }}">Submit</paper-button>
+            </div>
+        </form>
     </template>
     <script>
         Polymer({
+            regionValue: '1:1-100000',
             created: function () {
 
                 this.studies = [];
+                this.studyNames = [];
+                this.diseases = [];
+                this.phenotype = [];
+                this.log = [];
+
+                this.formStudies = {};
+                this.formDiseases = {};
+                this.formPhenotypes = {};
+
 
             },
             ready: function () {
-                this.studies = this.getStudies();
+            },
+            submitForm: function () {
 
-            },
-            clearForm: function () {
-
-                debugger
-                this.$.filter_form
-            },
-            submit: function () {
-                debugger
-            },
-            testSubmit: function () {
-                debugger
-            },
-            getStudies: function (event, response) {
 
                 var me = this;
+                var auxStudies = [];
+                var auxDiseases = [];
+                var auxPhenotypes = [];
+                var query = {};
 
-                ExomeServerManager.studies.list({
-                    request: {
-                        success: function (response) {
+                var search = false;
 
-                            try {
-                                me.studies = response.response[0].result;
-                            } catch (err) {
-                                console.log("Error loading studies: " + err);
-                                me.studies = [];
-                            }
-
-                        },
-                        error: function (response) {
-                            console.log("ERROR");
-                        }
+                Object.keys(this.formStudies).forEach(function (key) {
+                    var value = me.formStudies[key];
+                    if (value) {
+                        auxStudies.push(key);
                     }
-                })
+                });
 
+                Object.keys(this.formDiseases).forEach(function (key) {
+                    var value = me.formDiseases[key];
+                    if (value) {
+                        auxDiseases.push(key);
+                    }
+                });
+
+                Object.keys(this.formPhenotypes).forEach(function (key) {
+                    var value = me.formPhenotypes[key];
+                    if (value) {
+                        auxPhenotypes.push(key);
+                    }
+                });
+
+
+                if (auxStudies.length > 0) {
+                    query.studies = auxStudies.join(",");
+                    search |= true;
+                }
+                if (auxDiseases.length > 0) {
+                    query.diseases = auxDiseases.join(",");
+                    search |= true;
+                }
+
+                if (auxPhenotypes.length > 0) {
+                    query.phenotypes = auxPhenotypes.join(",");
+                    search |= true;
+                }
+
+                if (search) {
+
+                    var url = ExomeServerManager.variants.fetch({
+                        id: this.regionValue,
+                        query: query,
+                        request: {
+                            url: true
+                        }
+                    });
+                    this.formURL = url;
+                }
+
+            },
+            regionValueChanged: function (oldValue, newValue) {
+                console.log(newValue);
+            },
+            studiesChanged: function (oldValue, newValue) {
+                var me = this;
+                this.studies = newValue;
+                var names = {};
+                var dis = {};
+                var phen = {};
+                for (var i = 0; i < this.studies.length; i++) {
+                    var study = this.studies[i];
+
+                    names[study.sname] = study.sname;
+                    dis[study.meta.dis] = study.meta.dis;
+                    phen[study.meta.phe] = study.meta.phe;
+
+                }
+                Object.keys(names).forEach(function (key) {
+                    me.studyNames.push({
+                        name: key
+                    })
+                });
+                Object.keys(dis).forEach(function (key) {
+                    me.diseases.push({
+                        name: key
+                    })
+                });
+
+                Object.keys(phen).forEach(function (key) {
+                    me.phenotype.push({
+                        name: key
+                    })
+                });
+
+            },
+            studyClick: function (event, detail, sender) {
+
+                this.formStudies[sender.value] = sender.checked;
+
+            },
+            diseaseClick: function (event, detail, sender) {
+
+                this.formDiseases[sender.value] = sender.checked;
+
+            },
+            phenotypeClick: function (event, detail, sender) {
+
+                this.formPhenotypes[sender.value] = sender.checked;
+
+            },
+            studyKeyUp: function (event, detail, sender) {
+                var reg = new RegExp(sender.value, "i");
+                var snames = [];
+                var names = {};
+
+                for (var i = 0; i < this.studies.length; i++) {
+                    var study = this.studies[i];
+                    if (reg.test(study.sname)) {
+                        names[study.sname] = study.sname;
+                    }
+                }
+                Object.keys(names).forEach(function (key) {
+                    snames.push({
+                        name: key
+                    })
+                });
+
+                this.studyNames = snames;
+
+            },
+            diseaseKeyUp: function (event, detail, sender) {
+                var reg = new RegExp(sender.value, "i");
+                var snames = [];
+                var names = {};
+
+                for (var i = 0; i < this.studies.length; i++) {
+                    var study = this.studies[i];
+                    if (reg.test(study.meta.dis)) {
+                        names[study.meta.dis] = study.meta.dis;
+
+                    }
+                }
+                Object.keys(names).forEach(function (key) {
+                    snames.push({
+                        name: key
+                    })
+                });
+
+                this.diseases = snames;
 
             }
+            , phenotypeKeyUp: function (event, detail, sender) {
+                var reg = new RegExp(sender.value, "i");
+                var snames = [];
+                var names = {};
+
+                for (var i = 0; i < this.studies.length; i++) {
+                    var study = this.studies[i];
+                    if (reg.test(study.meta.phe)) {
+                        names[study.meta.phe] = study.meta.phe;
+
+                    }
+                }
+                Object.keys(names).forEach(function (key) {
+                    snames.push({
+                        name: key
+                    })
+                });
+
+                this.phenotype = snames;
+
+            }
+
 
         });
     </script>
