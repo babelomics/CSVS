@@ -12,8 +12,8 @@ var ExomeServerManager = {
         }
     },
 
-    region: {
-        variants: function (args) {
+    variants: {
+        fetch: function (args) {
             return ExomeServerManager._doRequest(args, 'variants', 'fetch');
         }
     },

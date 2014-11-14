@@ -3,7 +3,7 @@
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/core-list/core-list.html">
 
-<polymer-element name="es-filter-form-element" attributes="studies">
+<polymer-element name="es-filter-form-element" attributes="studies formURL">
     <template>
         <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
         <style>
@@ -78,7 +78,7 @@
 
         </style>
 
-        <form id="filter_form" on-submit="{{ testSubmit }} " vertical layout>
+        <form id="filter_form" vertical layout>
             <div horizontal layout>
                 <div class="position_filter">
                     <div id="headerTitle">Position</div>
@@ -90,7 +90,9 @@
 
                     <div class="input_container" vertical layout>
                         <label class="input_label">Chromosomal Location</label>
-                        <input id="region" name="region" type="text" placeholder="1:1-1000000,2:1-1000000"/>
+
+                        <input id="region" name="region" type="text" placeholder="1:1-1000000,2:1-1000000"
+                               value="{{ regionValue }}"/>
                     </div>
 
                     <div class="input_container" vertical layout>
@@ -121,7 +123,9 @@
                         <div class="sdp_block" id="diseases_div">
                             <core-list data="{{ diseases }}" height="20px">
                                 <template>
-                                    <div class="row"><input type="checkbox" name="disease" value="{{ model.name }}"/>{{
+                                    <div class="row">
+                                        <input type="checkbox" name="disease" value="{{ model.name }}"
+                                               on-click="{{ diseaseClick }}"/>{{
                                         model.name }}
                                     </div>
                                 </template>
@@ -133,7 +137,9 @@
                         <div class="sdp_block" id="phenotypes_div">
                             <core-list data="{{ phenotype }}" height="20px">
                                 <template>
-                                    <div class="row"><input type="checkbox" name="phenotype" value="{{ model.name }}"/>{{
+                                    <div class="row">
+                                        <input type="checkbox" name="phenotype" value="{{ model.name }}"
+                                               on-click="{{ phenotypeClick }}"/>{{
                                         model.name }}
                                     </div>
                                 </template>
@@ -156,12 +162,13 @@
             </div>
             <div id="buttons_container" horizontal layout>
                 <paper-button raised>Clear</paper-button>
-                <paper-button raised type="submit">Submit</paper-button>
+                <paper-button raised on-click="{{ submitForm }}">Submit</paper-button>
             </div>
         </form>
     </template>
     <script>
         Polymer({
+            regionValue: '1:1-100000',
             created: function () {
 
                 this.studies = [];
@@ -170,11 +177,68 @@
                 this.phenotype = [];
                 this.log = [];
 
+                this.formStudies = {};
+                this.formDiseases = {};
+                this.formPhenotypes = {};
+
 
             },
             ready: function () {
             },
-            submit: function () {
+            submitForm: function () {
+
+
+                var me = this;
+                var auxStudies = [];
+                var auxDiseases = [];
+                var auxPhenotypes = [];
+                var query = {};
+
+                Object.keys(this.formStudies).forEach(function (key) {
+                    var value = me.formStudies[key];
+                    if (value) {
+                        auxStudies.push(key);
+                    }
+                });
+
+                Object.keys(this.formDiseases).forEach(function (key) {
+                    var value = me.formDiseases[key];
+                    if (value) {
+                        auxDiseases.push(key);
+                    }
+                });
+
+                Object.keys(this.formPhenotypes).forEach(function (key) {
+                    var value = me.formPhenotypes[key];
+                    if (value) {
+                        auxPhenotypes.push(key);
+                    }
+                });
+
+
+                if (auxStudies.length > 0) {
+                    query.studies = auxStudies.join(",");
+                }
+                if (auxDiseases.length > 0) {
+                    query.diseases = auxDiseases.join(",");
+                }
+                
+                if (auxPhenotypes.length > 0) {
+                    query.phenotypes = auxPhenotypes.join(",");
+                }
+
+                var url = ExomeServerManager.variants.fetch({
+                    id: this.regionValue,
+                    query: query,
+                    request: {
+                        url: true
+                    }
+                });
+                this.formURL = url;
+
+            },
+            regionValueChanged: function (oldValue, newValue) {
+                console.log(newValue);
             },
             studiesChanged: function (oldValue, newValue) {
                 var me = this;
@@ -210,10 +274,17 @@
             },
             studyClick: function (event, detail, sender) {
 
-                sender.checked
-                this.log.push({
-                    log: sender.value
-                });
+                this.formStudies[sender.value] = sender.checked;
+
+            },
+            diseaseClick: function (event, detail, sender) {
+
+                this.formDiseases[sender.value] = sender.checked;
+
+            },
+            phenotypeClick: function (event, detail, sender) {
+
+                this.formPhenotypes[sender.value] = sender.checked;
 
             },
             studyKeyUp: function (event, detail, sender) {

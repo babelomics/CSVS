@@ -1,10 +1,11 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymer-fontawesome/polymer-fontawesome.html">
 <link rel="import" href="../bower_components/sortable-table/sortable-table.html">
-<link rel="import" href="../bower_components/sortable-table/extjs-ajax.html">
+<link rel="import" href="../bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="opencb-ajax.html">
 
 
-<polymer-element name="es-data-grid-element">
+<polymer-element name="es-data-grid-element" attributes="formURL">
     <template>
         <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
         <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/sortable-table.css">
@@ -22,8 +23,14 @@
             }
         </style>
 
-        <sortable-table data="{{ variants }}" footerTemplate="defaultPager" pageSize="20"
-                        columns="{{ columns }}"></sortable-table>
+        <sortable-table footerTemplate="defaultPager" pageSize="10" columns="{{ columns }}" loading="true">
+            <opencb-ajax id="opencbAjax"
+                         role="datasource"
+                         url="{{ formURL }}"
+                         start=0
+                         length=10
+            </opencb-ajax>
+        </sortable-table>
 
     </template>
     <script>
@@ -106,30 +113,34 @@
                 ;
 
             },
+            formURLChanged: function (oldValue, newValue) {
+
+
+            },
             ready: function () {
 
                 var me = this;
-                ExomeServerManager.region.variants({
-                    id: '1:1-10000000',
-                    query: {
-                        limit: 100
-                    },
-                    request: {
-                        success: function (response) {
-                            try {
-                                var aux = response.response[0].result;
-
-                                me.variants = me._parseVariants(aux);
-                                console.log(me.variants);
-                            } catch (err) {
-                                console.log("Error loading variants: " + err);
-                            }
-                        },
-                        error: function (response) {
-                            console.log("ExomeServerManager.region.variants ERROR");
-                        }
-                    }
-                })
+//                ExomeServerManager.region.variants({
+//                    id: '1:1-10000000',
+//                    query: {
+//                        limit: 100
+//                    },
+//                    request: {
+//                        success: function (response) {
+//                            try {
+//                                var aux = response.response[0].result;
+//
+//                                me.variants = me._parseVariants(aux);
+//                                console.log(me.variants);
+//                            } catch (err) {
+//                                console.log("Error loading variants: " + err);
+//                            }
+//                        },
+//                        error: function (response) {
+//                            console.log("ExomeServerManager.region.variants ERROR");
+//                        }
+//                    }
+//                })
             }
             ,
             _parseVariants: function (data) {

@@ -4,8 +4,7 @@
 <link rel="import" href="../bower_components/polymer-fontawesome/polymer-fontawesome.html">
 <link rel="import" href="../bower_components/sortable-table/sortable-table.html">
 
-
-<link rel="import" href="../lib/jsorolla/src/lib/components/opencga/jso-header.html">
+<link rel=" import" href="../lib/jsorolla/src/lib/components/opencga/jso-header.html">
 <link rel="import" href="../lib/jsorolla/src/lib/components/opencga/jso-header.html">
 
 
@@ -13,7 +12,7 @@
 
 <link rel="import" href="es-data-grid-element.html">
 
-<polymer-element name="exome-server-element" attributes="urlPrefix">
+<polymer-element name="exome-server-element" attributes="urlPrefix formURL">
     <template>
         <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
         <style>
@@ -45,8 +44,9 @@
         <jso-header appTitle="Exome Server" description="beta desc." allowLogin="false"></jso-header>
 
         <div id="es-container" vertical layout>
-            <es-filter-form-element style="height: 350px;" studies="{{ studies }}"></es-filter-form-element>
-            <es-data-grid-element flex></es-data-grid-element>
+            <es-filter-form-element studies="{{ studies }}" formURL="{{ formURL }}"
+                                    style="height: 350px;"></es-filter-form-element>
+            <es-data-grid-element formURL="{{ formURL }} " flex></es-data-grid-element>
         </div>
 
     </template>
@@ -79,7 +79,7 @@
                             console.log("ERROR");
                         }
                     }
-                })
+                });
 
 
             }

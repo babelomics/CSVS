@@ -46,11 +46,14 @@ public class VariantsWSServer extends ExomeServerWSServer {
     @ApiOperation(value = "Get Variants By Region")
     public Response getVariantsByRegion(@ApiParam(value = "regions") @PathParam("regions") String regionId,
                                         @ApiParam(value = "limit") @QueryParam("limit") @DefaultValue("10") int limit,
-                                        @ApiParam(value = "skip") @QueryParam("skip") @DefaultValue("0") int skip) {
+                                        @ApiParam(value = "skip") @QueryParam("skip") @DefaultValue("0") int skip,
+                                        @ApiParam(value = "studies") @QueryParam("studies") @DefaultValue("") String studies) {
 
         queryOptions.put("merge", true);
         queryOptions.put("limit", limit);
         queryOptions.put("skip", skip);
+
+        System.out.println("studies = " + studies);
 
         // Parse the provided regions. The total size of all regions together 
         // can't excede 1 million positions
