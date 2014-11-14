@@ -194,6 +194,8 @@
                 var auxPhenotypes = [];
                 var query = {};
 
+                var search = false;
+
                 Object.keys(this.formStudies).forEach(function (key) {
                     var value = me.formStudies[key];
                     if (value) {
@@ -218,23 +220,29 @@
 
                 if (auxStudies.length > 0) {
                     query.studies = auxStudies.join(",");
+                    search |= true;
                 }
                 if (auxDiseases.length > 0) {
                     query.diseases = auxDiseases.join(",");
+                    search |= true;
                 }
 
                 if (auxPhenotypes.length > 0) {
                     query.phenotypes = auxPhenotypes.join(",");
+                    search |= true;
                 }
 
-                var url = ExomeServerManager.variants.fetch({
-                    id: this.regionValue,
-                    query: query,
-                    request: {
-                        url: true
-                    }
-                });
-                this.formURL = url;
+                if (search) {
+
+                    var url = ExomeServerManager.variants.fetch({
+                        id: this.regionValue,
+                        query: query,
+                        request: {
+                            url: true
+                        }
+                    });
+                    this.formURL = url;
+                }
 
             },
             regionValueChanged: function (oldValue, newValue) {
