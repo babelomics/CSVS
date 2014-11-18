@@ -135,8 +135,15 @@ public class VariantsWSServer extends ExomeServerWSServer {
             }
         }
 
+        List<String> aux = new ArrayList<>(finalStudyElements.size());
+        for (StudyElement se : finalStudyElements) {
+            aux.add(se.toString());
+        }
+
         // if (regionsSize <= 1000000) {
-        List<QueryResult> allVariantsByRegionList = variantMongoDbAdaptor.getAllVariantsByRegionList(regions, queryOptions);
+//        List<QueryResult> allVariantsByRegionList = variantMongoDbAdaptor.getAllVariantsByRegionList(regions, queryOptions);
+        List<QueryResult> allVariantsByRegionList = variantMongoDbAdaptor.getAllVariantsByRegionListAndFileIds(regions, aux, queryOptions);
+
 
         removeStudies(allVariantsByRegionList, finalStudyElements);
         transformVariants(allVariantsByRegionList);

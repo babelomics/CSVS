@@ -1,15 +1,11 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/core-ajax/core-ajax.html">
 
 <link rel="import" href="../bower_components/polymer-fontawesome/polymer-fontawesome.html">
 <link rel="import" href="../bower_components/sortable-table/sortable-table.html">
+<link rel="import" href="../bower_components/core-collapse/core-collapse.html">
 
 <link rel=" import" href="../lib/jsorolla/src/lib/components/opencga/jso-header.html">
-<link rel="import" href="../lib/jsorolla/src/lib/components/opencga/jso-header.html">
-
-
 <link rel="import" href="es-filter-form-element.html">
-
 <link rel="import" href="es-data-grid-element.html">
 
 <polymer-element name="exome-server-element" attributes="urlPrefix formURL">
@@ -44,8 +40,11 @@
         <jso-header appTitle="Exome Server" description="beta desc." allowLogin="false"></jso-header>
 
         <div id="es-container" vertical layout>
-            <es-filter-form-element studies="{{ studies }}" formURL="{{ formURL }}"
-                                    style="height: 350px;"></es-filter-form-element>
+            <button on-click="{{ toggle}}" style="width: 70px;">Form</button>
+            <core-collapse id="collapse" opened>
+                <es-filter-form-element studies="{{ studies }}" formURL="{{ formURL }}"
+                                        style="height: 350px;"></es-filter-form-element>
+            </core-collapse>
             <es-data-grid-element formURL="{{ formURL }} " flex></es-data-grid-element>
         </div>
 
@@ -54,8 +53,7 @@
         Polymer({
             created: function () {
                 this.studies = [];
-            },
-            ready: function () {
+            }, ready: function () {
                 this.getStudies();
             },
             getStudies: function (event, response) {
@@ -80,8 +78,9 @@
                         }
                     }
                 });
-
-
+            },
+            toggle: function () {
+                this.$.collapse.toggle();
             }
         });
     </script>

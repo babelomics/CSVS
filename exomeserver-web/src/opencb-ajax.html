@@ -42,6 +42,7 @@
                 var response = e.detail.response;
 
 
+                console.log(response);
                 if (response) {
                     var data = response.response[0]; // TODO aaleman: what if response.length > 1
                     var dataSize = data.numTotalResults;
@@ -49,6 +50,9 @@
                     this.dataSize = dataSize;
 
                     this.fire('data-updated', {data: this.data, dataSize: this.dataSize});
+                } else {
+                    this.data = [];
+                    this.dataSize = 0;
                 }
             },
             urlChanged: function () {
@@ -63,14 +67,6 @@
                         skip: this.start,
                         limit: this.length
                     };
-
-//                    if (this.customParams != null) {
-//                        Object.keys(this.customParams).forEach(function (key) {
-//                            var value = this.customParams[key];
-//                            params[key] = value;
-//                        });
-//                    }
-
 
                     this.ajax.url = auxURL;
                     this.ajax.params = params;

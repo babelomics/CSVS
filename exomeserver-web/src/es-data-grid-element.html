@@ -1,9 +1,7 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymer-fontawesome/polymer-fontawesome.html">
 <link rel="import" href="../bower_components/sortable-table/sortable-table.html">
-<link rel="import" href="../bower_components/core-ajax/core-ajax.html">
 <link rel="import" href="opencb-ajax.html">
-
 
 <polymer-element name="es-data-grid-element" attributes="formURL">
     <template>
@@ -23,7 +21,13 @@
             }
         </style>
 
-        <sortable-table footerTemplate="defaultPager" pageSize="10" columns="{{ columns }}" loading="true">
+        <sortable-table id="dataGrid"
+                        footerTemplate="defaultPager"
+                        pageSize="10"
+                        columns="{{ columns }}"
+                        loading="true"
+                        rowSelection="true"
+                >
             <opencb-ajax id="opencbAjax"
                          role="datasource"
                          url="{{ formURL }}"
@@ -113,46 +117,16 @@
                 ;
 
             },
-            formURLChanged: function (oldValue, newValue) {
-
-
-            },
             ready: function () {
 
                 var me = this;
-//                ExomeServerManager.region.variants({
-//                    id: '1:1-10000000',
-//                    query: {
-//                        limit: 100
-//                    },
-//                    request: {
-//                        success: function (response) {
-//                            try {
-//                                var aux = response.response[0].result;
-//
-//                                me.variants = me._parseVariants(aux);
-//                                console.log(me.variants);
-//                            } catch (err) {
-//                                console.log("Error loading variants: " + err);
-//                            }
-//                        },
-//                        error: function (response) {
-//                            console.log("ExomeServerManager.region.variants ERROR");
-//                        }
-//                    }
-//                })
             }
             ,
-            _parseVariants: function (data) {
-
-                var res = data;
-//                for (var i = 0; i < data.length; i++) {
-//                    var obj = data[i];
-//
-//                }
-
-
-                return res;
+            observe: {
+                '$.dataGrid.selected': "handleDataGridSelected"
+            },
+            handleDataGridSelected: function (oldValue, newValue) {
+                console.log(newValue);
             }
         })
         ;

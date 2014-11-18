@@ -78,6 +78,7 @@ public class ExomeServerVariantMongoDBAdaptor implements VariantDBAdaptor {
         return allResults;
     }
 
+
     @Override
     public QueryResult getAllVariantsByRegionAndStudies(Region region, List<String> studyId, QueryOptions options) {
         MongoDBCollection coll = db.getCollection(collectionName);
@@ -435,6 +436,31 @@ public class ExomeServerVariantMongoDBAdaptor implements VariantDBAdaptor {
 
     private int getChunkEnd(int id, int chunksize) {
         return (id * chunksize) + chunksize - 1;
+    }
+
+    public List<QueryResult> getAllVariantsByRegionListAndFileIds(List<Region> regions, List<String> fileIds, QueryOptions options) {
+
+        List<QueryResult> allResults = new LinkedList<>();
+
+        for (Region r : regions) {
+            QueryResult queryResult = getAllVariantsByRegionAndFileIds(r, fileIds, options);
+            allResults.add(queryResult);
+        }
+
+        return allResults;
+
+    }
+
+    public QueryResult getAllVariantsByRegionAndFileIds(Region region, List<String> fileIds, QueryOptions options) {
+        MongoDBCollection coll = db.getCollection(collectionName);
+
+        QueryBuilder qb = QueryBuilder.start();
+        getRegionFilter(region, qb);
+        qb.and("files.fid").in(fileIds);
+
+        parseQueryOptions(options, qb);
+
+        return coll.find(qb.get(), options, variantConverter);
     }
 
 

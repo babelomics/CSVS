@@ -76,8 +76,20 @@
                 margin-top: 5px;
             }
 
-        </style>
+            #component_header {
+                background: #e4e7e9;
+                color: #435F7A;
+                font-size: 16px;
+                line-height: 22px;
 
+                margin: 10px;
+                padding: 5px;
+            }
+
+        </style>
+        <!--<div id="component_header" on-click="{{ toggle }}">-->
+        <!--Search Form-->
+        <!--</div>-->
         <form id="filter_form" vertical layout>
             <div horizontal layout>
                 <div class="position_filter">
@@ -357,8 +369,6 @@
                 this.phenotype = snames;
 
             }
-
-
         });
     </script>
 </polymer-element>
