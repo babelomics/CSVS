@@ -4,8 +4,8 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
-import org.babelomics.exomeserver.lib.mongodb.converter.ExomeServerDBObjectToArchivedVariantFileConverter;
 import org.babelomics.exomeserver.lib.mongodb.converter.ExomeServerDBObjectToVariantConverter;
+import org.babelomics.exomeserver.lib.mongodb.converter.ExomeServerDBObjectToVariantSourceEntryConverter;
 import org.babelomics.exomeserver.lib.mongodb.converter.ExomeServerDBObjectToVariantStatsConverter;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.datastore.core.QueryOptions;
@@ -29,7 +29,7 @@ public class ExomeServerVariantMongoDBAdaptor implements VariantDBAdaptor {
     private final MongoDataStoreManager mongoManager;
     private final MongoDataStore db;
     private final ExomeServerDBObjectToVariantConverter variantConverter;
-    private final ExomeServerDBObjectToArchivedVariantFileConverter archivedVariantFileConverter;
+    private final ExomeServerDBObjectToVariantSourceEntryConverter archivedVariantFileConverter;
     private final String collectionName = "variants";
 
     public ExomeServerVariantMongoDBAdaptor(MongoCredentials credentials) throws UnknownHostException {
@@ -42,7 +42,7 @@ public class ExomeServerVariantMongoDBAdaptor implements VariantDBAdaptor {
 
         // Converters from DBObject to Java classes
         // TODO Allow to configure depending on the type of study?
-        archivedVariantFileConverter = new ExomeServerDBObjectToArchivedVariantFileConverter(true,
+        archivedVariantFileConverter = new ExomeServerDBObjectToVariantSourceEntryConverter(true,
                 new ExomeServerDBObjectToVariantStatsConverter(), credentials);
         variantConverter = new ExomeServerDBObjectToVariantConverter(archivedVariantFileConverter);
     }
@@ -84,14 +84,14 @@ public class ExomeServerVariantMongoDBAdaptor implements VariantDBAdaptor {
         MongoDBCollection coll = db.getCollection(collectionName);
 
         // Aggregation for filtering when more than one study is present
-        QueryBuilder qb = QueryBuilder.start(DBObjectToVariantConverter.FILES_FIELD + "." + DBObjectToArchivedVariantFileConverter.STUDYID_FIELD).in(studyId);
+        QueryBuilder qb = QueryBuilder.start(DBObjectToVariantConverter.FILES_FIELD + "." + DBObjectToVariantSourceEntryConverter.STUDYID_FIELD).in(studyId);
         getRegionFilter(region, qb);
         parseQueryOptions(options, qb);
 
         DBObject match = new BasicDBObject("$match", qb.get());
         DBObject unwind = new BasicDBObject("$unwind", "$" + DBObjectToVariantConverter.FILES_FIELD);
         DBObject match2 = new BasicDBObject("$match",
-                new BasicDBObject(DBObjectToVariantConverter.FILES_FIELD + "." + DBObjectToArchivedVariantFileConverter.STUDYID_FIELD,
+                new BasicDBObject(DBObjectToVariantConverter.FILES_FIELD + "." + DBObjectToVariantSourceEntryConverter.STUDYID_FIELD,
                         new BasicDBObject("$in", studyId)));
 
         return coll.aggregate("$variantsRegionStudies", Arrays.asList(match, unwind, match2), options);
@@ -382,7 +382,7 @@ public class ExomeServerVariantMongoDBAdaptor implements VariantDBAdaptor {
     }
 
     private QueryBuilder getStudyFilter(List<String> studies, QueryBuilder builder) {
-        return builder.and(DBObjectToVariantConverter.FILES_FIELD + "." + DBObjectToArchivedVariantFileConverter.STUDYID_FIELD).in(studies);
+        return builder.and(DBObjectToVariantConverter.FILES_FIELD + "." + DBObjectToVariantSourceEntryConverter.STUDYID_FIELD).in(studies);
     }
 
     private QueryBuilder getFileFilter(List<String> files, QueryBuilder builder) {
@@ -390,17 +390,17 @@ public class ExomeServerVariantMongoDBAdaptor implements VariantDBAdaptor {
     }
 
     private QueryBuilder getMafFilter(float maf, ComparisonOperator op, QueryBuilder builder) {
-        return op.apply(DBObjectToVariantConverter.FILES_FIELD + "." + DBObjectToArchivedVariantFileConverter.STATS_FIELD
+        return op.apply(DBObjectToVariantConverter.FILES_FIELD + "." + DBObjectToVariantSourceEntryConverter.STATS_FIELD
                 + "." + DBObjectToVariantStatsConverter.MAF_FIELD, maf, builder);
     }
 
     private QueryBuilder getMissingAllelesFilter(int missingAlleles, ComparisonOperator op, QueryBuilder builder) {
-        return op.apply(DBObjectToVariantConverter.FILES_FIELD + "." + DBObjectToArchivedVariantFileConverter.STATS_FIELD
+        return op.apply(DBObjectToVariantConverter.FILES_FIELD + "." + DBObjectToVariantSourceEntryConverter.STATS_FIELD
                 + "." + DBObjectToVariantStatsConverter.MISSALLELE_FIELD, missingAlleles, builder);
     }
 
     private QueryBuilder getMissingGenotypesFilter(int missingGenotypes, ComparisonOperator op, QueryBuilder builder) {
-        return op.apply(DBObjectToVariantConverter.FILES_FIELD + "." + DBObjectToArchivedVariantFileConverter.STATS_FIELD
+        return op.apply(DBObjectToVariantConverter.FILES_FIELD + "." + DBObjectToVariantSourceEntryConverter.STATS_FIELD
                 + "." + DBObjectToVariantStatsConverter.MISSGENOTYPE_FIELD, missingGenotypes, builder);
     }
 

@@ -3,13 +3,13 @@ package org.babelomics.exomeserver.server;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import org.babelomics.exomeserver.lib.json.ExomeServerArchivedVariantFileJsonMixin;
+import org.babelomics.exomeserver.lib.json.ExomeServerVariantSourceEntryJsonMixin;
 import org.babelomics.exomeserver.lib.json.ExomeServerVariantStatsJsonMixin;
 import org.babelomics.exomeserver.lib.json.VariantAnnotationJsonMixin;
 import org.babelomics.exomeserver.lib.json.VariantJsonMixin;
 import org.opencb.biodata.models.feature.Genotype;
-import org.opencb.biodata.models.variant.ArchivedVariantFile;
 import org.opencb.biodata.models.variant.VariantSource;
+import org.opencb.biodata.models.variant.VariantSourceEntry;
 import org.opencb.biodata.models.variant.effect.VariantAnnotation;
 import org.opencb.biodata.models.variant.stats.VariantStats;
 import org.opencb.datastore.core.ObjectMap;
@@ -90,7 +90,7 @@ public class ExomeServerWSServer {
         }
 
         jsonObjectMapper = new ObjectMapper();
-        jsonObjectMapper.addMixInAnnotations(ArchivedVariantFile.class, ExomeServerArchivedVariantFileJsonMixin.class);
+        jsonObjectMapper.addMixInAnnotations(VariantSourceEntry.class, ExomeServerVariantSourceEntryJsonMixin.class);
         jsonObjectMapper.addMixInAnnotations(Genotype.class, GenotypeJsonMixin.class);
         jsonObjectMapper.addMixInAnnotations(VariantStats.class, ExomeServerVariantStatsJsonMixin.class);
         jsonObjectMapper.addMixInAnnotations(VariantSource.class, VariantSourceJsonMixin.class);

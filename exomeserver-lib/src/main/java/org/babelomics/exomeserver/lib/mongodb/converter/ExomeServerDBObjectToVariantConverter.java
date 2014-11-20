@@ -3,8 +3,8 @@ package org.babelomics.exomeserver.lib.mongodb.converter;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import org.opencb.biodata.models.variant.ArchivedVariantFile;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.VariantSourceEntry;
 import org.opencb.commons.utils.CryptoUtils;
 import org.opencb.datastore.core.ComplexTypeConverter;
 
@@ -38,7 +38,7 @@ public class ExomeServerDBObjectToVariantConverter implements ComplexTypeConvert
     public final static String GENE_FIELD = "gene";
 
 
-    private ExomeServerDBObjectToArchivedVariantFileConverter archivedVariantFileConverter;
+    private ExomeServerDBObjectToVariantSourceEntryConverter archivedVariantFileConverter;
 
     /**
      * Create a converter between Variant and DBObject entities when there is
@@ -55,7 +55,7 @@ public class ExomeServerDBObjectToVariantConverter implements ComplexTypeConvert
      *
      * @param archivedVariantFileConverter The object used to convert the files
      */
-    public ExomeServerDBObjectToVariantConverter(ExomeServerDBObjectToArchivedVariantFileConverter archivedVariantFileConverter) {
+    public ExomeServerDBObjectToVariantConverter(ExomeServerDBObjectToVariantSourceEntryConverter archivedVariantFileConverter) {
         this.archivedVariantFileConverter = archivedVariantFileConverter;
     }
 
@@ -79,7 +79,7 @@ public class ExomeServerDBObjectToVariantConverter implements ComplexTypeConvert
             if (mongoFiles != null) {
                 for (Object o : mongoFiles) {
                     DBObject dbo = (DBObject) o;
-                    variant.addFile(archivedVariantFileConverter.convertToDataModelType(dbo));
+                    variant.addSourceEntry(archivedVariantFileConverter.convertToDataModelType(dbo));
                 }
             }
         }
@@ -123,7 +123,7 @@ public class ExomeServerDBObjectToVariantConverter implements ComplexTypeConvert
         // Files
         if (archivedVariantFileConverter != null) {
             BasicDBList mongoFiles = new BasicDBList();
-            for (ArchivedVariantFile archiveFile : object.getFiles().values()) {
+            for (VariantSourceEntry archiveFile : object.getSourceEntries().values()) {
                 mongoFiles.add(archivedVariantFileConverter.convertToStorageType(archiveFile));
             }
             mongoVariant.append(FILES_FIELD, mongoFiles);

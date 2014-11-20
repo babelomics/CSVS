@@ -2,12 +2,10 @@ package org.babelomics.exomeserver.lib.mongodb.converter;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import org.opencb.biodata.models.variant.ArchivedVariantFile;
+import org.opencb.biodata.models.variant.VariantSourceEntry;
 import org.opencb.datastore.core.ComplexTypeConverter;
 import org.opencb.opencga.lib.auth.MongoCredentials;
-import org.opencb.opencga.storage.variant.mongodb.DBObjectToArchivedVariantFileConverter;
 import org.opencb.opencga.storage.variant.mongodb.DBObjectToSamplesConverter;
-import org.opencb.opencga.storage.variant.mongodb.DBObjectToVariantStatsConverter;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,7 +16,7 @@ import java.util.logging.Logger;
 /**
  * @author Alejandro Alemán Ramos <aaleman@cipf.es>
  */
-public class ExomeServerDBObjectToArchivedVariantFileConverter implements ComplexTypeConverter<ArchivedVariantFile, DBObject> {
+public class ExomeServerDBObjectToVariantSourceEntryConverter implements ComplexTypeConverter<VariantSourceEntry, DBObject> {
 
     public final static String FILEID_FIELD = "fid";
     public final static String STUDYID_FIELD = "sid";
@@ -36,10 +34,10 @@ public class ExomeServerDBObjectToArchivedVariantFileConverter implements Comple
     private ExomeServerDBObjectToVariantStatsConverter statsConverter;
 
     /**
-     * Create a converter between ArchivedVariantFile and DBObject entities when
+     * Create a converter between VariantSourceEntry and DBObject entities when
      * there is no need to provide a list of samples nor statistics.
      */
-    public ExomeServerDBObjectToArchivedVariantFileConverter() {
+    public ExomeServerDBObjectToVariantSourceEntryConverter() {
         this.includeSamples = false;
         this.samples = null;
         this.samplesConverter = null;
@@ -47,7 +45,7 @@ public class ExomeServerDBObjectToArchivedVariantFileConverter implements Comple
     }
 
     /**
-     * Create a converter from ArchivedVariantFile to DBObject entities. A
+     * Create a converter from VariantSourceEntry to DBObject entities. A
      * list of samples and a statistics converter may be provided in case those
      * should be processed during the conversion.
      *
@@ -55,15 +53,15 @@ public class ExomeServerDBObjectToArchivedVariantFileConverter implements Comple
      * @param samples         The list of samples, if any
      * @param statsConverter  The object used to convert the file statistics
      */
-    public ExomeServerDBObjectToArchivedVariantFileConverter(boolean compressSamples, List<String> samples,
-                                                             ExomeServerDBObjectToVariantStatsConverter statsConverter) {
+    public ExomeServerDBObjectToVariantSourceEntryConverter(boolean compressSamples, List<String> samples,
+                                                            ExomeServerDBObjectToVariantStatsConverter statsConverter) {
         this.samples = samples;
         this.samplesConverter = new DBObjectToSamplesConverter(compressSamples);
         this.statsConverter = statsConverter;
     }
 
     /**
-     * Create a converter from DBObject to ArchivedVariantFile entities. A
+     * Create a converter from DBObject to VariantSourceEntry entities. A
      * list of samples and a statistics converter may be provided in case those
      * should be processed during the conversion.
      *
@@ -71,8 +69,8 @@ public class ExomeServerDBObjectToArchivedVariantFileConverter implements Comple
      * @param statsConverter The object used to convert the file statistics
      * @param samples        The list of samples, if any
      */
-    public ExomeServerDBObjectToArchivedVariantFileConverter(boolean includeSamples,
-                                                             ExomeServerDBObjectToVariantStatsConverter statsConverter, List<String> samples) {
+    public ExomeServerDBObjectToVariantSourceEntryConverter(boolean includeSamples,
+                                                            ExomeServerDBObjectToVariantStatsConverter statsConverter, List<String> samples) {
         this.includeSamples = includeSamples;
         this.samples = samples;
         this.samplesConverter = new DBObjectToSamplesConverter(samples);
@@ -80,7 +78,7 @@ public class ExomeServerDBObjectToArchivedVariantFileConverter implements Comple
     }
 
     /**
-     * Create a converter from DBObject to ArchivedVariantFile entities. A
+     * Create a converter from DBObject to VariantSourceEntry entities. A
      * statistics converter may be provided in case those should be processed
      * during the conversion.
      * <p/>
@@ -91,8 +89,8 @@ public class ExomeServerDBObjectToArchivedVariantFileConverter implements Comple
      * @param statsConverter The object used to convert the file statistics
      * @param credentials    Parameters for connecting to the database
      */
-    public ExomeServerDBObjectToArchivedVariantFileConverter(boolean includeSamples,
-                                                             ExomeServerDBObjectToVariantStatsConverter statsConverter, MongoCredentials credentials) {
+    public ExomeServerDBObjectToVariantSourceEntryConverter(boolean includeSamples,
+                                                            ExomeServerDBObjectToVariantStatsConverter statsConverter, MongoCredentials credentials) {
         this.includeSamples = includeSamples;
         this.samplesConverter = new DBObjectToSamplesConverter(credentials);
         this.statsConverter = statsConverter;
@@ -100,10 +98,10 @@ public class ExomeServerDBObjectToArchivedVariantFileConverter implements Comple
 
 
     @Override
-    public ArchivedVariantFile convertToDataModelType(DBObject object) {
+    public VariantSourceEntry convertToDataModelType(DBObject object) {
         String fileId = (String) object.get(FILEID_FIELD);
         String studyId = (String) object.get(STUDYID_FIELD);
-        ArchivedVariantFile file = new ArchivedVariantFile(fileId, studyId);
+        VariantSourceEntry file = new VariantSourceEntry(fileId, studyId);
 
         // Attributes
         if (object.containsField(ATTRIBUTES_FIELD)) {
@@ -114,7 +112,7 @@ public class ExomeServerDBObjectToArchivedVariantFileConverter implements Comple
                 try {
                     file.addAttribute("src", org.opencb.commons.utils.StringUtils.gunzip(o));
                 } catch (IOException ex) {
-                    Logger.getLogger(ExomeServerDBObjectToArchivedVariantFileConverter.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(ExomeServerDBObjectToVariantSourceEntryConverter.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
@@ -124,7 +122,7 @@ public class ExomeServerDBObjectToArchivedVariantFileConverter implements Comple
 
         // Samples
         if (includeSamples && object.containsField(SAMPLES_FIELD)) {
-            ArchivedVariantFile fileWithSamplesData = samplesConverter.convertToDataModelType(object);
+            VariantSourceEntry fileWithSamplesData = samplesConverter.convertToDataModelType(object);
 
             // Add the samples to the Java object, combining the data structures
             // with the samples' names and the genotypes
@@ -141,7 +139,7 @@ public class ExomeServerDBObjectToArchivedVariantFileConverter implements Comple
     }
 
     @Override
-    public DBObject convertToStorageType(ArchivedVariantFile object) {
+    public DBObject convertToStorageType(VariantSourceEntry object) {
         BasicDBObject mongoFile = new BasicDBObject(FILEID_FIELD, object.getFileId()).append(STUDYID_FIELD, object.getStudyId());
 
         // Attributes
@@ -153,7 +151,7 @@ public class ExomeServerDBObjectToArchivedVariantFileConverter implements Comple
                     try {
                         value = org.opencb.commons.utils.StringUtils.gzip(entry.getValue());
                     } catch (IOException ex) {
-                        Logger.getLogger(ExomeServerDBObjectToArchivedVariantFileConverter.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(ExomeServerDBObjectToVariantSourceEntryConverter.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
 

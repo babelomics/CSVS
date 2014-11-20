@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.babelomics.exomeserver.lib.json.*;
 import org.opencb.biodata.formats.variant.io.VariantWriter;
 import org.opencb.biodata.models.feature.Genotype;
-import org.opencb.biodata.models.variant.ArchivedVariantFile;
 import org.opencb.biodata.models.variant.VariantSource;
+import org.opencb.biodata.models.variant.VariantSourceEntry;
 import org.opencb.biodata.models.variant.effect.VariantAnnotation;
 import org.opencb.biodata.models.variant.stats.VariantStats;
 import org.opencb.opencga.storage.variant.json.GenotypeJsonMixin;
@@ -68,7 +68,7 @@ public class ExomeServerJsonWriter implements VariantWriter {
     public boolean pre() {
 
         jsonObjectMapper.addMixInAnnotations(VariantStats.class, ExomeServerVariantStatsJsonMixin.class);
-        jsonObjectMapper.addMixInAnnotations(ArchivedVariantFile.class, ExomeServerArchivedVariantFileJsonMixin.class);
+        jsonObjectMapper.addMixInAnnotations(VariantSourceEntry.class, ExomeServerVariantSourceEntryJsonMixin.class);
         jsonObjectMapper.addMixInAnnotations(Genotype.class, GenotypeJsonMixin.class);
         jsonObjectMapper.addMixInAnnotations(VariantSource.class, ExomeServerVariantSourceJsonMixin.class);
         jsonObjectMapper.addMixInAnnotations(VariantAnnotation.class, VariantAnnotationJsonMixin.class);

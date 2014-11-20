@@ -9,8 +9,8 @@ import org.babelomics.exomeserver.lib.mongodb.dbAdaptor.ExomeServerStudyMongoDBA
 import org.babelomics.exomeserver.lib.mongodb.dbAdaptor.ExomeServerVariantMongoDBAdaptor;
 import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.biodata.models.feature.Region;
-import org.opencb.biodata.models.variant.ArchivedVariantFile;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.VariantSourceEntry;
 import org.opencb.biodata.models.variant.stats.VariantStats;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResult;
@@ -167,10 +167,10 @@ public class VariantsWSServer extends ExomeServerWSServer {
             List<Variant> variantList = qr.getResult();
 
             for (Variant v : variantList) {
-                Map<String, ArchivedVariantFile> files = v.getFiles();
+                Map<String, VariantSourceEntry> files = v.getSourceEntries();
 
-                for (Iterator<Map.Entry<String, ArchivedVariantFile>> it = files.entrySet().iterator(); it.hasNext(); ) {
-                    Map.Entry<String, ArchivedVariantFile> entry = it.next();
+                for (Iterator<Map.Entry<String, VariantSourceEntry>> it = files.entrySet().iterator(); it.hasNext(); ) {
+                    Map.Entry<String, VariantSourceEntry> entry = it.next();
 
                     if (!ids.contains(entry.getKey())) {
                         it.remove();
@@ -212,7 +212,7 @@ public class VariantsWSServer extends ExomeServerWSServer {
             List<Variant> newVariantList = new ArrayList<>(variantList.size());
 
             for (Variant v : variantList) {
-                combineFiles(v.getFiles());
+                combineFiles(v.getSourceEntries());
             }
 
 
@@ -221,13 +221,13 @@ public class VariantsWSServer extends ExomeServerWSServer {
         }
     }
 
-    private void combineFiles(Map<String, ArchivedVariantFile> files) {
-        ArchivedVariantFile newAVF = new ArchivedVariantFile("MAF", "MAF");
+    private void combineFiles(Map<String, VariantSourceEntry> files) {
+        VariantSourceEntry newAVF = new VariantSourceEntry("MAF", "MAF");
         VariantStats stats = new VariantStats();
         newAVF.setStats(stats);
 
-        for (Map.Entry<String, ArchivedVariantFile> entry : files.entrySet()) {
-            ArchivedVariantFile avf = entry.getValue();
+        for (Map.Entry<String, VariantSourceEntry> entry : files.entrySet()) {
+            VariantSourceEntry avf = entry.getValue();
             for (Map.Entry<Genotype, Integer> o : avf.getStats().getGenotypesCount().entrySet()) {
                 stats.addGenotype(o.getKey(), o.getValue());
             }

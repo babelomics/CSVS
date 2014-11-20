@@ -52,8 +52,8 @@ public class ExomeServerVariantUpdateStatsTaskTest {
         list.add(newVariant);
         VariantStats.calculateStatsForVariantsList(list, null);
 
-        dbStats = dbVariant.getFile(source.getFileId(), source.getStudyId()).getStats();
-        newStats = newVariant.getFile(source.getFileId(), source.getStudyId()).getStats();
+        dbStats = dbVariant.getSourceEntry(source.getFileId(), source.getStudyId()).getStats();
+        newStats = newVariant.getSourceEntry(source.getFileId(), source.getStudyId()).getStats();
 
         System.out.println("DB MAF = " + dbStats.getMaf());
         System.out.println("DB MAF All = " + dbStats.getMafAllele());
@@ -97,8 +97,8 @@ public class ExomeServerVariantUpdateStatsTaskTest {
         list.add(newVariant);
         VariantStats.calculateStatsForVariantsList(list, null);
 
-        dbStats = dbVariant.getFile(source.getFileId(), source.getStudyId()).getStats();
-        newStats = newVariant.getFile(source.getFileId(), source.getStudyId()).getStats();
+        dbStats = dbVariant.getSourceEntry(source.getFileId(), source.getStudyId()).getStats();
+        newStats = newVariant.getSourceEntry(source.getFileId(), source.getStudyId()).getStats();
 
         System.out.println("DB MAF = " + dbStats.getMaf());
         System.out.println("DB MAF All = " + dbStats.getMafAllele());

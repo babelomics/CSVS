@@ -3,11 +3,11 @@ package org.babelomics.exomeserver.lib.mongodb.converter;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import org.opencb.biodata.models.variant.ArchivedVariantFile;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.VariantSourceEntry;
 import org.opencb.commons.utils.CryptoUtils;
 import org.opencb.datastore.core.ComplexTypeConverter;
-import org.opencb.opencga.storage.variant.mongodb.DBObjectToArchivedVariantFileConverter;
+import org.opencb.opencga.storage.variant.mongodb.DBObjectToVariantSourceEntryConverter;
 
 import java.util.Map;
 import java.util.Set;
@@ -39,7 +39,7 @@ public class ExomeServerDBObjectVariantConverter implements ComplexTypeConverter
     public final static String GENE_FIELD = "gene";
 
 
-    private DBObjectToArchivedVariantFileConverter archivedVariantFileConverter;
+    private DBObjectToVariantSourceEntryConverter archivedVariantFileConverter;
 
     /**
      * Create a converter between Variant and DBObject entities when there is
@@ -56,7 +56,7 @@ public class ExomeServerDBObjectVariantConverter implements ComplexTypeConverter
      *
      * @param archivedVariantFileConverter The object used to convert the files
      */
-    public ExomeServerDBObjectVariantConverter(DBObjectToArchivedVariantFileConverter archivedVariantFileConverter) {
+    public ExomeServerDBObjectVariantConverter(DBObjectToVariantSourceEntryConverter archivedVariantFileConverter) {
         this.archivedVariantFileConverter = archivedVariantFileConverter;
     }
 
@@ -80,7 +80,7 @@ public class ExomeServerDBObjectVariantConverter implements ComplexTypeConverter
             if (mongoFiles != null) {
                 for (Object o : mongoFiles) {
                     DBObject dbo = (DBObject) o;
-                    variant.addFile(archivedVariantFileConverter.convertToDataModelType(dbo));
+                    variant.addSourceEntry(archivedVariantFileConverter.convertToDataModelType(dbo));
                 }
             }
         }
@@ -124,8 +124,9 @@ public class ExomeServerDBObjectVariantConverter implements ComplexTypeConverter
         // Files
         if (archivedVariantFileConverter != null) {
             BasicDBList mongoFiles = new BasicDBList();
-            for (ArchivedVariantFile archiveFile : object.getFiles().values()) {
+            for (VariantSourceEntry archiveFile : object.getSourceEntries().values()) {
                 mongoFiles.add(archivedVariantFileConverter.convertToStorageType(archiveFile));
+
             }
             mongoVariant.append(FILES_FIELD, mongoFiles);
         }

@@ -50,11 +50,11 @@ public class ExomeServerVariantUpdateStatsTask extends Task<Variant> {
 
             for (Variant v : queryResult.getResult()) {
                 if (batchVariant.equals(v)) {
-                    VariantStats variantDBStats = v.getFile(source.getFileId(), source.getStudyId()).getStats();
-                    VariantStats variantNewStats = batchVariant.getFile(source.getFileId(), source.getStudyId()).getStats();
+                    VariantStats variantDBStats = v.getSourceEntry(source.getFileId(), source.getStudyId()).getStats();
+                    VariantStats variantNewStats = batchVariant.getSourceEntry(source.getFileId(), source.getStudyId()).getStats();
                     updateStats(variantNewStats, variantDBStats);
 
-                    v.getFile(source.getFileId(), source.getStudyId()).setStats(variantNewStats);
+                    v.getSourceEntry(source.getFileId(), source.getStudyId()).setStats(variantNewStats);
                 }
             }
         }

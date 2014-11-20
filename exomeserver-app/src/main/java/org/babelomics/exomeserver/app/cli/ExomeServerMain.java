@@ -49,9 +49,9 @@ public class ExomeServerMain {
                 case "load-variants":
                     command = parser.getLoadCommand();
                     break;
-                case "add-variants":
-                    command = parser.getAddCommand();
-                    break;
+//                case "add-variants":
+//                    command = parser.getAddCommand();
+//                    break;
                 default:
                     System.out.println("Command not implemented!!");
                     System.exit(1);
@@ -80,6 +80,7 @@ public class ExomeServerMain {
             source.addMetadata("paper", paper);
             source.addMetadata("desc", description);
             source.addMetadata("sta", Boolean.toString(c.staticStudy));
+            source.addMetadata("cov", String.valueOf(c.coverage));
 
             transformVariants(source, file, outdir);
         } else if (command instanceof OptionsParser.CommandLoadVariants) {
