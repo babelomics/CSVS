@@ -7,6 +7,7 @@
 <link rel=" import" href="../lib/jsorolla/src/lib/components/opencga/jso-header.html">
 <link rel="import" href="es-filter-form-element.html">
 <link rel="import" href="es-data-grid-element.html">
+<link rel="import" href="es-studies-browser-element.html">
 
 <polymer-element name="exome-server-element" attributes="urlPrefix formURL">
     <template>
@@ -35,26 +36,58 @@
                 height: calc(100vh - 60px);
                 width: 100%;
             }
+            [hide=true] {
+                display: none !important;
+            }
+
+            [hide=false] {
+                display: initial !important;
+            }
 
         </style>
-        <jso-header appTitle="Exome Server" description="beta desc." allowLogin="false"></jso-header>
+        <jso-header appTitle="Exome Server" description="beta desc." allowLogin="false"
+                    options="{{ options }}"
+                    selectedOption="{{ selectedOption }}"></jso-header>
 
         <div id="es-container" vertical layout>
-            <button on-click="{{ toggle}}" style="width: 70px;">Form</button>
-            <core-collapse id="collapse" opened>
+            <div hide="{{ selectedOption != 'search' }}">
+                <button on-click="{{ toggleForm }}" style="width: 70px;">Form</button>
+                <core-collapse id="collapse" opened>
                 <es-filter-form-element studies="{{ studies }}" formURL="{{ formURL }}"
-                                        style="height: 350px;"></es-filter-form-element>
-            </core-collapse>
-            <es-data-grid-element formURL="{{ formURL }} " flex></es-data-grid-element>
+                style="height: 350px;"></es-filter-form-element>
+                </core-collapse>
+                <es-data-grid-element formURL="{{ formURL }} " flex></es-data-grid-element>
+            </div>
+
+            <div hide="{{ selectedOption != 'studies' }}">
+                <es-studies-browser-element></es-studies-browser-element>
+            </div>
         </div>
 
     </template>
     <script>
         Polymer({
+            selectedOption: 'search',
             created: function () {
                 this.studies = [];
+                this.options = [];
             }, ready: function () {
+                this.selectedOption = 'search';
+                this.options = this.getOptions();
                 this.getStudies();
+            },
+            getOptions: function () {
+                return [
+                    {
+                        option: 'search',
+                        text: 'Search'
+                    },
+                    {
+                        option: 'studies',
+                        text: 'Studies Info.'
+
+                    }
+                ]
             },
             getStudies: function (event, response) {
 
@@ -79,7 +112,7 @@
                     }
                 });
             },
-            toggle: function () {
+            toggleForm: function () {
                 this.$.collapse.toggle();
             }
         });

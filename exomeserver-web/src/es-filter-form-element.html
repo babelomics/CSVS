@@ -2,6 +2,9 @@
 <link rel="import" href="../bower_components/polymer-fontawesome/polymer-fontawesome.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/core-list/core-list.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/core-label/core-label.html">
+
 
 <polymer-element name="es-filter-form-element" attributes="studies formURL">
     <template>
@@ -86,12 +89,25 @@
                 padding: 5px;
             }
 
+            paper-checkbox {
+                padding: 10px 10px 10px 10px;
+            }
+
+            paper-checkbox.blue::shadow #ink[checked] {
+                color: #4285f4;
+            }
+
+            paper-checkbox.blue::shadow #checkbox.checked {
+                border-color: #4285f4;
+            }
+
         </style>
         <!--<div id="component_header" on-click="{{ toggle }}">-->
         <!--Search Form-->
         <!--</div>-->
         <form id="filter_form" vertical layout>
             <div horizontal layout>
+
                 <div class="position_filter">
                     <div id="headerTitle">Position</div>
 
@@ -119,27 +135,35 @@
 
                             <core-list data="{{ studyNames }}" height="20px">
                                 <template>
-                                    <div class="row">
-                                        <input type="checkbox" name="study" value="{{ model.name }}"
-                                               on-click="{{ studyClick }}"/>{{
-                                        model.name }}
-                                    </div>
+
+                                    <core-label center horizontal layout>
+                                        <paper-checkbox class="blue"
+                                                        for
+                                                        on-click="{{ studyClick }}"
+                                                        value="{{ model.name }}"></paper-checkbox>
+                                        <div flex>{{ model.name }}</div>
+                                    </core-label>
+
                                 </template>
                             </core-list>
                             <div class="filter_box">
                                 <input type="text" on-keyup="{{ studyKeyUp }}" placeholder="Filter:"/>
                             </div>
 
-
                         </div>
                         <div class="sdp_block" id="diseases_div">
                             <core-list data="{{ diseases }}" height="20px">
                                 <template>
-                                    <div class="row">
-                                        <input type="checkbox" name="disease" value="{{ model.name }}"
-                                               on-click="{{ diseaseClick }}"/>{{
-                                        model.name }}
-                                    </div>
+
+                                    <core-label center horizontal layout>
+                                        <paper-checkbox class="blue"
+                                                        for
+                                                        on-click="{{ diseaseClick }}"
+                                                        value="{{ model.name }}"></paper-checkbox>
+                                        <div flex>{{ model.name }}</div>
+                                    </core-label>
+
+
                                 </template>
                             </core-list>
                             <div class="filter_box">
@@ -149,11 +173,13 @@
                         <div class="sdp_block" id="phenotypes_div">
                             <core-list data="{{ phenotype }}" height="20px">
                                 <template>
-                                    <div class="row">
-                                        <input type="checkbox" name="phenotype" value="{{ model.name }}"
-                                               on-click="{{ phenotypeClick }}"/>{{
-                                        model.name }}
-                                    </div>
+                                    <core-label center horizontal layout>
+                                        <paper-checkbox class="blue"
+                                                        for
+                                                        on-click="{{ phenotypeClick }}"
+                                                        value="{{ model.name }}"></paper-checkbox>
+                                        <div flex>{{ model.name }}</div>
+                                    </core-label>
                                 </template>
                             </core-list>
                             <div class="filter_box">
@@ -294,17 +320,17 @@
             },
             studyClick: function (event, detail, sender) {
 
-                this.formStudies[sender.value] = sender.checked;
+                this.formStudies[sender.getAttribute("value")] = sender.checked;
 
             },
             diseaseClick: function (event, detail, sender) {
 
-                this.formDiseases[sender.value] = sender.checked;
+                this.formDiseases[sender.getAttribute("value")] = sender.checked;
 
             },
             phenotypeClick: function (event, detail, sender) {
 
-                this.formPhenotypes[sender.value] = sender.checked;
+                this.formPhenotypes[sender.getAttribute("value")] = sender.checked;
 
             },
             studyKeyUp: function (event, detail, sender) {
