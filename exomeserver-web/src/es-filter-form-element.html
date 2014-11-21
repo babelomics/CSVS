@@ -206,7 +206,7 @@
     </template>
     <script>
         Polymer({
-            regionValue: '1:1-100000',
+            regionValue: '1:63671-63671',
             created: function () {
 
                 this.studies = [];
@@ -224,7 +224,6 @@
             ready: function () {
             },
             submitForm: function () {
-
 
                 var me = this;
                 var auxStudies = [];
@@ -320,17 +319,17 @@
             },
             studyClick: function (event, detail, sender) {
 
-                this.formStudies[sender.getAttribute("value")] = sender.checked;
+                this.formStudies[sender.getAttribute("value")] = !sender.checked;
 
             },
             diseaseClick: function (event, detail, sender) {
 
-                this.formDiseases[sender.getAttribute("value")] = sender.checked;
+                this.formDiseases[sender.getAttribute("value")] = !sender.checked;
 
             },
             phenotypeClick: function (event, detail, sender) {
 
-                this.formPhenotypes[sender.getAttribute("value")] = sender.checked;
+                this.formPhenotypes[sender.getAttribute("value")] = !sender.checked;
 
             },
             studyKeyUp: function (event, detail, sender) {

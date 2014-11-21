@@ -58,25 +58,53 @@
                     {
                         name: 'files_maf_0_0', title: '0/0',
                         formula: function (row) {
-                            return row.files.MAF.stats.genotypesCount["0/0"];
+
+                            var aux = row.sourceEntries.MAF.stats.genotypesCount["0/0"];
+                            if ("0|0" in row.sourceEntries.MAF.stats.genotypesCount) {
+                                if (aux != null) {
+                                    aux += row.sourceEntries.MAF.stats.genotypesCount["0|0"];
+                                } else {
+                                    aux = row.sourceEntries.MAF.stats.genotypesCount["0|0"];
+
+                                }
+                            }
+                            return aux;
                         }
                     },
                     {
                         name: 'files_maf_0_1', title: '0/1',
                         formula: function (row) {
-                            return row.files.MAF.stats.genotypesCount["0/1"];
+                            var aux = row.sourceEntries.MAF.stats.genotypesCount["0/1"];
+                            if ("0|1" in row.sourceEntries.MAF.stats.genotypesCount) {
+                                if (aux != null) {
+                                    aux += row.sourceEntries.MAF.stats.genotypesCount["0|1"];
+                                } else {
+                                    aux = row.sourceEntries.MAF.stats.genotypesCount["0|1"];
+
+                                }
+                            }
+                            return aux;
                         }
                     },
                     {
                         name: 'files_maf_1_1', title: '1/1',
                         formula: function (row) {
-                            return row.files.MAF.stats.genotypesCount["1/1"];
+                            var aux = row.sourceEntries.MAF.stats.genotypesCount["1/1"];
+                            if ("1|1" in row.sourceEntries.MAF.stats.genotypesCount) {
+                                if (aux != null) {
+                                    aux += row.sourceEntries.MAF.stats.genotypesCount["1|1"];
+                                } else {
+                                    aux = row.sourceEntries.MAF.stats.genotypesCount["1|1"];
+
+                                }
+                            }
+                            return aux;
                         }
                     },
                     {
                         name: 'maf', title: 'MAF',
                         formula: function (row) {
-                            var genotypes = row.files.MAF.stats.genotypesCount;
+                            var genotypes = row.sourceEntries.MAF.stats.genotypesCount;
 
                             var count = {};
                             var total = 0;
@@ -110,15 +138,11 @@
                             return maf;
                         }
                     },
-
-
                     {name: 'chromosome', title: "hola"}
                 ]
                 ;
-
             },
             ready: function () {
-
                 var me = this;
             }
             ,
