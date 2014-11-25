@@ -61,10 +61,6 @@
 
             .sdp_block {
                 width: 300px;
-                height: 200px;
-                border-style: solid;
-                border-width: 1px;
-                margin-right: 10px;
             }
 
             .row {
@@ -101,14 +97,19 @@
                 border-color: #4285f4;
             }
 
+            .form_block {
+                width: 300px;
+            }
+
+            .selector_list {
+                height: 200px;
+            }
+
         </style>
-        <!--<div id="component_header" on-click="{{ toggle }}">-->
-        <!--Search Form-->
-        <!--</div>-->
         <form id="filter_form" vertical layout>
             <div horizontal layout>
-
-                <div class="position_filter">
+                <!--<div class="position_filter">-->
+                <div class="form_block">
                     <div id="headerTitle">Position</div>
 
                     <div class="input_container" vertical layout>
@@ -128,77 +129,82 @@
                         <input id="gene" name="gene" type="text"/>
                     </div>
                 </div>
-                <div flex>
+                <div class="form_block" vertical layout>
                     <div id="headerTitle">Studies</div>
-                    <div horizontal layout>
-                        <div class="sdp_block" id="studies_div">
+                    <div class="filter_box">
+                        <input type="text" on-keyup="{{ studyKeyUp }}" placeholder="Filter:"/>
+                    </div>
+                    <div id="studies_div">
+                        <core-list data="{{ studyNames }}" height="20px" class="selector_list">
+                            <template>
 
-                            <core-list data="{{ studyNames }}" height="20px">
-                                <template>
+                                <core-label center horizontal layout>
+                                    <paper-checkbox class="blue"
+                                                    for
+                                                    on-click="{{ studyClick }}"
+                                                    value="{{ model.name }}"></paper-checkbox>
+                                    <div flex>{{ model.name }}</div>
+                                </core-label>
 
-                                    <core-label center horizontal layout>
-                                        <paper-checkbox class="blue"
-                                                        for
-                                                        on-click="{{ studyClick }}"
-                                                        value="{{ model.name }}"></paper-checkbox>
-                                        <div flex>{{ model.name }}</div>
-                                    </core-label>
-
-                                </template>
-                            </core-list>
-                            <div class="filter_box">
-                                <input type="text" on-keyup="{{ studyKeyUp }}" placeholder="Filter:"/>
-                            </div>
-
-                        </div>
-                        <div class="sdp_block" id="diseases_div">
-                            <core-list data="{{ diseases }}" height="20px">
-                                <template>
-
-                                    <core-label center horizontal layout>
-                                        <paper-checkbox class="blue"
-                                                        for
-                                                        on-click="{{ diseaseClick }}"
-                                                        value="{{ model.name }}"></paper-checkbox>
-                                        <div flex>{{ model.name }}</div>
-                                    </core-label>
-
-
-                                </template>
-                            </core-list>
-                            <div class="filter_box">
-                                <input type="text" on-keyup="{{ diseaseKeyUp }}" placeholder="Filter:"/>
-                            </div>
-                        </div>
-                        <div class="sdp_block" id="phenotypes_div">
-                            <core-list data="{{ phenotype }}" height="20px">
-                                <template>
-                                    <core-label center horizontal layout>
-                                        <paper-checkbox class="blue"
-                                                        for
-                                                        on-click="{{ phenotypeClick }}"
-                                                        value="{{ model.name }}"></paper-checkbox>
-                                        <div flex>{{ model.name }}</div>
-                                    </core-label>
-                                </template>
-                            </core-list>
-                            <div class="filter_box">
-                                <input type="text" on-keyup="{{ phenotypeKeyUp }}" placeholder="Filter:"/>
-                            </div>
-                        </div>
-                        <div class="sdp_block" id="log_div">
-                            <core-list data="{{ log }}" height="20px">
-                                <template>
-                                    <div class="row">{{ model.log }}</div>
-                                </template>
-                            </core-list>
-                        </div>
+                            </template>
+                        </core-list>
 
                     </div>
                 </div>
+                <div class="form_block">
+                    <div id="headerTitle">Diseases</div>
+                    <div class="filter_box">
+                        <input type="text" on-keyup="{{ diseaseKeyUp }}" placeholder="Filter:"/>
+                    </div>
+                    <div id="diseases_div">
+                        <core-list data="{{ diseases }}" height="20px">
+                            <template>
+
+                                <core-label center horizontal layout>
+                                    <paper-checkbox class="blue"
+                                                    for
+                                                    on-click="{{ diseaseClick }}"
+                                                    value="{{ model.name }}"></paper-checkbox>
+                                    <div flex>{{ model.name }}</div>
+                                </core-label>
+
+
+                            </template>
+                        </core-list>
+                    </div>
+                </div>
+                <div class="form_block">
+                    <div id="headerTitle">Phenotypes</div>
+                    <div class="filter_box">
+                        <input type="text" on-keyup="{{ phenotypeKeyUp }}" placeholder="Filter:"/>
+                    </div>
+                    <div class="sdp_block" id="phenotypes_div">
+                        <core-list data="{{ phenotype }}" height="20px">
+                            <template>
+                                <core-label center horizontal layout>
+                                    <paper-checkbox class="blue"
+                                                    for
+                                                    on-click="{{ phenotypeClick }}"
+                                                    value="{{ model.name }}"></paper-checkbox>
+                                    <div flex>{{ model.name }}</div>
+                                </core-label>
+                            </template>
+                        </core-list>
+                    </div>
+                </div>
+                <!--<div class="sdp_block" id="log_div">-->
+                <!--<core-list data="{{ log }}" height="20px">-->
+                <!--<template>-->
+                <!--<div class="row">{{ model.log }}</div>-->
+                <!--</template>-->
+                <!--</core-list>-->
+                <!--</div>-->
 
             </div>
-            <div id="buttons_container" horizontal layout>
+            </div>
+
+            </div>
+            <div id="buttons_container" horizontal layout end-justified>
                 <paper-button raised>Clear</paper-button>
                 <paper-button raised on-click="{{ submitForm }}">Submit</paper-button>
             </div>
@@ -222,6 +228,7 @@
 
             },
             ready: function () {
+            console.log(this.studies);
             },
             submitForm: function () {
 

@@ -1,7 +1,10 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymer-fontawesome/polymer-fontawesome.html">
+<link rel="import" href="../bower_components/core-list/core-list.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
 
-<polymer-element name="es-studies-browser-element">
+
+<polymer-element name="es-studies-browser-element" attributes="studies">
     <template>
         <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
 
@@ -13,13 +16,21 @@
 
                 background-color: #FFFFFF;
 
-                height: 100px;
+                /*max-width: 1000px;*/
+                height: 1000px;
             }
+
+            .selector_list {
+                height: 200px;
+            }
+
+            .buttons_container {
+                margin-bottom: 10px;
+            }
+
         </style>
 
-        <div>
-            hola
-        </div>
+        <div>hola</div>
 
     </template>
     <script>
@@ -27,6 +38,7 @@
             created: function () {
             },
             ready: function () {
+
             }
         })
         ;

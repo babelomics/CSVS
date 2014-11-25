@@ -8,6 +8,7 @@
 <link rel="import" href="es-filter-form-element.html">
 <link rel="import" href="es-data-grid-element.html">
 <link rel="import" href="es-studies-browser-element.html">
+<link rel="import" href="es-stats-element.html">
 
 <polymer-element name="exome-server-element" attributes="urlPrefix formURL">
     <template>
@@ -36,12 +37,18 @@
                 height: calc(100vh - 60px);
                 width: 100%;
             }
+
             [hide=true] {
                 display: none !important;
             }
 
             [hide=false] {
-                display: initial !important;
+                display: initial !important
+            }
+
+            es-filter-form-element {
+                height: 350px;
+                width: 1300px;
             }
 
         </style>
@@ -51,23 +58,26 @@
 
         <div id="es-container" vertical layout>
             <div hide="{{ selectedOption != 'search' }}">
-                <button on-click="{{ toggleForm }}" style="width: 70px;">Form</button>
-                <core-collapse id="collapse" opened>
-                <es-filter-form-element studies="{{ studies }}" formURL="{{ formURL }}"
-                style="height: 350px;"></es-filter-form-element>
+                <!--<button on-click="{{ toggleForm }}" style="width: 70px;">Form</button>-->
+                <core-collapse id="collapse" opened horizontal layout center-justified>
+                    <es-filter-form-element studies="{{ studies }}" formURL="{{ formURL }}"></es-filter-form-element>
                 </core-collapse>
-                <es-data-grid-element formURL="{{ formURL }} " flex></es-data-grid-element>
+                <div flex horizontal layout center-justified>
+                    <es-data-grid-element formURL="{{ formURL }} " flex></es-data-grid-element>
+                </div>
             </div>
 
             <div hide="{{ selectedOption != 'studies' }}">
-                <es-studies-browser-element></es-studies-browser-element>
+                <es-studies-browser-element studies="{{ studies }}"></es-studies-browser-element>
+            </div>
+            <div hide="{{ selectedOption != 'stats' }}">
+                <es-stats-element studies="{{ studies }}"></es-stats-element>
             </div>
         </div>
 
     </template>
     <script>
         Polymer({
-            selectedOption: 'search',
             created: function () {
                 this.studies = [];
                 this.options = [];
@@ -81,6 +91,11 @@
                     {
                         option: 'search',
                         text: 'Search'
+                    },
+                    {
+                        option: 'stats',
+                        text: 'Stats'
+
                     },
                     {
                         option: 'studies',
