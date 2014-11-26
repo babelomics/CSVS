@@ -79,7 +79,9 @@
                         plotBackgroundColor: null,
                         plotBorderWidth: 1,//null,
                         plotShadow: false,
-                        renderTo: container
+                        renderTo: container,
+                        borderRadius: 10
+
                     },
                     title: {
                         text: text
@@ -93,9 +95,7 @@
                         verticalAlign: 'top',
                         x: 10,
                         y: 40,
-                        floating: true,
-//                        backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF',
-//                        borderWidth: 1
+                        floating: true
                     },
                     plotOptions: {
                         pie: {
@@ -128,7 +128,8 @@
                         plotBorderWidth: 1,//null,
                         plotShadow: false,
                         renderTo: container,
-                        type: 'column'
+                        type: 'column',
+                        borderRadius: 10
                     },
                     title: {
                         text: text
@@ -225,6 +226,10 @@
                     })
                 });
 
+                this._createCharts(variants, "Variants per Phenotype", samples, "Samples per Phenotype", categories, categoriesData);
+
+            },
+            _createCharts: function (variants, variantsText, samples, samplesText, categories, categoriesData) {
 
                 var stats = document.createElement("div");
                 var global = document.createElement("div");
@@ -251,8 +256,8 @@
                 globalChart.style.width = "1000px";
 
 
-                this._createPieChart(vppDiv, "Variants per Phenotype", variants);
-                this._createPieChart(sppDiv, "Samples per Phenotype", samples);
+                this._createPieChart(vppDiv, variantsText, variants);
+                this._createPieChart(sppDiv, samplesText, samples);
                 this._createBarColumnChart(globalChart, "Global Stats", categories, categoriesData);
 
 
@@ -311,39 +316,7 @@
                 });
 
 
-                var stats = document.createElement("div");
-                var global = document.createElement("div");
-
-                stats.setAttribute("horizontal", "");
-                stats.setAttribute("layout", "");
-                stats.setAttribute("center-justified", "");
-
-                global.setAttribute("horizontal", "");
-                global.setAttribute("layout", "");
-                global.setAttribute("center-justified", "");
-
-                var vppDiv = document.createElement("div");
-                var sppDiv = document.createElement("div");
-                var globalChart = document.createElement("div");
-                globalChart.style.width = "1000px";
-
-
-//
-
-                this._createPieChart(vppDiv, "Variants per Disease", variants);
-                this._createPieChart(sppDiv, "Samples per Disease", samples);
-                this._createBarColumnChart(globalChart, "Global Stats", categories, categoriesData);
-
-
-                stats.appendChild(vppDiv);
-                stats.appendChild(sppDiv);
-                global.appendChild(globalChart);
-
-
-                this.$.chartContainer.appendChild(stats);
-                this.$.chartContainer.appendChild(global);
-
-
+                this._createCharts(variants, "Variants per Disease", samples, "Samples per Disease", categories, categoriesData);
             },
             statsPerStudy: function () {
                 this._clearChartContainer();
@@ -392,43 +365,8 @@
                 });
 
 
-                var stats = document.createElement("div");
-                var global = document.createElement("div");
-
-                stats.setAttribute("horizontal", "");
-                stats.setAttribute("layout", "");
-                stats.setAttribute("center-justified", "");
-
-                global.setAttribute("horizontal", "");
-                global.setAttribute("layout", "");
-                global.setAttribute("center-justified", "");
-
-                var vppDiv = document.createElement("div");
-                var sppDiv = document.createElement("div");
-                var globalChart = document.createElement("div");
-                globalChart.style.width = "1000px";
-
-
-//
-
-                this._createPieChart(vppDiv, "Variants per Study", variants);
-                this._createPieChart(sppDiv, "Samples per Study", samples);
-                this._createBarColumnChart(globalChart, "Global Stats", categories, categoriesData);
-
-
-                stats.appendChild(vppDiv);
-                stats.appendChild(sppDiv);
-                global.appendChild(globalChart);
-
-
-                this.$.chartContainer.appendChild(stats);
-                this.$.chartContainer.appendChild(global);
-
-
+                this._createCharts(variants, "Variants per Study", samples, "Samples per Study", categories, categoriesData);
             }
-
-
-        })
-        ;
+        });
     </script>
 </polymer-element>

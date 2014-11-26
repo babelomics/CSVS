@@ -13,7 +13,6 @@
                 box-sizing: border-box;
                 position: relative;
             }
-
             .studies {
                 width: 100%;
                 height: 100%;
@@ -122,7 +121,7 @@
                 this.chartWidth = 200;
             },
             ready: function () {
-                this._createBarColumnChart();
+                this._createBarColumnChart(this.study.sname);
 
             },
             handleExpand: function () {
@@ -166,7 +165,7 @@
 
                 }
             },
-            _createBarColumnChart: function () {
+            _createBarColumnChart: function (text) {
 
                 var data = [
                     this.study.st.nVar,
@@ -188,7 +187,7 @@
                         width: this.chartWidth
                     },
                     title: {
-                        text: "Study Stats"
+                        text: text + " Stats"
                     },
                     credits: {
                         enabled: false
@@ -201,7 +200,7 @@
                     yAxis: {
                         min: 0,
                         title: {
-                            text: ''
+                            text: 'Count'
                         }
                     },
                     tooltip: {
@@ -211,6 +210,9 @@
                         footerFormat: '</table>',
                         shared: true,
                         useHTML: true
+                    },
+                    legend: {
+                        enabled: false
                     },
                     plotOptions: {
                         column: {

@@ -47,20 +47,26 @@
             }
 
             es-filter-form-element {
-                height: 350px;
-                width: 1300px;
+                height: 375px;
+                width: 1200px;
+                border-radius: 10px;
+                padding: 5px;
+            }
+
+            es-data-grid-element {
+                border-radius: 10px;
+                padding: 5px;
             }
 
         </style>
-        <jso-header appTitle="Exome Server" description="beta desc." allowLogin="false"
+        <jso-header appTitle="Exome Server" description="beta" allowLogin="false"
                     options="{{ options }}"
                     selectedOption="{{ selectedOption }}"></jso-header>
 
         <div id="es-container" vertical layout>
             <template if="{{ selectedOption == 'search' }}">
                 <core-collapse id="collapse" opened horizontal layout center-justified>
-                    <es-filter-form-element studies="{{ studies }}"
-                                            formURL="{{ formURL }}"></es-filter-form-element>
+                    <es-filter-form-element studies="{{ studies }}" formURL="{{ formURL }}"></es-filter-form-element>
                 </core-collapse>
                 <div flex horizontal layout center-justified>
                     <es-data-grid-element formURL="{{ formURL }} " flex></es-data-grid-element>
@@ -82,7 +88,7 @@
                 this.studies = [];
                 this.options = [];
             }, ready: function () {
-                this.selectedOption = 'stats';
+                this.selectedOption = 'search';
                 this.options = this.getOptions();
                 this.getStudies();
             },

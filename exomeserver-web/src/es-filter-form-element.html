@@ -33,11 +33,7 @@
                 right: auto;
                 top: 0px;
                 /*left: 5px;*/
-                padding: 4px 6px 3px 6px;
-            }
-
-            .input_container input {
-                min-height: 50px;
+                padding: 4px 6px 3px 20px;
             }
 
             .input_container label {
@@ -68,7 +64,7 @@
             }
 
             core-list {
-                height: 150px;
+                height: 230px;
             }
 
             .filter_box {
@@ -101,8 +97,17 @@
                 width: 300px;
             }
 
-            .selector_list {
-                height: 200px;
+            textarea {
+                resize: none;
+            }
+
+            .searchGene {
+                margin-top: 5px;
+            }
+
+            .filter_box {
+                margin-top: 10px;
+                margin-right: 5px;
             }
 
         </style>
@@ -111,29 +116,32 @@
                 <!--<div class="position_filter">-->
                 <div class="form_block">
                     <div id="headerTitle">Position</div>
-
-                    <div class="input_container" vertical layout>
-                        <label class="input_label">SNP id</label>
-                        <input id="snp" name="snp" type="text"/>
-                    </div>
-
                     <div class="input_container" vertical layout>
                         <label class="input_label">Chromosomal Location</label>
 
-                        <input id="region" name="region" type="text" placeholder="1:1-1000000,2:1-1000000"
-                               value="{{ regionValue }}"/>
+                        <textarea id="region" name="region" placeholder="1:1-1000000,2:1-1000000"
+                                  value="{{ regionValue }}" rows="3"></textarea>
                     </div>
-
+                    <div class="input_container" vertical layout>
+                        <label class="input_label">SNP id</label>
+                        <textarea id="snp" name="snp" type="text" rows="3"></textarea>
+                    </div>
                     <div class="input_container" vertical layout>
                         <label class="input_label">Gene / Transcript</label>
-                        <input id="gene" name="gene" type="text"/>
+                        <textarea id="gene" name="gene" type="text" rows="3"></textarea>
+
+                        <div horizontal layout class="searchGene" end-justified>
+                            <input id="searchField" list="searchDataList" placeholder="Search gene" type="text"
+                                   style="width: 90px;">
+                            <datalist id="searchDataList"></datalist>
+                            <div id="quickSearchButton" class="button" style="border-left: none;">
+                                <font-awesome icon="search"></font-awesome>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="form_block" vertical layout>
                     <div id="headerTitle">Studies</div>
-                    <div class="filter_box">
-                        <input type="text" on-keyup="{{ studyKeyUp }}" placeholder="Filter:"/>
-                    </div>
                     <div id="studies_div">
                         <core-list data="{{ studyNames }}" height="20px" class="selector_list">
                             <template>
@@ -148,14 +156,13 @@
 
                             </template>
                         </core-list>
-
+                    </div>
+                    <div class="filter_box" layout end-justified horizontal>
+                        <input type="text" on-keyup="{{ studyKeyUp }}" placeholder="Filter:"/>
                     </div>
                 </div>
                 <div class="form_block">
                     <div id="headerTitle">Diseases</div>
-                    <div class="filter_box">
-                        <input type="text" on-keyup="{{ diseaseKeyUp }}" placeholder="Filter:"/>
-                    </div>
                     <div id="diseases_div">
                         <core-list data="{{ diseases }}" height="20px">
                             <template>
@@ -172,12 +179,12 @@
                             </template>
                         </core-list>
                     </div>
+                    <div class="filter_box" layout end-justified horizontal>
+                        <input type="text" on-keyup="{{ diseaseKeyUp }}" placeholder="Filter:"/>
+                    </div>
                 </div>
                 <div class="form_block">
                     <div id="headerTitle">Phenotypes</div>
-                    <div class="filter_box">
-                        <input type="text" on-keyup="{{ phenotypeKeyUp }}" placeholder="Filter:"/>
-                    </div>
                     <div class="sdp_block" id="phenotypes_div">
                         <core-list data="{{ phenotype }}" height="20px">
                             <template>
@@ -191,15 +198,10 @@
                             </template>
                         </core-list>
                     </div>
+                    <div class="filter_box" horizontal layout end-justified>
+                        <input type="text" on-keyup="{{ phenotypeKeyUp }}" placeholder="Filter:"/>
+                    </div>
                 </div>
-                <!--<div class="sdp_block" id="log_div">-->
-                <!--<core-list data="{{ log }}" height="20px">-->
-                <!--<template>-->
-                <!--<div class="row">{{ model.log }}</div>-->
-                <!--</template>-->
-                <!--</core-list>-->
-                <!--</div>-->
-
             </div>
             </div>
 
@@ -228,7 +230,79 @@
 
             },
             ready: function () {
-            console.log(this.studies);
+                this.species = 'Homo sapiens';
+                console.log(this.studies);
+
+                var lastQuery = '';
+                var me = this;
+                this.$.searchField.addEventListener('keyup', function (event) {
+                    this.classList.remove('error');
+                    var query = this.value.toUpperCase();
+                    if (query.length > 2 && lastQuery !== query && event.which !== 13) {
+                        me._setQuickSearchMenu(query);
+                        lastQuery = query;
+                    }
+                    if (event.which === 13) {
+                        var item = me.quickSearchDataset[query];
+                        if (item) {
+                            var values = me.$.gene.value.split('.').filter(function (el) {
+                                return el.length != 0
+                            });
+
+                            values.push(item.name);
+                            me.$.gene.value = values.join(",");
+                        } else {
+                            this.classList.add('error');
+                        }
+                    }
+                });
+
+            },
+            _setQuickSearchMenu: function (query) {
+
+                while (this.$.searchDataList.firstChild) {
+                    this.$.searchDataList.removeChild(this.$.searchDataList.firstChild);
+                }
+                this.quickSearchDataset = {};
+                var items = this._quickSearchResultFn(query);
+//            for (var i = 0; i < items.length; i++) {
+                for (var i = 0; i < items.length; i++) {
+                    var item = items[i];
+                    var value = item["name"];
+                    this.quickSearchDataset[value] = item;
+                    var menuEntry = document.createElement('option');
+                    menuEntry.setAttribute('value', value);
+                    this.$.searchDataList.appendChild(menuEntry);
+                }
+
+            },
+            _quickSearchResultFn: function (query) {
+                var results = [];
+                var speciesCode = Utils.getSpeciesCode(this.species);
+
+                CellBaseManager.get({
+                    host: CELLBASE_HOST,
+                    version: CELLBASE_VERSION,
+//                    host: 'http://ws.bioinfo.cipf.es/cellbase/rest',
+                    species: speciesCode,
+                    category: 'feature',
+                    subCategory: 'id',
+                    query: query,
+                    resource: 'starts_with',
+                    params: {
+                        limit: 10
+                    },
+                    async: false,
+                    success: function (data, textStatus, jqXHR) {
+                        results = data.response[0].result;
+//                        var features = data.response[0].result;
+//                        for (var i = 0; i < features.length; i++) {
+//                            results.push(features[i].name)
+//                        }
+                    }
+                });
+                console.log(results);
+                return results;
             },
             submitForm: function () {
 
@@ -288,10 +362,12 @@
                     this.formURL = url;
                 }
 
-            },
+            }
+            ,
             regionValueChanged: function (oldValue, newValue) {
                 console.log(newValue);
-            },
+            }
+            ,
             studiesChanged: function (oldValue, newValue) {
                 var me = this;
                 this.studies = newValue;
@@ -323,22 +399,26 @@
                     })
                 });
 
-            },
+            }
+            ,
             studyClick: function (event, detail, sender) {
 
                 this.formStudies[sender.getAttribute("value")] = !sender.checked;
 
-            },
+            }
+            ,
             diseaseClick: function (event, detail, sender) {
 
                 this.formDiseases[sender.getAttribute("value")] = !sender.checked;
 
-            },
+            }
+            ,
             phenotypeClick: function (event, detail, sender) {
 
                 this.formPhenotypes[sender.getAttribute("value")] = !sender.checked;
 
-            },
+            }
+            ,
             studyKeyUp: function (event, detail, sender) {
                 var reg = new RegExp(sender.value, "i");
                 var snames = [];
@@ -358,7 +438,8 @@
 
                 this.studyNames = snames;
 
-            },
+            }
+            ,
             diseaseKeyUp: function (event, detail, sender) {
                 var reg = new RegExp(sender.value, "i");
                 var snames = [];
@@ -380,7 +461,8 @@
                 this.diseases = snames;
 
             }
-            , phenotypeKeyUp: function (event, detail, sender) {
+            ,
+            phenotypeKeyUp: function (event, detail, sender) {
                 var reg = new RegExp(sender.value, "i");
                 var snames = [];
                 var names = {};
@@ -401,6 +483,7 @@
                 this.phenotype = snames;
 
             }
-        });
+        })
+        ;
     </script>
 </polymer-element>
