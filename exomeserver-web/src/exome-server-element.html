@@ -57,22 +57,22 @@
                     selectedOption="{{ selectedOption }}"></jso-header>
 
         <div id="es-container" vertical layout>
-            <div hide="{{ selectedOption != 'search' }}">
-                <!--<button on-click="{{ toggleForm }}" style="width: 70px;">Form</button>-->
+            <template if="{{ selectedOption == 'search' }}">
                 <core-collapse id="collapse" opened horizontal layout center-justified>
-                    <es-filter-form-element studies="{{ studies }}" formURL="{{ formURL }}"></es-filter-form-element>
+                    <es-filter-form-element studies="{{ studies }}"
+                                            formURL="{{ formURL }}"></es-filter-form-element>
                 </core-collapse>
                 <div flex horizontal layout center-justified>
                     <es-data-grid-element formURL="{{ formURL }} " flex></es-data-grid-element>
                 </div>
-            </div>
+            </template>
 
-            <div hide="{{ selectedOption != 'studies' }}">
+            <template if="{{ selectedOption == 'studies' }}">
                 <es-studies-browser-element studies="{{ studies }}"></es-studies-browser-element>
-            </div>
-            <div hide="{{ selectedOption != 'stats' }}">
+            </template>
+            <template if="{{ selectedOption == 'stats' }}">
                 <es-stats-element studies="{{ studies }}"></es-stats-element>
-            </div>
+            </template>
         </div>
 
     </template>
@@ -82,7 +82,7 @@
                 this.studies = [];
                 this.options = [];
             }, ready: function () {
-                this.selectedOption = 'search';
+                this.selectedOption = 'stats';
                 this.options = this.getOptions();
                 this.getStudies();
             },

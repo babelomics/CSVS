@@ -14,8 +14,6 @@
                 box-sizing: border-box;
                 position: relative;
 
-                background-color: #FFFFFF;
-
                 /*max-width: 1000px;*/
                 height: 1000px;
             }
@@ -25,7 +23,25 @@
             }
 
             .buttons_container {
-                margin-bottom: 10px;
+                margin-top: 20px;
+                margin-bottom: 50px;
+            }
+
+            paper-button {
+                background-color: #FFFFFF;
+            }
+
+            .globalStats {
+                margin-top: 40px;
+                border-radius: 10px;
+            }
+
+            .pieChart {
+                border-radius: 10px;
+            }
+
+            .pieChartLeft {
+                margin-right: 40px;
             }
 
         </style>
@@ -221,8 +237,16 @@
                 global.setAttribute("layout", "");
                 global.setAttribute("center-justified", "");
 
+                global.classList.add("globalStats");
+
+
                 var vppDiv = document.createElement("div");
+                vppDiv.classList.add("pieChart");
+                vppDiv.classList.add("pieChartLeft");
+
                 var sppDiv = document.createElement("div");
+                sppDiv.classList.add("pieChart");
+
                 var globalChart = document.createElement("div");
                 globalChart.style.width = "1000px";
 
