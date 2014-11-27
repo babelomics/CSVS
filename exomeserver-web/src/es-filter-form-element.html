@@ -4,11 +4,13 @@
 <link rel="import" href="../bower_components/core-list/core-list.html">
 <link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../bower_components/core-label/core-label.html">
+<link rel="import" href="../bower_components/core-collapse/core-collapse.html">
 
 
 <polymer-element name="es-filter-form-element" attributes="studies formURL clear">
     <template>
         <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
+        <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-panel.css">
         <style>
             :host {
                 display: block;
@@ -16,7 +18,9 @@
                 position: relative;
                 background-color: #FFFFFF;
 
-                margin: 20px;
+                height: 350px;
+                width: 1000px;
+                padding: 5px;
             }
 
             paper-button {
@@ -64,7 +68,7 @@
             }
 
             core-list {
-                height: 230px;
+                height: 200px;
             }
 
             .filter_box {
@@ -82,7 +86,7 @@
             }
 
             paper-checkbox {
-                padding: 10px 10px 10px 10px;
+                padding: 10px 10px 0px 10px;
             }
 
             paper-checkbox.blue::shadow #ink[checked] {
@@ -94,7 +98,7 @@
             }
 
             .form_block {
-                width: 300px;
+                width: 250px;
             }
 
             textarea {
@@ -110,109 +114,128 @@
                 margin-right: 5px;
             }
 
+            .headerexpand:after {
+                font-family: FontAwesome;
+                content: '\f066';
+            }
+
+            .headerexpand[expanded]:after {
+                content: '\f065';
+            }
+
+            .elemLabel {
+                padding-top: 10px;
+                font-size: small;
+            }
+
+
         </style>
+        <!--<div class="headerTitle" id="header" horizontal layout end-justified>-->
+        <!--<div class="text headerexpand" expanded?={{expanded}} on-click="{{handleExpand}}"></div>-->
+        <!--</div>-->
+        <!--<core-collapse id="coreCollapse">-->
         <form id="filter_form" vertical layout>
-            <div horizontal layout>
-                <!--<div class="position_filter">-->
-                <div class="form_block">
-                    <div id="headerTitle">Position</div>
-                    <div class="input_container" vertical layout>
-                        <label class="input_label">Chromosomal Location</label>
+            <div vertical layout id="content">
+                <div horizontal layout>
+                    <!--<div class="position_filter">-->
+                    <div class="form_block">
+                        <div id="headerTitle">Position</div>
+                        <div class="input_container" vertical layout>
+                            <label class="input_label">Chromosomal Location</label>
 
-                        <textarea id="region" name="region" placeholder="1:1-1000000,2:1-1000000"
-                                  value="{{ regionValue }}" rows="3"></textarea>
-                    </div>
-                    <!--<div class="input_container" vertical layout>-->
-                    <!--<label class="input_label">SNP id</label>-->
-                    <!--<textarea id="snp" name="snp" type="text" rows="3"></textarea>-->
-                    <!--</div>-->
-                    <div class="input_container" vertical layout>
-                        <label class="input_label">Gene / Transcript</label>
-                        <textarea id="gene" name="gene" type="text" rows="3"></textarea>
+                            <textarea id="region" name="region" placeholder="1:1-1000000,2:1-1000000"
+                                      value="{{ regionValue }}" rows="3"></textarea>
+                        </div>
+                        <!--<div class="input_container" vertical layout>-->
+                        <!--<label class="input_label">SNP id</label>-->
+                        <!--<textarea id="snp" name="snp" type="text" rows="3"></textarea>-->
+                        <!--</div>-->
+                        <div class="input_container" vertical layout>
+                            <label class="input_label">Gene / Transcript</label>
+                            <textarea id="gene" name="gene" type="text" rows="3"></textarea>
 
-                        <div horizontal layout class="searchGene" end-justified>
-                            <input id="searchField" list="searchDataList" placeholder="Search gene" type="text"
-                                   style="width: 90px;">
-                            <datalist id="searchDataList"></datalist>
-                            <div id="quickSearchButton" class="button" style="border-left: none;">
-                                <font-awesome icon="search"></font-awesome>
+                            <div horizontal layout class="searchGene" end-justified>
+                                <input id="searchField" list="searchDataList" placeholder="Search gene" type="text"
+                                       style="width: 90px;">
+                                <datalist id="searchDataList"></datalist>
+                                <div id="quickSearchButton" class="button" style="border-left: none;">
+                                    <font-awesome icon="search"></font-awesome>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="form_block" vertical layout>
-                    <div id="headerTitle">Studies</div>
-                    <div id="studies_div">
-                        <core-list data="{{ studyNames }}" height="20px" class="selector_list">
-                            <template>
-                                <core-label center horizontal layout>
-                                    <paper-checkbox class="blue studyName"
-                                                    for
-                                                    on-click="{{ studyClick }}"
-                                                    value="{{ model.name }}" checked></paper-checkbox>
-                                    <div flex>{{ model.name }}</div>
-                                </core-label>
-                            </template>
-                        </core-list>
+                    <div class="form_block" vertical layout>
+                        <div id="headerTitle">Studies</div>
+                        <div id="studies_div">
+                            <core-list data="{{ studyNames }}" height="20px" class="selector_list">
+                                <template>
+                                    <core-label center horizontal layout>
+                                        <paper-checkbox class="blue studyName"
+                                                        for
+                                                        on-click="{{ studyClick }}"
+                                                        value="{{ model.name }}" checked></paper-checkbox>
+                                        <div class="elemLabel" flex>{{ model.name }}</div>
+                                    </core-label>
+                                </template>
+                            </core-list>
+                        </div>
+                        <div class="filter_box" layout end-justified horizontal>
+                            <input type="text" on-keyup="{{ studyKeyUp }}" placeholder="Filter:"/>
+                        </div>
                     </div>
-                    <div class="filter_box" layout end-justified horizontal>
-                        <input type="text" on-keyup="{{ studyKeyUp }}" placeholder="Filter:"/>
-                    </div>
-                </div>
-                <div class="form_block">
-                    <div id="headerTitle">Diseases</div>
-                    <div id="diseases_div">
-                        <core-list data="{{ diseases }}" height="20px">
-                            <template>
+                    <div class="form_block">
+                        <div id="headerTitle">Diseases</div>
+                        <div id="diseases_div">
+                            <core-list data="{{ diseases }}" height="20px">
+                                <template>
 
-                                <core-label center horizontal layout>
-                                    <paper-checkbox class="blue diseaseName"
-                                                    for
-                                                    on-click="{{ diseaseClick }}"
-                                                    value="{{ model.name }}"></paper-checkbox>
-                                    <div flex>{{ model.name }}</div>
-                                </core-label>
+                                    <core-label center horizontal layout>
+                                        <paper-checkbox class="blue diseaseName"
+                                                        for
+                                                        on-click="{{ diseaseClick }}"
+                                                        value="{{ model.name }}"></paper-checkbox>
+                                        <div flex>{{ model.name }}</div>
+                                    </core-label>
 
 
-                            </template>
-                        </core-list>
+                                </template>
+                            </core-list>
+                        </div>
+                        <div class="filter_box" layout end-justified horizontal>
+                            <input type="text" on-keyup="{{ diseaseKeyUp }}" placeholder="Filter:"/>
+                        </div>
                     </div>
-                    <div class="filter_box" layout end-justified horizontal>
-                        <input type="text" on-keyup="{{ diseaseKeyUp }}" placeholder="Filter:"/>
+                    <div class="form_block">
+                        <div id="headerTitle">Phenotypes</div>
+                        <div class="sdp_block" id="phenotypes_div">
+                            <core-list data="{{ phenotype }}" height="20px">
+                                <template>
+                                    <core-label center horizontal layout>
+                                        <paper-checkbox class="blue phenotypeName"
+                                                        for
+                                                        on-click="{{ phenotypeClick }}"
+                                                        value="{{ model.name }}"></paper-checkbox>
+                                        <div flex>{{ model.name }}</div>
+                                    </core-label>
+                                </template>
+                            </core-list>
+                        </div>
+                        <div class="filter_box" horizontal layout end-justified>
+                            <input type="text" on-keyup="{{ phenotypeKeyUp }}" placeholder="Filter:"/>
+                        </div>
                     </div>
                 </div>
-                <div class="form_block">
-                    <div id="headerTitle">Phenotypes</div>
-                    <div class="sdp_block" id="phenotypes_div">
-                        <core-list data="{{ phenotype }}" height="20px">
-                            <template>
-                                <core-label center horizontal layout>
-                                    <paper-checkbox class="blue phenotypeName"
-                                                    for
-                                                    on-click="{{ phenotypeClick }}"
-                                                    value="{{ model.name }}"></paper-checkbox>
-                                    <div flex>{{ model.name }}</div>
-                                </core-label>
-                            </template>
-                        </core-list>
-                    </div>
-                    <div class="filter_box" horizontal layout end-justified>
-                        <input type="text" on-keyup="{{ phenotypeKeyUp }}" placeholder="Filter:"/>
-                    </div>
+                <div id="buttons_container" horizontal layout end-justified>
+                    <paper-button raised on-click="{{ clearForm }}">Clear</paper-button>
+                    <paper-button raised on-click="{{ submitForm }}">Submit</paper-button>
                 </div>
-            </div>
-            </div>
-
-            </div>
-            <div id="buttons_container" horizontal layout end-justified>
-                <paper-button raised on-click="{{ clearForm }}">Clear</paper-button>
-                <paper-button raised on-click="{{ submitForm }}">Submit</paper-button>
             </div>
         </form>
+        <!--</core-collapse>-->
     </template>
     <script>
         Polymer({
-            regionValue: '1:63671-636710',
+            regionValue: '1:1004608-1019573',
             created: function () {
 
                 this.studies = [];
@@ -504,8 +527,7 @@
                 this.formDiseases = {};
                 this.formPhenotypes = {};
 
-            },
-
+            }
         })
         ;
     </script>
