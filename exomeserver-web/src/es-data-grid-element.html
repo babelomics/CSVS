@@ -3,7 +3,7 @@
 <link rel="import" href="../bower_components/sortable-table/sortable-table.html">
 <link rel="import" href="opencb-ajax.html">
 
-<polymer-element name="es-data-grid-element" attributes="formURL">
+<polymer-element name="es-data-grid-element" attributes="formURL studies">
     <template>
         <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
         <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/sortable-table.css">
@@ -20,19 +20,24 @@
                 /*max-width: 1500px;*/
 
             }
-            sortable-table
-            {
+
+            sortable-table {
                 min-height: 400px;
+                margin: 40px;
+            }
+
+            .defaultPager > input {
+                width: 40px;
             }
         </style>
+
 
         <sortable-table id="dataGrid"
                         footerTemplate="defaultPager"
                         pageSize="10"
                         columns="{{ columns }}"
                         loading="true"
-                        rowSelection="true"
-                >
+                        rowSelection="true">
             <opencb-ajax id="opencbAjax"
                          role="datasource"
                          url="{{ formURL }}"
@@ -46,7 +51,10 @@
 
 
         Polymer({
+            floatDecimals: 3,
             created: function () {
+
+                var me = this;
 
                 this.variants = [];
                 this.columns = [
@@ -61,7 +69,7 @@
                     },
                     {name: 'id', title: 'Id'},
                     {
-                        name: 'files_maf_0_0', title: '0/0',
+                        name: 'files_maf_0_0', title: 'Count: 0/0',
                         formula: function (row) {
 
                             var aux = row.sourceEntries.MAF.stats.genotypesCount["0/0"];
@@ -70,14 +78,13 @@
                                     aux += row.sourceEntries.MAF.stats.genotypesCount["0|0"];
                                 } else {
                                     aux = row.sourceEntries.MAF.stats.genotypesCount["0|0"];
-
                                 }
                             }
                             return aux;
                         }
                     },
                     {
-                        name: 'files_maf_0_1', title: '0/1',
+                        name: 'files_maf_0_1', title: 'Count: 0/1',
                         formula: function (row) {
                             var aux = row.sourceEntries.MAF.stats.genotypesCount["0/1"];
                             if ("0|1" in row.sourceEntries.MAF.stats.genotypesCount) {
@@ -85,14 +92,13 @@
                                     aux += row.sourceEntries.MAF.stats.genotypesCount["0|1"];
                                 } else {
                                     aux = row.sourceEntries.MAF.stats.genotypesCount["0|1"];
-
                                 }
                             }
                             return aux;
                         }
                     },
                     {
-                        name: 'files_maf_1_1', title: '1/1',
+                        name: 'files_maf_1_1', title: 'Count: 1/1',
                         formula: function (row) {
                             var aux = row.sourceEntries.MAF.stats.genotypesCount["1/1"];
                             if ("1|1" in row.sourceEntries.MAF.stats.genotypesCount) {
@@ -100,10 +106,61 @@
                                     aux += row.sourceEntries.MAF.stats.genotypesCount["1|1"];
                                 } else {
                                     aux = row.sourceEntries.MAF.stats.genotypesCount["1|1"];
-
                                 }
                             }
                             return aux;
+                        }
+                    },
+                    {
+                        name: 'freqRef', title: "Ref. Freq",
+                        formula: function (row) {
+                            var genotypes = row.sourceEntries.MAF.stats.genotypesCount;
+
+                            var count = 0;
+                            var total = 0;
+
+                            Object.keys(genotypes).forEach(function (key) {
+                                var value = genotypes[key];
+                                var splits = key.split(/[/|]/);
+                                for (var i = 0; i < splits.length; i++) {
+                                    var g = splits[i];
+                                    if (g == "0") {
+                                        count += value;
+                                    }
+                                    total += value;
+                                }
+                            });
+
+
+                            maf = count / total;
+
+                            return maf.toFixed(me.floatDecimals);
+                        }
+                    },
+                    {
+                        name: 'freqAlt', title: "Alt. Freq",
+                        formula: function (row) {
+                            var genotypes = row.sourceEntries.MAF.stats.genotypesCount;
+
+                            var count = 0;
+                            var total = 0;
+
+                            Object.keys(genotypes).forEach(function (key) {
+                                var value = genotypes[key];
+                                var splits = key.split(/[/|]/);
+                                for (var i = 0; i < splits.length; i++) {
+                                    var g = splits[i];
+                                    if (g == "1") {
+                                        count += value;
+                                    }
+                                    total += value;
+                                }
+                            });
+
+
+                            maf = count / total;
+
+                            return maf.toFixed(3);
                         }
                     },
                     {
@@ -137,24 +194,48 @@
                                     maf = auxMaf;
                                     mafAllele = key;
                                 }
-
                             });
-
-                            return maf;
+                            return maf.toFixed(3);
                         }
                     }
-                ]
-                ;
+                ];
             },
             ready: function () {
                 var me = this;
-            }
-            ,
+            },
             observe: {
                 '$.dataGrid.selected': "handleDataGridSelected"
             },
             handleDataGridSelected: function (oldValue, newValue) {
                 console.log(newValue);
+            },
+            formURLChanged: function (oldValue, newValue) {
+                this.$.dataGrid.page = 1;
+            },
+            studiesChanged: function (oldValue, newValue) {
+                console.log("Studies GRID");
+                console.log(this.studies);
+                var me = this;
+
+                for (var i = 0; i < newValue.length; i++) {
+                    var study = newValue[i];
+                    this.columns.push({
+                        name: study.sname,
+                        title: study.sname + " MAF",
+                        formula: function (row) {
+
+                            var maf = "";
+                            try {
+                                var maf = row.sourceEntries[study.sname].stats.maf;
+                                maf = maf.toFixed(me.floatDecimals);
+
+                            } catch (e) {
+
+                            }
+                            return maf;
+                        }
+                    });
+                }
             }
         })
         ;

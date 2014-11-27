@@ -54,7 +54,7 @@ public class OptionsParser {
         @Parameter(names = {"--static"}, description = "Static study, its MAF will not be combined", arity = 0)
         boolean staticStudy;
 
-        @Parameter(names = {"-c, --coverage"}, description = "Coverage", arity = 0)
+        @Parameter(names = {"-c, --coverage"}, description = "Coverage", arity = 1)
         int coverage = -1;
 
         @Parameter(names = {"--aggregated"}, description = "Aggregated VCF File: basic or EVS (optional)", arity = 1)

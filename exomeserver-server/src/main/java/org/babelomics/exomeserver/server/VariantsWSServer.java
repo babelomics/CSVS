@@ -23,10 +23,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 @Path("/variants")
@@ -74,6 +71,7 @@ public class VariantsWSServer extends ExomeServerWSServer {
         }
 
         List<StudyElement> studyElements = new ArrayList<>();
+        List<StudyElement> staticStudyElements = new ArrayList<>();
         QueryOptions qo = new QueryOptions();
 
 
@@ -82,7 +80,14 @@ public class VariantsWSServer extends ExomeServerWSServer {
 
         for (BasicDBObject study : allStudies.getResult()) {
             String fid = study.getString("fid");
-            studyElements.add(new StudyElement(fid));
+            StudyElement se = new StudyElement(fid);
+
+            se.setStaticStudy(((BasicDBObject) study.get("meta")).getString("sta").equalsIgnoreCase("false"));
+            if (!se.getStaticStudy()) {
+                staticStudyElements.add(se);
+            } else {
+                studyElements.add(se);
+            }
         }
 
         List<StudyElement> finalStudyElements = new ArrayList<>();
@@ -136,17 +141,27 @@ public class VariantsWSServer extends ExomeServerWSServer {
         }
 
         List<String> aux = new ArrayList<>(finalStudyElements.size());
+        List<String> staticStudies = new ArrayList<>(finalStudyElements.size());
         for (StudyElement se : finalStudyElements) {
             aux.add(se.toString());
         }
 
+        for (StudyElement se : staticStudyElements) {
+            staticStudies.add(se.getStudy() + "_" + se.toString());
+        }
+
         // if (regionsSize <= 1000000) {
-//        List<QueryResult> allVariantsByRegionList = variantMongoDbAdaptor.getAllVariantsByRegionList(regions, queryOptions);
+
+
+        System.out.println(aux);
+
         List<QueryResult> allVariantsByRegionList = variantMongoDbAdaptor.getAllVariantsByRegionListAndFileIds(regions, aux, queryOptions);
+        System.out.println(allVariantsByRegionList);
 
-
+        finalStudyElements.addAll(staticStudyElements);
         removeStudies(allVariantsByRegionList, finalStudyElements);
-        transformVariants(allVariantsByRegionList);
+
+        transformVariants(allVariantsByRegionList, staticStudies);
 
 
         return createOkResponse(allVariantsByRegionList);
@@ -171,6 +186,7 @@ public class VariantsWSServer extends ExomeServerWSServer {
 
                 for (Iterator<Map.Entry<String, VariantSourceEntry>> it = files.entrySet().iterator(); it.hasNext(); ) {
                     Map.Entry<String, VariantSourceEntry> entry = it.next();
+                    VariantSourceEntry vse = entry.getValue();
 
                     if (!ids.contains(entry.getKey())) {
                         it.remove();
@@ -204,43 +220,49 @@ public class VariantsWSServer extends ExomeServerWSServer {
         return false;
     }
 
-    private void transformVariants(List<QueryResult> allVariantsByRegionList) {
+    private void transformVariants(List<QueryResult> allVariantsByRegionList, List<String> staticStudies) {
 
 
         for (QueryResult qr : allVariantsByRegionList) {
             List<Variant> variantList = qr.getResult();
-            List<Variant> newVariantList = new ArrayList<>(variantList.size());
 
             for (Variant v : variantList) {
-                combineFiles(v.getSourceEntries());
+                combineFiles(v.getSourceEntries(), staticStudies);
             }
-
-
-//            qr.setResult(newVariantList);
 
         }
     }
 
-    private void combineFiles(Map<String, VariantSourceEntry> files) {
-        VariantSourceEntry newAVF = new VariantSourceEntry("MAF", "MAF");
-        VariantStats stats = new VariantStats();
-        newAVF.setStats(stats);
+    private void combineFiles(Map<String, VariantSourceEntry> files, List<String> staticStudies) {
+        Map<String, VariantSourceEntry> map = new HashMap<>();
+        VariantStats mafStats = new VariantStats();
+        VariantSourceEntry mafVSE = new VariantSourceEntry("MAF", "MAF");
+        mafVSE.setStats(mafStats);
+
+        System.out.println("staticStudies = " + staticStudies);
+
 
         for (Map.Entry<String, VariantSourceEntry> entry : files.entrySet()) {
             VariantSourceEntry avf = entry.getValue();
-            for (Map.Entry<Genotype, Integer> o : avf.getStats().getGenotypesCount().entrySet()) {
-                stats.addGenotype(o.getKey(), o.getValue());
+            System.out.println("entry.getKey() = " + entry.getKey());
+            if (staticStudies.contains(entry.getKey())) {
+                System.out.println("SI contine");
+                map.put(avf.getStudyId(), entry.getValue());
+            } else {
+                System.out.println("NO contiene");
+                for (Map.Entry<Genotype, Integer> o : avf.getStats().getGenotypesCount().entrySet()) {
+                    mafStats.addGenotype(o.getKey(), o.getValue());
+                }
+
             }
+
         }
 
-        files.clear(); // TODO aaleman: clear all but static studies.
+        files.clear();
 
-//        recalculeMAF(stats);
+        map.put("MAF", mafVSE);
 
-        files.put("MAF", newAVF);
-    }
-
-    private void recalculeMAF(VariantStats stats) {
+        files.putAll(map);
 
     }
 
@@ -255,6 +277,7 @@ public class VariantsWSServer extends ExomeServerWSServer {
         private String study;
         private String disease;
         private String phenotype;
+        private Boolean staticStudy;
 
         public StudyElement(String fid) {
             String[] aux = fid.split("_");
@@ -273,6 +296,14 @@ public class VariantsWSServer extends ExomeServerWSServer {
 
         public String getPhenotype() {
             return phenotype;
+        }
+
+        public Boolean getStaticStudy() {
+            return staticStudy;
+        }
+
+        public void setStaticStudy(Boolean staticStudy) {
+            this.staticStudy = staticStudy;
         }
 
         @Override

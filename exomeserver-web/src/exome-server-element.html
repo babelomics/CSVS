@@ -66,10 +66,12 @@
         <div id="es-container" vertical layout>
             <template if="{{ selectedOption == 'search' }}">
                 <core-collapse id="collapse" opened horizontal layout center-justified>
-                    <es-filter-form-element studies="{{ studies }}" formURL="{{ formURL }}"></es-filter-form-element>
+                    <es-filter-form-element studies="{{ studies }}" formURL="{{ formURL }}"
+                                            clear="{{ clearForm }}"></es-filter-form-element>
                 </core-collapse>
                 <div flex horizontal layout center-justified>
-                    <es-data-grid-element formURL="{{ formURL }} " flex></es-data-grid-element>
+                    <es-data-grid-element formURL="{{ formURL }} " studies="{{ staticStudies }}" clear="{{ clearForm }}"
+                                          flex></es-data-grid-element>
                 </div>
             </template>
 
@@ -86,9 +88,11 @@
         Polymer({
             created: function () {
                 this.studies = [];
+                this.staticStudies = [];
                 this.options = [];
             }, ready: function () {
                 this.selectedOption = 'search';
+                this.clear = true;
                 this.options = this.getOptions();
                 this.getStudies();
             },
@@ -119,11 +123,26 @@
                         success: function (response) {
 
                             try {
-                                me.studies = response.response[0].result;
-                                console.log(me.studies);
+                                var studies = [];
+                                var staticStudies = [];
+//                                console.log(me.studies);
+
+                                for (var i = 0; i < response.response[0].result.length; i++) {
+                                    var elem = response.response[0].result[i];
+                                    if (elem.meta.sta == "false") {
+                                        studies.push(elem);
+                                    } else {
+                                        staticStudies.push(elem);
+                                    }
+
+                                }
+
+                                me.studies = studies;
+                                me.staticStudies = staticStudies;
                             } catch (err) {
                                 console.log("Error loading studies: " + err);
                                 me.studies = [];
+                                me.staticStudies = [];
                             }
 
                         },

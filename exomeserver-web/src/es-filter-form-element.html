@@ -6,7 +6,7 @@
 <link rel="import" href="../bower_components/core-label/core-label.html">
 
 
-<polymer-element name="es-filter-form-element" attributes="studies formURL">
+<polymer-element name="es-filter-form-element" attributes="studies formURL clear">
     <template>
         <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
         <style>
@@ -122,10 +122,10 @@
                         <textarea id="region" name="region" placeholder="1:1-1000000,2:1-1000000"
                                   value="{{ regionValue }}" rows="3"></textarea>
                     </div>
-                    <div class="input_container" vertical layout>
-                        <label class="input_label">SNP id</label>
-                        <textarea id="snp" name="snp" type="text" rows="3"></textarea>
-                    </div>
+                    <!--<div class="input_container" vertical layout>-->
+                    <!--<label class="input_label">SNP id</label>-->
+                    <!--<textarea id="snp" name="snp" type="text" rows="3"></textarea>-->
+                    <!--</div>-->
                     <div class="input_container" vertical layout>
                         <label class="input_label">Gene / Transcript</label>
                         <textarea id="gene" name="gene" type="text" rows="3"></textarea>
@@ -145,15 +145,13 @@
                     <div id="studies_div">
                         <core-list data="{{ studyNames }}" height="20px" class="selector_list">
                             <template>
-
                                 <core-label center horizontal layout>
-                                    <paper-checkbox class="blue"
+                                    <paper-checkbox class="blue studyName"
                                                     for
                                                     on-click="{{ studyClick }}"
-                                                    value="{{ model.name }}"></paper-checkbox>
+                                                    value="{{ model.name }}" checked></paper-checkbox>
                                     <div flex>{{ model.name }}</div>
                                 </core-label>
-
                             </template>
                         </core-list>
                     </div>
@@ -168,7 +166,7 @@
                             <template>
 
                                 <core-label center horizontal layout>
-                                    <paper-checkbox class="blue"
+                                    <paper-checkbox class="blue diseaseName"
                                                     for
                                                     on-click="{{ diseaseClick }}"
                                                     value="{{ model.name }}"></paper-checkbox>
@@ -189,7 +187,7 @@
                         <core-list data="{{ phenotype }}" height="20px">
                             <template>
                                 <core-label center horizontal layout>
-                                    <paper-checkbox class="blue"
+                                    <paper-checkbox class="blue phenotypeName"
                                                     for
                                                     on-click="{{ phenotypeClick }}"
                                                     value="{{ model.name }}"></paper-checkbox>
@@ -207,14 +205,14 @@
 
             </div>
             <div id="buttons_container" horizontal layout end-justified>
-                <paper-button raised>Clear</paper-button>
+                <paper-button raised on-click="{{ clearForm }}">Clear</paper-button>
                 <paper-button raised on-click="{{ submitForm }}">Submit</paper-button>
             </div>
         </form>
     </template>
     <script>
         Polymer({
-            regionValue: '1:63671-63671',
+            regionValue: '1:63671-636710',
             created: function () {
 
                 this.studies = [];
@@ -245,17 +243,27 @@
                     if (event.which === 13) {
                         var item = me.quickSearchDataset[query];
                         if (item) {
-                            var values = me.$.gene.value.split('.').filter(function (el) {
+                            var values = me.$.gene.value.split(',').filter(function (el) {
                                 return el.length != 0
                             });
 
                             values.push(item.name);
+                            values = values.filter(function (item, index, inputArray) {
+                                return inputArray.indexOf(item) == index;
+                            });
+
                             me.$.gene.value = values.join(",");
+
+
                         } else {
                             this.classList.add('error');
                         }
                     }
                 });
+
+            },
+            domReady: function () {
+
 
             },
             _setQuickSearchMenu: function (query) {
@@ -295,10 +303,6 @@
                     async: false,
                     success: function (data, textStatus, jqXHR) {
                         results = data.response[0].result;
-//                        var features = data.response[0].result;
-//                        for (var i = 0; i < features.length; i++) {
-//                            results.push(features[i].name)
-//                        }
                     }
                 });
                 console.log(results);
@@ -386,6 +390,7 @@
                     me.studyNames.push({
                         name: key
                     })
+                    me.formStudies[key] = true;
                 });
                 Object.keys(dis).forEach(function (key) {
                     me.diseases.push({
@@ -398,6 +403,7 @@
                         name: key
                     })
                 });
+
 
             }
             ,
@@ -482,7 +488,24 @@
 
                 this.phenotype = snames;
 
-            }
+            },
+            clearForm: function () {
+
+                this.$.filter_form.reset();
+
+                var checkboxes = this.$.filter_form.getElementsByTagName("paper-checkbox");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    elem.checked = false;
+                }
+
+
+                this.formStudies = {};
+                this.formDiseases = {};
+                this.formPhenotypes = {};
+
+            },
+
         })
         ;
     </script>
