@@ -47,14 +47,13 @@
             }
 
             es-filter-form-element {
-                height: 375px;
-                width: 1200px;
-                border-radius: 10px;
-                padding: 5px;
+                margin: 20px;
+                border-radius: 5px;
+
             }
 
             es-data-grid-element {
-                border-radius: 10px;
+                border-radius: 5px;
                 padding: 5px;
             }
 
@@ -65,11 +64,10 @@
 
         <div id="es-container" vertical layout>
             <template if="{{ selectedOption == 'search' }}">
-                <core-collapse id="collapse" opened horizontal layout center-justified>
+                <div horizontal layout center-justified>
                     <es-filter-form-element studies="{{ studies }}" formURL="{{ formURL }}"
-                                            clear="{{ clearForm }}"></es-filter-form-element>
-                </core-collapse>
-                <div flex horizontal layout center-justified>
+                                            clear="{{ clearForm }}" horizontal layout
+                                            center-justified></es-filter-form-element>
                     <es-data-grid-element formURL="{{ formURL }} " studies="{{ staticStudies }}" clear="{{ clearForm }}"
                                           flex></es-data-grid-element>
                 </div>

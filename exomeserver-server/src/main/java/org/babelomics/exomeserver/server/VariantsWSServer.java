@@ -78,6 +78,7 @@ public class VariantsWSServer extends ExomeServerWSServer {
         QueryResult<BasicDBObject> allStudies = studyMongoDBAdaptor.getAllFileId(qo);
 
 
+        System.out.println("allStudies = " + allStudies);
         for (BasicDBObject study : allStudies.getResult()) {
             String fid = study.getString("fid");
             StudyElement se = new StudyElement(fid);
