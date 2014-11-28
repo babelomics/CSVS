@@ -115,14 +115,12 @@
     </template>
     <script>
         Polymer({
-            //meanQ: 827.1456298828125nIndel: 16459nPass: 170098nSamp: 75nSnp: 298833nTi: 179222nTv: 119611nVar: 315292
             created: function () {
                 this.chartHeight = 200;
                 this.chartWidth = 200;
             },
             ready: function () {
                 this._createBarColumnChart(this.study.sname);
-
             },
             handleExpand: function () {
                 this.expanded = !this.expanded;

@@ -132,13 +132,8 @@
             }
 
         </style>
-        <!--<div class="headerTitle" id="header" horizontal layout end-justified>-->
-        <!--<div class="text headerexpand" expanded?={{expanded}} on-click="{{handleExpand}}"></div>-->
-        <!--</div>-->
-        <!--<core-collapse id="coreCollapse">-->
         <form id="filter_form" vertical layout>
             <div vertical layout>
-                <!--<div class="position_filter">-->
                 <div class="form_block positionBlock">
                     <div id="headerTitle">Position</div>
                     <div class="input_container" vertical layout>
@@ -232,12 +227,10 @@
                 </div>
             </div>
             <div id="buttons_container" horizontal layout end-justified>
-                <!--<input type="submit" name="submit" id="" value="submit"/>-->
                 <paper-button raised on-click="{{ clearForm }}">Clear</paper-button>
                 <paper-button raised on-click="{{ submitForm }}">Submit</paper-button>
             </div>
         </form>
-        <!--</core-collapse>-->
     </template>
     <script>
         Polymer({
@@ -293,10 +286,7 @@
                 });
 
             },
-            domReady: function () {
-
-
-            },
+            domReady: function () {},
             _setQuickSearchMenu: function (query) {
 
                 while (this.$.searchDataList.firstChild) {
@@ -304,7 +294,6 @@
                 }
                 this.quickSearchDataset = {};
                 var items = this._quickSearchResultFn(query);
-//            for (var i = 0; i < items.length; i++) {
                 for (var i = 0; i < items.length; i++) {
                     var item = items[i];
                     var value = item["name"];
@@ -322,7 +311,6 @@
                 CellBaseManager.get({
                     host: CELLBASE_HOST,
                     version: CELLBASE_VERSION,
-//                    host: 'http://ws.bioinfo.cipf.es/cellbase/rest',
                     species: speciesCode,
                     category: 'feature',
                     subCategory: 'id',
@@ -401,10 +389,6 @@
                     alert("Please add a region/gene and check any study, disease or phenotype");
                 }
 
-            }
-            ,
-            regionValueChanged: function (oldValue, newValue) {
-                console.log(newValue);
             }
             ,
             studiesChanged: function (oldValue, newValue) {

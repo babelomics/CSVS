@@ -20,7 +20,6 @@
                 display: block;
                 box-sizing: border-box;
                 position: relative;
-                /*height: 100%;*/
                 background-color: #FFFFFF;
 
                 margin: 20px;
@@ -30,7 +29,6 @@
 
             sortable-table {
                 height: 340px;
-                /*margin: 40px;*/
                 max-width: 100%;
                 border: 1px solid #d3d3d3;
                 overflow-x: auto;
@@ -268,13 +266,10 @@
                 ];
             },
             ready: function () {
-                var me = this;
             },
             domReady: function () {
-                var me = this;
                 this.createGenomeViewer();
                 this.genomeViewer.draw();
-
             },
             observe: {
                 '$.dataGrid.selected': "handleDataGridSelected",
@@ -290,11 +285,6 @@
                 this._getPhenotypes(newValue);
             },
             _getEffect: function (record) {
-                var _this = this;
-
-                var ct = [];
-                var genes = [];
-
                 var req = record.chromosome + ":" + record.start + ":" + record.reference + ":" + record.alternate;
 
                 $.ajax({
@@ -303,7 +293,7 @@
                     dataType: 'json',
                     async: false,
                     success: function (response, textStatus, jqXHR) {
-                        if (response) { // {&& response.response && response.response.length > 0) {
+                        if (response) {
                             for (var j = 0; j < response.length; j++) {
                                 var elem = response[j];
 
@@ -325,7 +315,6 @@
                 if (variant.aaPos != undefined && variant.aaPos >= 0) {
                     var change = variant.aaChange.split("/")[1];
                     var url = "http://ws-beta.bioinfo.cipf.es/cellbase/rest/v3/hsapiens/feature/transcript/" + variant.transcript + "/function_prediction?aaPosition=" + variant.aaPos + "&aaChange=" + change;
-                    //console.log(url);
                     $.ajax({
                         url: url,
                         dataType: 'json',
@@ -354,7 +343,6 @@
             },
             _getPhenotypes: function (records) {
                 var regs = [];
-                var me = this;
                 for (var i = 0; i < records.length; i++) {
                     var variant = records[i];
                     var chr = variant.chromosome;
@@ -367,21 +355,13 @@
                         dataType: 'json',
                         async: false,
                         success: function (response, textStatus, jqXHR) {
-
                             if (response != undefined && response.response.length > 0 && response.response.length == records.length) {
                                 for (var i = 0; i < response.response.length; i++) {
-
-
                                     var elem = response.response[i];
                                     var phenotypes = [];
-                                    if (elem.numResults > 0) {
-//                                        debugger
-                                    }
                                     for (var k = 0; k < elem.numResults; k++) {
                                         phenotypes.push(elem.result[k].phenotype);
-//                                        me.$.phenotypeTemplateDataList.append(elem.result[k].phenotype);
                                     }
-
                                     records[i].phenotype = phenotypes.join(",");
                                 }
                             }
@@ -431,28 +411,11 @@
                 }
             },
             handleExpand: function () {
-
                 this.$.collapseGrid.toggle();
-
                 this.page = 1;
                 this.expanded = !this.expanded;
-//                if (this.expanded) {
-//                    this.style.position = 'fixed';
-//                    this.style.width = '98%';
-//                    this.style.height = '90%';
-//                    this.style.top = '0';
-//                    this.style.left = '0';
-//                } else {
-//                    this.style.width = '';
-//                    this.style.height = '';
-//                    this.style.position = '';
-//                    this.style.top = '';
-//                    this.style.left = '';
-//                    this.pageSize = this.defaultPageSize;
-//                }
             },
             createGenomeViewer: function () {
-                var me = this;
                 this.genomeViewer = new GenomeViewer({
                     cellBaseHost: 'https://www.ebi.ac.uk/cellbase/webservices/rest',
                     cellBaseVersion: 'v3',
@@ -590,10 +553,7 @@
                         }
                     })
                 });
-//
                 this.genomeViewer.addTrack(this.gene);
-
-
                 this.snp = new FeatureTrack({
                     title: 'SNP',
                     featureType: 'SNP',
@@ -616,16 +576,9 @@
                         }
                     })
                 });
-//
                 this.genomeViewer.addTrack(this.snp);
-
-//                this.genomeViewer.addTrack(tracks);
-
-
                 return this.genomeViewer;
             }
-
-
         })
         ;
     </script>
