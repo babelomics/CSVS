@@ -18,8 +18,8 @@
                 position: relative;
                 background-color: #FFFFFF;
 
-                height: 350px;
-                width: 1000px;
+                /*height: 100%;*/
+                width: 300px;
                 padding: 5px;
             }
 
@@ -68,7 +68,7 @@
             }
 
             core-list {
-                height: 200px;
+                height: 150px;
             }
 
             .filter_box {
@@ -99,6 +99,9 @@
 
             .form_block {
                 width: 250px;
+                max-height: 300px;
+                margin-bottom: 10px;
+
             }
 
             textarea {
@@ -128,114 +131,119 @@
                 font-size: small;
             }
 
-
         </style>
         <!--<div class="headerTitle" id="header" horizontal layout end-justified>-->
         <!--<div class="text headerexpand" expanded?={{expanded}} on-click="{{handleExpand}}"></div>-->
         <!--</div>-->
         <!--<core-collapse id="coreCollapse">-->
         <form id="filter_form" vertical layout>
-            <div vertical layout id="content">
-                <div horizontal layout>
-                    <!--<div class="position_filter">-->
-                    <div class="form_block">
-                        <div id="headerTitle">Position</div>
-                        <div class="input_container" vertical layout>
-                            <label class="input_label">Chromosomal Location</label>
+            <div vertical layout>
+                <!--<div class="position_filter">-->
+                <div class="form_block positionBlock">
+                    <div id="headerTitle">Position</div>
+                    <div class="input_container" vertical layout>
+                        <label class="input_label">Chromosomal Location</label>
+                        <textarea id="region" name="region" placeholder="1:1-1000000,2:1-1000000"
+                                  value="{{ regionValue }}" rows="3"
+                                  required?="{{ (regionValue == '') }}">
+                        </textarea>
+                    </div>
+                    <!--<div class="input_container" vertical layout>-->
+                    <!--<label class="input_label">SNP id</label>-->
+                    <!--<textarea id="region" name="region" value="{{ regionValue }}" rows="3"-->
+                    <!--required?="{{ (regionValue == '') }}">-->
+                    <!--</textarea>-->
+                    <!--</div>-->
+                    <div class="input_container" vertical layout>
+                        <label class="input_label">Gene / Transcript</label>
+                        <textarea id="gene" name="gene" placeholder="BRCA2,PPL"
+                                  value="{{ geneValue }}" rows="3"
+                                  required?="{{ (geneValue == '') }}"></textarea>
 
-                            <textarea id="region" name="region" placeholder="1:1-1000000,2:1-1000000"
-                                      value="{{ regionValue }}" rows="3"></textarea>
-                        </div>
-                        <!--<div class="input_container" vertical layout>-->
-                        <!--<label class="input_label">SNP id</label>-->
-                        <!--<textarea id="snp" name="snp" type="text" rows="3"></textarea>-->
-                        <!--</div>-->
-                        <div class="input_container" vertical layout>
-                            <label class="input_label">Gene / Transcript</label>
-                            <textarea id="gene" name="gene" type="text" rows="3"></textarea>
-
-                            <div horizontal layout class="searchGene" end-justified>
-                                <input id="searchField" list="searchDataList" placeholder="Search gene" type="text"
-                                       style="width: 90px;">
-                                <datalist id="searchDataList"></datalist>
-                                <div id="quickSearchButton" class="button" style="border-left: none;">
-                                    <font-awesome icon="search"></font-awesome>
-                                </div>
+                        <div horizontal layout class="searchGene" end-justified>
+                            <input id="searchField" list="searchDataList" placeholder="Search gene" type="text"
+                                   style="width: 90px;">
+                            <datalist id="searchDataList"></datalist>
+                            <div id="quickSearchButton" class="button" style="border-left: none;">
+                                <font-awesome icon="search"></font-awesome>
                             </div>
                         </div>
                     </div>
-                    <div class="form_block" vertical layout>
-                        <div id="headerTitle">Studies</div>
-                        <div id="studies_div">
-                            <core-list data="{{ studyNames }}" height="20px" class="selector_list">
-                                <template>
-                                    <core-label center horizontal layout>
-                                        <paper-checkbox class="blue studyName"
-                                                        for
-                                                        on-click="{{ studyClick }}"
-                                                        value="{{ model.name }}" checked></paper-checkbox>
-                                        <div class="elemLabel" flex>{{ model.name }}</div>
-                                    </core-label>
-                                </template>
-                            </core-list>
-                        </div>
-                        <div class="filter_box" layout end-justified horizontal>
-                            <input type="text" on-keyup="{{ studyKeyUp }}" placeholder="Filter:"/>
-                        </div>
-                    </div>
-                    <div class="form_block">
-                        <div id="headerTitle">Diseases</div>
-                        <div id="diseases_div">
-                            <core-list data="{{ diseases }}" height="20px">
-                                <template>
-
-                                    <core-label center horizontal layout>
-                                        <paper-checkbox class="blue diseaseName"
-                                                        for
-                                                        on-click="{{ diseaseClick }}"
-                                                        value="{{ model.name }}"></paper-checkbox>
-                                        <div flex>{{ model.name }}</div>
-                                    </core-label>
-
-
-                                </template>
-                            </core-list>
-                        </div>
-                        <div class="filter_box" layout end-justified horizontal>
-                            <input type="text" on-keyup="{{ diseaseKeyUp }}" placeholder="Filter:"/>
-                        </div>
-                    </div>
-                    <div class="form_block">
-                        <div id="headerTitle">Phenotypes</div>
-                        <div class="sdp_block" id="phenotypes_div">
-                            <core-list data="{{ phenotype }}" height="20px">
-                                <template>
-                                    <core-label center horizontal layout>
-                                        <paper-checkbox class="blue phenotypeName"
-                                                        for
-                                                        on-click="{{ phenotypeClick }}"
-                                                        value="{{ model.name }}"></paper-checkbox>
-                                        <div flex>{{ model.name }}</div>
-                                    </core-label>
-                                </template>
-                            </core-list>
-                        </div>
-                        <div class="filter_box" horizontal layout end-justified>
-                            <input type="text" on-keyup="{{ phenotypeKeyUp }}" placeholder="Filter:"/>
-                        </div>
-                    </div>
                 </div>
-                <div id="buttons_container" horizontal layout end-justified>
-                    <paper-button raised on-click="{{ clearForm }}">Clear</paper-button>
-                    <paper-button raised on-click="{{ submitForm }}">Submit</paper-button>
+                <div class="form_block" vertical layout>
+                    <div id="headerTitle">Studies</div>
+                    <div id="studies_div">
+                        <core-list data="{{ studyNames }}" height="20px" class="selector_list">
+                            <template>
+                                <core-label center horizontal layout>
+                                    <paper-checkbox class="blue studyName"
+                                                    for
+                                                    on-click="{{ studyClick }}"
+                                                    value="{{ model.name }}" checked></paper-checkbox>
+                                    <div class="elemLabel" flex>{{ model.name }}</div>
+                                </core-label>
+                            </template>
+                        </core-list>
+                    </div>
+                    <!--<div class="filter_box" layout end-justified horizontal>-->
+                    <!--<input type="text" on-keyup="{{ studyKeyUp }}" placeholder="Filter:"/>-->
+                    <!--</div>-->
                 </div>
+                <div class="form_block">
+                    <div id="headerTitle">Diseases</div>
+                    <div id="diseases_div">
+                        <core-list data="{{ diseases }}" height="20px">
+                            <template>
+
+                                <core-label center horizontal layout>
+                                    <paper-checkbox class="blue diseaseName"
+                                                    for
+                                                    on-click="{{ diseaseClick }}"
+                                                    value="{{ model.name }}"></paper-checkbox>
+                                    <div flex>{{ model.name }}</div>
+                                </core-label>
+
+
+                            </template>
+                        </core-list>
+                    </div>
+                    <!--<div class="filter_box" layout end-justified horizontal>-->
+                    <!--<input type="text" on-keyup="{{ diseaseKeyUp }}" placeholder="Filter:"/>-->
+                    <!--</div>-->
+                </div>
+                <div class="form_block">
+                    <div id="headerTitle">Phenotypes</div>
+                    <div class="sdp_block" id="phenotypes_div">
+                        <core-list data="{{ phenotype }}" height="20px">
+                            <template>
+                                <core-label center horizontal layout>
+                                    <paper-checkbox class="blue phenotypeName"
+                                                    for
+                                                    on-click="{{ phenotypeClick }}"
+                                                    value="{{ model.name }}"></paper-checkbox>
+                                    <div flex>{{ model.name }}</div>
+                                </core-label>
+                            </template>
+                        </core-list>
+                    </div>
+                    <!--<div class="filter_box" horizontal layout end-justified>-->
+                    <!--<input type="text" on-keyup="{{ phenotypeKeyUp }}" placeholder="Filter:"/>-->
+                    <!--</div>-->
+                </div>
+            </div>
+            <div id="buttons_container" horizontal layout end-justified>
+                <!--<input type="submit" name="submit" id="" value="submit"/>-->
+                <paper-button raised on-click="{{ clearForm }}">Clear</paper-button>
+                <paper-button raised on-click="{{ submitForm }}">Submit</paper-button>
             </div>
         </form>
         <!--</core-collapse>-->
     </template>
     <script>
         Polymer({
-            regionValue: '1:1004608-1019573',
+            regionValue: '1:1-1019573',
+            genevalue: '',
+            snpValue: '',
             created: function () {
 
                 this.studies = [];
@@ -332,7 +340,6 @@
                 return results;
             },
             submitForm: function () {
-
                 var me = this;
                 var auxStudies = [];
                 var auxDiseases = [];
@@ -341,52 +348,57 @@
 
                 var search = false;
 
-                Object.keys(this.formStudies).forEach(function (key) {
-                    var value = me.formStudies[key];
-                    if (value) {
-                        auxStudies.push(key);
-                    }
-                });
-
-                Object.keys(this.formDiseases).forEach(function (key) {
-                    var value = me.formDiseases[key];
-                    if (value) {
-                        auxDiseases.push(key);
-                    }
-                });
-
-                Object.keys(this.formPhenotypes).forEach(function (key) {
-                    var value = me.formPhenotypes[key];
-                    if (value) {
-                        auxPhenotypes.push(key);
-                    }
-                });
-
-
-                if (auxStudies.length > 0) {
-                    query.studies = auxStudies.join(",");
-                    search |= true;
-                }
-                if (auxDiseases.length > 0) {
-                    query.diseases = auxDiseases.join(",");
-                    search |= true;
-                }
-
-                if (auxPhenotypes.length > 0) {
-                    query.phenotypes = auxPhenotypes.join(",");
-                    search |= true;
-                }
-
-                if (search) {
-
-                    var url = ExomeServerManager.variants.fetch({
-                        id: this.regionValue,
-                        query: query,
-                        request: {
-                            url: true
+                if (this.$.filter_form.checkValidity()) {
+                    Object.keys(this.formStudies).forEach(function (key) {
+                        var value = me.formStudies[key];
+                        if (value) {
+                            auxStudies.push(key);
                         }
                     });
-                    this.formURL = url;
+
+                    Object.keys(this.formDiseases).forEach(function (key) {
+                        var value = me.formDiseases[key];
+                        if (value) {
+                            auxDiseases.push(key);
+                        }
+                    });
+
+                    Object.keys(this.formPhenotypes).forEach(function (key) {
+                        var value = me.formPhenotypes[key];
+                        if (value) {
+                            auxPhenotypes.push(key);
+                        }
+                    });
+
+
+                    if (auxStudies.length > 0) {
+                        query.studies = auxStudies.join(",");
+                        search |= true;
+                    }
+                    if (auxDiseases.length > 0) {
+                        query.diseases = auxDiseases.join(",");
+                        search |= true;
+                    }
+
+                    if (auxPhenotypes.length > 0) {
+                        query.phenotypes = auxPhenotypes.join(",");
+                        search |= true;
+                    }
+
+                    if (search) {
+
+                        var url = ExomeServerManager.variants.fetch({
+                            id: this.regionValue,
+                            query: query,
+                            request: {
+                                url: true
+                            }
+                        });
+                        this.formURL = url;
+                    }
+                }else{
+                
+                    alert("Please add a region/gene and check any study, disease or phenotype");
                 }
 
             }

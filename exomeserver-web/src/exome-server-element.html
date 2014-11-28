@@ -48,12 +48,12 @@
 
             es-filter-form-element {
                 margin: 20px;
-                border-radius: 10px;
+                border-radius: 5px;
 
             }
 
             es-data-grid-element {
-                border-radius: 10px;
+                border-radius: 5px;
                 padding: 5px;
             }
 
@@ -64,12 +64,13 @@
 
         <div id="es-container" vertical layout>
             <template if="{{ selectedOption == 'search' }}">
-            <div horizontal layout center-justified>
-                <es-filter-form-element studies="{{ studies }}" formURL="{{ formURL }}"
-                clear="{{ clearForm }}" horizontal layout center-justified></es-filter-form-element>
-            </div>
-            <es-data-grid-element formURL="{{ formURL }} " studies="{{ staticStudies }}" clear="{{ clearForm }}"
+                <div horizontal layout center-justified>
+                    <es-filter-form-element studies="{{ studies }}" formURL="{{ formURL }}"
+                                            clear="{{ clearForm }}" horizontal layout
+                                            center-justified></es-filter-form-element>
+                    <es-data-grid-element formURL="{{ formURL }} " studies="{{ staticStudies }}" clear="{{ clearForm }}"
                                           flex></es-data-grid-element>
+                </div>
             </template>
 
             <template if="{{ selectedOption == 'studies' }}">
