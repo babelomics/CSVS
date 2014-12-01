@@ -22,14 +22,11 @@
                 position: relative;
                 background-color: #FFFFFF;
 
-                margin: 20px;
-                /*max-width: 1500px;*/
-
             }
 
             sortable-table {
                 height: 340px;
-                max-width: 100%;
+                /*max-width: 100%;*/
                 border: 1px solid #d3d3d3;
                 overflow-x: auto;
             }
@@ -44,24 +41,20 @@
             }
 
             .bootstrap::shadow > table > tfoot > tr > td > .defaultPager {
-
                 max-height: 15px;
             }
 
-            .bootstrap::shadow .btn-sm{
-
+            .bootstrap::shadow .btn-sm {
                 padding: 1px 4px;
             }
-
 
             .bootstrap::shadow > table > tbody > tr > td {
                 padding: 3px;
             }
 
             #panel {
-                width: 100%;
-                height: 100%;
                 background-color: #FFF;
+                overflow-y: auto;
             }
 
             .headerexpand:after {
@@ -75,7 +68,10 @@
 
             .container > span {
                 margin-left: 10px;
+            }
 
+            #genomeViewer {
+                transition: height 0.15s;
             }
 
         </style>
@@ -286,10 +282,11 @@
             },
             _getEffect: function (record) {
                 var req = record.chromosome + ":" + record.start + ":" + record.reference + ":" + record.alternate;
+                var url = "http://ws.bioinfo.cipf.es/cellbase/rest/latest/hsa/genomic/variant/" + req + "/consequence_type?of=json";
+                console.log(url);
 
                 $.ajax({
-                    //url: url,
-                    url: "http://ws.bioinfo.cipf.es/cellbase/rest/latest/hsa/genomic/variant/" + req + "/consequence_type?of=json",
+                    url: url,
                     dataType: 'json',
                     async: false,
                     success: function (response, textStatus, jqXHR) {

@@ -1,8 +1,5 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-
 <link rel="import" href="../bower_components/polymer-fontawesome/polymer-fontawesome.html">
-<link rel="import" href="../bower_components/sortable-table/sortable-table.html">
-<link rel="import" href="../bower_components/core-collapse/core-collapse.html">
 
 <link rel=" import" href="../lib/jsorolla/src/lib/components/opencga/jso-header.html">
 <link rel="import" href="es-filter-form-element.html">
@@ -18,8 +15,6 @@
                 display: block;
                 position: relative;
                 box-sizing: border-box;
-                height: 100vh;
-                background-color: #314559;
 
                 -webkit-touch-callout: none;
                 -webkit-user-select: none;
@@ -29,13 +24,13 @@
                 user-select: none;
                 cursor: default;
 
+                background-color: #314559;
                 font-size: 13px;
             }
 
-            #es-container {
+            #container {
                 position: relative;
                 height: calc(100vh - 60px);
-                width: 100%;
             }
 
             [hide=true] {
@@ -49,12 +44,12 @@
             es-filter-form-element {
                 margin: 20px;
                 border-radius: 5px;
-
             }
 
             es-data-grid-element {
                 border-radius: 5px;
                 padding: 5px;
+                margin: 20px 20px 20px 0px;
             }
 
         </style>
@@ -62,13 +57,14 @@
                     options="{{ options }}"
                     selectedOption="{{ selectedOption }}"></jso-header>
 
-        <div id="es-container" vertical layout>
+        <div id="container" vertical layout>
             <template if="{{ selectedOption == 'search' }}">
                 <div horizontal layout center-justified>
                     <es-filter-form-element studies="{{ studies }}" formURL="{{ formURL }}"
                                             clear="{{ clearForm }}" horizontal layout
                                             center-justified></es-filter-form-element>
-                    <es-data-grid-element formURL="{{ formURL }} " studies="{{ staticStudies }}" clear="{{ clearForm }}"
+                    <es-data-grid-element formURL="{{ formURL }} " studies="{{ staticStudies }}"
+                                          clear="{{ clearForm }}"
                                           flex></es-data-grid-element>
                 </div>
             </template>
