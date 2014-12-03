@@ -392,18 +392,7 @@
                     this.columns.splice(pos++, 0, {
                         name: study.sname,
                         title: study.sname + " MAF",
-                        formula: function (row) {
-
-                            var maf = "";
-                            try {
-                                var maf = row.sourceEntries[study.sname].stats.maf;
-                                maf = maf.toFixed(me.floatDecimals);
-
-                            } catch (e) {
-
-                            }
-                            return maf;
-                        }
+                        formula: new Function("row", "var maf = ''; try { var maf = row.sourceEntries['" + study.sname + "'].stats.maf; maf = maf.toFixed(" + me.floatDecimals + "); } catch (e) { } return maf; ")
                     });
                 }
             },
