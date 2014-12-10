@@ -90,27 +90,31 @@
                                 rowSelection="true">
 
                     <template id="mafHeaderTemplate">
-                        <div vertical layout>
-                            <div horizontal layout center-justified>Total</div>
-                            <div horizontal layout>
-                                <div>0/0</div>
-                                <div>0/1</div>
-                                <div>1/1</div>
-                                <div>Ref. MAF</div>
-                                <div>Alt. MAF</div>
-                                <div>MAF</div>
+                        <th>
+                            <div vertical layout>
+                                <div horizontal layout center-justified>Total</div>
+                                <div horizontal layout>
+                                    <div flex>0/0</div>
+                                    <div flex>0/1</div>
+                                    <div flex>1/1</div>
+                                    <div flex>Ref. MAF</div>
+                                    <div flex>Alt. MAF</div>
+                                    <div flex>MAF</div>
+                                </div>
                             </div>
-                        </div>
+                        </th>
                     </template>
+
+
 
                     <template id="mafCellTemplate">
                         <div horizontal layout>
-                            <div>{{ row.sourceEntries.MAF.stats.genotypesCount["0/0"] || "." }}</div>
-                            <div>{{ row.sourceEntries.MAF.stats.genotypesCount["0/1"] || "."}}</div>
-                            <div>{{ row.sourceEntries.MAF.stats.genotypesCount["1/1"] || "."}}</div>
-                            <div>{{ row.sourceEntries.MAF.stats.maf }}</div>
-                            <div>{{ row.sourceEntries.MAF.stats.refMaf }}</div>
-                            <div>{{ row.sourceEntries.MAF.stats.alftMaf }}</div>
+                            <div flex horizontal layout center-justified>{{ row.total.gt00 || "." }}</div>
+                            <div flex horizontal layout center-justified>{{ row.total.gt01 || "."}}</div>
+                            <div flex horizontal layout center-justified>{{ row.total.gt11 || "."}}</div>
+                            <div flex horizontal layout center-justified>{{ row.total.maf}}</div>
+                            <div flex horizontal layout center-justified>{{ row.total.refmaf }}</div>
+                            <div flex horizontal layout center-justified>{{ row.total.altmaf }}</div>
                         </div>
                     </template>
 
@@ -118,7 +122,8 @@
                                  role="datasource"
                                  url="{{ formURL }}"
                                  start=0
-                                 length=10>
+                                 length=10
+                                 parseFunction="{{ parseFunction }}">
                     </opencb-ajax>
 
                 </sortable-table>
@@ -127,11 +132,10 @@
         </div>
     </template>
     <script>
-
-
         Polymer({
             floatDecimals: 3,
             expanded: true,
+            parseFunction: null,
             created: function () {
 
                 var me = this;
@@ -159,152 +163,150 @@
                             return row.reference + ">" + row.alternate;
                         }
                     },
-                    {
-                        name: 'id', title: 'Id'
-                    }
+                    {name: 'id', title: 'Id'}
                     ,
                     {
-                        name: 'mafAux',
-                        title: 'MAF Aux',
+                        name: 'total',
+                        title: 'MAF',
                         cellTemplate: 'mafCellTemplate',
                         headerTemplate: 'mafHeaderTemplate'
                     },
-                    {
-                        name: 'files_maf_0_0', title: 'Count: 0/0',
-                        formula: function (row) {
-
-                            var aux = row.sourceEntries.MAF.stats.genotypesCount["0/0"];
-                            if ("0|0" in row.sourceEntries.MAF.stats.genotypesCount) {
-                                if (aux != null) {
-                                    aux += row.sourceEntries.MAF.stats.genotypesCount["0|0"];
-                                } else {
-                                    aux = row.sourceEntries.MAF.stats.genotypesCount["0|0"];
-                                }
-                            }
-                            return aux;
-                        }
-                    }
-                    ,
-                    {
-                        name: 'files_maf_0_1', title: 'Count: 0/1',
-                        formula: function (row) {
-                            var aux = row.sourceEntries.MAF.stats.genotypesCount["0/1"];
-                            if ("0|1" in row.sourceEntries.MAF.stats.genotypesCount) {
-                                if (aux != null) {
-                                    aux += row.sourceEntries.MAF.stats.genotypesCount["0|1"];
-                                } else {
-                                    aux = row.sourceEntries.MAF.stats.genotypesCount["0|1"];
-                                }
-                            }
-                            return aux;
-                        }
-                    }
-                    ,
-                    {
-                        name: 'files_maf_1_1', title: 'Count: 1/1',
-                        formula: function (row) {
-                            var aux = row.sourceEntries.MAF.stats.genotypesCount["1/1"];
-                            if ("1|1" in row.sourceEntries.MAF.stats.genotypesCount) {
-                                if (aux != null) {
-                                    aux += row.sourceEntries.MAF.stats.genotypesCount["1|1"];
-                                } else {
-                                    aux = row.sourceEntries.MAF.stats.genotypesCount["1|1"];
-                                }
-                            }
-                            return aux;
-                        }
-                    }
-                    ,
-                    {
-                        name: 'freqRef', title: "Ref. Freq",
-                        formula: function (row) {
-                            var genotypes = row.sourceEntries.MAF.stats.genotypesCount;
-
-                            var count = 0;
-                            var total = 0;
-
-                            Object.keys(genotypes).forEach(function (key) {
-                                var value = genotypes[key];
-                                var splits = key.split(/[/|]/);
-                                for (var i = 0; i < splits.length; i++) {
-                                    var g = splits[i];
-                                    if (g == "0") {
-                                        count += value;
-                                    }
-                                    total += value;
-                                }
-                            });
-
-
-                            maf = count / total;
-
-                            return maf.toFixed(me.floatDecimals);
-                        }
-                    }
-                    ,
-                    {
-                        name: 'freqAlt', title: "Alt. Freq",
-                        formula: function (row) {
-                            var genotypes = row.sourceEntries.MAF.stats.genotypesCount;
-
-                            var count = 0;
-                            var total = 0;
-
-                            Object.keys(genotypes).forEach(function (key) {
-                                var value = genotypes[key];
-                                var splits = key.split(/[/|]/);
-                                for (var i = 0; i < splits.length; i++) {
-                                    var g = splits[i];
-                                    if (g == "1") {
-                                        count += value;
-                                    }
-                                    total += value;
-                                }
-                            });
-
-
-                            maf = count / total;
-
-                            return maf.toFixed(3);
-                        }
-                    }
-                    ,
-                    {
-                        name: 'maf', title: 'MAF',
-                        formula: function (row) {
-                            var genotypes = row.sourceEntries.MAF.stats.genotypesCount;
-
-                            var count = {};
-                            var total = 0;
-                            var maf = 1;
-                            var mafAllele = -1;
-
-                            Object.keys(genotypes).forEach(function (key) {
-                                var value = genotypes[key];
-                                var splits = key.split(/[/|]/);
-                                for (var i = 0; i < splits.length; i++) {
-                                    var g = splits[i];
-                                    if (!(g in count)) {
-                                        count[g] = 0;
-                                    }
-                                    count[g] += value;
-                                    total += value;
-                                }
-                            });
-
-                            Object.keys(count).forEach(function (key) {
-                                var value = count[key];
-
-                                var auxMaf = value / total;
-                                if (auxMaf < maf) {
-                                    maf = auxMaf;
-                                    mafAllele = key;
-                                }
-                            });
-                            return maf.toFixed(3);
-                        }
-                    }
-                    ,
+//                    {
+//                        name: 'files_maf_0_0', title: 'Count: 0/0',
+//                        formula: function (row) {
+//
+//                            var aux = row.sourceEntries.MAF.stats.genotypesCount["0/0"];
+//                            if ("0|0" in row.sourceEntries.MAF.stats.genotypesCount) {
+//                                if (aux != null) {
+//                                    aux += row.sourceEntries.MAF.stats.genotypesCount["0|0"];
+//                                } else {
+//                                    aux = row.sourceEntries.MAF.stats.genotypesCount["0|0"];
+//                                }
+//                            }
+//                            return aux;
+//                        }
+//                    }
+//                    ,
+//                    {
+//                        name: 'files_maf_0_1', title: 'Count: 0/1',
+//                        formula: function (row) {
+//                            var aux = row.sourceEntries.MAF.stats.genotypesCount["0/1"];
+//                            if ("0|1" in row.sourceEntries.MAF.stats.genotypesCount) {
+//                                if (aux != null) {
+//                                    aux += row.sourceEntries.MAF.stats.genotypesCount["0|1"];
+//                                } else {
+//                                    aux = row.sourceEntries.MAF.stats.genotypesCount["0|1"];
+//                                }
+//                            }
+//                            return aux;
+//                        }
+//                    }
+//                    ,
+//                    {
+//                        name: 'files_maf_1_1', title: 'Count: 1/1',
+//                        formula: function (row) {
+//                            var aux = row.sourceEntries.MAF.stats.genotypesCount["1/1"];
+//                            if ("1|1" in row.sourceEntries.MAF.stats.genotypesCount) {
+//                                if (aux != null) {
+//                                    aux += row.sourceEntries.MAF.stats.genotypesCount["1|1"];
+//                                } else {
+//                                    aux = row.sourceEntries.MAF.stats.genotypesCount["1|1"];
+//                                }
+//                            }
+//                            return aux;
+//                        }
+//                    }
+//                    ,
+//                    {
+//                        name: 'freqRef', title: "Ref. Freq",
+//                        formula: function (row) {
+//                            var genotypes = row.sourceEntries.MAF.stats.genotypesCount;
+//
+//                            var count = 0;
+//                            var total = 0;
+//
+//                            Object.keys(genotypes).forEach(function (key) {
+//                                var value = genotypes[key];
+//                                var splits = key.split(/[/|]/);
+//                                for (var i = 0; i < splits.length; i++) {
+//                                    var g = splits[i];
+//                                    if (g == "0") {
+//                                        count += value;
+//                                    }
+//                                    total += value;
+//                                }
+//                            });
+//
+//
+//                            maf = count / total;
+//
+//                            return maf.toFixed(me.floatDecimals);
+//                        }
+//                    }
+//                    ,
+//                    {
+//                        name: 'freqAlt', title: "Alt. Freq",
+//                        formula: function (row) {
+//                            var genotypes = row.sourceEntries.MAF.stats.genotypesCount;
+//
+//                            var count = 0;
+//                            var total = 0;
+//
+//                            Object.keys(genotypes).forEach(function (key) {
+//                                var value = genotypes[key];
+//                                var splits = key.split(/[/|]/);
+//                                for (var i = 0; i < splits.length; i++) {
+//                                    var g = splits[i];
+//                                    if (g == "1") {
+//                                        count += value;
+//                                    }
+//                                    total += value;
+//                                }
+//                            });
+//
+//
+//                            maf = count / total;
+//
+//                            return maf.toFixed(3);
+//                        }
+//                    }
+//                    ,
+//                    {
+//                        name: 'maf', title: 'MAF',
+//                        formula: function (row) {
+//                            var genotypes = row.sourceEntries.MAF.stats.genotypesCount;
+//
+//                            var count = {};
+//                            var total = 0;
+//                            var maf = 1;
+//                            var mafAllele = -1;
+//
+//                            Object.keys(genotypes).forEach(function (key) {
+//                                var value = genotypes[key];
+//                                var splits = key.split(/[/|]/);
+//                                for (var i = 0; i < splits.length; i++) {
+//                                    var g = splits[i];
+//                                    if (!(g in count)) {
+//                                        count[g] = 0;
+//                                    }
+//                                    count[g] += value;
+//                                    total += value;
+//                                }
+//                            });
+//
+//                            Object.keys(count).forEach(function (key) {
+//                                var value = count[key];
+//
+//                                var auxMaf = value / total;
+//                                if (auxMaf < maf) {
+//                                    maf = auxMaf;
+//                                    mafAllele = key;
+//                                }
+//                            });
+//                            return maf.toFixed(3);
+//                        }
+//                    }
+//                    ,
                     {
                         name: 'sift', title: 'SIFT'
                     }
@@ -317,7 +319,75 @@
                         name: 'phenotype', title: 'Phenotype'
                     }
                     ,
-                ]
+                ];
+
+                this.parseFunction = function (data) {
+                    for (var i = 0; i < data.length; i++) {
+                        var row = data[i];
+                        if (row.sourceEntries.MAF) {
+                            row.total = {};
+
+                            var gt00 = row.sourceEntries.MAF.stats.genotypesCount["0/0"];
+                            if ("0|0" in row.sourceEntries.MAF.stats.genotypesCount) {
+                                if (gt00 != null) {
+                                    gt00 += row.sourceEntries.MAF.stats.genotypesCount["0|0"];
+                                } else {
+                                    gt00 = row.sourceEntries.MAF.stats.genotypesCount["0|0"];
+                                }
+                            }
+                            row.total.gt00 = gt00;
+
+                            var gt01 = row.sourceEntries.MAF.stats.genotypesCount["0/1"];
+                            if ("0|1" in row.sourceEntries.MAF.stats.genotypesCount) {
+                                if (gt01 != null) {
+                                    gt01 += row.sourceEntries.MAF.stats.genotypesCount["0|1"];
+                                } else {
+                                    gt01 = row.sourceEntries.MAF.stats.genotypesCount["0|1"];
+                                }
+                            }
+                            row.total.gt01 = gt01;
+
+                            var gt11 = row.sourceEntries.MAF.stats.genotypesCount["1/1"];
+                            if ("0|1" in row.sourceEntries.MAF.stats.genotypesCount) {
+                                if (gt11 != null) {
+                                    gt11 += row.sourceEntries.MAF.stats.genotypesCount["1|1"];
+                                } else {
+                                    gt11 = row.sourceEntries.MAF.stats.genotypesCount["1|1"];
+                                }
+                            }
+                            row.total.gt11 = gt11;
+
+                            var genotypes = row.sourceEntries.MAF.stats.genotypesCount;
+
+                            var countRef = 0;
+                            var countAlt = 0;
+                            var total = 0;
+
+                            Object.keys(genotypes).forEach(function (key) {
+                                var value = genotypes[key];
+                                var splits = key.split(/[/|]/);
+                                for (var i = 0; i < splits.length; i++) {
+                                    var g = splits[i];
+                                    if (g == "0") {
+                                        countRef += value;
+                                    } else if (g == "1") {
+                                        countAlt += value;
+                                    }
+                                    total += value;
+                                }
+                            });
+
+
+                            var refmaf = countRef / total;
+                            var altmaf = countAlt / total;
+                            var maf = (refmaf < altmaf) ? refmaf : altmaf;
+                            row.total.refmaf = refmaf.toFixed(me.floatDecimals);
+                            row.total.altmaf = altmaf.toFixed(me.floatDecimals);
+                            row.total.maf = maf.toFixed(me.floatDecimals);
+                        }
+                    }
+                    return data;
+                }
             }
             ,
             domReady: function () {

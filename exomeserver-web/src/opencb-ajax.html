@@ -4,7 +4,7 @@
 <polymer-element hidden
                  name="opencb-ajax"
                  attributes="url withCredentials start length search sortColumn
-                 sortDescending columns data dataSize loading"
+                 sortDescending columns data dataSize loading parseFunction"
         >
     <script>
         "use strict";
@@ -23,6 +23,7 @@
             columnsCache: null,
             loading: false,
             customParams: null,
+            parseFunction: null,
             created: function () {
                 this.columnsCache = [];
             },
@@ -46,7 +47,12 @@
                 if (response) {
                     var data = response.response[0]; // TODO aaleman: what if response.length > 1
                     var dataSize = data.numTotalResults;
-                    this.data = data.result;
+
+                    if (this.parseFunction != null) {
+                        this.data = this.parseFunction(data.result);
+                    } else {
+                        this.data = data.result;
+                    }
                     this.dataSize = dataSize;
 
                     this.fire('data-updated', {data: this.data, dataSize: this.dataSize});
