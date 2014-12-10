@@ -96,54 +96,55 @@ public class ExomeServerMain {
             VariantSource source = new VariantSource(variantsPath.getFileName().toString(), null, null, null, st, VariantSource.Aggregation.NONE);
 
             loadVariants(source, variantsPath, filePath, credentials);
-        } else if (command instanceof OptionsParser.CommandAddVariants) {
-            OptionsParser.CommandAddVariants c = (OptionsParser.CommandAddVariants) command;
-
-            Path variantsPath = Paths.get(c.input + ".variants.json.gz");
-            Path filePath = Paths.get(c.input + ".file.json.gz");
-            Path credentials = Paths.get(c.credentials);
-
-            VariantStudy.StudyType st = VariantStudy.StudyType.CASE_CONTROL;
-
-            VariantSource source = new VariantSource(variantsPath.getFileName().toString(), null, null, null, st, VariantSource.Aggregation.NONE);
-
-            addVariants(source, variantsPath, filePath, credentials);
-
         }
+//        else if (command instanceof OptionsParser.CommandAddVariants) {
+//            OptionsParser.CommandAddVariants c = (OptionsParser.CommandAddVariants) command;
+//
+//            Path variantsPath = Paths.get(c.input + ".variants.json.gz");
+//            Path filePath = Paths.get(c.input + ".file.json.gz");
+//            Path credentials = Paths.get(c.credentials);
+//
+//            VariantStudy.StudyType st = VariantStudy.StudyType.CASE_CONTROL;
+//
+//            VariantSource source = new VariantSource(variantsPath.getFileName().toString(), null, null, null, st, VariantSource.Aggregation.NONE);
+//
+//            addVariants(source, variantsPath, filePath, credentials);
+//
+//        }
 
     }
 
-    private static void addVariants(VariantSource source, Path variantsPath, Path filePath, Path credentialsPath) throws IOException {
-        VariantReader reader = new VariantJsonReader(source, variantsPath.toAbsolutePath().toString(), filePath.toAbsolutePath().toString());
-
-
-        List<Task<Variant>> taskList = new SortedList<>();
-        List<VariantWriter> writers = new ArrayList<>();
-
-        Properties properties = new Properties();
-        properties.load(new InputStreamReader(new FileInputStream(credentialsPath.toString())));
-        OpenCGACredentials credentials = new MongoCredentials(properties);
-        VariantWriter mongoWriter = new ExomeServerVariantMongoWriter(source, (MongoCredentials) credentials,
-                properties.getProperty("collection_variants", "variants"),
-                properties.getProperty("collection_files", "files"));
-
-        mongoWriter.includeStats(true);
-        mongoWriter.includeEffect(false);
-        mongoWriter.includeSamples(false);
-
-
-        Task<Variant> updateStats = new ExomeServerVariantUpdateStatsTask((MongoCredentials) credentials, source);
-
-        writers.add(mongoWriter);
-
-        taskList.add(updateStats);
-
-        VariantRunner variantRunner = new VariantRunner(source, reader, null, writers, taskList, 100);
-
-        System.out.println("Loading variants...");
-        variantRunner.run();
-        System.out.println("Variants loaded!");
-    }
+//    private static void addVariants(VariantSource source, Path variantsPath, Path filePath, Path credentialsPath) throws IOException {
+//        VariantReader reader = new VariantJsonReader(source, variantsPath.toAbsolutePath().toString(), filePath.toAbsolutePath().toString());
+//
+//
+//        List<Task<Variant>> taskList = new SortedList<>();
+//        List<VariantWriter> writers = new ArrayList<>();
+//
+//        Properties properties = new Properties();
+//        properties.load(new InputStreamReader(new FileInputStream(credentialsPath.toString())));
+//        OpenCGACredentials credentials = new MongoCredentials(properties);
+//        VariantWriter mongoWriter = new ExomeServerVariantMongoWriter(source, (MongoCredentials) credentials,
+//                properties.getProperty("collection_variants", "variants"),
+//                properties.getProperty("collection_files", "files"));
+//
+//        mongoWriter.includeStats(true);
+//        mongoWriter.includeEffect(false);
+//        mongoWriter.includeSamples(false);
+//
+//
+//        Task<Variant> updateStats = new ExomeServerVariantUpdateStatsTask((MongoCredentials) credentials, source);
+//
+//        writers.add(mongoWriter);
+//
+//        taskList.add(updateStats);
+//
+//        VariantRunner variantRunner = new VariantRunner(source, reader, null, writers, taskList, 100);
+//
+//        System.out.println("Loading variants...");
+//        variantRunner.run();
+//        System.out.println("Variants loaded!");
+//    }
 
     private static void loadVariants(VariantSource source, Path variantsPath, Path filePath, Path credentialsPath) throws IOException {
 

@@ -1,6 +1,6 @@
 var ExomeServerManager = {
 //    host: (typeof OPENCGA_HOST === 'undefined') ? 'http://ws.bioinfo.cipf.es/opencga/rest' : OPENCGA_HOST,
-    host: "http://aaleman:8080/exomeserver/rest",
+    host: "http://ws-beta.bioinfo.cipf.es/exomeserver/rest",
     version: 'v3',
 
     studies: {

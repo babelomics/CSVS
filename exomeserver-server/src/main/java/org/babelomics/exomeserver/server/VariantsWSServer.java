@@ -157,7 +157,12 @@ public class VariantsWSServer extends ExomeServerWSServer {
         System.out.println(aux);
 
         List<QueryResult> allVariantsByRegionList = variantMongoDbAdaptor.getAllVariantsByRegionListAndFileIds(regions, aux, queryOptions);
-        System.out.println(allVariantsByRegionList);
+
+
+        for (QueryResult qr : allVariantsByRegionList) {
+            Variant v = (Variant) qr.getResult().get(0);
+            System.out.println("v.getSourceEntries() = " + v.getSourceEntries());
+        }
 
         finalStudyElements.addAll(staticStudyElements);
         removeStudies(allVariantsByRegionList, finalStudyElements);
@@ -176,8 +181,10 @@ public class VariantsWSServer extends ExomeServerWSServer {
 
         List<String> ids = new ArrayList<>(finalStudyElements.size());
         for (StudyElement se : finalStudyElements) {
-            ids.add(se.getStudy() + "_" + se.toString());
+            ids.add((se.getStudy() + "_" + se.toString()).toUpperCase());
         }
+
+        System.out.println("ids = " + ids);
 
         for (QueryResult qr : allVariantsByRegionList) {
             List<Variant> variantList = qr.getResult();
@@ -189,7 +196,7 @@ public class VariantsWSServer extends ExomeServerWSServer {
                     Map.Entry<String, VariantSourceEntry> entry = it.next();
                     VariantSourceEntry vse = entry.getValue();
 
-                    if (!ids.contains(entry.getKey())) {
+                    if (!ids.contains(entry.getKey().toUpperCase())) {
                         it.remove();
                     }
                 }

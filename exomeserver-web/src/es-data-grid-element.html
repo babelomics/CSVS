@@ -88,12 +88,39 @@
                                 columns="{{ columns }}"
                                 loading="true"
                                 rowSelection="true">
+
+                    <template id="mafHeaderTemplate">
+                        <div vertical layout>
+                            <div horizontal layout center-justified>Total</div>
+                            <div horizontal layout>
+                                <div>0/0</div>
+                                <div>0/1</div>
+                                <div>1/1</div>
+                                <div>Ref. MAF</div>
+                                <div>Alt. MAF</div>
+                                <div>MAF</div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template id="mafCellTemplate">
+                        <div horizontal layout>
+                            <div>{{ row.sourceEntries.MAF.stats.genotypesCount["0/0"] || "." }}</div>
+                            <div>{{ row.sourceEntries.MAF.stats.genotypesCount["0/1"] || "."}}</div>
+                            <div>{{ row.sourceEntries.MAF.stats.genotypesCount["1/1"] || "."}}</div>
+                            <div>{{ row.sourceEntries.MAF.stats.maf }}</div>
+                            <div>{{ row.sourceEntries.MAF.stats.refMaf }}</div>
+                            <div>{{ row.sourceEntries.MAF.stats.alftMaf }}</div>
+                        </div>
+                    </template>
+
                     <opencb-ajax id="opencbAjax"
                                  role="datasource"
                                  url="{{ formURL }}"
                                  start=0
-                                 length=10
+                                 length=10>
                     </opencb-ajax>
+
                 </sortable-table>
             </core-collapse>
             <div id="genomeViewer" flex></div>
@@ -115,8 +142,15 @@
                 this.region.load("1:1004608-1004608");
 
                 this.variants = [];
+
+                ;
+
+            },
+            ready: function () {
+                var me = this;
                 this.columns = [
-                    {name: 'chromosome', title: 'Chr'},
+//                    {name: 'chromosome', headerTemplate: "chromosomeTemplate", footerTemplate: "hiTemplate"},
+                    {name: 'chromosome', title: "Chr"},
                     {name: 'start', title: 'Position'},
                     {
                         name: 'alleles',
@@ -125,7 +159,16 @@
                             return row.reference + ">" + row.alternate;
                         }
                     },
-                    {name: 'id', title: 'Id'},
+                    {
+                        name: 'id', title: 'Id'
+                    }
+                    ,
+                    {
+                        name: 'mafAux',
+                        title: 'MAF Aux',
+                        cellTemplate: 'mafCellTemplate',
+                        headerTemplate: 'mafHeaderTemplate'
+                    },
                     {
                         name: 'files_maf_0_0', title: 'Count: 0/0',
                         formula: function (row) {
@@ -140,7 +183,8 @@
                             }
                             return aux;
                         }
-                    },
+                    }
+                    ,
                     {
                         name: 'files_maf_0_1', title: 'Count: 0/1',
                         formula: function (row) {
@@ -154,7 +198,8 @@
                             }
                             return aux;
                         }
-                    },
+                    }
+                    ,
                     {
                         name: 'files_maf_1_1', title: 'Count: 1/1',
                         formula: function (row) {
@@ -168,7 +213,8 @@
                             }
                             return aux;
                         }
-                    },
+                    }
+                    ,
                     {
                         name: 'freqRef', title: "Ref. Freq",
                         formula: function (row) {
@@ -194,7 +240,8 @@
 
                             return maf.toFixed(me.floatDecimals);
                         }
-                    },
+                    }
+                    ,
                     {
                         name: 'freqAlt', title: "Alt. Freq",
                         formula: function (row) {
@@ -220,7 +267,8 @@
 
                             return maf.toFixed(3);
                         }
-                    },
+                    }
+                    ,
                     {
                         name: 'maf', title: 'MAF',
                         formula: function (row) {
@@ -255,22 +303,33 @@
                             });
                             return maf.toFixed(3);
                         }
-                    },
-                    {name: 'sift', title: 'SIFT'},
-                    {name: 'polyphen', title: 'POLYPHEN'},
-                    {name: 'phenotype', title: 'Phenotype'},
-                ];
-            },
-            ready: function () {
-            },
+                    }
+                    ,
+                    {
+                        name: 'sift', title: 'SIFT'
+                    }
+                    ,
+                    {
+                        name: 'polyphen', title: 'POLYPHEN'
+                    }
+                    ,
+                    {
+                        name: 'phenotype', title: 'Phenotype'
+                    }
+                    ,
+                ]
+            }
+            ,
             domReady: function () {
                 this.createGenomeViewer();
                 this.genomeViewer.draw();
-            },
+            }
+            ,
             observe: {
                 '$.dataGrid.selected': "handleDataGridSelected",
                 '$.dataGrid.data': "handleDataGridChanged"
-            },
+            }
+            ,
             handleDataGridChanged: function (oldValue, newValue) {
 
                 for (var i = 0; i < newValue.length; i++) {
@@ -279,7 +338,8 @@
                     this._getPolyphenSift(variant);
                 }
                 this._getPhenotypes(newValue);
-            },
+            }
+            ,
             _getEffect: function (record) {
                 var req = record.chromosome + ":" + record.start + ":" + record.reference + ":" + record.alternate;
                 var url = "http://ws.bioinfo.cipf.es/cellbase/rest/latest/hsa/genomic/variant/" + req + "/consequence_type?of=json";
@@ -306,7 +366,8 @@
                         console.log('Error loading Effect');
                     }
                 });
-            },
+            }
+            ,
             _getPolyphenSift: function (variant) {
 
                 if (variant.aaPos != undefined && variant.aaPos >= 0) {
@@ -337,7 +398,8 @@
                         }
                     });
                 }
-            },
+            }
+            ,
             _getPhenotypes: function (records) {
                 var regs = [];
                 for (var i = 0; i < records.length; i++) {
@@ -368,7 +430,8 @@
                         }
                     });
                 }
-            },
+            }
+            ,
             handleDataGridSelected: function (oldValue, newValue) {
                 console.log(newValue);
                 var reg = newValue.chromosome + ":" + newValue.start + "-" + newValue.end;
@@ -376,10 +439,12 @@
                 this.genomeViewer.setRegion(region);
 
 
-            },
+            }
+            ,
             formURLChanged: function (oldValue, newValue) {
                 this.$.dataGrid.page = 1;
-            },
+            }
+            ,
             studiesChanged: function (oldValue, newValue) {
                 console.log("Studies GRID");
                 console.log(this.studies);
@@ -395,12 +460,14 @@
                         formula: new Function("row", "var maf = ''; try { var maf = row.sourceEntries['" + study.sname + "'].stats.maf; maf = maf.toFixed(" + me.floatDecimals + "); } catch (e) { } return maf; ")
                     });
                 }
-            },
+            }
+            ,
             handleExpand: function () {
                 this.$.collapseGrid.toggle();
                 this.page = 1;
                 this.expanded = !this.expanded;
-            },
+            }
+            ,
             createGenomeViewer: function () {
                 this.genomeViewer = new GenomeViewer({
                     cellBaseHost: 'https://www.ebi.ac.uk/cellbase/webservices/rest',

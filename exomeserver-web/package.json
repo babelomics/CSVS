@@ -6,7 +6,7 @@
     "url": "https://github.com/babelomics/exome-server.git"
   },
   "scripts": {
-    "build": "vulcanize -o build/index.html src/exome-server.html --inline --strip --csp"
+    "build": "build.sh"
   },
   "devDependencies": {
     "bower": "^1.3.12",
