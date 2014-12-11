@@ -2,12 +2,11 @@
 <link rel="import" href="../bower_components/polymer-fontawesome/polymer-fontawesome.html">
 
 <link rel="import" href="../lib/jsorolla/src/lib/components/opencga/jso-header.html">
-<link rel="import" href="es-filter-form-element.html">
-<link rel="import" href="es-data-grid-element.html">
+<link rel="import" href="es-search-element.html">
 <link rel="import" href="es-studies-browser-element.html">
 <link rel="import" href="es-stats-element.html">
 
-<polymer-element name="exome-server-element" attributes="urlPrefix formURL">
+<polymer-element name="exome-server-element">
     <template>
         <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
         <style>
@@ -62,14 +61,7 @@
 
         <div id="container" vertical layout>
             <template if="{{ selectedOption == 'search' }}">
-                <div horizontal layout center-justified>
-                    <es-filter-form-element studies="{{ studies }}" formURL="{{ formURL }}"
-                                            clear="{{ clearForm }}" horizontal layout
-                                            center-justified></es-filter-form-element>
-                    <es-data-grid-element formURL="{{ formURL }} " studies="{{ staticStudies }}"
-                                          clear="{{ clearForm }}"
-                                          flex></es-data-grid-element>
-                </div>
+                <es-search-element studies="{{ studies }}" staticStudies="{{ staticStudies }}"></es-search-element>
             </template>
 
             <template if="{{ selectedOption == 'studies' }}">
@@ -118,7 +110,6 @@
                 ExomeServerManager.studies.list({
                     request: {
                         success: function (response) {
-
                             try {
                                 var studies = [];
                                 var staticStudies = [];
@@ -136,6 +127,14 @@
 
                                 me.studies = studies;
                                 me.staticStudies = staticStudies;
+
+                                console.log("---------------- STUDIES -------------------");
+                                console.log(me.studies);
+
+                                console.log("---------------- STATIC STUDIES -------------------");
+                                console.log(me.staticStudies);
+
+
                             } catch (err) {
                                 console.log("Error loading studies: " + err);
                                 me.studies = [];
@@ -148,9 +147,6 @@
                         }
                     }
                 });
-            },
-            toggleForm: function () {
-                this.$.collapse.toggle();
             }
         });
     </script>
