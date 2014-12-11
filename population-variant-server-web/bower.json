@@ -1,7 +1,7 @@
 {
-  "name": "Exome Server",
+  "name": "Population Variant Server",
   "version": "1.0.0",
-  "homepage": "https://github.com/babelomics/exome-server",
+  "homepage": "https://github.com/babelomics/pvs",
   "authors": [
     "aaleman <alejandro.aleman.ramos@gmail.com>"
   ],

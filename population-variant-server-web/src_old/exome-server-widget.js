@@ -30,9 +30,9 @@ ExomeServerWidget.prototype = {
     },
     draw: function () {
         var _this = this;
-        console.log(EXOME_SERVER_HOST + "/variantInfoMongo");
+        console.log(PVS_HOST + "/variantInfoMongo");
         $.ajax({
-            url: EXOME_SERVER_HOST + "/variantInfoMongo",
+            url: PVS_HOST + "/variantInfoMongo",
             dataType: 'json',
             //async:false,
             success: function (data) {
@@ -1037,7 +1037,7 @@ ExomeServerWidget.prototype = {
 //                filterParam: undefined,
 //                sortParam: undefined,
 
-                    url: EXOME_SERVER_HOST + "/variantsMongo",
+                    url: PVS_HOST + "/variantsMongo",
                     reader: {
 //                    type: 'json',
 //                    model: _this.model,
@@ -1329,7 +1329,7 @@ ExomeServerWidget.prototype = {
         _this.gridEffect.getStore().removeAll();
 
         $.ajax({
-            url: EXOME_SERVER_HOST + "/effects",
+            url: PVS_HOST + "/effects",
             dataType: 'json',
             type: 'POST',
             data: formParams,

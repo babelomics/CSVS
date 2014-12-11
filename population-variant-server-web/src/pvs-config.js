@@ -1,4 +1,4 @@
-EXOME_SERVER_HOST = "http://aaleman:8080/exomeserver/rest"
+PVS_HOST = "http://aaleman:8080/pvs/rest"
 CELLBASE_VERSION = "v3";
 CELLBASE_HOST = "http://www.ebi.ac.uk/cellbase/webservices/rest";
 

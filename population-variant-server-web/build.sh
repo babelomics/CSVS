@@ -2,7 +2,7 @@
 mkdir -p build
 rm -rf build/index.html build/index.js build/workers build/fonts
 
-vulcanize src/exome-server.html -o build/index.html --inline --strip --csp
+vulcanize src/pvs.html -o build/index.html --inline --strip --csp
 
 cp -r bower_components/fontawesome/fonts build/
 cp -r src/fonts/*.woff* build/fonts/

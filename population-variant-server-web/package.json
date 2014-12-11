@@ -1,9 +1,9 @@
 {
-  "name": "ExomeServer",
+  "name": "PopulationVariantServer",
   "version": "1.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/babelomics/exome-server.git"
+    "url": "https://github.com/babelomics/pvs.git"
   },
   "scripts": {
     "build": "build.sh"

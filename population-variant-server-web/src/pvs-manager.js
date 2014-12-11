@@ -1,29 +1,29 @@
-var ExomeServerManager = {
+var PVSManager = {
 //    host: (typeof OPENCGA_HOST === 'undefined') ? 'http://ws.bioinfo.cipf.es/opencga/rest' : OPENCGA_HOST,
-    host: EXOME_SERVER_HOST,
+    host: PVS_HOST,
     version: 'v3',
 
     studies: {
         list: function (args) {
-            return ExomeServerManager._doRequest(args, 'studies', 'list');
+            return PVSManager._doRequest(args, 'studies', 'list');
         },
         read: function (args) {
-            return ExomeServerManager._doRequest(args, 'studies', 'info');
+            return PVSManager._doRequest(args, 'studies', 'info');
         }
     },
 
     variants: {
         fetch: function (args) {
-            return ExomeServerManager._doRequest(args, 'variants', 'fetch');
+            return PVSManager._doRequest(args, 'variants', 'fetch');
         }
     },
 
     _url: function (args, api, action) {
-        var host = ExomeServerManager.host;
+        var host = PVSManager.host;
         if (typeof args.request.host !== 'undefined' && args.request.host != null) {
             host = args.request.host;
         }
-        //var version = ExomeServerManager.version;
+        //var version = PVSManager.version;
         //if (typeof args.request.version !== 'undefined' && args.request.version != null) {
         //    version = args.request.version;
         //}
@@ -38,7 +38,7 @@ var ExomeServerManager = {
     },
 
     _doRequest: function (args, api, action) {
-        var url = ExomeServerManager._url(args, api, action);
+        var url = PVSManager._url(args, api, action);
         if (args.request.url === true) {
             return url;
         } else {

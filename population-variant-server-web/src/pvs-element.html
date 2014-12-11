@@ -2,9 +2,9 @@
 <link rel="import" href="../bower_components/polymer-fontawesome/polymer-fontawesome.html">
 
 <link rel="import" href="../lib/jsorolla/src/lib/components/opencga/jso-header.html">
-<link rel="import" href="es-search-element.html">
-<link rel="import" href="es-studies-browser-element.html">
-<link rel="import" href="es-stats-element.html">
+<link rel="import" href="pvs-search-element.html">
+<link rel="import" href="pvs-studies-browser-element.html">
+<link rel="import" href="pvs-stats-element.html">
 
 <polymer-element name="exome-server-element">
     <template>
@@ -100,7 +100,7 @@
             },
             getStudies: function (event, response) {
                 var me = this;
-                ExomeServerManager.studies.list({
+                PVSManager.studies.list({
                     request: {
                         success: function (response) {
                             try {

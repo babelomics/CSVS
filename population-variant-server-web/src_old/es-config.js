@@ -2,7 +2,7 @@ CELLBASE_HOST = "http://ws-beta.bioinfo.cipf.es/cellbase/rest";
 CELLBASE_VERSION = "v3";
 
 OPENCGA_HOST = "http://ws-beta.bioinfo.cipf.es/opencga-server-aleman/rest";
-EXOME_SERVER_HOST = "http://ws-beta.bioinfo.cipf.es/exomeserver-mongo/rest";
+PVS_HOST = "http://ws-beta.bioinfo.cipf.es/exomeserver-mongo/rest";
 
 var POPULAR_SPECIES = ["Homo sapiens", "Mus musculus", "Danio rerio", "Drosophila melanogaster", "Saccharomyces cerevisiae", "Plasmodium falciparum", "Arabidopsis thaliana", "Citrus Clementina"];
 
