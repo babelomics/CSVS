@@ -86,16 +86,11 @@
                 this.getStudies();
             },
             getOptions: function () {
-                return [
-                    {
-                        option: 'search',
-                        text: 'Search'
-                    },
-                    {
-                        option: 'stats',
-                        text: 'Stats'
+                return [{option: 'search', text: 'Search'}, {
+                    option: 'stats',
+                    text: 'Stats'
 
-                    },
+                },
                     {
                         option: 'studies',
                         text: 'Studies Info.'
@@ -104,9 +99,7 @@
                 ]
             },
             getStudies: function (event, response) {
-
                 var me = this;
-
                 ExomeServerManager.studies.list({
                     request: {
                         success: function (response) {

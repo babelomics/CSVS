@@ -207,7 +207,7 @@
                             <!--</textarea>-->
                             <!--</div>-->
                             <div class="input_container" vertical layout>
-                                <label class="input_label">Gene / Transcript</label>
+                                <label class="input_label">Gene</label>
                                 <textarea id="gene" name="gene" placeholder="BRCA2,PPL"
                                           value="{{ geneValue }}" rows="3"
                                           required?="{{ (geneValue == '') }}"></textarea>
@@ -285,7 +285,7 @@
                     </div>
                     <div id="buttons_container" horizontal layout end-justified>
                         <paper-button raised on-click="{{ clearForm }}">Clear</paper-button>
-                        <paper-button raised on-click="{{ submitForm }}">Submit</paper-button>
+                        <paper-button raised on-click="{{ submitForm }}">Search</paper-button>
                     </div>
                 </form>
             </div>
@@ -320,7 +320,6 @@
 
 
                         <template id="mafCellTemplate">
-                            <!--<td>-->
                             <td horizontal layout>
                                 <div flex horizontal layout center-justified>{{ row.total.gt00 || "." }}</div>
                                 <div flex horizontal layout center-justified>{{ row.total.gt01 || "."}}</div>
@@ -329,7 +328,6 @@
                                 <div flex horizontal layout center-justified>{{ row.total.refmaf }}</div>
                                 <div flex horizontal layout center-justified>{{ row.total.altmaf }}</div>
                             </td>
-                            <!--</td>-->
                         </template>
 
                         <opencb-ajax id="opencbAjax"
@@ -383,7 +381,6 @@
                 var me = this;
                 this.species = 'Homo sapiens';
                 var lastQuery = '';
-                var me = this;
 
                 this.$.searchField.addEventListener('keyup', function (event) {
                     this.classList.remove('error');
@@ -392,6 +389,7 @@
                         me._setQuickSearchMenu(query);
                         lastQuery = query;
                     }
+
                     if (event.which === 13) {
                         var item = me.quickSearchDataset[query];
                         if (item) {
@@ -563,7 +561,6 @@
                         results = data.response[0].result;
                     }
                 });
-                console.log(results);
                 return results;
             },
             submitForm: function () {
@@ -576,6 +573,35 @@
                 var search = false;
 
                 if (this.$.filter_form.checkValidity()) {
+
+                    var regions = [];
+
+                    if (this.regionValue) {
+                        regions = this.regionValue.split(",");
+                    }
+
+                    if (this.geneValue) {
+                        var gene = this.geneValue.toUpperCase();
+                        CellBaseManager.get({
+                            species: 'hsapiens',
+                            category: 'feature',
+                            subCategory: 'gene',
+                            query: gene,
+                            resource: "info",
+                            async: false,
+                            params: {
+                                include: 'chromosome,start,end'
+                            },
+                            success: function (data) {
+                                for (var i = 0; i < data.response.length; i++) {
+                                    var queryResult = data.response[i];
+                                    var region = new Region(queryResult.result[0]);
+                                    regions.push(region.toString());
+                                }
+                            }
+                        });
+                    }
+
                     Object.keys(this.formStudies).forEach(function (key) {
                         var value = me.formStudies[key];
                         if (value) {
@@ -613,9 +639,10 @@
                     }
 
                     if (search) {
+                        var regionQuery = regions.join(",");
 
                         var url = ExomeServerManager.variants.fetch({
-                            id: this.regionValue,
+                            id: regionQuery,
                             query: query,
                             request: {
                                 url: true
