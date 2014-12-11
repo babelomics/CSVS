@@ -1,6 +1,3 @@
-[submodule "exomeserver-web/lib/jsorolla"]
-	path = population-variant-server-web/lib/jsorolla
-	url = git@github.com:opencb/jsorolla.git
 [submodule "population-variant-server-web/lib/jsorolla"]
 	path = population-variant-server-web/lib/jsorolla
 	url = git@github.com:opencb/jsorolla.git
