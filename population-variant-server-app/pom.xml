@@ -54,8 +54,8 @@
                     <repositoryName>libs</repositoryName>
                     <programs>
                         <program>
-                            <mainClass>org.babelomics.population-variant-server.app.cli.ExomeServerMain</mainClass>
-                            <name>exomeServer.sh</name>
+                            <mainClass>org.babelomics.pvs.app.cli.PVSMain</mainClass>
+                            <name>pvs.sh</name>
                         </program>
                     </programs>
                 </configuration>
