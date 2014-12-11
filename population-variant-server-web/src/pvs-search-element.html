@@ -319,7 +319,18 @@
                         </template>
 
 
-                        <template id="mafCellTemplate">
+                        <template id="mafStaticCT">
+                            <td>
+                                <div horizontal layout>
+                                    <div flex horizontal layout center-justified>{{ value.stats.genotypesCount["0/0"] || "."}}</div>
+                                    <div flex horizontal layout center-justified>{{ value.stats.genotypesCount["0/1"] || "."}}</div>
+                                    <div flex horizontal layout center-justified>{{ value.stats.genotypesCount["1/1"] || "."}}</div>
+                                    <div flex horizontal layout center-justified>{{ value.stats.maf }}</div>
+                                </div>
+                            </td>
+                        </template>
+
+                        <template id="mafCT">
                             <td horizontal layout>
                                 <div flex horizontal layout center-justified>{{ row.total.gt00 || "." }}</div>
                                 <div flex horizontal layout center-justified>{{ row.total.gt01 || "."}}</div>
@@ -329,7 +340,6 @@
                                 <div flex horizontal layout center-justified>{{ row.total.altmaf }}</div>
                             </td>
                         </template>
-
                         <opencb-ajax id="opencbAjax"
                                      role="datasource"
                                      url="{{ formURL }}"
@@ -412,7 +422,6 @@
                 });
 
                 this.columns = [
-//                    {name: 'chromosome', headerTemplate: "chromosomeTemplate", footerTemplate: "hiTemplate"},
                     {name: 'chromosome', title: "Chr"},
                     {name: 'start', title: 'Position'},
                     {
@@ -422,12 +431,11 @@
                             return row.reference + ">" + row.alternate;
                         }
                     },
-                    {name: 'id', title: 'Id'}
-                    ,
+                    {name: 'id', title: 'Id'},
                     {
                         name: 'total',
                         title: 'MAF',
-                        cellTemplate: 'mafCellTemplate',
+                        cellTemplate: 'mafCT',
                         headerTemplate: 'mafHeaderTemplate'
                     },
                     {
@@ -447,6 +455,7 @@
                 this.parseFunction = function (data) {
                     for (var i = 0; i < data.length; i++) {
                         var row = data[i];
+
                         if (row.sourceEntries.MAF) {
                             row.total = {};
 
@@ -517,13 +526,11 @@
                 this.createGenomeViewer();
                 this.genomeViewer.draw();
                 this.genomeViewer.toggleAutoHeight(true);
-            }
-            ,
+            },
             observe: {
                 '$.dataGrid.selected': "handleDataGridSelected",
                 '$.dataGrid.data': "handleDataGridChanged"
-            }
-            ,
+            },
             _setQuickSearchMenu: function (query) {
 
                 while (this.$.searchDataList.firstChild) {
@@ -654,8 +661,7 @@
                     alert("Please add a region/gene and check any study, disease or phenotype");
                 }
 
-            }
-            ,
+            },
             studiesChanged: function (oldValue, newValue) {
                 var me = this;
 
@@ -697,9 +703,11 @@
                 for (var i = 0; i < newValue.length; i++) {
                     var study = newValue[i];
                     this.columns.splice(pos++, 0, {
-                        name: study.sname,
-                        title: study.sname + " MAF",
-                        formula: new Function("row", "var maf = ''; try { var maf = row.sourceEntries['" + study.sname + "'].stats.maf; maf = maf.toFixed(" + me.floatDecimals + "); } catch (e) { } return maf; ")
+//                        name: study.sname,
+                        title: study.sname,
+                        cellTemplate: 'mafStaticCT',
+                        formula: new Function("row", "var res = {}; " +
+                        "try { var res = row.sourceEntries['" + study.sname + "']; } catch (e) { } console.log(res); return res; ")
                     });
                 }
             }
