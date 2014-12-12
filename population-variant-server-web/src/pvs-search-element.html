@@ -224,10 +224,6 @@
         <div horizontal layout center-justified>
             <div id="filter-form-element">
                 <form id="filter_form" vertical layout>
-                    <div id="buttons_container" horizontal layout end-justified>
-                        <paper-button raised on-click="{{ clearForm }}">Clear</paper-button>
-                        <paper-button raised on-click="{{ submitForm }}">Search</paper-button>
-                    </div>
                     <div vertical layout>
                         <div class="form_block positionBlock">
                             <div id="headerTitle">Position</div>
@@ -321,7 +317,10 @@
                             <!--</div>-->
                         </div>
                     </div>
-
+                    <div id="buttons_container" horizontal layout end-justified>
+                        <paper-button raised on-click="{{ clearForm }}">Clear</paper-button>
+                        <paper-button raised on-click="{{ submitForm }}">Search</paper-button>
+                    </div>
                 </form>
             </div>
             <div id="dataGridElement" class="panel panel-shadow" flex vertical layout>
@@ -450,7 +449,8 @@
                             </style>
                             <th class="column-total" style="padding:0px;">
                                 <div vertical layout class="mainDiv">
-                                    <div horizontal layout center-justified class="totalName bb">{{ column.title }}</div>
+                                    <div horizontal layout center-justified class="totalName bb">{{ column.title }}
+                                    </div>
                                     <div horizontal layout>
                                         <div vertical layout class="genotypesDiv br">
                                             <div horizontal layout center-justified class="bb">Genotypes</div>
@@ -484,9 +484,15 @@
                             </style>
                             <td>
                                 <div horizontal layout class="row-total">
-                                    <div flex horizontal layout center-justified flex>{{ value.stats.genotypesCount["0/0"] || "."}}</div>
-                                    <div flex horizontal layout center-justified flex>{{ value.stats.genotypesCount["0/1"] || "."}}</div>
-                                    <div flex horizontal layout center-justified flex>{{ value.stats.genotypesCount["1/1"] || "."}}</div>
+                                    <div flex horizontal layout center-justified flex>{{
+                                        value.stats.genotypesCount["0/0"] || "."}}
+                                    </div>
+                                    <div flex horizontal layout center-justified flex>{{
+                                        value.stats.genotypesCount["0/1"] || "."}}
+                                    </div>
+                                    <div flex horizontal layout center-justified flex>{{
+                                        value.stats.genotypesCount["1/1"] || "."}}
+                                    </div>
                                     <div flex horizontal layout center-justified flex>{{ value.stats.maf }}</div>
                                     <div flex horizontal layout center-justified flex>{{ value.stats.maf }}</div>
                                     <div flex horizontal layout center-justified flex>{{ value.stats.maf }}</div>
