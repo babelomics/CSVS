@@ -26,7 +26,8 @@
     "core-ajax": "Polymer/core-ajax#~0.5.1",
     "core-collapse": "Polymer/core-collapse#~0.5.1",
     "jquery": "~2.1.1",
-    "qtip2": "~2.2.1"
+    "qtip2": "~2.2.1",
+    "paper-checkbox": "Polymer/paper-checkbox#~0.5.1"
   },
   "devDependencies": {
     "backbone": "~1.1.2"

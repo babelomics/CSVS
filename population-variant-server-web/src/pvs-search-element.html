@@ -139,10 +139,20 @@
             }
 
             sortable-table {
-                height: 360px;
+                height: 307px;
                 /*max-width: 100%;*/
                 border: 1px solid #d3d3d3;
                 overflow-x: auto;
+            }
+
+            sortable-table::shadow > table > tbody > * {
+                font-size: 11px;
+
+            }
+
+            sortable-table::shadow > table > thead > * {
+                font-size: 12px;
+
             }
 
             .defaultPager > input {
@@ -184,12 +194,39 @@
 
             }
 
+            sortable-table::shadow .column-chromosome {
+                width: 70px;
+            }
+
+            sortable-table::shadow .column-start {
+                width: 80px;
+            }
+
+            sortable-table::shadow .column-alleles {
+                width: 70px;
+            }
+
+            sortable-table::shadow .column-id {
+                width: 70px;
+            }
+
+            sortable-table::shadow .column-sift {
+                width: 70px;
+            }
+
+            sortable-table::shadow .column-polyphen {
+                width: 70px;
+            }
 
         </style>
 
         <div horizontal layout center-justified>
             <div id="filter-form-element">
                 <form id="filter_form" vertical layout>
+                    <div id="buttons_container" horizontal layout end-justified>
+                        <paper-button raised on-click="{{ clearForm }}">Clear</paper-button>
+                        <paper-button raised on-click="{{ submitForm }}">Search</paper-button>
+                    </div>
                     <div vertical layout>
                         <div class="form_block positionBlock">
                             <div id="headerTitle">Position</div>
@@ -283,10 +320,7 @@
                             <!--</div>-->
                         </div>
                     </div>
-                    <div id="buttons_container" horizontal layout end-justified>
-                        <paper-button raised on-click="{{ clearForm }}">Clear</paper-button>
-                        <paper-button raised on-click="{{ submitForm }}">Search</paper-button>
-                    </div>
+
                 </form>
             </div>
             <div id="dataGridElement" class="panel panel-shadow" flex vertical layout>
@@ -303,33 +337,177 @@
                                     rowSelection="true">
 
                         <template id="mafHeaderTemplate">
-                            <th>
-                                <div vertical layout>
-                                    <div horizontal layout center-justified>Total</div>
+                            <style>
+                                .column-total {
+                                    width: 240px;
+                                }
+
+                                .br {
+                                    border-right-color: rgb(221, 221, 221);
+                                    border-right-style: solid;
+                                    border-right-width: 1px;
+                                }
+
+                                .bl {
+                                    border-left-color: rgb(221, 221, 221);
+                                    border-left-style: solid;
+                                    border-left-width: 1px;
+                                }
+
+                                .bt {
+                                    border-top-color: rgb(221, 221, 221);
+                                    border-top-style: solid;
+                                    border-top-width: 1px;
+                                }
+
+                                .bb {
+                                    border-bottom-color: rgb(221, 221, 221);
+                                    border-bottom-style: solid;
+                                    border-bottom-width: 1px;
+                                }
+
+                                .genotypesDiv {
+                                    width: 120px;
+                                }
+
+                                .freqDiv {
+                                    width: 120px;
+                                }
+
+                                .value {
+                                    width: 40px;
+                                }
+                            </style>
+                            <th class="column-total" style="padding:0px;">
+                                <div vertical layout class="mainDiv">
+                                    <div horizontal layout center-justified class="totalName bb">Total</div>
                                     <div horizontal layout>
-                                        <div flex>0/0</div>
-                                        <div flex>0/1</div>
-                                        <div flex>1/1</div>
-                                        <div flex>Ref. MAF</div>
-                                        <div flex>Alt. MAF</div>
-                                        <div flex>MAF</div>
+                                        <div vertical layout class="genotypesDiv br">
+                                            <div horizontal layout center-justified class="bb">Genotypes</div>
+                                            <div horizontal layout>
+                                                <div horizontal layout center-justified flex class="br">0/0</div>
+                                                <div horizontal layout center-justified flex class="br">0/1</div>
+                                                <div horizontal layout center-justified flex>1/1</div>
+                                            </div>
+                                        </div>
+                                        <div vertical layout class="freqDiv">
+                                            <div horizontal layout center-justified class="bb">Freq.</div>
+                                            <div horizontal layout>
+                                                <div horizontal layout center-justified flex class="br">0 freq</div>
+                                                <div horizontal layout center-justified flex class="br">1 freq</div>
+                                                <div horizontal layout center-justified flex>MAF</div>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </th>
+                        </template>
+
+                        <template id="mafStaticHT">
+                            <style>
+                                .column-total {
+                                    width: 240px;
+                                }
+
+                                .br {
+                                    border-right-color: rgb(221, 221, 221);
+                                    border-right-style: solid;
+                                    border-right-width: 1px;
+                                }
+
+                                .bl {
+                                    border-left-color: rgb(221, 221, 221);
+                                    border-left-style: solid;
+                                    border-left-width: 1px;
+                                }
+
+                                .bt {
+                                    border-top-color: rgb(221, 221, 221);
+                                    border-top-style: solid;
+                                    border-top-width: 1px;
+                                }
+
+                                .bb {
+                                    border-bottom-color: rgb(221, 221, 221);
+                                    border-bottom-style: solid;
+                                    border-bottom-width: 1px;
+                                }
+
+                                .genotypesDiv {
+                                    width: 120px;
+                                }
+
+                                .freqDiv {
+                                    width: 120px;
+                                }
+
+                                .value {
+                                    width: 40px;
+                                }
+                            </style>
+                            <th class="column-total" style="padding:0px;">
+                                <div vertical layout class="mainDiv">
+                                    <div horizontal layout center-justified class="totalName bb">{{ column.title }}</div>
+                                    <div horizontal layout>
+                                        <div vertical layout class="genotypesDiv br">
+                                            <div horizontal layout center-justified class="bb">Genotypes</div>
+                                            <div horizontal layout>
+                                                <div horizontal layout center-justified flex class="br">0/0</div>
+                                                <div horizontal layout center-justified flex class="br">0/1</div>
+                                                <div horizontal layout center-justified flex>1/1</div>
+                                            </div>
+                                        </div>
+                                        <div vertical layout class="freqDiv">
+                                            <div horizontal layout center-justified class="bb">Freq.</div>
+                                            <div horizontal layout>
+                                                <div horizontal layout center-justified flex class="br">0 freq</div>
+                                                <div horizontal layout center-justified flex class="br">1 freq</div>
+                                                <div horizontal layout center-justified flex>MAF</div>
+                                            </div>
+
+                                        </div>
+
                                     </div>
                                 </div>
                             </th>
                         </template>
 
 
-                        <template id="mafCellTemplate">
-                            <td horizontal layout>
-                                <div flex horizontal layout center-justified>{{ row.total.gt00 || "." }}</div>
-                                <div flex horizontal layout center-justified>{{ row.total.gt01 || "."}}</div>
-                                <div flex horizontal layout center-justified>{{ row.total.gt11 || "."}}</div>
-                                <div flex horizontal layout center-justified>{{ row.total.maf}}</div>
-                                <div flex horizontal layout center-justified>{{ row.total.refmaf }}</div>
-                                <div flex horizontal layout center-justified>{{ row.total.altmaf }}</div>
+                        <template id="mafStaticCT">
+                            <style>
+                                .row-total {
+                                    width: 240px;
+                                }
+                            </style>
+                            <td>
+                                <div horizontal layout class="row-total">
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.genotypesCount["0/0"] || "."}}</div>
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.genotypesCount["0/1"] || "."}}</div>
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.genotypesCount["1/1"] || "."}}</div>
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.maf }}</div>
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.maf }}</div>
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.maf }}</div>
+                                </div>
                             </td>
                         </template>
 
+                        <template id="mafCT">
+                            <style>
+                                .row-total {
+                                    width: 240px;
+                                }
+                            </style>
+                            <td horizontal layout class="row-total">
+                                <div flex horizontal layout center-justified flex>{{ row.total.gt00 || "." }}</div>
+                                <div flex horizontal layout center-justified flex>{{ row.total.gt01 || "."}}</div>
+                                <div flex horizontal layout center-justified flex>{{ row.total.gt11 || "."}}</div>
+                                <div flex horizontal layout center-justified flex>{{ row.total.maf}}</div>
+                                <div flex horizontal layout center-justified flex>{{ row.total.refmaf }}</div>
+                                <div flex horizontal layout center-justified flex>{{ row.total.altmaf }}</div>
+                            </td>
+                        </template>
                         <opencb-ajax id="opencbAjax"
                                      role="datasource"
                                      url="{{ formURL }}"
@@ -349,7 +527,7 @@
     <script>
         Polymer({
             // regionValue: '1:1-1019573',
-            regionValue: '1:69428-69428',
+            regionValue: '1:1-1000000',
             genevalue: '',
             snpValue: '',
             floatDecimals: 3,
@@ -412,7 +590,6 @@
                 });
 
                 this.columns = [
-//                    {name: 'chromosome', headerTemplate: "chromosomeTemplate", footerTemplate: "hiTemplate"},
                     {name: 'chromosome', title: "Chr"},
                     {name: 'start', title: 'Position'},
                     {
@@ -422,12 +599,11 @@
                             return row.reference + ">" + row.alternate;
                         }
                     },
-                    {name: 'id', title: 'Id'}
-                    ,
+                    {name: 'id', title: 'Id'},
                     {
                         name: 'total',
                         title: 'MAF',
-                        cellTemplate: 'mafCellTemplate',
+                        cellTemplate: 'mafCT',
                         headerTemplate: 'mafHeaderTemplate'
                     },
                     {
@@ -447,6 +623,7 @@
                 this.parseFunction = function (data) {
                     for (var i = 0; i < data.length; i++) {
                         var row = data[i];
+
                         if (row.sourceEntries.MAF) {
                             row.total = {};
 
@@ -517,13 +694,11 @@
                 this.createGenomeViewer();
                 this.genomeViewer.draw();
                 this.genomeViewer.toggleAutoHeight(true);
-            }
-            ,
+            },
             observe: {
                 '$.dataGrid.selected': "handleDataGridSelected",
                 '$.dataGrid.data': "handleDataGridChanged"
-            }
-            ,
+            },
             _setQuickSearchMenu: function (query) {
 
                 while (this.$.searchDataList.firstChild) {
@@ -654,8 +829,7 @@
                     alert("Please add a region/gene and check any study, disease or phenotype");
                 }
 
-            }
-            ,
+            },
             studiesChanged: function (oldValue, newValue) {
                 var me = this;
 
@@ -697,9 +871,12 @@
                 for (var i = 0; i < newValue.length; i++) {
                     var study = newValue[i];
                     this.columns.splice(pos++, 0, {
-                        name: study.sname,
-                        title: study.sname + " MAF",
-                        formula: new Function("row", "var maf = ''; try { var maf = row.sourceEntries['" + study.sname + "'].stats.maf; maf = maf.toFixed(" + me.floatDecimals + "); } catch (e) { } return maf; ")
+//                        name: study.sname,
+                        title: study.sname,
+                        cellTemplate: 'mafStaticCT',
+                        headerTemplate: 'mafStaticHT',
+                        formula: new Function("row", "var res = {}; " +
+                        "try { var res = row.sourceEntries['" + study.sname + "']; } catch (e) { } console.log(res); return res; ")
                     });
                 }
             }
@@ -971,6 +1148,114 @@
                 });
                 this.genomeViewer.addTrack(this.snp);
                 return this.genomeViewer;
+            },
+            handleDataGridSelected: function (oldValue, newValue) {
+                console.log(newValue);
+                var reg = newValue.chromosome + ":" + newValue.start + "-" + newValue.end;
+                var region = new Region(reg);
+                this.genomeViewer.setRegion(region);
+            }
+            ,
+            handleDataGridChanged: function (oldValue, newValue) {
+
+                for (var i = 0; i < newValue.length; i++) {
+                    var variant = newValue[i];
+                    this._getEffect(variant);
+                    this._getPolyphenSift(variant);
+                }
+                this._getPhenotypes(newValue);
+            }
+            ,
+            _getEffect: function (record) {
+                var req = record.chromosome + ":" + record.start + ":" + record.reference + ":" + record.alternate;
+                var url = "http://ws.bioinfo.cipf.es/cellbase/rest/latest/hsa/genomic/variant/" + req + "/consequence_type?of=json";
+                console.log(url);
+
+                $.ajax({
+                    url: url,
+                    dataType: 'json',
+                    async: false,
+                    success: function (response, textStatus, jqXHR) {
+                        if (response) {
+                            for (var j = 0; j < response.length; j++) {
+                                var elem = response[j];
+
+                                if (elem.aaPosition != -1 && elem.transcriptId != "" && elem.aminoacidChange.length >= 3 && record.transcriptId === undefined && record.aaPos === undefined && record.aaChange === undefined) {
+                                    record.transcript = elem.transcriptId;
+                                    record.aaPos = elem.aaPosition;
+                                    record.aaChange = elem.aminoacidChange;
+                                }
+                            }
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.log('Error loading Effect');
+                    }
+                });
+            }
+            ,
+            _getPolyphenSift: function (variant) {
+
+                if (variant.aaPos != undefined && variant.aaPos >= 0) {
+                    var change = variant.aaChange.split("/")[1];
+                    var url = "http://ws-beta.bioinfo.cipf.es/cellbase/rest/v3/hsapiens/feature/transcript/" + variant.transcript + "/function_prediction?aaPosition=" + variant.aaPos + "&aaChange=" + change;
+                    $.ajax({
+                        url: url,
+                        dataType: 'json',
+                        async: false,
+                        success: function (response, textStatus, jqXHR) {
+                            var res = response.response[0];
+                            if (res.numResults > 0) {
+                                if (res.result[0].aaPositions[variant.aaPos]) {
+                                    res = res.result[0].aaPositions[variant.aaPos][change];
+                                    if (res !== undefined) {
+                                        if (res.ps != null) {
+                                            variant.polyphen = res.ps
+                                        }
+                                        if (res.ss != null) {
+                                            variant.sift = res.ss;
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            console.log('Error loading PolyPhen/SIFT');
+                        }
+                    });
+                }
+            }
+            ,
+            _getPhenotypes: function (records) {
+                var regs = [];
+                for (var i = 0; i < records.length; i++) {
+                    var variant = records[i];
+                    var chr = variant.chromosome;
+                    regs.push(chr + ":" + variant.start + "-" + variant.end);
+                }
+                if (regs.length > 0) {
+                    var url = "http://ws-beta.bioinfo.cipf.es/cellbase/rest/v3/hsapiens/genomic/region/" + regs.join(",") + "/phenotype?include=phenotype";
+                    $.ajax({
+                        url: url,
+                        dataType: 'json',
+                        async: false,
+                        success: function (response, textStatus, jqXHR) {
+                            if (response != undefined && response.response.length > 0 && response.response.length == records.length) {
+                                for (var i = 0; i < response.response.length; i++) {
+                                    var elem = response.response[i];
+                                    var phenotypes = [];
+                                    for (var k = 0; k < elem.numResults; k++) {
+                                        phenotypes.push(elem.result[k].phenotype);
+                                    }
+                                    records[i].phenotype = phenotypes.join(",");
+                                }
+                            }
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            console.log('Error loading Phenotypes');
+                        }
+                    });
+                }
             }
 
         });

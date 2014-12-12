@@ -1,4 +1,4 @@
-PVS_HOST = "http://aaleman:8080/pvs/rest"
+PVS_HOST = "http://localhost:8080/pvs/rest"
 CELLBASE_VERSION = "v3";
 CELLBASE_HOST = "http://www.ebi.ac.uk/cellbase/webservices/rest";
 
