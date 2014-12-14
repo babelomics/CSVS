@@ -77,8 +77,6 @@ public class VariantsWSServer extends ExomeServerWSServer {
 
         QueryResult<BasicDBObject> allStudies = studyMongoDBAdaptor.getAllFileId(qo);
 
-
-        System.out.println("allStudies = " + allStudies);
         for (BasicDBObject study : allStudies.getResult()) {
             String fid = study.getString("fid");
             StudyElement se = new StudyElement(fid);
@@ -153,22 +151,17 @@ public class VariantsWSServer extends ExomeServerWSServer {
 
         // if (regionsSize <= 1000000) {
 
-
-        System.out.println(aux);
-
         List<QueryResult> allVariantsByRegionList = variantMongoDbAdaptor.getAllVariantsByRegionListAndFileIds(regions, aux, queryOptions);
 
 
         for (QueryResult qr : allVariantsByRegionList) {
             Variant v = (Variant) qr.getResult().get(0);
-            System.out.println("v.getSourceEntries() = " + v.getSourceEntries());
         }
 
         finalStudyElements.addAll(staticStudyElements);
         removeStudies(allVariantsByRegionList, finalStudyElements);
 
         transformVariants(allVariantsByRegionList, staticStudies);
-
 
         return createOkResponse(allVariantsByRegionList);
 //        } else {
@@ -183,8 +176,6 @@ public class VariantsWSServer extends ExomeServerWSServer {
         for (StudyElement se : finalStudyElements) {
             ids.add((se.getStudy() + "_" + se.toString()).toUpperCase());
         }
-
-        System.out.println("ids = " + ids);
 
         for (QueryResult qr : allVariantsByRegionList) {
             List<Variant> variantList = qr.getResult();
@@ -253,7 +244,7 @@ public class VariantsWSServer extends ExomeServerWSServer {
         for (Map.Entry<String, VariantSourceEntry> entry : files.entrySet()) {
             VariantSourceEntry avf = entry.getValue();
             System.out.println("entry.getKey() = " + entry.getKey());
-            if (staticStudies.contains(entry.getKey())) {
+            if (staticStudies.contains(entry.getKey().toUpperCase())) {
                 System.out.println("SI contine");
                 map.put(avf.getStudyId(), entry.getValue());
             } else {

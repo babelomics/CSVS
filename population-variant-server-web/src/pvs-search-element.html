@@ -485,16 +485,16 @@
                             <td>
                                 <div horizontal layout class="row-total">
                                     <div flex horizontal layout center-justified flex>{{
-                                        value.stats.genotypesCount["0/0"] || "."}}
+                                        value.stats.gt00 || "."}}
                                     </div>
                                     <div flex horizontal layout center-justified flex>{{
-                                        value.stats.genotypesCount["0/1"] || "."}}
+                                        value.stats.gt01 || "."}}
                                     </div>
                                     <div flex horizontal layout center-justified flex>{{
-                                        value.stats.genotypesCount["1/1"] || "."}}
+                                        value.stats.gt11 || "."}}
                                     </div>
-                                    <div flex horizontal layout center-justified flex>{{ value.stats.maf }}</div>
-                                    <div flex horizontal layout center-justified flex>{{ value.stats.maf }}</div>
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.refmaf }}</div>
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.altmaf }}</div>
                                     <div flex horizontal layout center-justified flex>{{ value.stats.maf }}</div>
                                 </div>
                             </td>
@@ -507,12 +507,12 @@
                                 }
                             </style>
                             <td horizontal layout class="row-total">
-                                <div flex horizontal layout center-justified flex>{{ row.total.gt00 || "." }}</div>
-                                <div flex horizontal layout center-justified flex>{{ row.total.gt01 || "."}}</div>
-                                <div flex horizontal layout center-justified flex>{{ row.total.gt11 || "."}}</div>
-                                <div flex horizontal layout center-justified flex>{{ row.total.maf}}</div>
-                                <div flex horizontal layout center-justified flex>{{ row.total.refmaf }}</div>
-                                <div flex horizontal layout center-justified flex>{{ row.total.altmaf }}</div>
+                                <div flex horizontal layout center-justified flex>{{ value.stats.gt00 || "." }}</div>
+                                <div flex horizontal layout center-justified flex>{{ value.stats.gt01 || "."}}</div>
+                                <div flex horizontal layout center-justified flex>{{ value.stats.gt11 || "."}}</div>
+                                <div flex horizontal layout center-justified flex>{{ value.stats.refmaf}}</div>
+                                <div flex horizontal layout center-justified flex>{{ value.stats.altmaf }}</div>
+                                <div flex horizontal layout center-justified flex>{{ value.stats.maf }}</div>
                             </td>
                         </template>
                         <opencb-ajax id="opencbAjax"
@@ -534,7 +534,7 @@
     <script>
         Polymer({
             // regionValue: '1:1-1019573',
-            regionValue: '1:1-1000000',
+            regionValue: '1:69511-69511',
             genevalue: '',
             snpValue: '',
             floatDecimals: 3,
@@ -611,7 +611,10 @@
                         name: 'total',
                         title: 'MAF',
                         cellTemplate: 'mafCT',
-                        headerTemplate: 'mafHeaderTemplate'
+                        headerTemplate: 'mafHeaderTemplate',
+                        formula: function (row) {
+                            return row.sourceEntries["MAF"];
+                        }
                     },
                     {
                         name: 'sift', title: 'SIFT'
@@ -631,40 +634,43 @@
                     for (var i = 0; i < data.length; i++) {
                         var row = data[i];
 
-                        if (row.sourceEntries.MAF) {
-                            row.total = {};
+                        for (var key in row.sourceEntries) {
 
-                            var gt00 = row.sourceEntries.MAF.stats.genotypesCount["0/0"];
-                            if ("0|0" in row.sourceEntries.MAF.stats.genotypesCount) {
+                            var entry = row.sourceEntries[key];
+
+//                            if (row.sourceEntries.MAF) {
+
+                            var gt00 = entry.stats.genotypesCount["0/0"];
+                            if ("0|0" in entry.stats.genotypesCount) {
                                 if (gt00 != null) {
-                                    gt00 += row.sourceEntries.MAF.stats.genotypesCount["0|0"];
+                                    gt00 += entry.stats.genotypesCount["0|0"];
                                 } else {
-                                    gt00 = row.sourceEntries.MAF.stats.genotypesCount["0|0"];
+                                    gt00 = row.entry.stats.genotypesCount["0|0"];
                                 }
                             }
-                            row.total.gt00 = gt00;
+                            entry.stats.gt00 = gt00;
 
-                            var gt01 = row.sourceEntries.MAF.stats.genotypesCount["0/1"];
-                            if ("0|1" in row.sourceEntries.MAF.stats.genotypesCount) {
+                            var gt01 = entry.stats.genotypesCount["0/1"];
+                            if ("0|1" in entry.stats.genotypesCount) {
                                 if (gt01 != null) {
-                                    gt01 += row.sourceEntries.MAF.stats.genotypesCount["0|1"];
+                                    gt01 += entry.stats.genotypesCount["0|1"];
                                 } else {
-                                    gt01 = row.sourceEntries.MAF.stats.genotypesCount["0|1"];
+                                    gt01 = entry.stats.genotypesCount["0|1"];
                                 }
                             }
-                            row.total.gt01 = gt01;
+                            entry.stats.gt01 = gt01;
 
-                            var gt11 = row.sourceEntries.MAF.stats.genotypesCount["1/1"];
-                            if ("0|1" in row.sourceEntries.MAF.stats.genotypesCount) {
+                            var gt11 = entry.stats.genotypesCount["1/1"];
+                            if ("0|1" in entry.stats.genotypesCount) {
                                 if (gt11 != null) {
-                                    gt11 += row.sourceEntries.MAF.stats.genotypesCount["1|1"];
+                                    gt11 += entry.stats.genotypesCount["1|1"];
                                 } else {
-                                    gt11 = row.sourceEntries.MAF.stats.genotypesCount["1|1"];
+                                    gt11 = entry.stats.genotypesCount["1|1"];
                                 }
                             }
-                            row.total.gt11 = gt11;
+                            entry.stats.gt11 = gt11;
 
-                            var genotypes = row.sourceEntries.MAF.stats.genotypesCount;
+                            var genotypes = entry.stats.genotypesCount;
 
                             var countRef = 0;
                             var countAlt = 0;
@@ -688,14 +694,22 @@
                             var refmaf = countRef / total;
                             var altmaf = countAlt / total;
                             var maf = (refmaf < altmaf) ? refmaf : altmaf;
-                            row.total.refmaf = refmaf.toFixed(me.floatDecimals);
-                            row.total.altmaf = altmaf.toFixed(me.floatDecimals);
-                            row.total.maf = maf.toFixed(me.floatDecimals);
+                            entry.stats.refmaf = refmaf.toFixed(me.floatDecimals);
+                            entry.stats.altmaf = altmaf.toFixed(me.floatDecimals);
+//                            if (entry.stats.maf == null) {
+                            entry.stats.maf = maf.toFixed(me.floatDecimals);
+//                            }else{
+//                                entry.stats.maf = entry.stats.maf.toFixed(me.floatDecimals);
+//                           }
                         }
+//                        }
                     }
                     return data;
                 }
 
+            },
+            _toFixed: function (value, precision) {
+                return Number(value).toFixed(precision);
             },
             domReady: function () {
                 this.createGenomeViewer();
