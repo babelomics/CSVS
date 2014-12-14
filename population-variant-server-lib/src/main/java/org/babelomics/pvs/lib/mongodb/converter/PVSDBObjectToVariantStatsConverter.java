@@ -18,17 +18,13 @@ public class PVSDBObjectToVariantStatsConverter extends DBObjectToVariantStatsCo
         // Basic fields
         VariantStats stats = new VariantStats();
         stats.setMaf(((Double) object.get(MAF_FIELD)).floatValue());
-//        stats.setMgf(((Double) object.get(MGF_FIELD)).floatValue());
         stats.setMafAllele((String) object.get(MAFALLELE_FIELD));
-//        stats.setMgfGenotype((String) object.get(MGFGENOTYPE_FIELD));
-
-//        stats.setMissingAlleles((int) object.get(MISSALLELE_FIELD));DBObjectToVariantSourceConverter
-//        stats.setMissingGenotypes((int) object.get(MISSGENOTYPE_FIELD));
 
         // Genotype counts
         BasicDBObject genotypes = (BasicDBObject) object.get(NUMGT_FIELD);
         for (Map.Entry<String, Object> o : genotypes.entrySet()) {
-            stats.addGenotype(new Genotype(o.getKey()), (int) o.getValue());
+            String genotype = o.getKey().toString().replace("-1", ".");
+            stats.addGenotype(new Genotype(genotype), (int) o.getValue());
         }
 
         return stats;
@@ -38,16 +34,13 @@ public class PVSDBObjectToVariantStatsConverter extends DBObjectToVariantStatsCo
     public DBObject convertToStorageType(VariantStats vs) {
         // Basic fields
         BasicDBObject mongoStats = new BasicDBObject(MAF_FIELD, vs.getMaf());
-//        mongoStats.append(MGF_FIELD, vs.getMgf());
         mongoStats.append(MAFALLELE_FIELD, vs.getMafAllele());
-//        mongoStats.append(MGFGENOTYPE_FIELD, vs.getMgfGenotype());
-//        mongoStats.append(MISSALLELE_FIELD, vs.getMissingAlleles());
-//        mongoStats.append(MISSGENOTYPE_FIELD, vs.getMissingGenotypes());
 
         // Genotype counts
         BasicDBObject genotypes = new BasicDBObject();
         for (Map.Entry<Genotype, Integer> g : vs.getGenotypesCount().entrySet()) {
-            genotypes.append(g.getKey().toString(), g.getValue());
+            String genotype = g.getKey().toString().replace(".", "-1");
+            genotypes.append(genotype, g.getValue());
         }
         mongoStats.append(NUMGT_FIELD, genotypes);
         return mongoStats;

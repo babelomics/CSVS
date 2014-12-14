@@ -2,6 +2,7 @@ package org.babelomics.pvs.lib.json;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.opencb.biodata.models.feature.Genotype;
+import org.opencb.biodata.models.variant.Variant;
 import org.opencb.opencga.storage.variant.json.VariantStatsJsonMixin;
 
 import java.util.Map;
@@ -69,6 +70,12 @@ public abstract class PVSVariantStatsJsonMixin extends VariantStatsJsonMixin {
     public abstract int getTransversionsCount();
 
     @JsonIgnore
+    public abstract boolean isTransition();
+
+    @JsonIgnore
+    public abstract boolean isTransversion();
+
+    @JsonIgnore
     public abstract int getQuality();
 
     @JsonIgnore
@@ -80,11 +87,10 @@ public abstract class PVSVariantStatsJsonMixin extends VariantStatsJsonMixin {
     @JsonIgnore
     public abstract String getMgfGenotype();
 
-//    @JsonIgnore
-//    public abstract float getMaf();
-
     @JsonIgnore
     public abstract String getMafAllele();
 
+    @JsonIgnore
+    public abstract Variant.VariantType getVariantType();
 
 }
