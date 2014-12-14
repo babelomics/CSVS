@@ -16,12 +16,16 @@ public class OptionsParser {
     private final CommandTransformVariants transform;
     private final CommandLoadVariants load;
     private final CommandAddVariants add;
+    private final CommandCompressVariants compress;
+
 
     public OptionsParser() {
         jcommander = new JCommander();
         jcommander.addCommand(transform = new CommandTransformVariants());
         jcommander.addCommand(load = new CommandLoadVariants());
         jcommander.addCommand(add = new CommandAddVariants());
+        jcommander.addCommand(compress = new CommandCompressVariants());
+
     }
 
     interface Command {
@@ -60,6 +64,7 @@ public class OptionsParser {
         @Parameter(names = {"--aggregated"}, description = "Aggregated VCF File: basic or EVS (optional)", arity = 1)
         VariantSource.Aggregation aggregated = VariantSource.Aggregation.NONE;
 
+
     }
 
     @Parameters(commandNames = {"load-variants"}, commandDescription = "Loads an already generated data model into a backend")
@@ -81,6 +86,17 @@ public class OptionsParser {
 
         @Parameter(names = {"-c", "--credentials"}, description = "Path to the file where the backend credentials are stored", required = true, arity = 1)
         String credentials;
+
+    }
+
+    @Parameters(commandNames = {"compress-variants"}, commandDescription = "Compress Variants")
+    class CommandCompressVariants implements Command {
+
+        @Parameter(names = {"-i", "--input"}, description = "Prefix of files to save in the selected backend", required = true, arity = 1)
+        String input;
+
+        @Parameter(names = {"-o", "--output"}, description = "Output File", arity = 1)
+        String output;
 
     }
 
@@ -108,5 +124,8 @@ public class OptionsParser {
         return add;
     }
 
+    CommandCompressVariants getCompressComand() {
+        return compress;
+    }
 
 }

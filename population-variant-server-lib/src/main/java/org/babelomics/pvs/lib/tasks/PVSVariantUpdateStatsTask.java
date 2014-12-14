@@ -123,8 +123,8 @@ public class PVSVariantUpdateStatsTask extends Task<Variant> {
         }
 
         // Set counts for each allele
-        variantDBStats.setRefAlleleCount(allelesCount[0]);
-        variantDBStats.setAltAlleleCount(allelesCount[1]);
+//        variantDBStats.setRefAlleleCount(allelesCount[0]);
+//        variantDBStats.setAltAlleleCount(allelesCount[1]);
 
         calculateAlleleAndGenotypeFrequencies(variantDBStats, totalAllelesCount, totalGenotypesCount);
 

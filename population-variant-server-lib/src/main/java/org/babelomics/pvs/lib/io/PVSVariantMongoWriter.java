@@ -298,7 +298,7 @@ public class PVSVariantMongoWriter extends VariantDBWriter {
 
     private boolean writeSourceSummary(VariantSource source) {
         DBObject studyMongo = sourceConverter.convertToStorageType(source);
-        String id = source.getStudyId().toUpperCase() + "_" + source.getMetadata().get("disease").toUpperCase() + "_" + source.getMetadata().get("phenotype").toUpperCase();
+        String id = source.getStudyId().toUpperCase() + "_" + source.getMetadata().get("disease").toString().toUpperCase() + "_" + source.getMetadata().get("phenotype").toString().toUpperCase();
         DBObject query = new BasicDBObject(DBObjectToVariantSourceConverter.FILEID_FIELD, id);
         WriteResult wr = filesCollection.update(query, studyMongo, true, false);
 

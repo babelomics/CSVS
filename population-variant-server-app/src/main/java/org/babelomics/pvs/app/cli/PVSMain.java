@@ -2,9 +2,11 @@ package org.babelomics.pvs.app.cli;
 
 import com.beust.jcommander.ParameterException;
 import org.babelomics.pvs.lib.io.PVSJsonWriter;
+import org.babelomics.pvs.lib.io.PVSVariantCompressedVcfDataWriter;
 import org.babelomics.pvs.lib.io.PVSVariantMongoWriter;
 import org.opencb.biodata.formats.variant.io.VariantReader;
 import org.opencb.biodata.formats.variant.io.VariantWriter;
+import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfDataWriter;
 import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfReader;
 import org.opencb.biodata.models.variant.*;
 import org.opencb.commons.containers.list.SortedList;
@@ -47,6 +49,9 @@ public class PVSMain {
                     break;
                 case "load-variants":
                     command = parser.getLoadCommand();
+                    break;
+                case "compress-variants":
+                    command = parser.getCompressComand();
                     break;
 //                case "add-variants":
 //                    command = parser.getAddCommand();
@@ -95,6 +100,13 @@ public class PVSMain {
             VariantSource source = new VariantSource(variantsPath.getFileName().toString(), null, null, null, st, VariantSource.Aggregation.NONE);
 
             loadVariants(source, variantsPath, filePath, credentials);
+        } else if (command instanceof OptionsParser.CommandCompressVariants) {
+            OptionsParser.CommandCompressVariants c = (OptionsParser.CommandCompressVariants) command;
+
+            Path input = Paths.get(c.input);
+            Path output = Paths.get(c.output);
+
+            compressVariants(input, output);
         }
 //        else if (command instanceof OptionsParser.CommandAddVariants) {
 //            OptionsParser.CommandAddVariants c = (OptionsParser.CommandAddVariants) command;
@@ -110,6 +122,29 @@ public class PVSMain {
 //            addVariants(source, variantsPath, filePath, credentials);
 //
 //        }
+
+    }
+
+    private static void compressVariants(Path input, Path output) throws IOException {
+
+        VariantSource source = new VariantSource("file", "file", "file", "file");
+        VariantReader reader = new VariantVcfReader(source, input.toAbsolutePath().toString());
+
+        List<Task<Variant>> taskList = new SortedList<>();
+        List<VariantWriter> writers = new ArrayList<>();
+
+        VariantWriter writer = new VariantVcfDataWriter(reader, output.toAbsolutePath().toString());
+//        VariantWriter writer = new PVSVariantCompressedVcfDataWriter(reader, output.toAbsolutePath().toString());
+
+        taskList.add(new VariantStatsTask(reader, source));
+        writers.add(writer);
+
+        VariantRunner variantRunner = new VariantRunner(source, reader, null, writers, taskList, 100);
+
+        System.out.println("Compressing variants...");
+        variantRunner.run();
+        System.out.println("Variants compressed!");
+
 
     }
 

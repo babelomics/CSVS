@@ -70,7 +70,7 @@ public class PVSDBObjectToVariantSourceConverter extends DBObjectToVariantSource
         // TODO Save pedigree information
 
         // Metadata
-        Map<String, String> meta = object.getMetadata();
+        Map<String, Object> meta = object.getMetadata();
         DBObject metadataMongo = new BasicDBObject("dis", meta.get("disease"));
         metadataMongo.put("phe", meta.get("phenotype"));
         metadataMongo.put("paper", meta.get("paper"));
