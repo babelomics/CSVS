@@ -83,6 +83,7 @@ public class ExomeServerWSServer {
         properties = new Properties();
         try {
             properties.load(is);
+            System.out.println("properties = " + properties);
         } catch (IOException e) {
             System.out.println("Error loading properties");
             System.out.println(e.getMessage());
