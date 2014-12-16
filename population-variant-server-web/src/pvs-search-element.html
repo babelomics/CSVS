@@ -1,0 +1,1326 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer-fontawesome/polymer-fontawesome.html">
+
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/core-list/core-list.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/core-label/core-label.html">
+<link rel="import" href="../bower_components/core-collapse/core-collapse.html">
+<link rel="import" href="../bower_components/sortable-table/sortable-table.html">
+<link rel="import" href="opencb-ajax.html">
+
+<polymer-element name="es-search-element" attributes="studies staticStudies">
+    <template>
+
+        <link rel="stylesheet" href="../bower_components/sortable-table/css/bootstrap.css" shim-shadowdom>
+        <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-panel.css">
+        <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
+        <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/sortable-table.css">
+        <link rel="stylesheet" href="../lib/jsorolla/styles/css/style.css">
+        <link rel="stylesheet" href="../lib/jsorolla/vendor/font-awesome/css/font-awesome.min.css">
+        <style>
+            :host {
+                display: block;
+                box-sizing: border-box;
+                position: relative;
+
+                min-height: 1000px;
+            }
+
+            #filter-form-element {
+                background-color: #FFFFFF;
+                width: 250px;
+                margin: 20px;
+                border-radius: 5px;
+            }
+
+            paper-button {
+                margin: 10px;
+            }
+
+            #filter-form-element label:after {
+                content: ':';
+            }
+
+            .input_container {
+                margin: 0px;
+                width: 175px;
+                right: auto;
+                top: 0px;
+                /*left: 5px;*/
+                padding: 4px 6px 3px 20px;
+            }
+
+            .input_container label {
+                padding-bottom: 5px;
+                padding-left: 1px;
+            }
+
+            #headerTitle {
+                background: #e4e7e9;
+                color: #435F7A;
+                font-size: 16px;
+                line-height: 22px;
+
+                margin: 10px;
+                padding: 5px;
+            }
+
+            #component_header {
+                background: #e4e7e9;
+                color: #435F7A;
+                font-size: 16px;
+                line-height: 22px;
+
+                margin: 10px;
+                padding: 5px;
+            }
+
+            paper-checkbox {
+                padding: 10px 10px 0px 10px;
+            }
+
+            paper-checkbox.blue::shadow #ink[checked] {
+                color: #4285f4;
+            }
+
+            paper-checkbox.blue::shadow #checkbox.checked {
+                border-color: #4285f4;
+            }
+
+            .form_block {
+                width: 250px;
+                max-height: 300px;
+                margin-bottom: 10px;
+            }
+
+            textarea {
+                resize: none;
+            }
+
+            .searchGene {
+                margin-top: 5px;
+            }
+
+            .filter_box {
+                margin-top: 10px;
+                margin-right: 5px;
+            }
+
+            .headerexpand:after {
+                font-family: FontAwesome;
+                content: '\f066';
+            }
+
+            .headerexpand[expanded]:after {
+                content: '\f065';
+            }
+
+            .elemLabel {
+                padding-top: 10px;
+                font-size: small;
+            }
+
+            core-list {
+                height: 150px;
+            }
+
+            .filter_box {
+                margin-top: 5px;
+            }
+
+            #dataGridElement {
+                border-radius: 5px;
+                padding: 5px;
+                padding-left: 10px;
+                padding-right: 10px;
+                margin: 20px 20px 20px 0px;
+                background-color: #FFFFFF;
+            }
+
+            sortable-table {
+                height: 307px;
+                /*max-width: 100%;*/
+                border: 1px solid #d3d3d3;
+                overflow-x: auto;
+            }
+
+            sortable-table::shadow > table > tbody > * {
+                font-size: 11px;
+
+            }
+
+            sortable-table::shadow > table > thead > * {
+                font-size: 12px;
+
+            }
+
+            .defaultPager > input {
+                width: 40px;
+            }
+
+            .bootstrap::shadow > table > tfoot > tr > td > .defaultPager > span > input::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+
+            .bootstrap::shadow > table > tfoot > tr > td > .defaultPager {
+                max-height: 15px;
+                font-size: 11px;
+            }
+
+            .bootstrap::shadow .btn-sm {
+                padding: 1px 4px;
+            }
+
+            .bootstrap::shadow > table > tbody > tr > td {
+                padding: 3px;
+            }
+
+            #panel {
+                background-color: #FFF;
+                overflow-y: auto;
+            }
+
+            .container > span {
+                margin-left: 10px;
+            }
+
+            #genomeViewer {
+                /*max-height: 500px;*/
+                border: 1px solid #d3d3d3;
+                overflow-y: auto;
+                overflow-x: hidden;
+                transition: height 0.15s;
+
+            }
+
+            sortable-table::shadow .column-chromosome {
+                width: 70px;
+            }
+
+            sortable-table::shadow .column-start {
+                width: 80px;
+            }
+
+            sortable-table::shadow .column-alleles {
+                width: 70px;
+            }
+
+            sortable-table::shadow .column-id {
+                width: 70px;
+            }
+
+            sortable-table::shadow .column-sift {
+                width: 70px;
+            }
+
+            sortable-table::shadow .column-polyphen {
+                width: 70px;
+            }
+
+        </style>
+
+        <div horizontal layout center-justified>
+            <div id="filter-form-element">
+                <form id="filter_form" vertical layout>
+                    <div vertical layout>
+                        <div class="form_block positionBlock">
+                            <div id="headerTitle">Position</div>
+                            <div class="input_container" vertical layout>
+                                <label class="input_label">Chromosomal Location</label>
+                                <textarea id="region" name="region" placeholder="1:1-1000000,2:1-1000000"
+                                          value="{{ regionValue }}" rows="3"
+                                          required?="{{ (regionValue == '') }}">
+                                </textarea>
+                            </div>
+                            <!--<div class="input_container" vertical layout>-->
+                            <!--<label class="input_label">SNP id</label>-->
+                            <!--<textarea id="region" name="region" value="{{ regionValue }}" rows="3"-->
+                            <!--required?="{{ (regionValue == '') }}">-->
+                            <!--</textarea>-->
+                            <!--</div>-->
+                            <div class="input_container" vertical layout>
+                                <label class="input_label">Gene</label>
+                                <textarea id="gene" name="gene" placeholder="BRCA2,PPL"
+                                          value="{{ geneValue }}" rows="3"
+                                          required?="{{ (geneValue == '') }}"></textarea>
+
+                                <div horizontal layout class="searchGene" end-justified>
+                                    <input id="searchField" list="searchDataList" placeholder="Search gene" type="text"
+                                           style="width: 90px;">
+                                    <datalist id="searchDataList"></datalist>
+                                    <div id="quickSearchButton" class="button" style="border-left: none;">
+                                        <font-awesome icon="search"></font-awesome>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form_block" vertical layout>
+                            <div id="headerTitle">Studies</div>
+                            <div id="studies_div">
+                                <core-list data="{{ studyNames }}" height="20px" class="selector_list">
+                                    <template>
+                                        <core-label center horizontal layout>
+                                            <paper-checkbox class="blue studyName"
+                                                            for
+                                                            on-click="{{ studyClick }}"
+                                                            value="{{ model.name }}" checked></paper-checkbox>
+                                            <div class="elemLabel" flex>{{ model.name }}</div>
+                                        </core-label>
+                                    </template>
+                                </core-list>
+                            </div>
+                            <!--<div class="filter_box" layout end-justified horizontal>-->
+                            <!--<input type="text" on-keyup="{{ studyKeyUp }}" placeholder="Filter:"/>-->
+                            <!--</div>-->
+                        </div>
+                        <div class="form_block">
+                            <div id="headerTitle">Diseases</div>
+                            <div id="diseases_div">
+                                <core-list data="{{ diseases }}" height="20px">
+                                    <template>
+
+                                        <core-label center horizontal layout>
+                                            <paper-checkbox class="blue diseaseName"
+                                                            for
+                                                            on-click="{{ diseaseClick }}"
+                                                            value="{{ model.name }}"></paper-checkbox>
+                                            <div flex>{{ model.name }}</div>
+                                        </core-label>
+
+
+                                    </template>
+                                </core-list>
+                            </div>
+                            <!--<div class="filter_box" layout end-justified horizontal>-->
+                            <!--<input type="text" on-keyup="{{ diseaseKeyUp }}" placeholder="Filter:"/>-->
+                            <!--</div>-->
+                        </div>
+                        <div class="form_block">
+                            <div id="headerTitle">Phenotypes</div>
+                            <div class="sdp_block" id="phenotypes_div">
+                                <core-list data="{{ phenotype }}" height="20px">
+                                    <template>
+                                        <core-label center horizontal layout>
+                                            <paper-checkbox class="blue phenotypeName"
+                                                            for
+                                                            on-click="{{ phenotypeClick }}"
+                                                            value="{{ model.name }}"></paper-checkbox>
+                                            <div flex>{{ model.name }}</div>
+                                        </core-label>
+                                    </template>
+                                </core-list>
+                            </div>
+                            <!--<div class="filter_box" horizontal layout end-justified>-->
+                            <!--<input type="text" on-keyup="{{ phenotypeKeyUp }}" placeholder="Filter:"/>-->
+                            <!--</div>-->
+                        </div>
+                    </div>
+                    <div id="buttons_container" horizontal layout end-justified>
+                        <paper-button raised on-click="{{ clearForm }}">Clear</paper-button>
+                        <paper-button raised on-click="{{ submitForm }}">Search</paper-button>
+                    </div>
+                </form>
+            </div>
+            <div id="dataGridElement" class="panel panel-shadow" flex vertical layout>
+                <div class="headerTitle" id="header" horizontal layout end-justified>
+                    <div class="text headerexpand" expanded?={{expanded}} on-click="{{handleExpand}}"></div>
+                </div>
+                <core-collapse id="collapseGrid" opened>
+                    <sortable-table class="bootstrap"
+                                    id="dataGrid"
+                                    footerTemplate="defaultPager"
+                                    pageSize="10"
+                                    columns="{{ columns }}"
+                                    loading="true"
+                                    rowSelection="true">
+
+                        <template id="mafHeaderTemplate">
+                            <style>
+                                .column-total {
+                                    width: 240px;
+                                }
+
+                                .br {
+                                    border-right-color: rgb(221, 221, 221);
+                                    border-right-style: solid;
+                                    border-right-width: 1px;
+                                }
+
+                                .bl {
+                                    border-left-color: rgb(221, 221, 221);
+                                    border-left-style: solid;
+                                    border-left-width: 1px;
+                                }
+
+                                .bt {
+                                    border-top-color: rgb(221, 221, 221);
+                                    border-top-style: solid;
+                                    border-top-width: 1px;
+                                }
+
+                                .bb {
+                                    border-bottom-color: rgb(221, 221, 221);
+                                    border-bottom-style: solid;
+                                    border-bottom-width: 1px;
+                                }
+
+                                .genotypesDiv {
+                                    width: 120px;
+                                }
+
+                                .freqDiv {
+                                    width: 120px;
+                                }
+
+                                .value {
+                                    width: 40px;
+                                }
+                            </style>
+                            <th class="column-total" style="padding:0px;">
+                                <div vertical layout class="mainDiv">
+                                    <div horizontal layout center-justified class="totalName bb">Total</div>
+                                    <div horizontal layout>
+                                        <div vertical layout class="genotypesDiv br">
+                                            <div horizontal layout center-justified class="bb">Genotypes</div>
+                                            <div horizontal layout>
+                                                <div horizontal layout center-justified flex class="br">0/0</div>
+                                                <div horizontal layout center-justified flex class="br">0/1</div>
+                                                <div horizontal layout center-justified flex>1/1</div>
+                                            </div>
+                                        </div>
+                                        <div vertical layout class="freqDiv">
+                                            <div horizontal layout center-justified class="bb">Freq.</div>
+                                            <div horizontal layout>
+                                                <div horizontal layout center-justified flex class="br">0 freq</div>
+                                                <div horizontal layout center-justified flex class="br">1 freq</div>
+                                                <div horizontal layout center-justified flex>MAF</div>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </th>
+                        </template>
+
+                        <template id="mafStaticHT">
+                            <style>
+                                .column-total {
+                                    width: 240px;
+                                }
+
+                                .br {
+                                    border-right-color: rgb(221, 221, 221);
+                                    border-right-style: solid;
+                                    border-right-width: 1px;
+                                }
+
+                                .bl {
+                                    border-left-color: rgb(221, 221, 221);
+                                    border-left-style: solid;
+                                    border-left-width: 1px;
+                                }
+
+                                .bt {
+                                    border-top-color: rgb(221, 221, 221);
+                                    border-top-style: solid;
+                                    border-top-width: 1px;
+                                }
+
+                                .bb {
+                                    border-bottom-color: rgb(221, 221, 221);
+                                    border-bottom-style: solid;
+                                    border-bottom-width: 1px;
+                                }
+
+                                .genotypesDiv {
+                                    width: 120px;
+                                }
+
+                                .freqDiv {
+                                    width: 120px;
+                                }
+
+                                .value {
+                                    width: 40px;
+                                }
+                            </style>
+                            <th class="column-total" style="padding:0px;">
+                                <div vertical layout class="mainDiv">
+                                    <div horizontal layout center-justified class="totalName bb">{{ column.title }}
+                                    </div>
+                                    <div horizontal layout>
+                                        <div vertical layout class="genotypesDiv br">
+                                            <div horizontal layout center-justified class="bb">Genotypes</div>
+                                            <div horizontal layout>
+                                                <div horizontal layout center-justified flex class="br">0/0</div>
+                                                <div horizontal layout center-justified flex class="br">0/1</div>
+                                                <div horizontal layout center-justified flex>1/1</div>
+                                            </div>
+                                        </div>
+                                        <div vertical layout class="freqDiv">
+                                            <div horizontal layout center-justified class="bb">Freq.</div>
+                                            <div horizontal layout>
+                                                <div horizontal layout center-justified flex class="br">0 freq</div>
+                                                <div horizontal layout center-justified flex class="br">1 freq</div>
+                                                <div horizontal layout center-justified flex>MAF</div>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </th>
+                        </template>
+
+
+                        <template id="mafStaticCT">
+                            <style>
+                                .row-total {
+                                    width: 240px;
+                                }
+                            </style>
+                            <td>
+                                <div horizontal layout class="row-total">
+                                    <!--<div flex horizontal layout center-justified flex>{{ value.stats.gt00 || "." }}</div>-->
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.gt00 }}</div>
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.gt01 || "." }}
+                                    </div>
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.gt11 || "." }}
+                                    </div>
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.refmaf || "." }}
+                                    </div>
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.altmaf || "." }}
+                                    </div>
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.maf || "." }}</div>
+                                </div>
+                            </td>
+                        </template>
+
+                        <template id="mafCT">
+                            <style>
+                                .row-total {
+                                    width: 240px;
+                                }
+                            </style>
+                            <td horizontal layout class="row-total">
+                                <div flex horizontal layout center-justified flex>{{ value.stats.gt00 || "." }}</div>
+                                <div flex horizontal layout center-justified flex>{{ value.stats.gt01 || "."}}</div>
+                                <div flex horizontal layout center-justified flex>{{ value.stats.gt11 || "."}}</div>
+                                <div flex horizontal layout center-justified flex>{{ value.stats.refmaf}}</div>
+                                <div flex horizontal layout center-justified flex>{{ value.stats.altmaf }}</div>
+                                <div flex horizontal layout center-justified flex>{{ value.stats.maf }}</div>
+                            </td>
+                        </template>
+                        <opencb-ajax id="opencbAjax"
+                                     role="datasource"
+                                     url="{{ formURL }}"
+                                     start=0
+                                     length=10
+                                     parseFunction="{{ parseFunction }}">
+                        </opencb-ajax>
+
+                    </sortable-table>
+                </core-collapse>
+                <div flex id="genomeViewer"></div>
+            </div>
+
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            // regionValue: '1:1-1019573',
+            regionValue: '1:1-100000',
+            genevalue: '',
+            snpValue: '',
+            floatDecimals: 3,
+            expanded: false,
+            parseFunction: null,
+            formURL: '',
+            created: function () {
+                this.studies = [];
+                this.studyNames = [];
+                this.diseases = [];
+                this.phenotype = [];
+                this.log = [];
+
+                this.formStudies = {};
+                this.formDiseases = {};
+                this.formPhenotypes = {};
+
+
+                this.selectedSpecies = DEFAULT_SPECIES;
+                this.region = new Region();
+                this.region.load("1:1004608-1004608");
+
+
+                this.variants = [];
+
+
+            },
+            ready: function () {
+                var me = this;
+                this.species = 'Homo sapiens';
+                var lastQuery = '';
+
+                this.$.searchField.addEventListener('keyup', function (event) {
+                    this.classList.remove('error');
+                    var query = this.value.toUpperCase();
+                    if (query.length > 2 && lastQuery !== query && event.which !== 13) {
+                        me._setQuickSearchMenu(query);
+                        lastQuery = query;
+                    }
+
+                    if (event.which === 13) {
+                        var item = me.quickSearchDataset[query];
+                        if (item) {
+                            var values = me.$.gene.value.split(',').filter(function (el) {
+                                return el.length != 0
+                            });
+
+                            values.push(item.name);
+                            values = values.filter(function (item, index, inputArray) {
+                                return inputArray.indexOf(item) == index;
+                            });
+
+                            me.$.gene.value = values.join(",");
+
+
+                        } else {
+                            this.classList.add('error');
+                        }
+                    }
+                });
+
+                this.columns = [
+                    {name: 'chromosome', title: "Chr"},
+                    {name: 'start', title: 'Position'},
+                    {
+                        name: 'alleles',
+                        title: 'Alleles',
+                        formula: function (row) {
+                            return row.reference + ">" + row.alternate;
+                        }
+                    },
+                    {name: 'id', title: 'Id'},
+                    {
+                        name: 'total',
+                        title: 'MAF',
+                        cellTemplate: 'mafCT',
+                        headerTemplate: 'mafHeaderTemplate',
+                        formula: function (row) {
+                            return row.sourceEntries["MAF"];
+                        }
+                    },
+                    {
+                        name: 'sift', title: 'SIFT'
+                    }
+                    ,
+                    {
+                        name: 'polyphen', title: 'POLYPHEN'
+                    }
+                    ,
+                    {
+                        name: 'phenotype', title: 'Phenotype'
+                    }
+                    ,
+                ];
+
+                this.parseFunction = function (data) {
+                    for (var i = 0; i < data.length; i++) {
+                        var row = data[i];
+
+                        for (var key in row.sourceEntries) {
+
+                            var entry = row.sourceEntries[key];
+
+//                            if (row.sourceEntries.MAF) {
+
+                            var gt00 = entry.stats.genotypesCount["0/0"];
+                            if ("0|0" in entry.stats.genotypesCount) {
+                                if (gt00 != null) {
+                                    gt00 += entry.stats.genotypesCount["0|0"];
+                                } else {
+                                    gt00 = entry.stats.genotypesCount["0|0"];
+                                }
+                            }
+                            entry.stats.gt00 = gt00;
+
+                            var gt01 = entry.stats.genotypesCount["0/1"];
+                            if ("0|1" in entry.stats.genotypesCount) {
+                                if (gt01 != null) {
+                                    gt01 += entry.stats.genotypesCount["0|1"];
+                                } else {
+                                    gt01 = entry.stats.genotypesCount["0|1"];
+                                }
+                            }
+                            entry.stats.gt01 = gt01;
+
+                            var gt11 = entry.stats.genotypesCount["1/1"];
+                            if ("0|1" in entry.stats.genotypesCount) {
+                                if (gt11 != null) {
+                                    gt11 += entry.stats.genotypesCount["1|1"];
+                                } else {
+                                    gt11 = entry.stats.genotypesCount["1|1"];
+                                }
+                            }
+                            entry.stats.gt11 = gt11;
+
+                            var genotypes = entry.stats.genotypesCount;
+
+                            var countRef = 0;
+                            var countAlt = 0;
+                            var total = 0;
+
+                            Object.keys(genotypes).forEach(function (key) {
+                                var value = genotypes[key];
+                                var splits = key.split(/[/|]/);
+                                for (var i = 0; i < splits.length; i++) {
+                                    var g = splits[i];
+                                    if (g == "0") {
+                                        countRef += value;
+                                    } else if (g == "1") {
+                                        countAlt += value;
+                                    }
+                                    total += value;
+                                }
+                            });
+
+
+                            var refmaf = countRef / total;
+                            var altmaf = countAlt / total;
+                            var maf = (refmaf < altmaf) ? refmaf : altmaf;
+                            entry.stats.refmaf = refmaf.toFixed(me.floatDecimals);
+                            entry.stats.altmaf = altmaf.toFixed(me.floatDecimals);
+//                            if (entry.stats.maf == null) {
+                            entry.stats.maf = maf.toFixed(me.floatDecimals);
+//                            }else{
+//                                entry.stats.maf = entry.stats.maf.toFixed(me.floatDecimals);
+//                           }
+                        }
+//                        }
+                    }
+                    return data;
+                }
+
+            },
+            _toFixed: function (value, precision) {
+                return Number(value).toFixed(precision);
+            },
+            domReady: function () {
+                this.createGenomeViewer();
+                this.genomeViewer.draw();
+                this.genomeViewer.toggleAutoHeight(true);
+            },
+            observe: {
+                '$.dataGrid.selected': "handleDataGridSelected",
+                '$.dataGrid.data': "handleDataGridChanged"
+            },
+            _setQuickSearchMenu: function (query) {
+
+                while (this.$.searchDataList.firstChild) {
+                    this.$.searchDataList.removeChild(this.$.searchDataList.firstChild);
+                }
+                this.quickSearchDataset = {};
+                var items = this._quickSearchResultFn(query);
+                for (var i = 0; i < items.length; i++) {
+                    var item = items[i];
+                    var value = item["name"];
+                    this.quickSearchDataset[value] = item;
+                    var menuEntry = document.createElement('option');
+                    menuEntry.setAttribute('value', value);
+                    this.$.searchDataList.appendChild(menuEntry);
+                }
+
+            },
+            _quickSearchResultFn: function (query) {
+                var results = [];
+                var speciesCode = Utils.getSpeciesCode(this.species);
+
+                CellBaseManager.get({
+                    host: CELLBASE_HOST,
+                    version: CELLBASE_VERSION,
+                    species: speciesCode,
+                    category: 'feature',
+                    subCategory: 'id',
+                    query: query,
+                    resource: 'starts_with',
+                    params: {
+                        limit: 10
+                    },
+                    async: false,
+                    success: function (data, textStatus, jqXHR) {
+                        results = data.response[0].result;
+                    }
+                });
+                return results;
+            },
+            submitForm: function () {
+                var me = this;
+                var auxStudies = [];
+                var auxDiseases = [];
+                var auxPhenotypes = [];
+                var query = {};
+
+                var search = false;
+
+                if (this.$.filter_form.checkValidity()) {
+
+                    var regions = [];
+
+                    if (this.regionValue) {
+                        regions = this.regionValue.split(",");
+                    }
+
+                    if (this.geneValue) {
+                        var gene = this.geneValue.toUpperCase();
+                        CellBaseManager.get({
+                            species: 'hsapiens',
+                            category: 'feature',
+                            subCategory: 'gene',
+                            query: gene,
+                            resource: "info",
+                            async: false,
+                            params: {
+                                include: 'chromosome,start,end'
+                            },
+                            success: function (data) {
+                                for (var i = 0; i < data.response.length; i++) {
+                                    var queryResult = data.response[i];
+                                    var region = new Region(queryResult.result[0]);
+                                    regions.push(region.toString());
+                                }
+                            }
+                        });
+                    }
+
+                    Object.keys(this.formStudies).forEach(function (key) {
+                        var value = me.formStudies[key];
+                        if (value) {
+                            auxStudies.push(key);
+                        }
+                    });
+
+                    Object.keys(this.formDiseases).forEach(function (key) {
+                        var value = me.formDiseases[key];
+                        if (value) {
+                            auxDiseases.push(key);
+                        }
+                    });
+
+                    Object.keys(this.formPhenotypes).forEach(function (key) {
+                        var value = me.formPhenotypes[key];
+                        if (value) {
+                            auxPhenotypes.push(key);
+                        }
+                    });
+
+
+                    if (auxStudies.length > 0) {
+                        query.studies = auxStudies.join(",");
+                        search |= true;
+                    }
+                    if (auxDiseases.length > 0) {
+                        query.diseases = auxDiseases.join(",");
+                        search |= true;
+                    }
+
+                    if (auxPhenotypes.length > 0) {
+                        query.phenotypes = auxPhenotypes.join(",");
+                        search |= true;
+                    }
+
+                    if (search) {
+                        var regionQuery = regions.join(",");
+
+                        var url = PVSManager.variants.fetch({
+                            id: regionQuery,
+                            query: query,
+                            request: {
+                                url: true
+                            }
+                        });
+                        this.formURL = url;
+                    }
+                } else {
+                    alert("Please add a region/gene and check any study, disease or phenotype");
+                }
+
+            },
+            studiesChanged: function (oldValue, newValue) {
+                var me = this;
+
+                this.studies = newValue;
+                var names = {};
+                var dis = {};
+                var phen = {};
+                for (var i = 0; i < this.studies.length; i++) {
+                    var study = this.studies[i];
+
+                    names[study.sname] = study.sname;
+                    dis[study.meta.dis] = study.meta.dis;
+                    phen[study.meta.phe] = study.meta.phe;
+
+                }
+                Object.keys(names).forEach(function (key) {
+                    me.studyNames.push({
+                        name: key
+                    })
+                    me.formStudies[key] = true;
+                });
+                Object.keys(dis).forEach(function (key) {
+                    me.diseases.push({
+                        name: key
+                    })
+                });
+
+                Object.keys(phen).forEach(function (key) {
+                    me.phenotype.push({
+                        name: key
+                    })
+                });
+
+            }
+            , staticStudiesChanged: function (oldValue, newValue) {
+                var me = this;
+                var pos = 5;
+
+                for (var i = 0; i < newValue.length; i++) {
+                    var study = newValue[i];
+                    this.columns.splice(pos++, 0, {
+                        name: study.sname,
+                        title: study.sname,
+                        cellTemplate: 'mafStaticCT',
+                        headerTemplate: 'mafStaticHT',
+                        formula: new Function("row", "var res = {}; " +
+                        "try { var res = row.sourceEntries['" + study.sname + "']; } catch (e) { console.log('ERROR FORMULA STATIC STUDY'); } console.log(res); return res; ")
+                    });
+                }
+            }
+            ,
+            studyClick: function (event, detail, sender) {
+
+                this.formStudies[sender.getAttribute("value")] = !sender.checked;
+
+            }
+            ,
+            diseaseClick: function (event, detail, sender) {
+
+                this.formDiseases[sender.getAttribute("value")] = !sender.checked;
+
+            }
+            ,
+            phenotypeClick: function (event, detail, sender) {
+
+                this.formPhenotypes[sender.getAttribute("value")] = !sender.checked;
+
+            }
+            ,
+            studyKeyUp: function (event, detail, sender) {
+                var reg = new RegExp(sender.value, "i");
+                var snames = [];
+                var names = {};
+
+                for (var i = 0; i < this.studies.length; i++) {
+                    var study = this.studies[i];
+                    if (reg.test(study.sname)) {
+                        names[study.sname] = study.sname;
+                    }
+                }
+                Object.keys(names).forEach(function (key) {
+                    snames.push({
+                        name: key
+                    })
+                });
+
+                this.studyNames = snames;
+
+            }
+            ,
+            diseaseKeyUp: function (event, detail, sender) {
+                var reg = new RegExp(sender.value, "i");
+                var snames = [];
+                var names = {};
+
+                for (var i = 0; i < this.studies.length; i++) {
+                    var study = this.studies[i];
+                    if (reg.test(study.meta.dis)) {
+                        names[study.meta.dis] = study.meta.dis;
+                    }
+                }
+                Object.keys(names).forEach(function (key) {
+                    snames.push({
+                        name: key
+                    })
+                });
+
+                this.diseases = snames;
+            },
+            phenotypeKeyUp: function (event, detail, sender) {
+                var reg = new RegExp(sender.value, "i");
+                var snames = [];
+                var names = {};
+
+                for (var i = 0; i < this.studies.length; i++) {
+                    var study = this.studies[i];
+                    if (reg.test(study.meta.phe)) {
+                        names[study.meta.phe] = study.meta.phe;
+                    }
+                }
+                Object.keys(names).forEach(function (key) {
+                    snames.push({
+                        name: key
+                    })
+                });
+
+                this.phenotype = snames;
+
+            },
+            clearForm: function () {
+
+                this.$.filter_form.reset();
+
+                var checkboxes = this.$.filter_form.getElementsByTagName("paper-checkbox");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    elem.checked = false;
+                }
+
+
+                this.formStudies = {};
+                this.formDiseases = {};
+                this.formPhenotypes = {};
+
+            },
+            handleExpand: function () {
+                this.$.collapseGrid.toggle();
+                this.page = 1;
+                this.expanded = !this.expanded;
+
+//                this.genomeViewer.setHeight(this.$.genomeViewer.getBoundingClientRect().height);
+
+            }
+            , createGenomeViewer: function () {
+                this.genomeViewer = new GenomeViewer({
+                    cellBaseHost: 'https://www.ebi.ac.uk/cellbase/webservices/rest',
+                    cellBaseVersion: 'v3',
+                    target: this.$.genomeViewer,
+//                    width: 500,
+                    width: this.$.dataGrid.getBoundingClientRect().width - 15,
+                    region: this.region,
+//                    version: this.version,
+                    availableSpecies: AVAILABLE_SPECIES,
+                    species: this.selectedSpecies,
+                    sidePanel: false,
+                    resizable: true,
+                    resizable: false,
+                    drawOverviewTrackListPanel: true,
+//        quickSearchResultFn:quickSearchResultFn,
+//        quickSearchDisplayKey:,
+                    karyotypePanelConfig: {
+                        hidden: true,
+                        collapsed: false,
+                        collapsible: true
+                    },
+                    chromosomePanelConfig: {
+                        hidden: true,
+                        collapsed: false,
+                        collapsible: true
+                    },
+                    regionPanelConfig: {
+                        hidden: false,
+                        collapsed: false,
+                        collapsible: true
+                    },
+                    drawStatusBar: true,
+//            drawNavigationBar: false,
+                    navigationBarConfig: {
+                        componentsConfig: {
+                            menuButton: false,
+                            leftSideButton: false,
+                            restoreDefaultRegionButton: false,
+                            regionHistoryButton: false,
+                            speciesButton: false,
+                            chromosomesButton: false,
+                            karyotypeButton: false,
+                            chromosomeButton: false,
+
+//                regionButton:false,
+//                zoomControl:false,
+//                windowSizeControl:false,
+//                positionControl:false,
+//                moveControl:false,
+//                autoheightButton:false,
+//                compactButton:false,
+                            searchControl: false
+                        }
+                    }
+
+//        chromosomeList:[]
+//            trackListTitle: ''
+//            drawNavigationBar = true;
+//            drawKaryotypePanel: false,
+//            drawChromosomePanel: false,
+//            drawOverviewTrackListPanel: false
+
+                });
+                var renderer = new FeatureRenderer(FEATURE_TYPES.gene);
+                renderer.on({
+                    'feature:click': function (event) {
+                        // feature click event example
+                        console.log(event)
+                    }
+                });
+                var gene = new FeatureTrack({
+//        title: 'Gene overview',
+                    minHistogramRegionSize: 20000000,
+                    maxLabelRegionSize: 10000000,
+                    height: 100,
+
+                    renderer: renderer,
+
+                    dataAdapter: new CellBaseAdapter({
+                        category: "genomic",
+                        subCategory: "region",
+                        resource: "gene",
+                        params: {
+                            exclude: 'transcripts,chunkIds'
+                        },
+                        species: this.genomeViewer.species,
+                        cacheConfig: {
+                            defaultChunkSize: 100000
+                        }
+                    })
+                });
+
+                this.genomeViewer.addOverviewTrack(gene);
+
+
+                this.sequence = new SequenceTrack({
+                    height: 30,
+                    visibleRegionSize: 200,
+
+                    renderer: new SequenceRenderer(),
+
+                    dataAdapter: new SequenceAdapter({
+                        category: "genomic",
+                        subCategory: "region",
+                        resource: "sequence",
+                        species: this.genomeViewer.species
+                    })
+                });
+
+                this.genomeViewer.addTrack(this.sequence);
+
+                this.gene = new GeneTrack({
+                    title: 'Gene',
+                    minHistogramRegionSize: 20000000,
+                    maxLabelRegionSize: 10000000,
+                    minTranscriptRegionSize: 200000,
+                    height: 140,
+
+                    renderer: new GeneRenderer({
+                        handlers: {
+                            'feature:click': function (e) {
+                                console.log(e)
+                            }
+                        }
+                    }),
+
+                    dataAdapter: new CellBaseAdapter({
+                        category: "genomic",
+                        subCategory: "region",
+                        resource: "gene",
+                        species: this.genomeViewer.species,
+                        params: {
+                            exclude: 'transcripts.tfbs,transcripts.xrefs,transcripts.exons.sequence,chunkIds'
+                        },
+                        cacheConfig: {
+                            defaultChunkSize: 100000
+                        }
+                    })
+                });
+                this.genomeViewer.addTrack(this.gene);
+                this.snp = new FeatureTrack({
+                    title: 'SNP',
+                    featureType: 'SNP',
+                    minHistogramRegionSize: 10000,
+                    maxLabelRegionSize: 3000,
+                    height: 100,
+
+                    renderer: new FeatureRenderer(FEATURE_TYPES.snp),
+
+                    dataAdapter: new CellBaseAdapter({
+                        category: "genomic",
+                        subCategory: "region",
+                        resource: "snp",
+                        params: {
+                            exclude: 'transcriptVariations,xrefs,samples'
+                        },
+                        species: this.genomeViewer.species,
+                        cacheConfig: {
+                            defaultChunkSize: 10000
+                        }
+                    })
+                });
+                this.genomeViewer.addTrack(this.snp);
+                return this.genomeViewer;
+            },
+            handleDataGridSelected: function (oldValue, newValue) {
+                console.log(newValue);
+                var reg = newValue.chromosome + ":" + newValue.start + "-" + newValue.end;
+                var region = new Region(reg);
+                this.genomeViewer.setRegion(region);
+            }
+            ,
+            handleDataGridChanged: function (oldValue, newValue) {
+
+
+                for (var i = 0; i < newValue.length; i++) {
+                    var variant = newValue[i];
+                    this._getEffect(variant);
+                    this._getPolyphenSift(variant);
+                }
+                this._getPhenotypes(newValue);
+                this._getSNPId(newValue);
+            },
+            _getSNPId: function (records) {
+                var speciesCode = Utils.getSpeciesCode(this.species);
+
+                var regs = [];
+                for (var i = 0; i < records.length; i++) {
+                    var variant = records[i];
+                    var chr = variant.chromosome;
+                    regs.push(chr + ":" + variant.start + "-" + variant.end);
+                }
+
+                if (regs.length > 0) {
+                    var query = regs.join(",");
+                    CellBaseManager.get({
+                        host: CELLBASE_HOST,
+                        version: CELLBASE_VERSION,
+                        species: speciesCode,
+                        category: 'genomic',
+                        subCategory: 'region',
+                        query: query,
+                        resource: 'snp',
+                        params: {
+                            include: 'id'
+                        },
+                        async: false,
+                        success: function (data, textStatus, jqXHR) {
+
+                            var results = data.response;
+
+                            for (var i = 0; i < results.length; i++) {
+                                var elem = results[i];
+                                var record = records[i];
+
+                                if (record.id == null && elem.numResults > 0) {
+                                    record.id = elem.result[0].id;
+                                }
+                            }
+                            //results = data.response[0].result;
+                        }
+                    });
+                }
+            }
+            ,
+            _getEffect: function (record) {
+                var req = record.chromosome + ":" + record.start + ":" + record.reference + ":" + record.alternate;
+                var url = "http://ws.bioinfo.cipf.es/cellbase/rest/latest/hsa/genomic/variant/" + req + "/consequence_type?of=json";
+                console.log(url);
+
+                $.ajax({
+                    url: url,
+                    dataType: 'json',
+                    async: false,
+                    success: function (response, textStatus, jqXHR) {
+                        if (response) {
+                            for (var j = 0; j < response.length; j++) {
+                                var elem = response[j];
+
+                                if (elem.aaPosition != -1 && elem.transcriptId != "" && elem.aminoacidChange.length >= 3 && record.transcriptId === undefined && record.aaPos === undefined && record.aaChange === undefined) {
+                                    record.transcript = elem.transcriptId;
+                                    record.aaPos = elem.aaPosition;
+                                    record.aaChange = elem.aminoacidChange;
+                                }
+                            }
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.log('Error loading Effect');
+                    }
+                });
+            }
+            ,
+            _getPolyphenSift: function (variant) {
+
+                if (variant.aaPos != undefined && variant.aaPos >= 0) {
+                    var change = variant.aaChange.split("/")[1];
+                    var url = "http://ws-beta.bioinfo.cipf.es/cellbase/rest/v3/hsapiens/feature/transcript/" + variant.transcript + "/function_prediction?aaPosition=" + variant.aaPos + "&aaChange=" + change;
+                    $.ajax({
+                        url: url,
+                        dataType: 'json',
+                        async: false,
+                        success: function (response, textStatus, jqXHR) {
+                            var res = response.response[0];
+                            if (res.numResults > 0) {
+                                if (res.result[0].aaPositions[variant.aaPos]) {
+                                    res = res.result[0].aaPositions[variant.aaPos][change];
+                                    if (res !== undefined) {
+                                        if (res.ps != null) {
+                                            variant.polyphen = res.ps
+                                        }
+                                        if (res.ss != null) {
+                                            variant.sift = res.ss;
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            console.log('Error loading PolyPhen/SIFT');
+                        }
+                    });
+                }
+            }
+            ,
+            _getPhenotypes: function (records) {
+                var regs = [];
+                for (var i = 0; i < records.length; i++) {
+                    var variant = records[i];
+                    var chr = variant.chromosome;
+                    regs.push(chr + ":" + variant.start + "-" + variant.end);
+                }
+                if (regs.length > 0) {
+                    var url = "http://ws-beta.bioinfo.cipf.es/cellbase/rest/v3/hsapiens/genomic/region/" + regs.join(",") + "/phenotype?include=phenotype";
+                    $.ajax({
+                        url: url,
+                        dataType: 'json',
+                        async: false,
+                        success: function (response, textStatus, jqXHR) {
+                            if (response != undefined && response.response.length > 0 && response.response.length == records.length) {
+                                for (var i = 0; i < response.response.length; i++) {
+                                    var elem = response.response[i];
+                                    var phenotypes = [];
+                                    for (var k = 0; k < elem.numResults; k++) {
+                                        phenotypes.push(elem.result[k].phenotype);
+                                    }
+                                    records[i].phenotype = phenotypes.join(",");
+                                }
+                            }
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            console.log('Error loading Phenotypes');
+                        }
+                    });
+                }
+            }
+
+        });
+    </script>
+</polymer-element>

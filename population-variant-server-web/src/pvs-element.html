@@ -1,0 +1,150 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer-fontawesome/polymer-fontawesome.html">
+
+<link rel="import" href="../lib/jsorolla/src/lib/components/opencga/jso-header.html">
+<link rel="import" href="pvs-search-element.html">
+<link rel="import" href="pvs-studies-browser-element.html">
+<link rel="import" href="pvs-stats-element.html">
+
+<polymer-element name="exome-server-element">
+    <template>
+        <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
+        <style>
+            :host {
+                display: block;
+                position: relative;
+                box-sizing: border-box;
+
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                cursor: default;
+
+                background-color: #314559;
+                font-size: 13px;
+            }
+
+            #container {
+                position: relative;
+                height: calc(100vh - 60px);
+            }
+
+            [hide=true] {
+                display: none !important;
+            }
+
+            [hide=false] {
+                display: initial !important
+            }
+
+            es-filter-form-element {
+                margin: 20px;
+                border-radius: 5px;
+            }
+
+            es-data-grid-element {
+                border-radius: 5px;
+                padding: 5px;
+                margin: 20px 20px 20px 0px;
+            }
+
+        </style>
+        <jso-header allowLogin="false"
+                    options="{{ options }}"
+                    selectedOption="{{ selectedOption }}"
+                    homeLink="http://github.com/babelomics/pvs"
+                    helpLink="http://github.com/babelomics/pvs"
+                    tutorialLink="http://github.com/babelomics/pvs"
+                >
+            <div class="title">Spanish Population Variant Server</div>
+            <div class="description">beta</div>
+        </jso-header>
+
+        <div id="container" vertical layout>
+            <template if="{{ selectedOption == 'search' }}">
+                <es-search-element studies="{{ studies }}" staticStudies="{{ staticStudies }}"></es-search-element>
+            </template>
+
+            <template if="{{ selectedOption == 'studies' }}">
+                <es-studies-browser-element studies="{{ studies }}"></es-studies-browser-element>
+            </template>
+            <template if="{{ selectedOption == 'stats' }}">
+                <es-stats-element studies="{{ studies }}"></es-stats-element>
+            </template>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            created: function () {
+                this.studies = [];
+                this.staticStudies = [];
+                this.options = [];
+            }, ready: function () {
+                this.selectedOption = 'search';
+                this.clear = true;
+                this.options = this.getOptions();
+                this.getStudies();
+            },
+            getOptions: function () {
+                return [{option: 'search', text: 'Search'}, {
+                    option: 'stats',
+                    text: 'Stats'
+
+                },
+                    {
+                        option: 'studies',
+                        text: 'Studies Info.'
+
+                    }
+                ]
+            },
+            getStudies: function (event, response) {
+                var me = this;
+                PVSManager.studies.list({
+                    request: {
+                        success: function (response) {
+                            try {
+                                var studies = [];
+                                var staticStudies = [];
+//                                console.log(me.studies);
+
+                                for (var i = 0; i < response.response[0].result.length; i++) {
+                                    var elem = response.response[0].result[i];
+                                    if (elem.meta.sta == "false") {
+                                        studies.push(elem);
+                                    } else {
+                                        staticStudies.push(elem);
+                                    }
+
+                                }
+
+                                me.studies = studies;
+                                me.staticStudies = staticStudies;
+
+                                console.log("---------------- STUDIES -------------------");
+                                console.log(me.studies);
+
+                                console.log("---------------- STATIC STUDIES -------------------");
+                                console.log(me.staticStudies);
+
+
+                            } catch (err) {
+                                console.log("Error loading studies: " + err);
+                                me.studies = [];
+                                me.staticStudies = [];
+                            }
+
+                        },
+                        error: function (response) {
+                            console.log("ERROR");
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</polymer-element>

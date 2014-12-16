@@ -1,0 +1,529 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer-fontawesome/polymer-fontawesome.html">
+
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/core-list/core-list.html">
+<link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../bower_components/core-label/core-label.html">
+<link rel="import" href="../bower_components/core-collapse/core-collapse.html">
+
+
+<polymer-element name="es-filter-form-element" attributes="studies formURL clear">
+    <template>
+        <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
+        <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-panel.css">
+        <style>
+            :host {
+                display: block;
+                box-sizing: border-box;
+                position: relative;
+                background-color: #FFFFFF;
+
+            }
+
+            paper-button {
+                margin: 10px;
+            }
+
+            label:after {
+                content: ':';
+            }
+
+            .input_container {
+                margin: 0px;
+                width: 175px;
+                right: auto;
+                top: 0px;
+                /*left: 5px;*/
+                padding: 4px 6px 3px 20px;
+            }
+
+            .input_container label {
+                padding-bottom: 5px;
+                padding-left: 1px;
+            }
+
+            #headerTitle {
+                background: #e4e7e9;
+                color: #435F7A;
+                font-size: 16px;
+                line-height: 22px;
+
+                margin: 10px;
+                padding: 5px;
+            }
+
+            .position_filter {
+                width: 200px;
+            }
+
+            .sdp_block {
+                width: 300px;
+            }
+
+            .row {
+                height: 20px;
+            }
+
+            core-list {
+                height: 150px;
+            }
+
+            .filter_box {
+                margin-top: 5px;
+            }
+
+            #component_header {
+                background: #e4e7e9;
+                color: #435F7A;
+                font-size: 16px;
+                line-height: 22px;
+
+                margin: 10px;
+                padding: 5px;
+            }
+
+            paper-checkbox {
+                padding: 10px 10px 0px 10px;
+            }
+
+            paper-checkbox.blue::shadow #ink[checked] {
+                color: #4285f4;
+            }
+
+            paper-checkbox.blue::shadow #checkbox.checked {
+                border-color: #4285f4;
+            }
+
+            .form_block {
+                width: 250px;
+                max-height: 300px;
+                margin-bottom: 10px;
+
+            }
+
+            textarea {
+                resize: none;
+            }
+
+            .searchGene {
+                margin-top: 5px;
+            }
+
+            .filter_box {
+                margin-top: 10px;
+                margin-right: 5px;
+            }
+
+            .headerexpand:after {
+                font-family: FontAwesome;
+                content: '\f066';
+            }
+
+            .headerexpand[expanded]:after {
+                content: '\f065';
+            }
+
+            .elemLabel {
+                padding-top: 10px;
+                font-size: small;
+            }
+
+        </style>
+        <form id="filter_form" vertical layout>
+            <div vertical layout>
+                <div class="form_block positionBlock">
+                    <div id="headerTitle">Position</div>
+                    <div class="input_container" vertical layout>
+                        <label class="input_label">Chromosomal Location</label>
+                        <textarea id="region" name="region" placeholder="1:1-1000000,2:1-1000000"
+                                  value="{{ regionValue }}" rows="3"
+                                  required?="{{ (regionValue == '') }}">
+                        </textarea>
+                    </div>
+                    <!--<div class="input_container" vertical layout>-->
+                    <!--<label class="input_label">SNP id</label>-->
+                    <!--<textarea id="region" name="region" value="{{ regionValue }}" rows="3"-->
+                    <!--required?="{{ (regionValue == '') }}">-->
+                    <!--</textarea>-->
+                    <!--</div>-->
+                    <div class="input_container" vertical layout>
+                        <label class="input_label">Gene / Transcript</label>
+                        <textarea id="gene" name="gene" placeholder="BRCA2,PPL"
+                                  value="{{ geneValue }}" rows="3"
+                                  required?="{{ (geneValue == '') }}"></textarea>
+
+                        <div horizontal layout class="searchGene" end-justified>
+                            <input id="searchField" list="searchDataList" placeholder="Search gene" type="text"
+                                   style="width: 90px;">
+                            <datalist id="searchDataList"></datalist>
+                            <div id="quickSearchButton" class="button" style="border-left: none;">
+                                <font-awesome icon="search"></font-awesome>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form_block" vertical layout>
+                    <div id="headerTitle">Studies</div>
+                    <div id="studies_div">
+                        <core-list data="{{ studyNames }}" height="20px" class="selector_list">
+                            <template>
+                                <core-label center horizontal layout>
+                                    <paper-checkbox class="blue studyName"
+                                                    for
+                                                    on-click="{{ studyClick }}"
+                                                    value="{{ model.name }}" checked></paper-checkbox>
+                                    <div class="elemLabel" flex>{{ model.name }}</div>
+                                </core-label>
+                            </template>
+                        </core-list>
+                    </div>
+                    <!--<div class="filter_box" layout end-justified horizontal>-->
+                    <!--<input type="text" on-keyup="{{ studyKeyUp }}" placeholder="Filter:"/>-->
+                    <!--</div>-->
+                </div>
+                <div class="form_block">
+                    <div id="headerTitle">Diseases</div>
+                    <div id="diseases_div">
+                        <core-list data="{{ diseases }}" height="20px">
+                            <template>
+
+                                <core-label center horizontal layout>
+                                    <paper-checkbox class="blue diseaseName"
+                                                    for
+                                                    on-click="{{ diseaseClick }}"
+                                                    value="{{ model.name }}"></paper-checkbox>
+                                    <div flex>{{ model.name }}</div>
+                                </core-label>
+
+
+                            </template>
+                        </core-list>
+                    </div>
+                    <!--<div class="filter_box" layout end-justified horizontal>-->
+                    <!--<input type="text" on-keyup="{{ diseaseKeyUp }}" placeholder="Filter:"/>-->
+                    <!--</div>-->
+                </div>
+                <div class="form_block">
+                    <div id="headerTitle">Phenotypes</div>
+                    <div class="sdp_block" id="phenotypes_div">
+                        <core-list data="{{ phenotype }}" height="20px">
+                            <template>
+                                <core-label center horizontal layout>
+                                    <paper-checkbox class="blue phenotypeName"
+                                                    for
+                                                    on-click="{{ phenotypeClick }}"
+                                                    value="{{ model.name }}"></paper-checkbox>
+                                    <div flex>{{ model.name }}</div>
+                                </core-label>
+                            </template>
+                        </core-list>
+                    </div>
+                    <!--<div class="filter_box" horizontal layout end-justified>-->
+                    <!--<input type="text" on-keyup="{{ phenotypeKeyUp }}" placeholder="Filter:"/>-->
+                    <!--</div>-->
+                </div>
+            </div>
+            <div id="buttons_container" horizontal layout end-justified>
+                <paper-button raised on-click="{{ clearForm }}">Clear</paper-button>
+                <paper-button raised on-click="{{ submitForm }}">Submit</paper-button>
+            </div>
+        </form>
+    </template>
+    <script>
+        Polymer({
+            // regionValue: '1:1-1019573',
+            regionValue:'1:1-69511',
+            genevalue: '',
+            snpValue: '',
+            created: function () {
+
+                this.studies = [];
+                this.studyNames = [];
+                this.diseases = [];
+                this.phenotype = [];
+                this.log = [];
+
+                this.formStudies = {};
+                this.formDiseases = {};
+                this.formPhenotypes = {};
+
+
+            },
+            ready: function () {
+                this.species = 'Homo sapiens';
+                console.log(this.studies);
+
+                var lastQuery = '';
+                var me = this;
+                this.$.searchField.addEventListener('keyup', function (event) {
+                    this.classList.remove('error');
+                    var query = this.value.toUpperCase();
+                    if (query.length > 2 && lastQuery !== query && event.which !== 13) {
+                        me._setQuickSearchMenu(query);
+                        lastQuery = query;
+                    }
+                    if (event.which === 13) {
+                        var item = me.quickSearchDataset[query];
+                        if (item) {
+                            var values = me.$.gene.value.split(',').filter(function (el) {
+                                return el.length != 0
+                            });
+
+                            values.push(item.name);
+                            values = values.filter(function (item, index, inputArray) {
+                                return inputArray.indexOf(item) == index;
+                            });
+
+                            me.$.gene.value = values.join(",");
+
+
+                        } else {
+                            this.classList.add('error');
+                        }
+                    }
+                });
+
+            },
+            domReady: function () {},
+            _setQuickSearchMenu: function (query) {
+
+                while (this.$.searchDataList.firstChild) {
+                    this.$.searchDataList.removeChild(this.$.searchDataList.firstChild);
+                }
+                this.quickSearchDataset = {};
+                var items = this._quickSearchResultFn(query);
+                for (var i = 0; i < items.length; i++) {
+                    var item = items[i];
+                    var value = item["name"];
+                    this.quickSearchDataset[value] = item;
+                    var menuEntry = document.createElement('option');
+                    menuEntry.setAttribute('value', value);
+                    this.$.searchDataList.appendChild(menuEntry);
+                }
+
+            },
+            _quickSearchResultFn: function (query) {
+                var results = [];
+                var speciesCode = Utils.getSpeciesCode(this.species);
+
+                CellBaseManager.get({
+                    host: CELLBASE_HOST,
+                    version: CELLBASE_VERSION,
+                    species: speciesCode,
+                    category: 'feature',
+                    subCategory: 'id',
+                    query: query,
+                    resource: 'starts_with',
+                    params: {
+                        limit: 10
+                    },
+                    async: false,
+                    success: function (data, textStatus, jqXHR) {
+                        results = data.response[0].result;
+                    }
+                });
+                console.log(results);
+                return results;
+            },
+            submitForm: function () {
+                var me = this;
+                var auxStudies = [];
+                var auxDiseases = [];
+                var auxPhenotypes = [];
+                var query = {};
+
+                var search = false;
+
+                if (this.$.filter_form.checkValidity()) {
+                    Object.keys(this.formStudies).forEach(function (key) {
+                        var value = me.formStudies[key];
+                        if (value) {
+                            auxStudies.push(key);
+                        }
+                    });
+
+                    Object.keys(this.formDiseases).forEach(function (key) {
+                        var value = me.formDiseases[key];
+                        if (value) {
+                            auxDiseases.push(key);
+                        }
+                    });
+
+                    Object.keys(this.formPhenotypes).forEach(function (key) {
+                        var value = me.formPhenotypes[key];
+                        if (value) {
+                            auxPhenotypes.push(key);
+                        }
+                    });
+
+
+                    if (auxStudies.length > 0) {
+                        query.studies = auxStudies.join(",");
+                        search |= true;
+                    }
+                    if (auxDiseases.length > 0) {
+                        query.diseases = auxDiseases.join(",");
+                        search |= true;
+                    }
+
+                    if (auxPhenotypes.length > 0) {
+                        query.phenotypes = auxPhenotypes.join(",");
+                        search |= true;
+                    }
+
+                    if (search) {
+
+                        var url = PVSManager.variants.fetch({
+                            id: this.regionValue,
+                            query: query,
+                            request: {
+                                url: true
+                            }
+                        });
+                        this.formURL = url;
+                    }
+                }else{
+                
+                    alert("Please add a region/gene and check any study, disease or phenotype");
+                }
+
+            }
+            ,
+            studiesChanged: function (oldValue, newValue) {
+                var me = this;
+                this.studies = newValue;
+                var names = {};
+                var dis = {};
+                var phen = {};
+                for (var i = 0; i < this.studies.length; i++) {
+                    var study = this.studies[i];
+
+                    names[study.sname] = study.sname;
+                    dis[study.meta.dis] = study.meta.dis;
+                    phen[study.meta.phe] = study.meta.phe;
+
+                }
+                Object.keys(names).forEach(function (key) {
+                    me.studyNames.push({
+                        name: key
+                    })
+                    me.formStudies[key] = true;
+                });
+                Object.keys(dis).forEach(function (key) {
+                    me.diseases.push({
+                        name: key
+                    })
+                });
+
+                Object.keys(phen).forEach(function (key) {
+                    me.phenotype.push({
+                        name: key
+                    })
+                });
+
+
+            }
+            ,
+            studyClick: function (event, detail, sender) {
+
+                this.formStudies[sender.getAttribute("value")] = !sender.checked;
+
+            }
+            ,
+            diseaseClick: function (event, detail, sender) {
+
+                this.formDiseases[sender.getAttribute("value")] = !sender.checked;
+
+            }
+            ,
+            phenotypeClick: function (event, detail, sender) {
+
+                this.formPhenotypes[sender.getAttribute("value")] = !sender.checked;
+
+            }
+            ,
+            studyKeyUp: function (event, detail, sender) {
+                var reg = new RegExp(sender.value, "i");
+                var snames = [];
+                var names = {};
+
+                for (var i = 0; i < this.studies.length; i++) {
+                    var study = this.studies[i];
+                    if (reg.test(study.sname)) {
+                        names[study.sname] = study.sname;
+                    }
+                }
+                Object.keys(names).forEach(function (key) {
+                    snames.push({
+                        name: key
+                    })
+                });
+
+                this.studyNames = snames;
+
+            }
+            ,
+            diseaseKeyUp: function (event, detail, sender) {
+                var reg = new RegExp(sender.value, "i");
+                var snames = [];
+                var names = {};
+
+                for (var i = 0; i < this.studies.length; i++) {
+                    var study = this.studies[i];
+                    if (reg.test(study.meta.dis)) {
+                        names[study.meta.dis] = study.meta.dis;
+
+                    }
+                }
+                Object.keys(names).forEach(function (key) {
+                    snames.push({
+                        name: key
+                    })
+                });
+
+                this.diseases = snames;
+
+            }
+            ,
+            phenotypeKeyUp: function (event, detail, sender) {
+                var reg = new RegExp(sender.value, "i");
+                var snames = [];
+                var names = {};
+
+                for (var i = 0; i < this.studies.length; i++) {
+                    var study = this.studies[i];
+                    if (reg.test(study.meta.phe)) {
+                        names[study.meta.phe] = study.meta.phe;
+
+                    }
+                }
+                Object.keys(names).forEach(function (key) {
+                    snames.push({
+                        name: key
+                    })
+                });
+
+                this.phenotype = snames;
+
+            },
+            clearForm: function () {
+
+                this.$.filter_form.reset();
+
+                var checkboxes = this.$.filter_form.getElementsByTagName("paper-checkbox");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    elem.checked = false;
+                }
+
+
+                this.formStudies = {};
+                this.formDiseases = {};
+                this.formPhenotypes = {};
+
+            }
+        })
+        ;
+    </script>
+</polymer-element>

@@ -1,0 +1,231 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/polymer-fontawesome/polymer-fontawesome.html">
+<link rel="import" href="../bower_components/core-list/core-list.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+
+
+<polymer-element name="es-studies-browser-element" attributes="studies">
+    <template>
+        <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
+        <style>
+            :host {
+                display: block;
+                box-sizing: border-box;
+                position: relative;
+            }
+            .studies {
+                width: 100%;
+                height: 100%;
+                position: relative;
+            }
+
+        </style>
+
+
+        <div class="studies" horizontal layout wrap center-justified>
+            <template repeat="{{ study in studies }}">
+                <es-study-element study="{{ study }}"></es-study-element>
+            </template>
+        </div>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            created: function () {
+            },
+            ready: function () {
+
+            }
+        })
+        ;
+    </script>
+</polymer-element>
+
+
+<polymer-element name="es-study-element" attributes="study">
+    <template>
+        <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
+        <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-panel.css">
+
+        <style>
+            :host {
+                display: block;
+                box-sizing: border-box;
+                position: relative;
+
+            }
+
+            .study {
+                width: 400px;
+                height: 400px;
+                margin: 20px;
+                border: 2px solid;
+                background-color: #FFFFFF;
+                border-radius: 10px;
+
+            }
+
+            .container {
+                position: relative;
+
+            }
+
+            .study span:after {
+                content: ':';
+            }
+
+            .headerexpand:after {
+                font-family: FontAwesome;
+                content: '\f065';
+            }
+
+            .headerexpand[expanded]:after {
+                content: '\f066';
+            }
+
+            .container > span {
+                margin-left: 10px;
+
+            }
+
+            #chartContainer {
+                width: 200px;
+                height: 200px;
+            }
+
+        </style>
+
+
+        <div id="study" class="study">
+            <div class="headerTitle" id="header" horizontal layout end-justified>
+                <div class="text headerexpand" expanded?={{expanded}} on-click="{{handleExpand}}"></div>
+            </div>
+            <div class="container" flex vertical layout>
+                <span>Name {{ study.sname }}</span>
+                <span>Disease {{ study.meta.dis }}</span>
+                <span>Phenotype {{ study.meta.phe }}</span>
+                <span>Description {{ study.meta.dec }}</span>
+                <span>Paper {{ study.meta.paper }}</span>
+
+                <div id="chartContainer"></div>
+            </div>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            created: function () {
+                this.chartHeight = 200;
+                this.chartWidth = 200;
+            },
+            ready: function () {
+                this._createBarColumnChart(this.study.sname);
+            },
+            handleExpand: function () {
+                this.expanded = !this.expanded;
+                if (this.expanded) {
+                    this.style.position = 'absolute';
+                    this.style.width = '100%';
+                    this.style.height = '100%';
+                    this.style.left = '0';
+                    this.style.top = '0';
+                    this.style.zIndex = 10000;
+
+                    this.$.study.style.marginLeft = 'auto';
+                    this.$.study.style.marginRight = 'auto';
+                    this.$.study.style.height = '1000px';
+                    this.$.study.style.width = '1000px';
+
+                    this.chartHeight = 800;
+                    this.chartWidth = 800;
+
+                    this.chart.setSize(800, 800, false);
+
+
+                } else {
+                    this.style.width = '';
+                    this.style.height = '';
+                    this.style.position =
+                            this.style.top = '';
+                    this.style.left = '';
+                    this.style.zIndex = '';
+
+                    this.$.study.style.marginLeft = '';
+                    this.$.study.style.marginRight = '';
+                    this.$.study.style.height = '';
+                    this.$.study.style.width = '';
+//                    this.$.study.style.zIndex = 10000;
+
+                    this.chartHeight = 200;
+                    this.chartWidth = 200;
+                    this.chart.setSize(200, 200, false);
+
+                }
+            },
+            _createBarColumnChart: function (text) {
+
+                var data = [
+                    this.study.st.nVar,
+                    this.study.st.nSnp,
+                    this.study.st.nIndel,
+                    this.study.st.nPass,
+                    this.study.st.nTv,
+                    this.study.st.nTi
+                ];
+
+                this.chart = new Highcharts.Chart({
+                    chart: {
+                        plotBackgroundColor: null,
+                        plotBorderWidth: 1,//null,
+                        plotShadow: false,
+                        renderTo: this.$.chartContainer,
+                        type: 'column',
+                        height: this.chartHeight,
+                        width: this.chartWidth
+                    },
+                    title: {
+                        text: text + " Stats"
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    xAxis: {
+                        categories: [
+                            "Variants", "SNPs", "INDELs", "Pass", "Transitions", "Transversions"
+                        ]
+                    },
+                    yAxis: {
+                        min: 0,
+                        title: {
+                            text: 'Count'
+                        }
+                    },
+                    tooltip: {
+                        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                        '<td style="padding:0"><b>{point.y}</b></td></tr>',
+                        footerFormat: '</table>',
+                        shared: true,
+                        useHTML: true
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        column: {
+                            pointPadding: 0.2,
+                            borderWidth: 0
+                        }
+                    },
+                    series: [{
+                        data: data
+                    }]
+                });
+            },
+        })
+        ;
+    </script>
+</polymer-element>
+
+
