@@ -484,18 +484,13 @@
                             </style>
                             <td>
                                 <div horizontal layout class="row-total">
-                                    <div flex horizontal layout center-justified flex>{{
-                                        value.stats.gt00 || "."}}
-                                    </div>
-                                    <div flex horizontal layout center-justified flex>{{
-                                        value.stats.gt01 || "."}}
-                                    </div>
-                                    <div flex horizontal layout center-justified flex>{{
-                                        value.stats.gt11 || "."}}
-                                    </div>
-                                    <div flex horizontal layout center-justified flex>{{ value.stats.refmaf }}</div>
-                                    <div flex horizontal layout center-justified flex>{{ value.stats.altmaf }}</div>
-                                    <div flex horizontal layout center-justified flex>{{ value.stats.maf }}</div>
+                                    <!--<div flex horizontal layout center-justified flex>{{ value.stats.gt00 || "." }}</div>-->
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.gt00 }}</div>
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.gt01 || "." }}</div>
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.gt11 || "." }}</div>
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.refmaf || "." }}</div>
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.altmaf || "." }}</div>
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.maf  || "." }}</div>
                                 </div>
                             </td>
                         </template>
@@ -534,7 +529,7 @@
     <script>
         Polymer({
             // regionValue: '1:1-1019573',
-            regionValue: '1:69511-69511',
+            regionValue: '1:1-100000',
             genevalue: '',
             snpValue: '',
             floatDecimals: 3,
@@ -645,7 +640,7 @@
                                 if (gt00 != null) {
                                     gt00 += entry.stats.genotypesCount["0|0"];
                                 } else {
-                                    gt00 = row.entry.stats.genotypesCount["0|0"];
+                                    gt00 = entry.stats.genotypesCount["0|0"];
                                 }
                             }
                             entry.stats.gt00 = gt00;
@@ -892,12 +887,12 @@
                 for (var i = 0; i < newValue.length; i++) {
                     var study = newValue[i];
                     this.columns.splice(pos++, 0, {
-//                        name: study.sname,
+                        name: study.sname,
                         title: study.sname,
                         cellTemplate: 'mafStaticCT',
                         headerTemplate: 'mafStaticHT',
                         formula: new Function("row", "var res = {}; " +
-                        "try { var res = row.sourceEntries['" + study.sname + "']; } catch (e) { } console.log(res); return res; ")
+                        "try { var res = row.sourceEntries['" + study.sname + "']; } catch (e) { console.log('ERROR FORMULA STATIC STUDY'); } console.log(res); return res; ")
                     });
                 }
             }

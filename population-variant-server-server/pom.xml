@@ -16,7 +16,6 @@
     <packaging>war</packaging>
 
     <dependencies>
-
         <dependency>
             <groupId>org.babelomics.population-variant-server</groupId>
             <artifactId>population-variant-server-lib</artifactId>
