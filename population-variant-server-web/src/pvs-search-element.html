@@ -486,11 +486,15 @@
                                 <div horizontal layout class="row-total">
                                     <!--<div flex horizontal layout center-justified flex>{{ value.stats.gt00 || "." }}</div>-->
                                     <div flex horizontal layout center-justified flex>{{ value.stats.gt00 }}</div>
-                                    <div flex horizontal layout center-justified flex>{{ value.stats.gt01 || "." }}</div>
-                                    <div flex horizontal layout center-justified flex>{{ value.stats.gt11 || "." }}</div>
-                                    <div flex horizontal layout center-justified flex>{{ value.stats.refmaf || "." }}</div>
-                                    <div flex horizontal layout center-justified flex>{{ value.stats.altmaf || "." }}</div>
-                                    <div flex horizontal layout center-justified flex>{{ value.stats.maf  || "." }}</div>
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.gt01 || "." }}
+                                    </div>
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.gt11 || "." }}
+                                    </div>
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.refmaf || "." }}
+                                    </div>
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.altmaf || "." }}
+                                    </div>
+                                    <div flex horizontal layout center-justified flex>{{ value.stats.maf || "." }}</div>
                                 </div>
                             </td>
                         </template>
@@ -1174,12 +1178,55 @@
             ,
             handleDataGridChanged: function (oldValue, newValue) {
 
+
                 for (var i = 0; i < newValue.length; i++) {
                     var variant = newValue[i];
                     this._getEffect(variant);
                     this._getPolyphenSift(variant);
                 }
                 this._getPhenotypes(newValue);
+                this._getSNPId(newValue);
+            },
+            _getSNPId: function (records) {
+                var speciesCode = Utils.getSpeciesCode(this.species);
+
+                var regs = [];
+                for (var i = 0; i < records.length; i++) {
+                    var variant = records[i];
+                    var chr = variant.chromosome;
+                    regs.push(chr + ":" + variant.start + "-" + variant.end);
+                }
+
+                if (regs.length > 0) {
+                    var query = regs.join(",");
+                    CellBaseManager.get({
+                        host: CELLBASE_HOST,
+                        version: CELLBASE_VERSION,
+                        species: speciesCode,
+                        category: 'genomic',
+                        subCategory: 'region',
+                        query: query,
+                        resource: 'snp',
+                        params: {
+                            include: 'id'
+                        },
+                        async: false,
+                        success: function (data, textStatus, jqXHR) {
+
+                            var results = data.response;
+
+                            for (var i = 0; i < results.length; i++) {
+                                var elem = results[i];
+                                var record = records[i];
+
+                                if (record.id == null && elem.numResults > 0) {
+                                    record.id = elem.result[0].id;
+                                }
+                            }
+                            //results = data.response[0].result;
+                        }
+                    });
+                }
             }
             ,
             _getEffect: function (record) {
