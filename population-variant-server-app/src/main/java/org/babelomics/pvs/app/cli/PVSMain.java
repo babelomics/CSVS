@@ -133,8 +133,7 @@ public class PVSMain {
         List<Task<Variant>> taskList = new SortedList<>();
         List<VariantWriter> writers = new ArrayList<>();
 
-        VariantWriter writer = new VariantVcfDataWriter(reader, output.toAbsolutePath().toString());
-//        VariantWriter writer = new PVSVariantCompressedVcfDataWriter(reader, output.toAbsolutePath().toString());
+        VariantWriter writer = new PVSVariantCompressedVcfDataWriter(reader, output.toAbsolutePath().toString());
 
         taskList.add(new VariantStatsTask(reader, source));
         writers.add(writer);

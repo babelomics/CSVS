@@ -12,6 +12,7 @@ import org.opencb.biodata.models.variant.stats.VariantStats;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -50,10 +51,24 @@ public class PVSVariantCompressedVcfDataWriter implements VariantWriter {
 
     @Override
     public boolean pre() {
-        List<String> header = Splitter.on("\t").splitToList(reader.getHeader());
 
-        printer.append(Joiner.on("\t").join(header.subList(0, 9)) + "\n");
+        String header = parseHeader(reader.getHeader());
+
+//        List<String> header = Splitter.on("\t").splitToList(reader.getHeader());
+
+//        printer.append(Joiner.on("\t").join(header.subList(0, 9)) + "\n");
+        printer.append(header + "\n");
         return true;
+    }
+
+    private String parseHeader(String header) {
+        List<String> splits = Splitter.on("\n").splitToList(header.trim());
+        List<String> finalHeader = new ArrayList<>(2);
+        String chr = splits.get(splits.size() - 1);
+        List<String> chrSplits = Splitter.on("\t").splitToList(chr);
+        finalHeader.add(splits.get(0));
+        finalHeader.add(Joiner.on("\t").join(chrSplits.subList(0, 9)));
+        return Joiner.on("\n").join(finalHeader);
     }
 
     @Override
