@@ -77,6 +77,8 @@ public class PVSDBObjectToVariantSourceConverter extends DBObjectToVariantSource
         metadataMongo.put("desc", meta.get("desc"));
         metadataMongo.put("sta", meta.get("sta"));
 
+        System.out.println("meta = " + metadataMongo);
+
         studyMongo = studyMongo.append(METADATA_FIELD, metadataMongo);//
         return studyMongo;
     }

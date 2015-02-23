@@ -3,17 +3,16 @@ package org.babelomics.pvs.app.cli;
 import com.beust.jcommander.ParameterException;
 import org.babelomics.pvs.lib.io.PVSJsonWriter;
 import org.babelomics.pvs.lib.io.PVSVariantCompressedVcfDataWriter;
+import org.babelomics.pvs.lib.io.PVSVariantJsonReader;
 import org.babelomics.pvs.lib.io.PVSVariantMongoWriter;
 import org.opencb.biodata.formats.variant.io.VariantReader;
 import org.opencb.biodata.formats.variant.io.VariantWriter;
-import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfDataWriter;
 import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfReader;
 import org.opencb.biodata.models.variant.*;
 import org.opencb.commons.containers.list.SortedList;
 import org.opencb.commons.run.Task;
 import org.opencb.opencga.lib.auth.MongoCredentials;
 import org.opencb.opencga.lib.auth.OpenCGACredentials;
-import org.opencb.opencga.storage.variant.json.VariantJsonReader;
 import org.opencb.variant.lib.runners.VariantRunner;
 import org.opencb.variant.lib.runners.tasks.VariantStatsTask;
 
@@ -181,7 +180,7 @@ public class PVSMain {
 
     private static void loadVariants(VariantSource source, Path variantsPath, Path filePath, Path credentialsPath) throws IOException {
 
-        VariantReader reader = new VariantJsonReader(source, variantsPath.toAbsolutePath().toString(), filePath.toAbsolutePath().toString());
+        VariantReader reader = new PVSVariantJsonReader(source, variantsPath.toAbsolutePath().toString(), filePath.toAbsolutePath().toString());
 
 
         List<Task<Variant>> taskList = new SortedList<>();

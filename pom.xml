@@ -16,7 +16,7 @@
     </modules>
 
     <properties>
-        <opencga.version>0.3.2</opencga.version>
+        <opencga.version>0.3.3</opencga.version>
         <compileSource>1.7</compileSource>
     </properties>
 

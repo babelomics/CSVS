@@ -87,8 +87,8 @@ public abstract class PVSVariantStatsJsonMixin extends VariantStatsJsonMixin {
     @JsonIgnore
     public abstract String getMgfGenotype();
 
-    @JsonIgnore
-    public abstract String getMafAllele();
+//    @JsonIgnore
+//    public abstract String getMafAllele();
 
     @JsonIgnore
     public abstract Variant.VariantType getVariantType();
