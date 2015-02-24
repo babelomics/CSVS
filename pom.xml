@@ -27,6 +27,11 @@
                 <artifactId>population-variant-server-lib</artifactId>
                 <version>1.0.0</version>
             </dependency>
+            <dependency>
+                <groupId>org.babelomics.population-variant-server</groupId>
+                <artifactId>population-variant-server-app</artifactId>
+                <version>1.0.0</version>
+            </dependency>
             <!-- Intra-module dependencies -->
             <dependency>
                 <groupId>org.opencb.opencga</groupId>

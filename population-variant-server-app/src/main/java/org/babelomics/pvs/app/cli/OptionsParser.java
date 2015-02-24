@@ -92,7 +92,7 @@ public class OptionsParser {
     @Parameters(commandNames = {"compress-variants"}, commandDescription = "Compress Variants")
     class CommandCompressVariants implements Command {
 
-        @Parameter(names = {"-i", "--input"}, description = "Prefix of files to save in the selected backend", required = true, arity = 1)
+        @Parameter(names = {"-i", "--input"}, description = "Input File", required = true, arity = 1)
         String input;
 
         @Parameter(names = {"-o", "--output"}, description = "Output File", arity = 1)
