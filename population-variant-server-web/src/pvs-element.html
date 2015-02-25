@@ -5,8 +5,9 @@
 <link rel="import" href="pvs-search-element.html">
 <link rel="import" href="pvs-studies-browser-element.html">
 <link rel="import" href="pvs-stats-element.html">
+<link rel="import" href="pvs-home.html">
 
-<polymer-element name="exome-server-element">
+<polymer-element name="pvs-element">
     <template>
         <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
         <style>
@@ -64,6 +65,9 @@
         </jso-header>
 
         <div id="container" vertical layout>
+            <template if="{{ selectedOption == 'home' || selectedOption == 'none' || selectedOption == ''}}">
+                <pvs-home selectedOption="{{selectedOption}}"></pvs-home>
+            </template>
             <template if="{{ selectedOption == 'search' }}">
                 <es-search-element studies="{{ studies }}" staticStudies="{{ staticStudies }}"></es-search-element>
             </template>
@@ -79,16 +83,24 @@
     </template>
     <script>
         Polymer({
+            selectedOption: 'search',
             created: function () {
                 this.studies = [];
                 this.staticStudies = [];
                 this.options = [];
-            }, ready: function () {
                 this.selectedOption = 'search';
+//
+            }
+            ,
+            ready: function () {
                 this.clear = true;
                 this.options = this.getOptions();
                 this.getStudies();
             },
+            domReady: function () {
+                this.selectedOption = 'search';
+            }
+            ,
             getOptions: function () {
                 return [{option: 'search', text: 'Search'}, {
                     option: 'stats',
@@ -101,7 +113,8 @@
 
                     }
                 ]
-            },
+            }
+            ,
             getStudies: function (event, response) {
                 var me = this;
                 PVSManager.studies.list({
@@ -145,6 +158,7 @@
                     }
                 });
             }
-        });
+        })
+        ;
     </script>
 </polymer-element>

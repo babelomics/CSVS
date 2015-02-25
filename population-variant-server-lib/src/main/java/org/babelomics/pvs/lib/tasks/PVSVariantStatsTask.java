@@ -49,8 +49,10 @@ public class PVSVariantStatsTask extends Task<Variant> {
                         break;
                     case EVS:
                         // TODO Should create an object!
+                        variantStats = variant.getStats(file.getStudyId(), file.getFileId());
                         break;
                 }
+
                 file.setStats(variantStats.calculate(file.getSamplesData(), file.getAttributes(), source.getPedigree()));
             }
         }

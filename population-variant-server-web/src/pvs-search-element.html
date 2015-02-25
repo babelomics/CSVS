@@ -5,9 +5,16 @@
 <link rel="import" href="../bower_components/core-list/core-list.html">
 <link rel="import" href="../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../bower_components/core-label/core-label.html">
+<link rel="import" href="../bower_components/core-menu/core-menu.html">
 <link rel="import" href="../bower_components/core-collapse/core-collapse.html">
 <link rel="import" href="../bower_components/sortable-table/sortable-table.html">
 <link rel="import" href="opencb-ajax.html">
+
+<link rel="import" href="../lib/jsorolla/src/lib/components/jso-genome-viewer-element.html">
+<link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-effect-grid.html">
+<link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-frequencies-grid.html">
+<link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-phenotype-grid.html">
+
 
 <polymer-element name="es-search-element" attributes="studies staticStudies">
     <template>
@@ -219,6 +226,38 @@
                 width: 70px;
             }
 
+            .title {
+                font-size: 20px;
+                color: #435f7a;
+                border-bottom: thin solid #edebe3;
+                margin: 5px 0px;
+            }
+
+            core-item {
+                margin-right: 25px;
+                /*font-weight: lighter;*/
+                font-weight: normal !important;
+                cursor: pointer !important;
+                color: #909090;
+                padding: 0px 2px;
+                border-bottom: 2px solid transparent;
+            }
+
+            core-item.core-selected {
+                border-bottom: 2px solid #d3d3d3;
+                color: #435f7a;
+            }
+
+            #tools {
+                /*height: calc(100% - 375px);*/
+                overflow-y: auto;
+                overflow-x: auto;
+            }
+
+            jso-variant-frequencies-grid::shadow sortable-table, jso-variant-effect-grid::shadow sortable-table{
+                font-size: 11px;
+            }
+
         </style>
 
         <div horizontal layout center-justified>
@@ -404,7 +443,6 @@
                                 </div>
                             </th>
                         </template>
-
                         <template id="mafStaticHT">
                             <style>
                                 .column-total {
@@ -474,8 +512,6 @@
                                 </div>
                             </th>
                         </template>
-
-
                         <template id="mafStaticCT">
                             <style>
                                 .row-total {
@@ -498,7 +534,6 @@
                                 </div>
                             </td>
                         </template>
-
                         <template id="mafCT">
                             <style>
                                 .row-total {
@@ -524,7 +559,22 @@
 
                     </sortable-table>
                 </core-collapse>
-                <div flex id="genomeViewer"></div>
+                <core-menu class="title" selected="{{selectedTab}}" horizontal layout>
+                    <core-item icon="" label="Genomic Context">Genomic Context</core-item>
+                    <core-item icon="" label="Effect">Effect</core-item>
+                    <core-item icon="" label="Frequencies">Frequencies</core-item>
+                    <core-item icon="" label="Phenotype">Phenotype</core-item>
+                </core-menu>
+                <div id="tools" vertical layout flex>
+                    <!--<div id="genomeViewer"></div>-->
+                    <jso-genome-viewer-element id="gvEl" hidden?="{{ selectedTab != 0}}"></jso-genome-viewer-element>
+                    <jso-variant-effect-grid hidden?="{{ selectedTab != 1}}"
+                                             variant="{{ variantEffect }}"></jso-variant-effect-grid>
+                    <jso-variant-frequencies-grid hidden?="{{ selectedTab != 2}}"
+                                                  variant="{{ variantEffect }}"></jso-variant-frequencies-grid>
+                    <jso-variant-phenotype-grid hidden?="{{ selectedTab != 3}}"
+                                                variant="{{ variantEffect }}"></jso-variant-phenotype-grid>
+                </div>
             </div>
 
         </div>
@@ -532,7 +582,6 @@
     </template>
     <script>
         Polymer({
-            // regionValue: '1:1-1019573',
             regionValue: '1:1-100000',
             genevalue: '',
             snpValue: '',
@@ -540,6 +589,8 @@
             expanded: false,
             parseFunction: null,
             formURL: '',
+            selectedTab: 0,
+            variantEffect: null,
             created: function () {
                 this.studies = [];
                 this.studyNames = [];
@@ -1174,9 +1225,19 @@
             },
             handleDataGridSelected: function (oldValue, newValue) {
                 console.log(newValue);
+//                var reg = newValue.chromosome + ":" + newValue.start + "-" + newValue.end;
+//                var region = new Region(reg);
+//                this.genomeViewer.setRegion(region);
+
+                var me = this;
                 var reg = newValue.chromosome + ":" + newValue.start + "-" + newValue.end;
                 var region = new Region(reg);
-                this.genomeViewer.setRegion(region);
+
+                // update Effect
+                var variant = newValue.chromosome + ":" + newValue.start + ":" + newValue.reference + ":" + newValue.alternate;
+                this.variantEffect = variant;
+
+                this.$.gvEl.genomeViewer.setRegion(region);
             }
             ,
             handleDataGridChanged: function (oldValue, newValue) {
