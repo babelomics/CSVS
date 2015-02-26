@@ -1,6 +1,7 @@
 package org.babelomics.pvs.app.cli;
 
 import com.beust.jcommander.ParameterException;
+import com.google.common.base.Joiner;
 import org.babelomics.pvs.lib.io.PVSJsonWriter;
 import org.babelomics.pvs.lib.io.PVSVariantCompressedVcfDataWriter;
 import org.babelomics.pvs.lib.io.PVSVariantJsonReader;
@@ -70,13 +71,20 @@ public class PVSMain {
 
             Path file = Paths.get(c.file);
             Path outdir = Paths.get(c.outdir);
-            String fileId = c.study.toUpperCase() + SEPARATOR + c.disease.toUpperCase() + SEPARATOR + c.phenotype.toUpperCase();
+
+            String disease = Joiner.on("_").join(c.disease).toUpperCase();
+            String study = Joiner.on("_").join(c.study).toUpperCase();
+            String phenotype = c.phenotype.toString();
+
+            String fileId = study + SEPARATOR + disease + SEPARATOR + phenotype;
+
+            System.out.println("fileId = " + fileId);
             String paper = c.paper == null ? "" : c.paper;
             String description = c.description == null ? "" : c.description;
 
             VariantStudy.StudyType studyType = VariantStudy.StudyType.CASE_CONTROL;
             VariantSource.Aggregation aggregated = c.aggregated;
-            VariantSource source = new VariantSource(file.getFileName().toString(), fileId, c.study, c.study, studyType, aggregated);
+            VariantSource source = new VariantSource(file.getFileName().toString(), fileId, study, study, studyType, aggregated);
 
             source.addMetadata("disease", c.disease);
             source.addMetadata("phenotype", c.phenotype);
