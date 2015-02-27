@@ -47,7 +47,7 @@ public class OptionsParser {
         String outdir;
 
         @Parameter(names = {"-d", "--disease"}, description = "Disease", required = true, variableArity = true)
-        List<String> disease = new ArrayList<String>();
+        List<String> disease = new ArrayList<>();
 
         @Parameter(names = {"-p", "--phenotype"}, description = "Phenotype. Values = [CASE, CONTROL]", arity = 1)
         PhenotypeEnum phenotype;

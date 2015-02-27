@@ -17,6 +17,10 @@
 
     <properties>
         <opencga.version>0.3.3</opencga.version>
+        <variant.version>1.2.0</variant.version>
+        <datastore.version>0.2.0</datastore.version>
+        <biodata.version>0.2.0</biodata.version>
+        <jcl.version>2.0.0</jcl.version>
         <compileSource>1.7</compileSource>
     </properties>
 
@@ -56,20 +60,20 @@
             <dependency>
                 <groupId>org.opencb.variant</groupId>
                 <artifactId>variant-lib</artifactId>
-                <version>1.2.0</version>
+                <version>${variant.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.opencb.datastore</groupId>
                 <artifactId>datastore-mongodb</artifactId>
-                <version>0.2.0</version>
+                <version>${datastore.version}</version>
             </dependency>
 
 
             <dependency>
                 <groupId>org.opencb.biodata</groupId>
                 <artifactId>biodata-models</artifactId>
-                <version>0.2.0</version>
+                <version>${biodata.version}</version>
             </dependency>
 
             <dependency>
@@ -80,7 +84,7 @@
             <dependency>
                 <groupId>org.opencb.commons</groupId>
                 <artifactId>commons-lib</artifactId>
-                <version>2.0.0</version>
+                <version>${jcl.version}</version>
             </dependency>
 
 

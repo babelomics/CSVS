@@ -78,7 +78,6 @@ public class PVSMain {
 
             String fileId = study + SEPARATOR + disease + SEPARATOR + phenotype;
 
-            System.out.println("fileId = " + fileId);
             String paper = c.paper == null ? "" : c.paper;
             String description = c.description == null ? "" : c.description;
 
@@ -143,7 +142,6 @@ public class PVSMain {
     private static void loadVariants(VariantSource source, Path variantsPath, Path filePath, Path credentialsPath) throws IOException {
 
         VariantReader reader = new PVSVariantJsonReader(source, variantsPath.toAbsolutePath().toString(), filePath.toAbsolutePath().toString());
-
 
         List<Task<Variant>> taskList = new SortedList<>();
         List<VariantWriter> writers = new ArrayList<>();
