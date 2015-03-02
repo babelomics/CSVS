@@ -120,7 +120,6 @@ public class OptionsParser {
     }
 
     CommandTransformVariants getTransformCommand() {
-        System.out.println(transform);
         return transform;
     }
 
