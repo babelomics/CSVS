@@ -1,19 +1,20 @@
 package org.babelomics.pvs.app.cli;
 
 import com.beust.jcommander.ParameterException;
+import com.google.common.base.Joiner;
 import org.babelomics.pvs.lib.io.PVSJsonWriter;
 import org.babelomics.pvs.lib.io.PVSVariantCompressedVcfDataWriter;
+import org.babelomics.pvs.lib.io.PVSVariantJsonReader;
 import org.babelomics.pvs.lib.io.PVSVariantMongoWriter;
+import org.babelomics.pvs.lib.tasks.PVSVariantStatsTask;
 import org.opencb.biodata.formats.variant.io.VariantReader;
 import org.opencb.biodata.formats.variant.io.VariantWriter;
-import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfDataWriter;
 import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfReader;
 import org.opencb.biodata.models.variant.*;
 import org.opencb.commons.containers.list.SortedList;
 import org.opencb.commons.run.Task;
 import org.opencb.opencga.lib.auth.MongoCredentials;
 import org.opencb.opencga.lib.auth.OpenCGACredentials;
-import org.opencb.opencga.storage.variant.json.VariantJsonReader;
 import org.opencb.variant.lib.runners.VariantRunner;
 import org.opencb.variant.lib.runners.tasks.VariantStatsTask;
 
@@ -30,6 +31,8 @@ import java.util.Properties;
  * @author Alejandro Alemán Ramos <aaleman@cipf.es>
  */
 public class PVSMain {
+
+    public static final String SEPARATOR = "#-#";
 
     public static void main(String[] args) throws IOException {
         OptionsParser parser = new OptionsParser();
@@ -53,9 +56,6 @@ public class PVSMain {
                 case "compress-variants":
                     command = parser.getCompressComand();
                     break;
-//                case "add-variants":
-//                    command = parser.getAddCommand();
-//                    break;
                 default:
                     System.out.println("Command not implemented!!");
                     System.exit(1);
@@ -71,16 +71,22 @@ public class PVSMain {
 
             Path file = Paths.get(c.file);
             Path outdir = Paths.get(c.outdir);
-            String fileId = c.study.toUpperCase() + "_" + c.disease.toUpperCase() + "_" + c.phenotype.toUpperCase();
+
+            String disease = Joiner.on("_").join(c.disease).toUpperCase();
+            String study = Joiner.on("_").join(c.study).toUpperCase();
+            String phenotype = c.phenotype.toString();
+
+            String fileId = study + SEPARATOR + disease + SEPARATOR + phenotype;
+
             String paper = c.paper == null ? "" : c.paper;
             String description = c.description == null ? "" : c.description;
 
             VariantStudy.StudyType studyType = VariantStudy.StudyType.CASE_CONTROL;
             VariantSource.Aggregation aggregated = c.aggregated;
-            VariantSource source = new VariantSource(file.getFileName().toString(), fileId, c.study, c.study, studyType, aggregated);
+            VariantSource source = new VariantSource(file.getFileName().toString(), fileId, study, study, studyType, aggregated);
 
-            source.addMetadata("disease", c.disease);
-            source.addMetadata("phenotype", c.phenotype);
+            source.addMetadata("disease", disease);
+            source.addMetadata("phenotype", phenotype);
             source.addMetadata("paper", paper);
             source.addMetadata("desc", description);
             source.addMetadata("sta", Boolean.toString(c.staticStudy));
@@ -108,20 +114,6 @@ public class PVSMain {
 
             compressVariants(input, output);
         }
-//        else if (command instanceof OptionsParser.CommandAddVariants) {
-//            OptionsParser.CommandAddVariants c = (OptionsParser.CommandAddVariants) command;
-//
-//            Path variantsPath = Paths.get(c.input + ".variants.json.gz");
-//            Path filePath = Paths.get(c.input + ".file.json.gz");
-//            Path credentials = Paths.get(c.credentials);
-//
-//            VariantStudy.StudyType st = VariantStudy.StudyType.CASE_CONTROL;
-//
-//            VariantSource source = new VariantSource(variantsPath.getFileName().toString(), null, null, null, st, VariantSource.Aggregation.NONE);
-//
-//            addVariants(source, variantsPath, filePath, credentials);
-//
-//        }
 
     }
 
@@ -147,42 +139,9 @@ public class PVSMain {
 
     }
 
-//    private static void addVariants(VariantSource source, Path variantsPath, Path filePath, Path credentialsPath) throws IOException {
-//        VariantReader reader = new VariantJsonReader(source, variantsPath.toAbsolutePath().toString(), filePath.toAbsolutePath().toString());
-//
-//
-//        List<Task<Variant>> taskList = new SortedList<>();
-//        List<VariantWriter> writers = new ArrayList<>();
-//
-//        Properties properties = new Properties();
-//        properties.load(new InputStreamReader(new FileInputStream(credentialsPath.toString())));
-//        OpenCGACredentials credentials = new MongoCredentials(properties);
-//        VariantWriter mongoWriter = new ExomeServerVariantMongoWriter(source, (MongoCredentials) credentials,
-//                properties.getProperty("collection_variants", "variants"),
-//                properties.getProperty("collection_files", "files"));
-//
-//        mongoWriter.includeStats(true);
-//        mongoWriter.includeEffect(false);
-//        mongoWriter.includeSamples(false);
-//
-//
-//        Task<Variant> updateStats = new ExomeServerVariantUpdateStatsTask((MongoCredentials) credentials, source);
-//
-//        writers.add(mongoWriter);
-//
-//        taskList.add(updateStats);
-//
-//        VariantRunner variantRunner = new VariantRunner(source, reader, null, writers, taskList, 100);
-//
-//        System.out.println("Loading variants...");
-//        variantRunner.run();
-//        System.out.println("Variants loaded!");
-//    }
-
     private static void loadVariants(VariantSource source, Path variantsPath, Path filePath, Path credentialsPath) throws IOException {
 
-        VariantReader reader = new VariantJsonReader(source, variantsPath.toAbsolutePath().toString(), filePath.toAbsolutePath().toString());
-
+        VariantReader reader = new PVSVariantJsonReader(source, variantsPath.toAbsolutePath().toString(), filePath.toAbsolutePath().toString());
 
         List<Task<Variant>> taskList = new SortedList<>();
         List<VariantWriter> writers = new ArrayList<>();
@@ -232,12 +191,8 @@ public class PVSMain {
         VariantWriter jsonWriter = new PVSJsonWriter(source, outdir);
 
 
-        if (source.getAggregation() == VariantSource.Aggregation.NONE) {
-            taskList.add(new VariantStatsTask(reader, source));
-            jsonWriter.includeStats(true);
-        } else {
-            jsonWriter.includeStats(false);
-        }
+        taskList.add(new PVSVariantStatsTask(reader, source));
+        jsonWriter.includeStats(true);
         jsonWriter.includeEffect(false);
         jsonWriter.includeSamples(false);
 

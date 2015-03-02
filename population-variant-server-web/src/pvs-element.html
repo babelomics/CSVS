@@ -5,8 +5,10 @@
 <link rel="import" href="pvs-search-element.html">
 <link rel="import" href="pvs-studies-browser-element.html">
 <link rel="import" href="pvs-stats-element.html">
+<link rel="import" href="pvs-home.html">
+<link rel="import" href="pvs-menu.html">
 
-<polymer-element name="exome-server-element">
+<polymer-element name="pvs-element">
     <template>
         <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
         <style>
@@ -51,6 +53,22 @@
                 margin: 20px 20px 20px 0px;
             }
 
+            .a {
+                text-decoration: none;
+                color: #CCCCCC;
+                cursor: pointer;
+            }
+
+            .a:visited {
+                color: #CCCCCC;
+            }
+
+            .a:hover {
+                color: white;
+                /*text-decoration: underline;*/
+            }
+
+
         </style>
         <jso-header allowLogin="false"
                     options="{{ options }}"
@@ -61,9 +79,37 @@
                 >
             <div class="title">Spanish Population Variant Server</div>
             <div class="description">beta</div>
+            <pvs-menu class="menu" selectedOption="{{selectedOption}}" showMenu="true"></pvs-menu>
+
+            <jso-help-menu class="helpmenu" selectedOption="{{selectedOption}}">
+                <div class="link">
+                    <font-awesome icon="book"></font-awesome>
+                    <a class="a" href="https://github.com/babelomics/pvs/wiki"
+                       target="_blank">
+                        &nbsp; Documentation
+                    </a>
+                </div>
+                <div class="link">
+                    <font-awesome icon="compass"></font-awesome>
+                    <a class="a" href="https://github.com/babelomics/pvs/wiki/Tutorial"
+                       target="_blank">
+                        &nbsp; Tutorial
+                    </a>
+                </div>
+                <div class="link">
+                    <font-awesome icon="github"></font-awesome>
+                    <a class="a" href="https://github.com/babelomics/pvs/"
+                       target="_blank">
+                        &nbsp; Source code
+                    </a>
+                </div>
+            </jso-help-menu>
         </jso-header>
 
         <div id="container" vertical layout>
+            <template if="{{ selectedOption == 'home' || selectedOption == 'none' || selectedOption == ''}}">
+                <pvs-home selectedOption="{{selectedOption}}"></pvs-home>
+            </template>
             <template if="{{ selectedOption == 'search' }}">
                 <es-search-element studies="{{ studies }}" staticStudies="{{ staticStudies }}"></es-search-element>
             </template>
@@ -79,16 +125,24 @@
     </template>
     <script>
         Polymer({
+            selectedOption: 'search',
             created: function () {
                 this.studies = [];
                 this.staticStudies = [];
                 this.options = [];
-            }, ready: function () {
                 this.selectedOption = 'search';
+//
+            }
+            ,
+            ready: function () {
                 this.clear = true;
                 this.options = this.getOptions();
                 this.getStudies();
             },
+            domReady: function () {
+                this.selectedOption = 'search';
+            }
+            ,
             getOptions: function () {
                 return [{option: 'search', text: 'Search'}, {
                     option: 'stats',
@@ -101,7 +155,8 @@
 
                     }
                 ]
-            },
+            }
+            ,
             getStudies: function (event, response) {
                 var me = this;
                 PVSManager.studies.list({
@@ -145,6 +200,7 @@
                     }
                 });
             }
-        });
+        })
+        ;
     </script>
 </polymer-element>

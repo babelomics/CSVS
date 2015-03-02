@@ -29,7 +29,7 @@ public class PVSVariantUpdateStatsTask extends Task<Variant> {
         super(Integer.MAX_VALUE);
         this.source = source;
 
-        dbAdaptor = new VariantMongoDBAdaptor(credentials);
+        dbAdaptor = new VariantMongoDBAdaptor(credentials,"variants","files");
 
     }
 

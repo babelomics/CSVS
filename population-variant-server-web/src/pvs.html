@@ -6,7 +6,7 @@
     <!--Web Components-->
     <script src="../bower_components/webcomponentsjs/webcomponents.min.js"></script>
     <link rel="import" href="../bower_components/polymer/polymer.html">
-    <link rel="import" href="pvs-element.html">
+
 
     <!--Libraries-->
 
@@ -113,6 +113,8 @@
 
     <script src="../lib/jsorolla/src/genome-viewer/genome-viewer.js"></script>
 
+    <link rel="import" href="pvs-element.html">
+
 
     <style>
         html {
@@ -133,12 +135,12 @@
 </head>
 
 <body>
-<exome-server-element></exome-server-element>
+<pvs-element></pvs-element>
 <script>
-    var exomeServer;
+    var pvs;
     window.addEventListener('polymer-ready', function (debuggere) {
         console.log('polymer-ready');
-        exomeServer = document.querySelector('exome-server-element');
+        pvs = document.querySelector('exome-server-element');
     });
 </script>
 

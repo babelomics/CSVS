@@ -92,7 +92,7 @@ public class PVSDBObjectToVariantSourceEntryConverter implements ComplexTypeConv
     public PVSDBObjectToVariantSourceEntryConverter(boolean includeSamples,
                                                     PVSDBObjectToVariantStatsConverter statsConverter, MongoCredentials credentials) {
         this.includeSamples = includeSamples;
-        this.samplesConverter = new DBObjectToSamplesConverter(credentials);
+        this.samplesConverter = new DBObjectToSamplesConverter(credentials, "holahola");
         this.statsConverter = statsConverter;
     }
 
