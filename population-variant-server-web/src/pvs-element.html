@@ -76,10 +76,11 @@
                     homeLink="http://github.com/babelomics/pvs"
                     helpLink="http://github.com/babelomics/pvs"
                     tutorialLink="http://github.com/babelomics/pvs"
+                    showMenu="true"
                 >
             <div class="title">Spanish Population Variant Server</div>
             <div class="description">beta</div>
-            <pvs-menu class="menu" selectedOption="{{selectedOption}}" showMenu="true"></pvs-menu>
+            <pvs-menu class="menu" selectedOption="{{selectedOption}}"></pvs-menu>
 
             <jso-help-menu class="helpmenu" selectedOption="{{selectedOption}}">
                 <div class="link">
@@ -125,12 +126,11 @@
     </template>
     <script>
         Polymer({
-            selectedOption: 'search',
+            selectedOption: 'home',
             created: function () {
                 this.studies = [];
                 this.staticStudies = [];
                 this.options = [];
-                this.selectedOption = 'search';
 //
             }
             ,
@@ -140,7 +140,6 @@
                 this.getStudies();
             },
             domReady: function () {
-                this.selectedOption = 'search';
             }
             ,
             getOptions: function () {

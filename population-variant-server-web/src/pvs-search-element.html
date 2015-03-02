@@ -271,8 +271,7 @@
                             <div class="input_container" vertical layout>
                                 <label class="input_label">Chromosomal Location</label>
                                 <textarea id="region" name="region" placeholder="1:1-1000000,2:1-1000000"
-                                          value="{{ regionValue }}" rows="3"
-                                          required?="{{ (regionValue == '') }}">
+                                          value="{{ regionValue }}" rows="3">
                                 </textarea>
                             </div>
                             <!--<div class="input_container" vertical layout>-->
@@ -284,8 +283,7 @@
                             <div class="input_container" vertical layout>
                                 <label class="input_label">Gene</label>
                                 <textarea id="gene" name="gene" placeholder="BRCA2,PPL"
-                                          value="{{ geneValue }}" rows="3"
-                                          required?="{{ (geneValue == '') }}"></textarea>
+                                          value="{{ geneValue }}" rows="3"></textarea>
 
                                 <div horizontal layout class="searchGene" end-justified>
                                     <input id="searchField" list="searchDataList" placeholder="Search gene" type="text"
@@ -327,7 +325,7 @@
                                                             for
                                                             on-click="{{ diseaseClick }}"
                                                             value="{{ model.name }}"></paper-checkbox>
-                                            <div flex>{{ model.name }}</div>
+                                            <div flex>{{ model.label }}</div>
                                         </core-label>
 
 
@@ -585,13 +583,13 @@
     <script>
         Polymer({
             regionValue: '1:1-100000',
-            genevalue: '',
+            geneValue: '',
             snpValue: '',
             floatDecimals: 3,
             expanded: false,
             parseFunction: null,
             formURL: '',
-            selectedTab: 3,
+            selectedTab: 0,
             variantEffect: null,
             created: function () {
                 this.studies = [];
@@ -822,7 +820,7 @@
 
                 var search = false;
 
-                if (this.$.filter_form.checkValidity()) {
+                if (this.$.filter_form.checkValidity() && (this.regionValue != '' || this.geneValue != '')) {
 
                     var regions = [];
 

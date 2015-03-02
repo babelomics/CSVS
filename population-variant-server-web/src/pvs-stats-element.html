@@ -139,7 +139,8 @@
                     },
                     xAxis: {
                         categories: [
-                            "Variants", "SNPs", "INDELs", "Pass", "Transitions", "Transversions"
+//                            "Variants", "SNPs", "INDELs", "Pass", "Transitions", "Transversions"
+                            "Variants", "Pass", "Transitions", "Transversions"
                         ]
                     },
                     yAxis: {
@@ -172,11 +173,11 @@
 
                     if (elem.name == category) {
                         elem.data[0] += stats.nVar;
-                        elem.data[1] += stats.nSnp;
-                        elem.data[2] += stats.nIndel;
-                        elem.data[3] += stats.nPass;
-                        elem.data[4] += stats.nTi;
-                        elem.data[5] += stats.nTv;
+//                        elem.data[1] += stats.nSnp;
+//                        elem.data[2] += stats.nIndel;
+                        elem.data[1] += stats.nPass;
+                        elem.data[2] += stats.nTi;
+                        elem.data[3] += stats.nTv;
                     }
                 }
             },
@@ -199,7 +200,8 @@
                         auxSamples[study.meta.phe] = 0;
                         var elem = {};
                         elem.name = study.meta.phe;
-                        elem.data = [0, 0, 0, 0, 0, 0];
+                        elem.data = [0, 0, 0, 0];
+//                        elem.data = [0, 0, 0, 0, 0, 0];
                         categoriesData.push(elem);
                         categories.push(elem.name);
                     }
@@ -288,7 +290,8 @@
                         auxSamples[study.meta.dis] = 0;
                         var elem = {};
                         elem.name = study.meta.dis;
-                        elem.data = [0, 0, 0, 0, 0, 0];
+                        elem.data = [0, 0, 0, 0];
+//                        elem.data = [0, 0, 0, 0, 0, 0];
                         categoriesData.push(elem);
                         categories.push(elem.name);
                     }
@@ -337,7 +340,8 @@
                         auxSamples[study.sname] = 0;
                         var elem = {};
                         elem.name = study.sname;
-                        elem.data = [0, 0, 0, 0, 0, 0];
+                        elem.data = [0, 0, 0, 0];
+//                        elem.data = [0, 0, 0, 0, 0, 0];
                         categoriesData.push(elem);
                         categories.push(elem.name);
                     }
