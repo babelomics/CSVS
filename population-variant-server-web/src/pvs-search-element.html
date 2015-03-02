@@ -254,7 +254,9 @@
                 overflow-x: auto;
             }
 
-            jso-variant-frequencies-grid::shadow sortable-table, jso-variant-effect-grid::shadow sortable-table{
+            jso-variant-frequencies-grid::shadow sortable-table,
+            jso-variant-phenotype-grid::shadow sortable-table,
+            jso-variant-effect-grid::shadow sortable-table {
                 font-size: 11px;
             }
 
@@ -305,7 +307,7 @@
                                                             for
                                                             on-click="{{ studyClick }}"
                                                             value="{{ model.name }}" checked></paper-checkbox>
-                                            <div class="elemLabel" flex>{{ model.name }}</div>
+                                            <div class="elemLabel" flex>{{ model.label }}</div>
                                         </core-label>
                                     </template>
                                 </core-list>
@@ -346,7 +348,7 @@
                                                             for
                                                             on-click="{{ phenotypeClick }}"
                                                             value="{{ model.name }}"></paper-checkbox>
-                                            <div flex>{{ model.name }}</div>
+                                            <div flex>{{ model.label }}</div>
                                         </core-label>
                                     </template>
                                 </core-list>
@@ -589,7 +591,7 @@
             expanded: false,
             parseFunction: null,
             formURL: '',
-            selectedTab: 0,
+            selectedTab: 3,
             variantEffect: null,
             created: function () {
                 this.studies = [];
@@ -921,20 +923,29 @@
                 }
                 Object.keys(names).forEach(function (key) {
                     me.studyNames.push({
-                        name: key
+                        name: key,
+                        label: me._formatText(key)
                     })
                     me.formStudies[key] = true;
                 });
                 Object.keys(dis).forEach(function (key) {
                     me.diseases.push({
-                        name: key
+                        name: key,
+                        label: me._formatText(key)
                     })
                 });
 
                 Object.keys(phen).forEach(function (key) {
                     me.phenotype.push({
-                        name: key
+                        name: key,
+                        label: me._formatText(key)
                     })
+                });
+
+            },
+            _formatText: function (text) {
+                return Utils.formatText(text, "_").toLowerCase().replace(/(?:^|\s)\S/g, function (a) {
+                    return a.toUpperCase();
                 });
 
             }

@@ -85,8 +85,8 @@ public class PVSMain {
             VariantSource.Aggregation aggregated = c.aggregated;
             VariantSource source = new VariantSource(file.getFileName().toString(), fileId, study, study, studyType, aggregated);
 
-            source.addMetadata("disease", c.disease);
-            source.addMetadata("phenotype", c.phenotype);
+            source.addMetadata("disease", disease);
+            source.addMetadata("phenotype", phenotype);
             source.addMetadata("paper", paper);
             source.addMetadata("desc", description);
             source.addMetadata("sta", Boolean.toString(c.staticStudy));

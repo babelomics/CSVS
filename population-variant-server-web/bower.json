@@ -28,7 +28,7 @@
     "core-collapse": "Polymer/core-collapse#~0.5.1",
     "paper-checkbox": "Polymer/paper-checkbox#~0.5.1",
     "core-menu": "Polymer/core-menu#~0.5.5",
-    "sortable-table": "~0.10.0"
+    "sortable-table": "~0.11.1"
   },
   "devDependencies": {
     "backbone": "~1.1.2"
