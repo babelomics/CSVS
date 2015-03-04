@@ -91,6 +91,7 @@ public class PVSMain {
             source.addMetadata("desc", description);
             source.addMetadata("sta", Boolean.toString(c.staticStudy));
             source.addMetadata("cov", String.valueOf(c.coverage));
+            source.addMetadata("tech", c.technology);
 
             transformVariants(source, file, outdir);
         } else if (command instanceof OptionsParser.CommandLoadVariants) {

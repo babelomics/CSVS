@@ -66,9 +66,10 @@ public class OptionsParser {
 
         @Parameter(names = {"--aggregated"}, description = "Aggregated VCF File: BASIC or EVS (optional)", arity = 1)
         VariantSource.Aggregation aggregated = VariantSource.Aggregation.NONE;
-
-
+        @Parameter(names = {"-t", "--technology"}, description = "Sequencing Technology", arity = 1)
+        String technology = "NONE";
     }
+
 
     @Parameters(commandNames = {"load-variants"}, commandDescription = "Loads an already generated data model into a backend")
     class CommandLoadVariants implements Command {

@@ -13,6 +13,7 @@
                 box-sizing: border-box;
                 position: relative;
             }
+
             .studies {
                 width: 100%;
                 height: 100%;
@@ -102,11 +103,11 @@
                 <div class="text headerexpand" expanded?={{expanded}} on-click="{{handleExpand}}"></div>
             </div>
             <div class="container" flex vertical layout>
-                <span>Name {{ study.sname }}</span>
-                <span>Disease {{ study.meta.dis }}</span>
-                <span>Phenotype {{ study.meta.phe }}</span>
-                <span>Description {{ study.meta.dec }}</span>
-                <span>Paper {{ study.meta.paper }}</span>
+                <span>Name {{ _formatText(study.sname) }}</span>
+                <span>Disease {{ _formatText(study.meta.dis) }}</span>
+                <span>Phenotype {{ _formatText(study.meta.phe) }}</span>
+                <span>Description {{ _formatText(study.meta.dec) }}</span>
+                <span>Paper {{ _formatText(study.meta.paper) }}</span>
 
                 <div id="chartContainer"></div>
             </div>
@@ -224,6 +225,17 @@
                     }]
                 });
             },
+            _formatText: function (text) {
+                if (text) {
+
+                    return Utils.formatText(text, "_").toLowerCase().replace(/(?:^|\s)\S/g, function (a) {
+                        return a.toUpperCase();
+                    });
+                } else {
+                    return "";
+                }
+
+            }
         })
         ;
     </script>
