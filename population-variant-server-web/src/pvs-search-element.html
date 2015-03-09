@@ -266,6 +266,10 @@
             <div id="filter-form-element">
                 <form id="filter_form" vertical layout>
                     <div vertical layout>
+                        <div id="buttons_container" horizontal layout end-justified>
+                            <paper-button raised on-click="{{ clearForm }}">Clear</paper-button>
+                            <paper-button raised on-click="{{ submitForm }}">Search</paper-button>
+                        </div>
                         <div class="form_block positionBlock">
                             <div id="headerTitle">Position</div>
                             <div class="input_container" vertical layout>
@@ -287,7 +291,7 @@
 
                                 <div horizontal layout class="searchGene" end-justified>
                                     <input id="searchField" list="searchDataList" placeholder="Search gene" type="text"
-                                           style="width: 90px;">
+                                           style="width: 100px;">
                                     <datalist id="searchDataList"></datalist>
                                     <div id="quickSearchButton" class="button" style="border-left: none;">
                                         <font-awesome icon="search"></font-awesome>
@@ -356,10 +360,7 @@
                             <!--</div>-->
                         </div>
                     </div>
-                    <div id="buttons_container" horizontal layout end-justified>
-                        <paper-button raised on-click="{{ clearForm }}">Clear</paper-button>
-                        <paper-button raised on-click="{{ submitForm }}">Search</paper-button>
-                    </div>
+
                 </form>
             </div>
             <div id="dataGridElement" class="panel panel-shadow" flex vertical layout>
@@ -589,7 +590,7 @@
             expanded: false,
             parseFunction: null,
             formURL: '',
-            selectedTab: 0,
+            selectedTab: 1,
             variantEffect: null,
             created: function () {
                 this.studies = [];
@@ -692,20 +693,22 @@
 
 //                            if (row.sourceEntries.MAF) {
 
-                            var gt00 = entry.stats.genotypesCount["0/0"];
-                            if ("0|0" in entry.stats.genotypesCount) {
-                                if (gt00 != null) {
-                                    gt00 += entry.stats.genotypesCount["0|0"];
-                                } else {
-                                    gt00 = entry.stats.genotypesCount["0|0"];
-                                }
-                            }
-                            entry.stats.gt00 = gt00;
+                            var gt00 = me.sampleCount;
+//                            var gt00 = entry.stats.genotypesCount["0/0"];
+//                            if ("0|0" in entry.stats.genotypesCount) {
+//                                if (gt00 != null) {
+//                                    gt00 += entry.stats.genotypesCount["0|0"];
+//                                } else {
+//                                    gt00 = entry.stats.genotypesCount["0|0"];
+//                                }
+//                            }
+//                            entry.stats.gt00 = gt00;
 
                             var gt01 = entry.stats.genotypesCount["0/1"];
                             if ("0|1" in entry.stats.genotypesCount) {
                                 if (gt01 != null) {
                                     gt01 += entry.stats.genotypesCount["0|1"];
+
                                 } else {
                                     gt01 = entry.stats.genotypesCount["0|1"];
                                 }
@@ -721,6 +724,15 @@
                                 }
                             }
                             entry.stats.gt11 = gt11;
+
+                            if (gt01 != null) {
+                                gt00 -= gt01;
+                            }
+                            if (gt11 != null) {
+                                gt00 -= gt11;
+                            }
+                            entry.stats.gt00 = gt00;
+
 
                             var genotypes = entry.stats.genotypesCount;
 
@@ -820,6 +832,12 @@
 
                 var search = false;
 
+                this.$.dataGrid.data = [];
+                this.$.dataGrid.dataSize = 0;
+                this.$.dataGrid.page = 0;
+
+                this.sampleCount = 0;
+
                 if (this.$.filter_form.checkValidity() && (this.regionValue != '' || this.geneValue != '')) {
 
                     var regions = [];
@@ -886,6 +904,60 @@
                         search |= true;
                     }
 
+                    var finalStudies = [];
+
+                    if (auxStudies.length > 0) {
+                        for (var i = 0; i < this.studies.length; i++) {
+                            var elem = this.studies[i];
+                            if (this._checkFileIdStudies(elem, auxStudies)) {
+                                finalStudies.push(elem);
+                            }
+
+                        }
+
+                    }
+
+
+                    if (auxDiseases.length > 0) {
+                        if (finalStudies.length == 0) {
+                            for (var i = 0; i < this.studies.length; i++) {
+                                var elem = this.studies[i];
+                                if (this._checkFileIdDiseases(elem, auxDiseases)) {
+                                    finalStudies.push(elem);
+                                }
+                            }
+                        } else {
+                            finalStudies = finalStudies.filter(function (elem) {
+                                return me._checkFileIdDiseases(elem, auxDiseases);
+                            });
+                        }
+                    }
+
+                    if (auxPhenotypes.length > 0) {
+                        if (finalStudies.length == 0) {
+                            for (var i = 0; i < this.studies.length; i++) {
+                                var elem = this.studies[i];
+                                if (this._checkFileIdPhenotypes(elem, auxPhenotypes)) {
+                                    finalStudies.push(elem);
+                                }
+                            }
+                        } else {
+                            finalStudies = finalStudies.filter(function (elem) {
+                                return me._checkFileIdPhenotypes(elem, auxPhenotypes);
+                            });
+                        }
+                    }
+
+                    for (var i = 0; i < finalStudies.length; i++) {
+                        var study = finalStudies[i];
+                        if (this._containsStudy(study)) {
+                            this.sampleCount += study.st.nSamp;
+                        }
+                    }
+
+                    console.log("sample Count: " + this.sampleCount);
+                    console.log(finalStudies);
+
                     if (search) {
                         var regionQuery = regions.join(",");
 
@@ -902,6 +974,44 @@
                 } else {
                     alert("Please add a region/gene and check any study, disease or phenotype");
                 }
+
+            },
+            _containsStudy: function (elem) {
+                for (var i = 0; i < this.studies.length; i++) {
+                    var study = this.studies[i];
+                    if (elem.fid === study.fid) {
+                        return true;
+                    }
+                }
+                return false;
+            },
+            _checkFileIdStudies: function (elem, auxStudies) {
+                for (var i = 0; i < auxStudies.length; i++) {
+                    var study = auxStudies[i];
+                    if (study === elem.sid) {
+                        return true;
+                    }
+                }
+                return false;
+            },
+            _checkFileIdDiseases: function (elem, auxDiseases) {
+                for (var i = 0; i < auxDiseases.length; i++) {
+                    var disease = auxDiseases[i];
+                    if (disease === elem.meta.dis) {
+                        return true;
+                    }
+                }
+                return false;
+
+            },
+            _checkFileIdPhenotypes: function (elem, auxPhenotypes) {
+                for (var i = 0; i < auxPhenotypes.length; i++) {
+                    var phenotype = auxPhenotypes[i];
+                    if (phenotype === elem.meta.phe) {
+                        return true;
+                    }
+                }
+                return false;
 
             },
             studiesChanged: function (oldValue, newValue) {
@@ -1233,10 +1343,6 @@
                 return this.genomeViewer;
             },
             handleDataGridSelected: function (oldValue, newValue) {
-                console.log(newValue);
-//                var reg = newValue.chromosome + ":" + newValue.start + "-" + newValue.end;
-//                var region = new Region(reg);
-//                this.genomeViewer.setRegion(region);
 
                 var me = this;
                 var reg = newValue.chromosome + ":" + newValue.start + "-" + newValue.end;

@@ -127,19 +127,22 @@
     <script>
         Polymer({
             selectedOption: 'home',
+            idSearch: null,
             created: function () {
                 this.studies = [];
                 this.staticStudies = [];
                 this.options = [];
-//
             }
             ,
             ready: function () {
+                this.selectedOption = 'search';
                 this.clear = true;
                 this.options = this.getOptions();
                 this.getStudies();
             },
             domReady: function () {
+//                this.idSearch = this.$.idSearch;
+//                this.selectedOption = 'search';
             }
             ,
             getOptions: function () {
