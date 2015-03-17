@@ -146,7 +146,7 @@
             }
 
             sortable-table {
-                height: 307px;
+                height: 322px;
                 /*max-width: 100%;*/
                 border: 1px solid #d3d3d3;
                 overflow-x: auto;
@@ -686,18 +686,22 @@
 
                             var entry = row.sourceEntries[key];
 
-//                            if (row.sourceEntries.MAF) {
+                            var gt00;
+                            if (entry.fileId == "MAF") {
+                                gt00 = me.sampleCount;
+                            }
+                            else {
 
-                            var gt00 = me.sampleCount;
-//                            var gt00 = entry.stats.genotypesCount["0/0"];
-//                            if ("0|0" in entry.stats.genotypesCount) {
-//                                if (gt00 != null) {
-//                                    gt00 += entry.stats.genotypesCount["0|0"];
-//                                } else {
-//                                    gt00 = entry.stats.genotypesCount["0|0"];
-//                                }
-//                            }
-//                            entry.stats.gt00 = gt00;
+                                gt00 = entry.stats.genotypesCount["0/0"];
+                                if ("0|0" in entry.stats.genotypesCount) {
+                                    if (gt00 != null) {
+                                        gt00 += entry.stats.genotypesCount["0|0"];
+                                    } else {
+                                        gt00 = entry.stats.genotypesCount["0|0"];
+                                    }
+                                }
+                                entry.stats.gt00 = gt00;
+                            }
 
                             var gt01 = entry.stats.genotypesCount["0/1"];
                             if ("0|1" in entry.stats.genotypesCount) {
@@ -719,14 +723,15 @@
                                 }
                             }
                             entry.stats.gt11 = gt11;
-
-                            if (gt01 != null) {
-                                gt00 -= gt01;
+                            if (entry.fileId == "MAF") {
+                                if (gt01 != null) {
+                                    gt00 -= gt01;
+                                }
+                                if (gt11 != null) {
+                                    gt00 -= gt11;
+                                }
+                                entry.stats.gt00 = gt00;
                             }
-                            if (gt11 != null) {
-                                gt00 -= gt11;
-                            }
-                            entry.stats.gt00 = gt00;
 
 
                             var genotypes = entry.stats.genotypesCount;
@@ -831,7 +836,7 @@
 
                 this.$.dataGrid.data = [];
                 this.$.dataGrid.dataSize = 0;
-                this.$.dataGrid.page = 0;
+                this.$.dataGrid.page = 1;
 
                 this.sampleCount = 0;
 
@@ -1066,7 +1071,7 @@
                         cellTemplate: 'mafStaticCT',
                         headerTemplate: 'mafStaticHT',
                         formula: new Function("row", "var res = {}; " +
-                        "try { var res = row.sourceEntries['" + study.sname + "']; } catch (e) { console.log('ERROR FORMULA STATIC STUDY'); } console.log(res); return res; ")
+                        "try { var res = row.sourceEntries['" + study.sname + "']; } catch (e) { console.log('ERROR FORMULA STATIC STUDY'); } return res; ")
                     });
                 }
             },
@@ -1400,7 +1405,6 @@
             _getEffect: function (record) {
                 var req = record.chromosome + ":" + record.start + ":" + record.reference + ":" + record.alternate;
                 var url = "http://ws.bioinfo.cipf.es/cellbase/rest/latest/hsa/genomic/variant/" + req + "/consequence_type?of=json";
-                console.log(url);
 
                 $.ajax({
                     url: url,
