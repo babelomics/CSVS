@@ -762,18 +762,20 @@
 //                           }
                         }
 //                        }
+                        me._getEffect(row);
+                        me._getPolyphenSift(row);
                     }
+
+                    me._getPhenotypes(data);
+                    me._getSNPId(data);
+
+
                     return data;
                 }
 
             },
             _toFixed: function (value, precision) {
                 return Number(value).toFixed(precision);
-            },
-            domReady: function () {
-//                this.createGenomeViewer();
-//                this.genomeViewer.draw();
-//                this.genomeViewer.toggleAutoHeight(true);
             },
             observe: {
                 '$.dataGrid.selected': "handleDataGridSelected",
@@ -1344,17 +1346,15 @@
                 this.$.gvEl.genomeViewer.setRegion(region);
             }
             ,
-            handleDataGridChanged: function (oldValue, newValue) {
-
-
-                for (var i = 0; i < newValue.length; i++) {
-                    var variant = newValue[i];
-                    this._getEffect(variant);
-                    this._getPolyphenSift(variant);
-                }
-                this._getPhenotypes(newValue);
-                this._getSNPId(newValue);
-            },
+//            handleDataGridChanged: function (oldValue, newValue) {
+//                for (var i = 0; i < newValue.length; i++) {
+//                    var variant = newValue[i];
+//                    this._getEffect(variant);
+//                    this._getPolyphenSift(variant);
+//                }
+//                this._getPhenotypes(newValue);
+//                this._getSNPId(newValue);
+//            },
             _getSNPId: function (records) {
                 var speciesCode = Utils.getSpeciesCode(this.species);
 

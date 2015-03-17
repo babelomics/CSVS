@@ -79,7 +79,7 @@
                     selectedOption="{{selectedOption}}"
                     allowLogin="{{allowLogin}}"
                     showMenu="true">
-            <div class="title">Spanish Population Variant Server</div>
+            <div class="title">CIBERER Spanish Variant Server</div>
             <div class="description">beta</div>
             <pvs-menu class="menu" selectedOption="{{selectedOption}}"></pvs-menu>
 
@@ -135,19 +135,15 @@
                 this.clear = true;
                 this.getStudies();
             },
-            domReady: function () {
-//                this.idSearch = this.$.idSearch;
-//                this.selectedOption = 'search';
-            },
             getStudies: function (event, response) {
                 var me = this;
                 PVSManager.studies.list({
                     request: {
+                        async: false,
                         success: function (response) {
                             try {
                                 var studies = [];
                                 var staticStudies = [];
-//                                console.log(me.studies);
 
                                 for (var i = 0; i < response.response[0].result.length; i++) {
                                     var elem = response.response[0].result[i];
@@ -162,22 +158,21 @@
                                 me.studies = studies;
                                 me.staticStudies = staticStudies;
 
-                                console.log("---------------- STUDIES -------------------");
-                                console.log(me.studies);
-
-                                console.log("---------------- STATIC STUDIES -------------------");
-                                console.log(me.staticStudies);
-
-
                             } catch (err) {
                                 console.log("Error loading studies: " + err);
                                 me.studies = [];
                                 me.staticStudies = [];
                             }
 
+                            console.log("---------------- STUDIES -------------------");
+                            console.log(me.studies);
+
+                            console.log("---------------- STATIC STUDIES -------------------");
+                            console.log(me.staticStudies);
                         },
                         error: function (response) {
-                            console.log("ERROR");
+                            console.log("ERROR downloading studies");
+                            console.log(response);
                         }
                     }
                 });
