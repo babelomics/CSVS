@@ -568,6 +568,7 @@
                 </core-menu>
                 <div id="tools" vertical layout flex>
                     <!--<div id="genomeViewer"></div>-->
+
                     <jso-genome-viewer-element id="gvEl" hidden?="{{ selectedTab != 0}}"></jso-genome-viewer-element>
                     <jso-variant-effect-grid hidden?="{{ selectedTab != 1}}"
                                              variant="{{ variantEffect }}"></jso-variant-effect-grid>
@@ -666,19 +667,13 @@
                         formula: function (row) {
                             return row.sourceEntries["MAF"];
                         }
-                    },
-                    {
+                    }, {
                         name: 'sift', title: 'SIFT'
-                    }
-                    ,
-                    {
+                    }, {
                         name: 'polyphen', title: 'POLYPHEN'
-                    }
-                    ,
-                    {
+                    }, {
                         name: 'phenotype', title: 'Phenotype'
                     }
-                    ,
                 ];
 
                 this.parseFunction = function (data) {
@@ -776,9 +771,9 @@
                 return Number(value).toFixed(precision);
             },
             domReady: function () {
-                this.createGenomeViewer();
-                this.genomeViewer.draw();
-                this.genomeViewer.toggleAutoHeight(true);
+//                this.createGenomeViewer();
+//                this.genomeViewer.draw();
+//                this.genomeViewer.toggleAutoHeight(true);
             },
             observe: {
                 '$.dataGrid.selected': "handleDataGridSelected",
@@ -1056,8 +1051,8 @@
                     return a.toUpperCase();
                 });
 
-            }
-            , staticStudiesChanged: function (oldValue, newValue) {
+            },
+            staticStudiesChanged: function (oldValue, newValue) {
                 var me = this;
                 var pos = 5;
 
@@ -1072,26 +1067,22 @@
                         "try { var res = row.sourceEntries['" + study.sname + "']; } catch (e) { console.log('ERROR FORMULA STATIC STUDY'); } console.log(res); return res; ")
                     });
                 }
-            }
-            ,
+            },
             studyClick: function (event, detail, sender) {
 
                 this.formStudies[sender.getAttribute("value")] = !sender.checked;
 
-            }
-            ,
+            },
             diseaseClick: function (event, detail, sender) {
 
                 this.formDiseases[sender.getAttribute("value")] = !sender.checked;
 
-            }
-            ,
+            },
             phenotypeClick: function (event, detail, sender) {
 
                 this.formPhenotypes[sender.getAttribute("value")] = !sender.checked;
 
-            }
-            ,
+            },
             studyKeyUp: function (event, detail, sender) {
                 var reg = new RegExp(sender.value, "i");
                 var snames = [];
@@ -1111,8 +1102,7 @@
 
                 this.studyNames = snames;
 
-            }
-            ,
+            },
             diseaseKeyUp: function (event, detail, sender) {
                 var reg = new RegExp(sender.value, "i");
                 var snames = [];
@@ -1175,8 +1165,7 @@
 
 //                this.genomeViewer.setHeight(this.$.genomeViewer.getBoundingClientRect().height);
 
-            }
-            , createGenomeViewer: function () {
+            }, createGenomeViewer: function () {
                 this.genomeViewer = new GenomeViewer({
                     cellBaseHost: 'https://www.ebi.ac.uk/cellbase/webservices/rest',
                     cellBaseVersion: 'v3',

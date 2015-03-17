@@ -11,11 +11,15 @@
 <polymer-element name="pvs-element">
     <template>
         <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
+        <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-panel.css">
+        <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-form.css">
+        <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-dropdown.css">
         <style>
             :host {
                 display: block;
                 position: relative;
                 box-sizing: border-box;
+                font-size: 13px;
 
                 -webkit-touch-callout: none;
                 -webkit-user-select: none;
@@ -25,59 +29,56 @@
                 user-select: none;
                 cursor: default;
 
-                background-color: #314559;
-                font-size: 13px;
             }
 
-            #container {
+            .content {
+                background-color: #435f7a;
                 position: relative;
-                height: calc(100vh - 60px);
+                /*min-height: calc(100vh - 160px);*/
             }
 
-            [hide=true] {
-                display: none !important;
+            .content > * {
+                min-height: calc(100vh - 160px);
             }
 
-            [hide=false] {
-                display: initial !important
-            }
-
-            es-filter-form-element {
-                margin: 20px;
-                border-radius: 5px;
-            }
-
-            es-data-grid-element {
-                border-radius: 5px;
-                padding: 5px;
-                margin: 20px 20px 20px 0px;
-            }
-
-            .a {
-                text-decoration: none;
+            .link {
                 color: #CCCCCC;
                 cursor: pointer;
+                white-space: nowrap;
             }
 
-            .a:visited {
+            .link > a {
+                color: #CCCCCC;
+                text-decoration: none;
+            }
+
+            .link > a:visited {
                 color: #CCCCCC;
             }
 
-            .a:hover {
+            .link:hover, .link > a:hover {
+                color: #FFFFFF;
+            }
+
+            .announce {
+                text-overflow: ellipsis;
+                background-color: #ea4242;
                 color: white;
-                /*text-decoration: underline;*/
+                padding: 5px;
+                font-size: 12px;
+            }
+
+            jso-project-browser {
+                height: calc(100vh - 60px);
             }
 
 
         </style>
-        <jso-header allowLogin="false"
-                    options="{{ options }}"
-                    selectedOption="{{ selectedOption }}"
-                    homeLink="http://github.com/babelomics/pvs"
-                    helpLink="http://github.com/babelomics/pvs"
-                    tutorialLink="http://github.com/babelomics/pvs"
-                    showMenu="true"
-                >
+        <jso-header id="jsoHeader"
+                    on-logout="{{handleLogout}}"
+                    selectedOption="{{selectedOption}}"
+                    allowLogin="{{allowLogin}}"
+                    showMenu="true">
             <div class="title">Spanish Population Variant Server</div>
             <div class="description">beta</div>
             <pvs-menu class="menu" selectedOption="{{selectedOption}}"></pvs-menu>
@@ -85,29 +86,26 @@
             <jso-help-menu class="helpmenu" selectedOption="{{selectedOption}}">
                 <div class="link">
                     <font-awesome icon="book"></font-awesome>
-                    <a class="a" href="https://github.com/babelomics/pvs/wiki"
-                       target="_blank">
+                    <a class="a" href="https://github.com/babelomics/pvs/wiki" target="_blank">
                         &nbsp; Documentation
                     </a>
                 </div>
                 <div class="link">
                     <font-awesome icon="compass"></font-awesome>
-                    <a class="a" href="https://github.com/babelomics/pvs/wiki/Tutorial"
-                       target="_blank">
+                    <a class="a" href="https://github.com/babelomics/pvs/wiki/Tutorial" target="_blank">
                         &nbsp; Tutorial
                     </a>
                 </div>
                 <div class="link">
                     <font-awesome icon="github"></font-awesome>
-                    <a class="a" href="https://github.com/babelomics/pvs/"
-                       target="_blank">
+                    <a class="a" href="https://github.com/babelomics/pvs/" target="_blank">
                         &nbsp; Source code
                     </a>
                 </div>
             </jso-help-menu>
         </jso-header>
 
-        <div id="container" vertical layout>
+        <div id="content">
             <template if="{{ selectedOption == 'home' || selectedOption == 'none' || selectedOption == ''}}">
                 <pvs-home selectedOption="{{selectedOption}}"></pvs-home>
             </template>
@@ -129,36 +127,18 @@
             selectedOption: 'home',
             idSearch: null,
             created: function () {
+                this.allowLogin = false;
                 this.studies = [];
                 this.staticStudies = [];
-                this.options = [];
-            }
-            ,
+            },
             ready: function () {
-                this.selectedOption = 'search';
                 this.clear = true;
-                this.options = this.getOptions();
                 this.getStudies();
             },
             domReady: function () {
 //                this.idSearch = this.$.idSearch;
 //                this.selectedOption = 'search';
-            }
-            ,
-            getOptions: function () {
-                return [{option: 'search', text: 'Search'}, {
-                    option: 'stats',
-                    text: 'Stats'
-
-                },
-                    {
-                        option: 'studies',
-                        text: 'Studies Info.'
-
-                    }
-                ]
-            }
-            ,
+            },
             getStudies: function (event, response) {
                 var me = this;
                 PVSManager.studies.list({

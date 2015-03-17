@@ -15,9 +15,8 @@
             }
 
             .studies {
-                width: 100%;
-                height: 100%;
                 position: relative;
+                padding: 15px 0 30px 0;
             }
 
         </style>
@@ -54,62 +53,48 @@
                 display: block;
                 box-sizing: border-box;
                 position: relative;
+                margin: 20px 20px 0 0;
 
             }
 
-            .study {
-                width: 400px;
-                height: 400px;
-                margin: 20px;
-                border: 2px solid;
+            #study {
                 background-color: #FFFFFF;
-                border-radius: 10px;
+                height: 400px;
+                width: 400px;
 
             }
 
             .container {
                 position: relative;
-
+                padding: 10px;
             }
 
-            .study span:after {
-                content: ':';
+            #chart {
+                width: 380px;
+                height: 270px;
             }
 
-            .headerexpand:after {
-                font-family: FontAwesome;
-                content: '\f065';
-            }
-
-            .headerexpand[expanded]:after {
-                content: '\f066';
-            }
-
-            .container > span {
-                margin-left: 10px;
-
-            }
-
-            #chartContainer {
-                width: 200px;
-                height: 200px;
+            .light {
+                color: #666;
             }
 
         </style>
 
-
-        <div id="study" class="study">
-            <div class="headerTitle" id="header" horizontal layout end-justified>
-                <div class="text headerexpand" expanded?={{expanded}} on-click="{{handleExpand}}"></div>
+        <div class="panel panel-shadow" id="study">
+            <div class="header" id="header" horizontal layout>
+                <div class="text">{{ _formatText(study.sname) }}</div>
+                <div class="headeractions" horizontal end-justified layout flex>
+                    <!--<div class="text headerexpand" expanded?={{expanded}} on-click="{{handleExpand}}"></div>-->
+                </div>
             </div>
             <div class="container" flex vertical layout>
-                <span>Name {{ _formatText(study.sname) }}</span>
-                <span>Disease {{ _formatText(study.meta.dis) }}</span>
-                <span>Phenotype {{ _formatText(study.meta.phe) }}</span>
-                <span>Description {{ _formatText(study.meta.dec) }}</span>
-                <span>Paper {{ _formatText(study.meta.paper) }}</span>
+                <div><span class="light">Disease:</span> {{ _formatText(study.meta.dis) }}</div>
+                <div><span class="light">Phenotype:</span> {{ _formatText(study.meta.phe) }}</div>
+                <div><span class="light">Description:</span>{{ _formatText(study.meta.dec) }}</div>
+                <div><span class="light">Paper:</span> {{ _formatText(study.meta.paper) }}</div>
+                <br>
 
-                <div id="chartContainer"></div>
+                <div id="chart"></div>
             </div>
         </div>
 
@@ -117,10 +102,13 @@
     <script>
         Polymer({
             created: function () {
-                this.chartHeight = 200;
-                this.chartWidth = 200;
             },
             ready: function () {
+            },
+            domReady: function () {
+//                var bcr = this.$.chart.getBoundingClientRect();
+//                this.chartHeight = 300;
+//                this.chartWidth = 300;
                 this._createBarColumnChart(this.study.sname);
             },
             handleExpand: function () {
@@ -138,12 +126,10 @@
                     this.$.study.style.height = '1000px';
                     this.$.study.style.width = '1000px';
 
-                    this.chartHeight = 800;
-                    this.chartWidth = 800;
+//                    this.chartHeight = 800;
+//                    this.chartWidth = 800;
 
-                    this.chart.setSize(800, 800, false);
-
-
+//                    this.chart.setSize(800, 800, false);
                 } else {
                     this.style.width = '';
                     this.style.height = '';
@@ -158,9 +144,9 @@
                     this.$.study.style.width = '';
 //                    this.$.study.style.zIndex = 10000;
 
-                    this.chartHeight = 200;
-                    this.chartWidth = 200;
-                    this.chart.setSize(200, 200, false);
+//                    this.chartHeight = 200;
+//                    this.chartWidth = 200;
+//                    this.chart.setSize(200, 200, false);
 
                 }
             },
@@ -180,13 +166,17 @@
                         plotBackgroundColor: null,
                         plotBorderWidth: 1,//null,
                         plotShadow: false,
-                        renderTo: this.$.chartContainer,
+                        renderTo: this.$.chart,
                         type: 'column',
-                        height: this.chartHeight,
-                        width: this.chartWidth
+//                        height: this.chartHeight,
+//                        width: this.chartWidth
                     },
                     title: {
-                        text: text + " Stats"
+//                        text: text + " Stats"
+                        text: null
+                    },
+                    exporting: {
+                        enabled: false
                     },
                     credits: {
                         enabled: false
