@@ -327,7 +327,7 @@
                                             <paper-checkbox class="blue diseaseName"
                                                             for
                                                             on-click="{{ diseaseClick }}"
-                                                            value="{{ model.name }}"></paper-checkbox>
+                                                            value="{{ model.name }}" checked></paper-checkbox>
                                             <div flex>{{ model.label }}</div>
                                         </core-label>
 
@@ -348,7 +348,7 @@
                                             <paper-checkbox class="blue phenotypeName"
                                                             for
                                                             on-click="{{ phenotypeClick }}"
-                                                            value="{{ model.name }}"></paper-checkbox>
+                                                            value="{{ model.name }}" checked></paper-checkbox>
                                             <div flex>{{ model.label }}</div>
                                         </core-label>
                                     </template>
@@ -1035,13 +1035,14 @@
                         name: key,
                         label: me._formatText(key)
                     })
-                    me.formStudies[key] = true;
+//                    me.formStudies[key] = true;
                 });
                 Object.keys(dis).forEach(function (key) {
                     me.diseases.push({
                         name: key,
                         label: me._formatText(key)
                     })
+                    me.formDiseases[key] = true;
                 });
 
                 Object.keys(phen).forEach(function (key) {
@@ -1049,7 +1050,9 @@
                         name: key,
                         label: me._formatText(key)
                     })
+                    me.formPhenotypes[key] = true;
                 });
+
 
             },
             _formatText: function (text) {
