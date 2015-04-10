@@ -30,8 +30,6 @@
                 display: block;
                 box-sizing: border-box;
                 position: relative;
-
-                min-height: 1000px;
             }
 
             #filter-form-element {
@@ -39,6 +37,7 @@
                 width: 250px;
                 margin: 20px;
                 border-radius: 5px;
+                min-height: 900px;
             }
 
             paper-button {
@@ -97,7 +96,7 @@
 
             .form_block {
                 width: 250px;
-                max-height: 300px;
+                max-height: 400px;
                 margin-bottom: 10px;
             }
 
@@ -299,25 +298,25 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="form_block" vertical layout>
-                            <div id="headerTitle">Studies</div>
-                            <div id="studies_div">
-                                <core-list data="{{ studyNames }}" height="20px" class="selector_list">
-                                    <template>
-                                        <core-label center horizontal layout>
-                                            <paper-checkbox class="blue studyName"
-                                                            for
-                                                            on-click="{{ studyClick }}"
-                                                            value="{{ model.name }}" checked></paper-checkbox>
-                                            <div class="elemLabel" flex>{{ model.label }}</div>
-                                        </core-label>
-                                    </template>
-                                </core-list>
-                            </div>
-                            <!--<div class="filter_box" layout end-justified horizontal>-->
-                            <!--<input type="text" on-keyup="{{ studyKeyUp }}" placeholder="Filter:"/>-->
-                            <!--</div>-->
-                        </div>
+                        <!--<div class="form_block" vertical layout>-->
+                        <!--<div id="headerTitle">Studies</div>-->
+                        <!--<div id="studies_div">-->
+                        <!--<core-list data="{{ studyNames }}" height="20px" class="selector_list">-->
+                        <!--<template>-->
+                        <!--<core-label center horizontal layout>-->
+                        <!--<paper-checkbox class="blue studyName"-->
+                        <!--for-->
+                        <!--on-click="{{ studyClick }}"-->
+                        <!--value="{{ model.name }}" checked></paper-checkbox>-->
+                        <!--<div class="elemLabel" flex>{{ model.label }}</div>-->
+                        <!--</core-label>-->
+                        <!--</template>-->
+                        <!--</core-list>-->
+                        <!--</div>-->
+                        <!--<div class="filter_box" layout end-justified horizontal>-->
+                        <!--<input type="text" on-keyup="{{ studyKeyUp }}" placeholder="Filter:"/>-->
+                        <!--</div>-->
+                        <!--</div>-->
                         <div class="form_block">
                             <div id="headerTitle">Diseases</div>
                             <div id="diseases_div">
@@ -328,7 +327,7 @@
                                             <paper-checkbox class="blue diseaseName"
                                                             for
                                                             on-click="{{ diseaseClick }}"
-                                                            value="{{ model.name }}"></paper-checkbox>
+                                                            value="{{ model.name }}" checked></paper-checkbox>
                                             <div flex>{{ model.label }}</div>
                                         </core-label>
 
@@ -349,7 +348,7 @@
                                             <paper-checkbox class="blue phenotypeName"
                                                             for
                                                             on-click="{{ phenotypeClick }}"
-                                                            value="{{ model.name }}"></paper-checkbox>
+                                                            value="{{ model.name }}" checked></paper-checkbox>
                                             <div flex>{{ model.label }}</div>
                                         </core-label>
                                     </template>
@@ -678,6 +677,7 @@
 
                 this.parseFunction = function (data) {
 
+//                    debugger
 
                     for (var i = 0; i < data.length; i++) {
                         var row = data[i];
@@ -740,19 +740,34 @@
                             var countAlt = 0;
                             var total = 0;
 
-                            Object.keys(genotypes).forEach(function (key) {
-                                var value = genotypes[key];
-                                var splits = key.split(/[/|]/);
-                                for (var i = 0; i < splits.length; i++) {
-                                    var g = splits[i];
-                                    if (g == "0") {
-                                        countRef += value;
-                                    } else if (g == "1") {
-                                        countAlt += value;
-                                    }
-                                    total += value;
-                                }
-                            });
+
+                            if (gt00 != null) {
+                                countRef = gt00 * 2;
+                            }
+                            if (gt01 != null) {
+                                countRef += gt01;
+                                countAlt += gt01;
+                            }
+                            if (gt11 != null) {
+                                countAlt += (gt11 * 2);
+                            }
+
+                            total = countRef + countAlt;
+//
+//                            Object.keys(genotypes).forEach(function (key) {
+//                                var value = genotypes[key];
+//                                var splits = key.split(/[/|]/);
+//                                for (var i = 0; i < splits.length; i++) {
+//                                    var g = splits[i];
+//                                    if (g == "0") {
+//                                        countRef += value;
+//                                    } else if (g == "1") {
+//                                        countAlt += value;
+//                                    }
+//                                    total += value;
+//                                }
+//                            });
+//
 
 
                             var refmaf = countRef / total;
@@ -1036,13 +1051,14 @@
                         name: key,
                         label: me._formatText(key)
                     })
-                    me.formStudies[key] = true;
+//                    me.formStudies[key] = true;
                 });
                 Object.keys(dis).forEach(function (key) {
                     me.diseases.push({
                         name: key,
                         label: me._formatText(key)
                     })
+                    me.formDiseases[key] = true;
                 });
 
                 Object.keys(phen).forEach(function (key) {
@@ -1050,7 +1066,9 @@
                         name: key,
                         label: me._formatText(key)
                     })
+                    me.formPhenotypes[key] = true;
                 });
+
 
             },
             _formatText: function (text) {

@@ -2,7 +2,8 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Spanish Population Variant Server</title>
+    <title>CIBERER Spanish Variant Server</title>
+
     <!--Web Components-->
     <script src="bower_components/webcomponentsjs/webcomponents.min.js"></script>
     <link rel="import" href="bower_components/polymer/polymer.html">
@@ -133,7 +134,7 @@
 <pvs-element></pvs-element>
 <script>
     var pvs;
-    window.addEventListener('polymer-ready', function (debuggere) {
+    window.addEventListener('polymer-ready', function (e) {
         console.log('polymer-ready');
         pvs = document.querySelector('pvs-element');
     });
