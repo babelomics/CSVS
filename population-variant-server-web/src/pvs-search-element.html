@@ -677,6 +677,7 @@
 
                 this.parseFunction = function (data) {
 
+//                    debugger
 
                     for (var i = 0; i < data.length; i++) {
                         var row = data[i];
@@ -739,19 +740,34 @@
                             var countAlt = 0;
                             var total = 0;
 
-                            Object.keys(genotypes).forEach(function (key) {
-                                var value = genotypes[key];
-                                var splits = key.split(/[/|]/);
-                                for (var i = 0; i < splits.length; i++) {
-                                    var g = splits[i];
-                                    if (g == "0") {
-                                        countRef += value;
-                                    } else if (g == "1") {
-                                        countAlt += value;
-                                    }
-                                    total += value;
-                                }
-                            });
+
+                            if (gt00 != null) {
+                                countRef = gt00 * 2;
+                            }
+                            if (gt01 != null) {
+                                countRef += gt01;
+                                countAlt += gt01;
+                            }
+                            if (gt11 != null) {
+                                countAlt += (gt11 * 2);
+                            }
+
+                            total = countRef + countAlt;
+//
+//                            Object.keys(genotypes).forEach(function (key) {
+//                                var value = genotypes[key];
+//                                var splits = key.split(/[/|]/);
+//                                for (var i = 0; i < splits.length; i++) {
+//                                    var g = splits[i];
+//                                    if (g == "0") {
+//                                        countRef += value;
+//                                    } else if (g == "1") {
+//                                        countAlt += value;
+//                                    }
+//                                    total += value;
+//                                }
+//                            });
+//
 
 
                             var refmaf = countRef / total;
