@@ -46,7 +46,7 @@
 
         <div vertical layout center-justified>
             <div class="buttons_container" horizontal layout center-justified>
-                <paper-button raised on-click="{{ statsPerStudy }}">Stats per study</paper-button>
+                <!--<paper-button raised on-click="{{ statsPerStudy }}">Stats per study</paper-button>-->
                 <paper-button raised on-click="{{ statsPerDisease }}"> Stats per disease</paper-button>
                 <paper-button raised on-click="{{ statsPerPhenotype }}"> Stats per phenotype</paper-button>
             </div>
@@ -270,12 +270,12 @@
 
 
                 this._createPieChart(vppDiv, variantsText, variants);
-                this._createPieChart(sppDiv, samplesText, samples);
+                // this._createPieChart(sppDiv, samplesText, samples);
                 this._createBarColumnChart(globalChart, "Global Stats", categories, categoriesData);
 
 
                 stats.appendChild(vppDiv);
-                stats.appendChild(sppDiv);
+//                stats.appendChild(sppDiv);
                 global.appendChild(globalChart);
 
 

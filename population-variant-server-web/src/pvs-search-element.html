@@ -36,7 +36,6 @@
                 background-color: #FFFFFF;
                 width: 250px;
                 margin: 20px;
-                border-radius: 5px;
                 min-height: 900px;
             }
 
@@ -136,7 +135,7 @@
             }
 
             #dataGridElement {
-                border-radius: 5px;
+                border-radius: 0px !important;
                 padding: 5px;
                 padding-left: 10px;
                 padding-right: 10px;
@@ -202,7 +201,8 @@
             }
 
             sortable-table::shadow .column-chromosome {
-                width: 70px;
+                width: 30px !important;
+                min-width: 30px !important;
             }
 
             sortable-table::shadow .column-start {
@@ -212,12 +212,21 @@
             sortable-table::shadow .column-alleles {
                 width: 70px;
             }
+            sortable-table::shadow .column-gene {
+                width: 70px;
+            }
 
             sortable-table::shadow .column-id {
                 width: 70px;
             }
 
             sortable-table::shadow .column-sift {
+                width: 70px;
+            }
+            sortable-table::shadow .column-phastcons {
+                width: 70px;
+            }
+            sortable-table::shadow .column-phylop {
                 width: 70px;
             }
 
@@ -259,6 +268,10 @@
                 font-size: 11px;
             }
 
+            #diseases_div > core-list{
+                height: 300px;
+            }
+
         </style>
 
         <div horizontal layout center-justified>
@@ -283,12 +296,12 @@
                             <!--required?="{{ (regionValue == '') }}">-->
                             <!--</textarea>-->
                             <!--</div>-->
-                            <div class="input_container" vertical layout>
+                            <div class="input_container" vertical layout >
                                 <label class="input_label">Gene</label>
                                 <textarea id="gene" name="gene" placeholder="BRCA2,PPL"
                                           value="{{ geneValue }}" rows="3"></textarea>
 
-                                <div horizontal layout class="searchGene" end-justified>
+                                <div horizontal layout class="searchGene" end-justified hidden>
                                     <input id="searchField" list="searchDataList" placeholder="Search gene" type="text"
                                            style="width: 100px;">
                                     <datalist id="searchDataList"></datalist>
@@ -561,9 +574,9 @@
                 </core-collapse>
                 <core-menu class="title" selected="{{selectedTab}}" horizontal layout>
                     <core-item icon="" label="Genomic Context">Genomic Context</core-item>
-                    <core-item icon="" label="Effect">Effect</core-item>
-                    <core-item icon="" label="Frequencies">Frequencies</core-item>
-                    <core-item icon="" label="Phenotype">Phenotype</core-item>
+                    <core-item icon="" label="Effect">Variant Annotations</core-item>
+                    <core-item icon="" label="Frequencies">Population Frequencies</core-item>
+                    <core-item icon="" label="Phenotype">Phenotypes</core-item>
                 </core-menu>
                 <div id="tools" vertical layout flex>
                     <!--<div id="genomeViewer"></div>-->
@@ -583,7 +596,7 @@
     </template>
     <script>
         Polymer({
-            regionValue: '1:1-100000',
+            regionValue: '1:1-10000000',
             geneValue: '',
             snpValue: '',
             floatDecimals: 3,
@@ -657,6 +670,7 @@
                             return row.reference + ">" + row.alternate;
                         }
                     },
+                    {name: 'gene', title: 'Gene'},
                     {name: 'id', title: 'Id'},
                     {
                         name: 'total',
@@ -666,21 +680,33 @@
                         formula: function (row) {
                             return row.sourceEntries["MAF"];
                         }
-                    }, {
+                    }, 
+                    {
                         name: 'sift', title: 'SIFT'
-                    }, {
+                    }, 
+                        {
                         name: 'polyphen', title: 'POLYPHEN'
-                    }, {
+                    }, 
+                        {
+                        name: 'phastcons', title: 'PhastCons'
+                    }, 
+                        {
+                        name: 'phylop', title: 'phyloP'
+                    }, 
+                        {
                         name: 'phenotype', title: 'Phenotype'
                     }
                 ];
 
                 this.parseFunction = function (data) {
 
-//                    debugger
-
+                    var positions = [];
                     for (var i = 0; i < data.length; i++) {
                         var row = data[i];
+
+                        var variant = row.chromosome + ":" + row.start + ":" + row.reference + ":" + row.alternate;
+                        positions.push(variant);
+
 
                         for (var key in row.sourceEntries) {
 
@@ -782,13 +808,134 @@
 //                           }
                         }
 //                        }
-                        me._getEffect(row);
-                        me._getPolyphenSift(row);
+//                        me._getEffect(row);
+//                        me._getPolyphenSift(row);
                     }
 
-                    me._getPhenotypes(data);
-                    me._getSNPId(data);
+                    // Annotate
+                    console.log(positions);
+                    var query =positions.join(",");
 
+                    CellBaseManager.get({
+                        host: CELLBASE_HOST,
+                        version: CELLBASE_VERSION,
+                        species: 'hsapiens',
+                        category: 'genomic',
+                        subCategory: 'variant',
+                        resource: 'full_annotation',
+                        query: query,
+                        async: false,
+                        success: function (response) {
+                            try {
+                                var annotData = response.response;
+                                for (var i = 0; i < annotData.length; i++) {
+                                    var obj = annotData[i];
+                                    if(obj.result.length > 0){
+                                        var annots = obj.result[0];
+                                        data[i].annots = annots;
+
+                                    }
+                                }
+                                
+                            } catch (e) {
+//                                me.data = [];
+                            }
+                        }
+                    });
+
+
+                    for (var i = 0 ; i< data.length; i ++) {
+                        var variant = data[i];
+                        
+                        // Annotate SNPid
+                        if(variant.annots.id){
+                            variant.id = variant.annots.id;
+                        }
+
+                        // Annotate Cons
+                        if(variant.annots.conservedRegionScores.length > 0){
+                        
+                            for (var j= 0, l = variant.annots.conservedRegionScores.length; j < l; j ++) {
+                                var crs = variant.annots.conservedRegionScores[j];
+                                score = crs.score.toFixed(me.floatDecimals)
+
+                                switch (crs.source) {
+                                    case 'phastCons':
+                                        variant.phastcons=score;
+                                        break;
+                                    case 'phylop':
+                                        variant.phylop=score;
+                                        break;
+                                    
+                                    default:
+                                        
+                                }
+                            }
+
+                        }
+
+                        // Annotate CT && Subs. Score
+                        if(variant.annots.consequenceTypes.length > 0){
+
+                            var sif = -1;
+                            var sifDesc = "";
+                            var poly = -1;
+                            var polyDesc = "";
+
+                            for (var j = 0, l = variant.annots.consequenceTypes.length; j < l; j ++) {
+                                var ct = variant.annots.consequenceTypes[j];
+
+                                if(ct.proteinSubstitutionScores != null && ct.proteinSubstitutionScores.length > 0){
+                                    var auxSift = null;
+                                    var auxPoly = null;
+                                    for (var k = 0, l = ct.proteinSubstitutionScores.length; k < l; k ++) {
+                                    
+                                        var pss = ct.proteinSubstitutionScores[k];
+                                        switch (pss.source) {
+                                            case 'Sift':
+                                                auxSift = pss;
+                                            break;
+                                            case 'Polyphen':
+                                                auxPoly = pss;
+                                                break;
+                                                
+                                        }
+                                    }
+
+                                    if(auxPoly != null && auxSift != null){
+                                        if(auxPoly.score > poly){
+                                            sif = auxSift.score;
+                                            poly = auxPoly.score;
+
+                                            sifDesc = auxSift.description;
+                                            polyDesc = auxPoly.description;
+                                        }
+                                    }
+
+
+                                    
+                                }
+
+                            }
+                            if(sif != -1 && poly != -1){
+                                variant.sift = sif +" ("+sifDesc+")";
+                                variant.polyphen = poly + " ("+polyDesc+")";
+                            }
+
+
+                        }
+
+                        if(variant.annots.clinicalData.length > 0){
+                        debugger
+                        }
+
+
+
+                    
+                    }
+
+//                    me._getPhenotypes(data);
+//                    me._getSNPId(data);
 
                     return data;
                 }
@@ -849,9 +996,6 @@
 
                 var search = false;
 
-                this.$.dataGrid.data = [];
-                this.$.dataGrid.dataSize = 0;
-                this.$.dataGrid.page = 1;
 
                 this.sampleCount = 0;
 
@@ -972,9 +1116,6 @@
                         }
                     }
 
-                    console.log("sample Count: " + this.sampleCount);
-                    console.log(finalStudies);
-
                     if (search) {
                         var regionQuery = regions.join(",");
 
@@ -986,7 +1127,15 @@
                             }
                         });
                         console.log(url);
-                        this.formURL = url;
+                        console.log(this.formURL);
+                        console.log(this.formURL == url);
+
+                        if(this.formURL !== url){
+                            this.$.dataGrid.data = [];
+                            this.$.dataGrid.dataSize = 0;
+                            this.$.dataGrid.page = 1;
+                            this.formURL = url;
+                        }
                     }
                 } else {
                     alert("Please add a region/gene and check any study, disease or phenotype");
@@ -1174,13 +1323,31 @@
                 var checkboxes = this.$.filter_form.getElementsByTagName("paper-checkbox");
                 for (var i = 0; i < checkboxes.length; i++) {
                     var elem = checkboxes[i];
-                    elem.checked = false;
+                    elem.checked = true;
                 }
-
-
+                
                 this.formStudies = {};
                 this.formDiseases = {};
                 this.formPhenotypes = {};
+
+
+                for(var i=0; i < this.diseases.length; i++){
+                    var dis = this.diseases[i].name;
+                    this.formDiseases[dis] = true;
+                }
+
+   
+                for(var i=0; i < this.studies.length; i++){
+                    var study = this.studies[i].sname;
+                    this.formStudies[study] = true;
+                }
+
+                for(var i=0; i < this.phenotype.length; i++){
+                    var phe = this.phenotype[i].name;
+                    this.formPhenotypes[phe] = true;
+                }
+
+                this.regionValue= '1:1-1000000';
 
             },
             handleExpand: function () {
