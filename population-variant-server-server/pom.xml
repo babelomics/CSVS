@@ -55,23 +55,26 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
-            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-servlet</artifactId>
-            <version>2.12</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-multipart</artifactId>
-            <version>2.12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
         </dependency>
         <dependency>
             <groupId>com.wordnik</groupId>
             <artifactId>swagger-jersey2-jaxrs_2.11</artifactId>
-            <version>1.3.8</version>
         </dependency>
         <dependency>
             <groupId>javax.mail</groupId>
@@ -80,9 +83,36 @@
         <dependency>
             <groupId>asm</groupId>
             <artifactId>asm</artifactId>
-            <version>3.3.1</version>
         </dependency>
     </dependencies>
+
+    <!--<build>-->
+    <!--<finalName>pvs</finalName>-->
+    <!--<resources>-->
+    <!--<resource>-->
+    <!--<directory>src/main/resources</directory>-->
+    <!--<filtering>true</filtering>-->
+    <!--</resource>-->
+    <!--</resources>-->
+    <!--<plugins>-->
+    <!--<plugin>-->
+    <!--<groupId>org.apache.maven.plugins</groupId>-->
+    <!--<artifactId>maven-compiler-plugin</artifactId>-->
+    <!--<version>3.1</version>-->
+    <!--<configuration>-->
+    <!--<source>${compileSource}</source>-->
+    <!--<target>${compileSource}</target>-->
+    <!--</configuration>-->
+    <!--</plugin>-->
+    <!--&lt;!&ndash;<plugin>&ndash;&gt;-->
+    <!--&lt;!&ndash;<groupId>org.apache.maven.plugins</groupId>&ndash;&gt;-->
+    <!--&lt;!&ndash;<artifactId>maven-war-plugin</artifactId>&ndash;&gt;-->
+    <!--&lt;!&ndash;<configuration>&ndash;&gt;-->
+    <!--&lt;!&ndash;<outputDirectory>/opt/tomcat/webapps/</outputDirectory>&ndash;&gt;-->
+    <!--&lt;!&ndash;</configuration>&ndash;&gt;-->
+    <!--&lt;!&ndash;</plugin>&ndash;&gt;-->
+    <!--</plugins>-->
+    <!--</build>-->
 
     <build>
         <finalName>pvs</finalName>
@@ -94,21 +124,15 @@
         </resources>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.2</version>
+                <extensions>true</extensions>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <serverId>ossrh</serverId>
+                    <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
                 </configuration>
             </plugin>
-            <!--<plugin>-->
-            <!--<groupId>org.apache.maven.plugins</groupId>-->
-            <!--<artifactId>maven-war-plugin</artifactId>-->
-            <!--<configuration>-->
-            <!--<outputDirectory>/opt/tomcat/webapps/</outputDirectory>-->
-            <!--</configuration>-->
-            <!--</plugin>-->
         </plugins>
     </build>
 </project>

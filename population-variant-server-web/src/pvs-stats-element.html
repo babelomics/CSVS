@@ -64,7 +64,7 @@
 
             },
             studiesChanged: function (oldValue, newValue) {
-                this.statsPerStudy();
+                this.statsPerDisease();
             },
             _clearChartContainer: function () {
                 while (this.$.chartContainer.firstChild) {
@@ -270,12 +270,12 @@
 
 
                 this._createPieChart(vppDiv, variantsText, variants);
-                // this._createPieChart(sppDiv, samplesText, samples);
+                this._createPieChart(sppDiv, samplesText, samples);
                 this._createBarColumnChart(globalChart, "Global Stats", categories, categoriesData);
 
 
                 stats.appendChild(vppDiv);
-//                stats.appendChild(sppDiv);
+                stats.appendChild(sppDiv);
                 global.appendChild(globalChart);
 
 
@@ -333,7 +333,7 @@
 
                 this._createCharts(variants, "Variants per Disease", samples, "Samples per Disease", categories, categoriesData);
             },
-            statsPerStudy: function () {
+/*            statsPerStudy: function () {
                 this._clearChartContainer();
 
                 var auxVariants = {};
@@ -383,7 +383,7 @@
 
 
                 this._createCharts(variants, "Variants per Study", samples, "Samples per Study", categories, categoriesData);
-            },
+            },*/
             _formatText: function (text) {
                 if (text) {
 

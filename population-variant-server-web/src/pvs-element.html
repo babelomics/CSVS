@@ -80,7 +80,7 @@
                     allowLogin="{{allowLogin}}"
                     showMenu="true">
             <div class="title">CIBERER Spanish Variant Server</div>
-            <div class="description">beta</div>
+            <div class="description">1.0.1</div>
             <pvs-menu class="menu" selectedOption="{{selectedOption}}"></pvs-menu>
 
             <jso-help-menu class="helpmenu" selectedOption="{{selectedOption}}">
@@ -124,7 +124,7 @@
     </template>
     <script>
         Polymer({
-            selectedOption: 'search',
+            selectedOption: 'home',
             idSearch: null,
             created: function () {
                 this.allowLogin = false;
@@ -164,11 +164,11 @@
                                 me.staticStudies = [];
                             }
 
-                            console.log("---------------- STUDIES -------------------");
-                            console.log(me.studies);
-
-                            console.log("---------------- STATIC STUDIES -------------------");
-                            console.log(me.staticStudies);
+//                             console.log("---------------- STUDIES -------------------");
+//                             console.log(me.studies);
+// 
+//                             console.log("---------------- STATIC STUDIES -------------------");
+//                             console.log(me.staticStudies);
                         },
                         error: function (response) {
                             console.log("ERROR downloading studies");

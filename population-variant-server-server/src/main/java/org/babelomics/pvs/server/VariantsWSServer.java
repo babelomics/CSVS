@@ -30,7 +30,7 @@ import java.util.*;
 @Path("/variants")
 @Api(value = "variants", description = "Variants")
 @Produces(MediaType.APPLICATION_JSON)
-public class VariantsWSServer extends ExomeServerWSServer {
+public class VariantsWSServer extends PVSWSServer {
 
     private PVSVariantMongoDBAdaptor variantMongoDbAdaptor;
     private PVSStudyMongoDBAdaptor studyMongoDBAdaptor;
@@ -150,6 +150,8 @@ public class VariantsWSServer extends ExomeServerWSServer {
             staticStudies.add(se.getStudy() + "_" + se.toString());
         }
 
+        BasicDBObject sort = new BasicDBObject("chr",1).append("start",1);
+        queryOptions.put("sort",sort);
         // if (regionsSize <= 1000000) {
 
         List<QueryResult> allVariantsByRegionList = variantMongoDbAdaptor.getAllVariantsByRegionListAndFileIds(regions, aux, queryOptions);

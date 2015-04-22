@@ -210,11 +210,12 @@
             }
 
             sortable-table::shadow .column-alleles {
-                width: 70px;
+                width: 30px !important;
+                min-width: 30px !important;
             }
-            sortable-table::shadow .column-gene {
+            /*sortable-table::shadow .column-gene {
                 width: 70px;
-            }
+            }*/
 
             sortable-table::shadow .column-id {
                 width: 70px;
@@ -224,10 +225,12 @@
                 width: 70px;
             }
             sortable-table::shadow .column-phastcons {
-                width: 70px;
+                width: 60px !important;
+                min-width: 60px !important;
             }
             sortable-table::shadow .column-phylop {
-                width: 70px;
+                width: 40px !important;
+                min-width: 40px !important;
             }
 
             sortable-table::shadow .column-polyphen {
@@ -670,7 +673,7 @@
                             return row.reference + ">" + row.alternate;
                         }
                     },
-                    {name: 'gene', title: 'Gene'},
+                    // {name: 'gene', title: 'Gene'},
                     {name: 'id', title: 'Id'},
                     {
                         name: 'total',
@@ -813,7 +816,6 @@
                     }
 
                     // Annotate
-                    console.log(positions);
                     var query =positions.join(",");
 
                     CellBaseManager.get({
@@ -833,12 +835,9 @@
                                     if(obj.result.length > 0){
                                         var annots = obj.result[0];
                                         data[i].annots = annots;
-
                                     }
                                 }
-                                
                             } catch (e) {
-//                                me.data = [];
                             }
                         }
                     });
@@ -846,7 +845,10 @@
 
                     for (var i = 0 ; i< data.length; i ++) {
                         var variant = data[i];
-                        
+                       
+                        if(variant.annots.clinicalData != null){
+//                        debugger
+                        }
                         // Annotate SNPid
                         if(variant.annots.id){
                             variant.id = variant.annots.id;
@@ -1127,8 +1129,6 @@
                             }
                         });
                         console.log(url);
-                        console.log(this.formURL);
-                        console.log(this.formURL == url);
 
                         if(this.formURL !== url){
                             this.$.dataGrid.data = [];

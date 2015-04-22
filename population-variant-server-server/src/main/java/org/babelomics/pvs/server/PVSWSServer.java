@@ -39,7 +39,7 @@ import java.util.Collection;
 import java.util.Properties;
 
 @Path("/")
-public class ExomeServerWSServer {
+public class PVSWSServer {
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
     protected static Properties properties;
@@ -79,8 +79,9 @@ public class ExomeServerWSServer {
 
     static {
 
-        InputStream is = ExomeServerWSServer.class.getClassLoader().getResourceAsStream("pvs.properties");
+        InputStream is = PVSWSServer.class.getClassLoader().getResourceAsStream("pvs.properties");
         properties = new Properties();
+
         try {
             properties.load(is);
             System.out.println("properties = " + properties);
@@ -103,7 +104,8 @@ public class ExomeServerWSServer {
 
     protected MongoCredentials credentials;
 
-    public ExomeServerWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest httpServletRequest) throws IOException, IllegalOpenCGACredentialsException {
+    public PVSWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest httpServletRequest) throws IOException, IllegalOpenCGACredentialsException {
+
         this.startTime = System.currentTimeMillis();
         this.version = version;
         this.uriInfo = uriInfo;
