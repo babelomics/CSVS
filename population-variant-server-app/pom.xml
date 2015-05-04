@@ -11,7 +11,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>population-variant-server-app</artifactId>
-    <version>1.0.0</version>
 
     <dependencies>
         <dependency>
