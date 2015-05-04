@@ -45,36 +45,44 @@ public class VariantsWSServer extends PVSWSServer {
     }
 
     @GET
-    @Path("/{regions}/fetch")
+    @Path("/fetch")
     @Produces("application/json")
     @ApiOperation(value = "Get Variants By Region")
-    public Response getVariantsByRegion(@ApiParam(value = "regions") @PathParam("regions") String regionId,
+    public Response getVariantsByRegion(@ApiParam(value = "regions") @QueryParam("regions") @DefaultValue("") String regionId,
                                         @ApiParam(value = "limit") @QueryParam("limit") @DefaultValue("10") int limit,
                                         @ApiParam(value = "skip") @QueryParam("skip") @DefaultValue("0") int skip,
                                         @ApiParam(value = "studies") @QueryParam("studies") String studies,
                                         @ApiParam(value = "diseases") @QueryParam("diseases") String diseases,
-                                        @ApiParam(value = "phenotypes") @QueryParam("phenotypes") String phenotypes
+                                        @ApiParam(value = "phenotypes") @QueryParam("phenotypes") String phenotypes,
+                                        @ApiParam(value = "csv") @QueryParam("csv") @DefaultValue("false") boolean csv
+
     ) {
 
         queryOptions.put("merge", true);
-        queryOptions.put("limit", limit);
-        queryOptions.put("skip", skip);
+
+        if (!csv) {
+            queryOptions.put("limit", limit);
+            queryOptions.put("skip", skip);
+        }
 
 
-        // Parse the provided regions. The total size of all regions together 
+        // Parse the provided regions. The total size of all regions together
         // can't excede 1 million positions
         int regionsSize = 0;
         List<Region> regions = new ArrayList<>();
-        for (String s : regionId.split(",")) {
-            Region r = Region.parseRegion(s);
-            regions.add(r);
-            regionsSize += r.getEnd() - r.getStart();
+
+        if (regionId.length() > 0) {
+            String[] regSplits = regionId.split(",");
+            for (String s : regSplits) {
+                Region r = Region.parseRegion(s);
+                regions.add(r);
+                regionsSize += r.getEnd() - r.getStart();
+            }
         }
 
         List<StudyElement> studyElements = new ArrayList<>();
         List<StudyElement> staticStudyElements = new ArrayList<>();
         QueryOptions qo = new QueryOptions();
-
 
         QueryResult<BasicDBObject> allStudies = studyMongoDBAdaptor.getAllFileId(qo);
 
@@ -150,27 +158,21 @@ public class VariantsWSServer extends PVSWSServer {
             staticStudies.add(se.getStudy() + "_" + se.toString());
         }
 
-        BasicDBObject sort = new BasicDBObject("chr",1).append("start",1);
-        queryOptions.put("sort",sort);
-        // if (regionsSize <= 1000000) {
+        BasicDBObject sort = new BasicDBObject("chr", 1).append("start", 1);
+        queryOptions.put("sort", sort);
+        if (regionsSize <= 1000000) {
 
-        List<QueryResult> allVariantsByRegionList = variantMongoDbAdaptor.getAllVariantsByRegionListAndFileIds(regions, aux, queryOptions);
+            List<QueryResult> allVariantsByRegionList = variantMongoDbAdaptor.getAllVariantsByRegionListAndFileIds(regions, aux, queryOptions);
 
+            finalStudyElements.addAll(staticStudyElements);
+            removeStudies(allVariantsByRegionList, finalStudyElements);
 
-        for (QueryResult qr : allVariantsByRegionList) {
-            Variant v = (Variant) qr.getResult().get(0);
+            transformVariants(allVariantsByRegionList, staticStudies);
+
+            return createOkResponse(allVariantsByRegionList);
+        } else {
+            return createErrorResponse("The total size of all regions provided can't exceed 1 million positions. ");
         }
-
-        finalStudyElements.addAll(staticStudyElements);
-        removeStudies(allVariantsByRegionList, finalStudyElements);
-
-        transformVariants(allVariantsByRegionList, staticStudies);
-
-        return createOkResponse(allVariantsByRegionList);
-//        } else {
-//            return createErrorResponse("The total size of all regions provided can't exceed 1 million positions. "
-//                    + "If you want to browse a larger number of positions, please provide the parameter 'histogram=true'");
-//        }
     }
 
     private void removeStudies(List<QueryResult> allVariantsByRegionList, List<StudyElement> finalStudyElements) {

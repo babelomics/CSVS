@@ -42,6 +42,7 @@
             handleResponse: function (e) {
                 var response = e.detail.response;
                 if (response) {
+
                     var data = response.response[0]; // TODO aaleman: what if response.length > 1
                     var dataSize = data.numTotalResults;
 
