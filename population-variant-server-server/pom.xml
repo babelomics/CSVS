@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.babelomics.population-variant-server</groupId>
         <artifactId>population-variant-server</artifactId>
-        <version>1.0.0</version>
+        <version>${pvs.version}</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -85,34 +85,6 @@
             <artifactId>asm</artifactId>
         </dependency>
     </dependencies>
-
-    <!--<build>-->
-    <!--<finalName>pvs</finalName>-->
-    <!--<resources>-->
-    <!--<resource>-->
-    <!--<directory>src/main/resources</directory>-->
-    <!--<filtering>true</filtering>-->
-    <!--</resource>-->
-    <!--</resources>-->
-    <!--<plugins>-->
-    <!--<plugin>-->
-    <!--<groupId>org.apache.maven.plugins</groupId>-->
-    <!--<artifactId>maven-compiler-plugin</artifactId>-->
-    <!--<version>3.1</version>-->
-    <!--<configuration>-->
-    <!--<source>${compileSource}</source>-->
-    <!--<target>${compileSource}</target>-->
-    <!--</configuration>-->
-    <!--</plugin>-->
-    <!--&lt;!&ndash;<plugin>&ndash;&gt;-->
-    <!--&lt;!&ndash;<groupId>org.apache.maven.plugins</groupId>&ndash;&gt;-->
-    <!--&lt;!&ndash;<artifactId>maven-war-plugin</artifactId>&ndash;&gt;-->
-    <!--&lt;!&ndash;<configuration>&ndash;&gt;-->
-    <!--&lt;!&ndash;<outputDirectory>/opt/tomcat/webapps/</outputDirectory>&ndash;&gt;-->
-    <!--&lt;!&ndash;</configuration>&ndash;&gt;-->
-    <!--&lt;!&ndash;</plugin>&ndash;&gt;-->
-    <!--</plugins>-->
-    <!--</build>-->
 
     <build>
         <finalName>pvs</finalName>
