@@ -136,7 +136,6 @@ public class PVSVariantCompressedVcfDataWriter implements VariantWriter {
 
         }
 
-
         sb.append(generateInfo(file.getAttributes())).append("\t");
         sb.append(Joiner.on(":").join(format)).append("\t");
 

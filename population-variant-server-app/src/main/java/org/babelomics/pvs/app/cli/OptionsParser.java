@@ -6,6 +6,9 @@ import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Parameters;
 import org.opencb.biodata.models.variant.VariantSource;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Alejandro Alemán Ramos <aaleman@cipf.es>
  */
@@ -37,17 +40,17 @@ public class OptionsParser {
         @Parameter(names = {"-i", "--input"}, description = "File to transform into the OpenCGA data model", required = true, arity = 1)
         String file;
 
-        @Parameter(names = {"-s", "--study"}, description = "Full name of the study where the file is classified", required = true, arity = 1)
-        String study;
+        @Parameter(names = {"-s", "--study"}, description = "Full name of the study where the file is classified", required = true, variableArity = true)
+        List<String> study = new ArrayList<>();
 
         @Parameter(names = {"-o", "--outdir"}, description = "Directory where output files will be saved", arity = 1)
         String outdir;
 
-        @Parameter(names = {"-d", "--disease"}, description = "Disease", arity = 1, required = true)
-        String disease;
+        @Parameter(names = {"-d", "--disease"}, description = "Disease", required = true, variableArity = true)
+        List<String> disease = new ArrayList<>();
 
-        @Parameter(names = {"-p", "--phenotype"}, description = "Phenotype", arity = 1, required = true)
-        String phenotype;
+        @Parameter(names = {"-p", "--phenotype"}, description = "Phenotype. Values = [CASE, CONTROL]", arity = 1)
+        PhenotypeEnum phenotype;
 
         @Parameter(names = {"--paper"}, description = "Paper", arity = 1)
         String paper;
@@ -61,11 +64,12 @@ public class OptionsParser {
         @Parameter(names = {"-c, --coverage"}, description = "Coverage", arity = 1)
         int coverage = -1;
 
-        @Parameter(names = {"--aggregated"}, description = "Aggregated VCF File: basic or EVS (optional)", arity = 1)
+        @Parameter(names = {"--aggregated"}, description = "Aggregated VCF File: BASIC or EVS (optional)", arity = 1)
         VariantSource.Aggregation aggregated = VariantSource.Aggregation.NONE;
-
-
+        @Parameter(names = {"-t", "--technology"}, description = "Sequencing Technology", arity = 1)
+        String technology = "NONE";
     }
+
 
     @Parameters(commandNames = {"load-variants"}, commandDescription = "Loads an already generated data model into a backend")
     class CommandLoadVariants implements Command {
@@ -92,7 +96,7 @@ public class OptionsParser {
     @Parameters(commandNames = {"compress-variants"}, commandDescription = "Compress Variants")
     class CommandCompressVariants implements Command {
 
-        @Parameter(names = {"-i", "--input"}, description = "Prefix of files to save in the selected backend", required = true, arity = 1)
+        @Parameter(names = {"-i", "--input"}, description = "Input File", required = true, arity = 1)
         String input;
 
         @Parameter(names = {"-o", "--output"}, description = "Output File", arity = 1)
@@ -126,6 +130,10 @@ public class OptionsParser {
 
     CommandCompressVariants getCompressComand() {
         return compress;
+    }
+
+    enum PhenotypeEnum {
+        CASE, CONTROL
     }
 
 }

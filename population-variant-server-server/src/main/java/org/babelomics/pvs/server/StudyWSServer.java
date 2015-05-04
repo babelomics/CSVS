@@ -27,7 +27,7 @@ import java.io.IOException;
 @Path("/studies")
 @Api(value = "studies", description = "Study")
 @Produces(MediaType.APPLICATION_JSON)
-public class StudyWSServer extends ExomeServerWSServer {
+public class StudyWSServer extends PVSWSServer {
 
     private PVSStudyDBAdaptor studyMongoDbAdaptor;
     private VariantSourceDBAdaptor variantSourceDbAdaptor;

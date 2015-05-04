@@ -5,6 +5,7 @@ import com.mongodb.BasicDBObject;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
+import org.babelomics.pvs.app.cli.PVSMain;
 import org.babelomics.pvs.lib.mongodb.dbAdaptor.PVSStudyMongoDBAdaptor;
 import org.babelomics.pvs.lib.mongodb.dbAdaptor.PVSVariantMongoDBAdaptor;
 import org.opencb.biodata.models.feature.Genotype;
@@ -29,7 +30,7 @@ import java.util.*;
 @Path("/variants")
 @Api(value = "variants", description = "Variants")
 @Produces(MediaType.APPLICATION_JSON)
-public class VariantsWSServer extends ExomeServerWSServer {
+public class VariantsWSServer extends PVSWSServer {
 
     private PVSVariantMongoDBAdaptor variantMongoDbAdaptor;
     private PVSStudyMongoDBAdaptor studyMongoDBAdaptor;
@@ -149,6 +150,8 @@ public class VariantsWSServer extends ExomeServerWSServer {
             staticStudies.add(se.getStudy() + "_" + se.toString());
         }
 
+        BasicDBObject sort = new BasicDBObject("chr",1).append("start",1);
+        queryOptions.put("sort",sort);
         // if (regionsSize <= 1000000) {
 
         List<QueryResult> allVariantsByRegionList = variantMongoDbAdaptor.getAllVariantsByRegionListAndFileIds(regions, aux, queryOptions);
@@ -220,15 +223,12 @@ public class VariantsWSServer extends ExomeServerWSServer {
     }
 
     private void transformVariants(List<QueryResult> allVariantsByRegionList, List<String> staticStudies) {
-
-
         for (QueryResult qr : allVariantsByRegionList) {
             List<Variant> variantList = qr.getResult();
 
             for (Variant v : variantList) {
                 combineFiles(v.getSourceEntries(), staticStudies);
             }
-
         }
     }
 
@@ -238,31 +238,20 @@ public class VariantsWSServer extends ExomeServerWSServer {
         VariantSourceEntry mafVSE = new VariantSourceEntry("MAF", "MAF");
         mafVSE.setStats(mafStats);
 
-        System.out.println("staticStudies = " + staticStudies);
-
-
         for (Map.Entry<String, VariantSourceEntry> entry : files.entrySet()) {
             VariantSourceEntry avf = entry.getValue();
-            System.out.println("entry.getKey() = " + entry.getKey());
             if (staticStudies.contains(entry.getKey().toUpperCase())) {
-                System.out.println("SI contine");
                 map.put(avf.getStudyId(), entry.getValue());
             } else {
-                System.out.println("NO contiene");
                 for (Map.Entry<Genotype, Integer> o : avf.getStats().getGenotypesCount().entrySet()) {
                     mafStats.addGenotype(o.getKey(), o.getValue());
                 }
-
             }
 
         }
-
         files.clear();
-
         map.put("MAF", mafVSE);
-
         files.putAll(map);
-
     }
 
 
@@ -279,7 +268,7 @@ public class VariantsWSServer extends ExomeServerWSServer {
         private Boolean staticStudy;
 
         public StudyElement(String fid) {
-            String[] aux = fid.split("_");
+            String[] aux = fid.split(PVSMain.SEPARATOR);
             study = aux[0];
             disease = aux[1];
             phenotype = aux[2];
@@ -307,7 +296,7 @@ public class VariantsWSServer extends ExomeServerWSServer {
 
         @Override
         public String toString() {
-            return this.study + "_" + this.disease + "_" + this.phenotype;
+            return this.study + PVSMain.SEPARATOR + this.disease + PVSMain.SEPARATOR + this.phenotype;
         }
     }
 }

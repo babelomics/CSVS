@@ -5,15 +5,21 @@
 <link rel="import" href="pvs-search-element.html">
 <link rel="import" href="pvs-studies-browser-element.html">
 <link rel="import" href="pvs-stats-element.html">
+<link rel="import" href="pvs-home.html">
+<link rel="import" href="pvs-menu.html">
 
-<polymer-element name="exome-server-element">
+<polymer-element name="pvs-element">
     <template>
         <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
+        <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-panel.css">
+        <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-form.css">
+        <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-dropdown.css">
         <style>
             :host {
                 display: block;
                 position: relative;
                 box-sizing: border-box;
+                font-size: 13px;
 
                 -webkit-touch-callout: none;
                 -webkit-user-select: none;
@@ -23,47 +29,86 @@
                 user-select: none;
                 cursor: default;
 
-                background-color: #314559;
-                font-size: 13px;
             }
 
-            #container {
+            .content {
+                background-color: #435f7a;
                 position: relative;
+                /*min-height: calc(100vh - 160px);*/
+            }
+
+            .content > * {
+                min-height: calc(100vh - 160px);
+            }
+
+            .link {
+                color: #CCCCCC;
+                cursor: pointer;
+                white-space: nowrap;
+            }
+
+            .link > a {
+                color: #CCCCCC;
+                text-decoration: none;
+            }
+
+            .link > a:visited {
+                color: #CCCCCC;
+            }
+
+            .link:hover, .link > a:hover {
+                color: #FFFFFF;
+            }
+
+            .announce {
+                text-overflow: ellipsis;
+                background-color: #ea4242;
+                color: white;
+                padding: 5px;
+                font-size: 12px;
+            }
+
+            jso-project-browser {
                 height: calc(100vh - 60px);
             }
 
-            [hide=true] {
-                display: none !important;
-            }
-
-            [hide=false] {
-                display: initial !important
-            }
-
-            es-filter-form-element {
-                margin: 20px;
-                border-radius: 5px;
-            }
-
-            es-data-grid-element {
-                border-radius: 5px;
-                padding: 5px;
-                margin: 20px 20px 20px 0px;
-            }
 
         </style>
-        <jso-header allowLogin="false"
-                    options="{{ options }}"
-                    selectedOption="{{ selectedOption }}"
-                    homeLink="http://github.com/babelomics/pvs"
-                    helpLink="http://github.com/babelomics/pvs"
-                    tutorialLink="http://github.com/babelomics/pvs"
-                >
-            <div class="title">Spanish Population Variant Server</div>
-            <div class="description">beta</div>
+        <jso-header id="jsoHeader"
+                    on-logout="{{handleLogout}}"
+                    selectedOption="{{selectedOption}}"
+                    allowLogin="{{allowLogin}}"
+                    showMenu="true">
+            <div class="title">CIBERER Spanish Variant Server</div>
+            <div class="description">1.0.1</div>
+            <pvs-menu class="menu" selectedOption="{{selectedOption}}"></pvs-menu>
+
+            <jso-help-menu class="helpmenu" selectedOption="{{selectedOption}}">
+                <div class="link">
+                    <font-awesome icon="book"></font-awesome>
+                    <a class="a" href="https://github.com/babelomics/pvs/wiki" target="_blank">
+                        &nbsp; Documentation
+                    </a>
+                </div>
+                <div class="link">
+                    <font-awesome icon="compass"></font-awesome>
+                    <a class="a" href="https://github.com/babelomics/pvs/wiki/Tutorial" target="_blank">
+                        &nbsp; Tutorial
+                    </a>
+                </div>
+                <div class="link">
+                    <font-awesome icon="github"></font-awesome>
+                    <a class="a" href="https://github.com/babelomics/pvs/" target="_blank">
+                        &nbsp; Source code
+                    </a>
+                </div>
+            </jso-help-menu>
         </jso-header>
 
-        <div id="container" vertical layout>
+        <div id="content">
+            <template if="{{ selectedOption == 'home' || selectedOption == 'none' || selectedOption == ''}}">
+                <pvs-home selectedOption="{{selectedOption}}"></pvs-home>
+            </template>
             <template if="{{ selectedOption == 'search' }}">
                 <es-search-element studies="{{ studies }}" staticStudies="{{ staticStudies }}"></es-search-element>
             </template>
@@ -79,38 +124,26 @@
     </template>
     <script>
         Polymer({
+            selectedOption: 'home',
+            idSearch: null,
             created: function () {
+                this.allowLogin = false;
                 this.studies = [];
                 this.staticStudies = [];
-                this.options = [];
-            }, ready: function () {
-                this.selectedOption = 'search';
-                this.clear = true;
-                this.options = this.getOptions();
-                this.getStudies();
             },
-            getOptions: function () {
-                return [{option: 'search', text: 'Search'}, {
-                    option: 'stats',
-                    text: 'Stats'
-
-                },
-                    {
-                        option: 'studies',
-                        text: 'Studies Info.'
-
-                    }
-                ]
+            ready: function () {
+                this.clear = true;
+                this.getStudies();
             },
             getStudies: function (event, response) {
                 var me = this;
                 PVSManager.studies.list({
                     request: {
+                        async: false,
                         success: function (response) {
                             try {
                                 var studies = [];
                                 var staticStudies = [];
-//                                console.log(me.studies);
 
                                 for (var i = 0; i < response.response[0].result.length; i++) {
                                     var elem = response.response[0].result[i];
@@ -125,26 +158,26 @@
                                 me.studies = studies;
                                 me.staticStudies = staticStudies;
 
-                                console.log("---------------- STUDIES -------------------");
-                                console.log(me.studies);
-
-                                console.log("---------------- STATIC STUDIES -------------------");
-                                console.log(me.staticStudies);
-
-
                             } catch (err) {
                                 console.log("Error loading studies: " + err);
                                 me.studies = [];
                                 me.staticStudies = [];
                             }
 
+//                             console.log("---------------- STUDIES -------------------");
+//                             console.log(me.studies);
+// 
+//                             console.log("---------------- STATIC STUDIES -------------------");
+//                             console.log(me.staticStudies);
                         },
                         error: function (response) {
-                            console.log("ERROR");
+                            console.log("ERROR downloading studies");
+                            console.log(response);
                         }
                     }
                 });
             }
-        });
+        })
+        ;
     </script>
 </polymer-element>

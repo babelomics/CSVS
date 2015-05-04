@@ -18,7 +18,7 @@ import java.io.IOException;
 
 @Path("/test")
 @Api(value = "test", description = "test web services")
-public class TestWSServer extends ExomeServerWSServer {
+public class TestWSServer extends PVSWSServer {
 
     public TestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest httpServletRequest) throws IOException, IllegalOpenCGACredentialsException {
         super(version, uriInfo, httpServletRequest);

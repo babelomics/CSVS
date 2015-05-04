@@ -6,8 +6,6 @@
 
 <polymer-element name="es-stats-element" attributes="studies">
     <template>
-        <link rel="stylesheet" href="../lib/jsorolla/src/lib/components/jso-style.css">
-
         <style>
             :host {
                 display: block;
@@ -48,7 +46,7 @@
 
         <div vertical layout center-justified>
             <div class="buttons_container" horizontal layout center-justified>
-                <paper-button raised on-click="{{ statsPerStudy }}">Stats per study</paper-button>
+                <!--<paper-button raised on-click="{{ statsPerStudy }}">Stats per study</paper-button>-->
                 <paper-button raised on-click="{{ statsPerDisease }}"> Stats per disease</paper-button>
                 <paper-button raised on-click="{{ statsPerPhenotype }}"> Stats per phenotype</paper-button>
             </div>
@@ -66,7 +64,7 @@
 
             },
             studiesChanged: function (oldValue, newValue) {
-                this.statsPerStudy();
+                this.statsPerDisease();
             },
             _clearChartContainer: function () {
                 while (this.$.chartContainer.firstChild) {
@@ -83,19 +81,21 @@
                         borderRadius: 10
 
                     },
+                    legend: {
+                        labelFormatter: function () {
+                            var maxLength = 20;
+                            var res = this.name;
+                            if (this.name.length > maxLength) {
+                                res = this.name.slice(0, maxLength) + '...';
+                            }
+                            return res;
+                        }
+                    },
                     title: {
                         text: text
                     },
                     credits: {
                         enabled: false
-                    },
-                    legend: {
-                        layout: 'vertical',
-                        align: 'left',
-                        verticalAlign: 'top',
-                        x: 10,
-                        y: 40,
-                        floating: true
                     },
                     plotOptions: {
                         pie: {
@@ -103,9 +103,19 @@
                             cursor: 'pointer',
                             dataLabels: {
                                 enabled: true,
-                                format: '<b>{point.name}</b>: {point.y:,.0f}',
+//                                format: '<b>{point.name}</b>: {point.y:,.0f}',
+                                formatter: function () {
+                                    var maxLength = 20;
+                                    var res = this.point.name;
+                                    if (res.length > maxLength) {
+                                        res = res.slice(0, maxLength) + '...';
+                                    }
+                                    return '<b>' + res + '</b>: ' + this.point.y;
+
+                                },
                                 style: {
                                     color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+
                                 }
                             },
                             showInLegend: true
@@ -139,7 +149,8 @@
                     },
                     xAxis: {
                         categories: [
-                            "Variants", "SNPs", "INDELs", "Pass", "Transitions", "Transversions"
+//                            "Variants", "SNPs", "INDELs", "Pass", "Transitions", "Transversions"
+                            "Variants", "Pass", "Transitions", "Transversions"
                         ]
                     },
                     yAxis: {
@@ -172,11 +183,11 @@
 
                     if (elem.name == category) {
                         elem.data[0] += stats.nVar;
-                        elem.data[1] += stats.nSnp;
-                        elem.data[2] += stats.nIndel;
-                        elem.data[3] += stats.nPass;
-                        elem.data[4] += stats.nTi;
-                        elem.data[5] += stats.nTv;
+//                        elem.data[1] += stats.nSnp;
+//                        elem.data[2] += stats.nIndel;
+                        elem.data[1] += stats.nPass;
+                        elem.data[2] += stats.nTi;
+                        elem.data[3] += stats.nTv;
                     }
                 }
             },
@@ -193,21 +204,23 @@
                 for (var i = 0; i < this.studies.length; i++) {
 
                     var study = this.studies[i];
+                    var studyPhe = this._formatText(study.meta.phe);
 
-                    if (!(study.meta.phe in auxVariants)) {
-                        auxVariants[study.meta.phe] = 0;
-                        auxSamples[study.meta.phe] = 0;
+                    if (!(studyPhe in auxVariants)) {
+                        auxVariants[studyPhe] = 0;
+                        auxSamples[studyPhe] = 0;
                         var elem = {};
-                        elem.name = study.meta.phe;
-                        elem.data = [0, 0, 0, 0, 0, 0];
+                        elem.name = studyPhe;
+                        elem.data = [0, 0, 0, 0];
+//                        elem.data = [0, 0, 0, 0, 0, 0];
                         categoriesData.push(elem);
                         categories.push(elem.name);
                     }
 
-                    this._addValueToCategory(study.meta.phe, study.st, categoriesData);
+                    this._addValueToCategory(studyPhe, study.st, categoriesData);
 
-                    auxVariants[study.meta.phe] += study.st.nVar;
-                    auxSamples[study.meta.phe] += study.st.nSamp;
+                    auxVariants[studyPhe] += study.st.nVar;
+                    auxSamples[studyPhe] += study.st.nSamp;
 
                 }
                 console.log(categoriesData);
@@ -282,21 +295,23 @@
                 for (var i = 0; i < this.studies.length; i++) {
 
                     var study = this.studies[i];
+                    var studyDis = this._formatText(study.meta.dis);
 
-                    if (!(study.meta.dis in auxVariants)) {
-                        auxVariants[study.meta.dis] = 0;
-                        auxSamples[study.meta.dis] = 0;
+                    if (!(studyDis in auxVariants)) {
+                        auxVariants[studyDis] = 0;
+                        auxSamples[studyDis] = 0;
                         var elem = {};
-                        elem.name = study.meta.dis;
-                        elem.data = [0, 0, 0, 0, 0, 0];
+                        elem.name = studyDis;
+                        elem.data = [0, 0, 0, 0];
+//                        elem.data = [0, 0, 0, 0, 0, 0];
                         categoriesData.push(elem);
                         categories.push(elem.name);
                     }
 
-                    this._addValueToCategory(study.meta.dis, study.st, categoriesData);
+                    this._addValueToCategory(studyDis, study.st, categoriesData);
 
-                    auxVariants[study.meta.dis] += study.st.nVar;
-                    auxSamples[study.meta.dis] += study.st.nSamp;
+                    auxVariants[studyDis] += study.st.nVar;
+                    auxSamples[studyDis] += study.st.nSamp;
 
                 }
                 console.log(categoriesData);
@@ -318,7 +333,7 @@
 
                 this._createCharts(variants, "Variants per Disease", samples, "Samples per Disease", categories, categoriesData);
             },
-            statsPerStudy: function () {
+/*            statsPerStudy: function () {
                 this._clearChartContainer();
 
                 var auxVariants = {};
@@ -331,21 +346,23 @@
                 for (var i = 0; i < this.studies.length; i++) {
 
                     var study = this.studies[i];
+                    var studyName = this._formatText(study.sname);
 
-                    if (!(study.sname in auxVariants)) {
-                        auxVariants[study.sname] = 0;
-                        auxSamples[study.sname] = 0;
+                    if (!(studyName in auxVariants)) {
+                        auxVariants[studyName] = 0;
+                        auxSamples[studyName] = 0;
                         var elem = {};
-                        elem.name = study.sname;
-                        elem.data = [0, 0, 0, 0, 0, 0];
+                        elem.name = studyName;
+                        elem.data = [0, 0, 0, 0];
+//                        elem.data = [0, 0, 0, 0, 0, 0];
                         categoriesData.push(elem);
                         categories.push(elem.name);
                     }
 
-                    this._addValueToCategory(study.sname, study.st, categoriesData);
+                    this._addValueToCategory(studyName, study.st, categoriesData);
 
-                    auxVariants[study.sname] += study.st.nVar;
-                    auxSamples[study.sname] += study.st.nSamp;
+                    auxVariants[studyName] += study.st.nVar;
+                    auxSamples[studyName] += study.st.nSamp;
 
                 }
                 console.log(categoriesData);
@@ -366,6 +383,17 @@
 
 
                 this._createCharts(variants, "Variants per Study", samples, "Samples per Study", categories, categoriesData);
+            },*/
+            _formatText: function (text) {
+                if (text) {
+
+                    return Utils.formatText(text, "_").toLowerCase().replace(/(?:^|\s)\S/g, function (a) {
+                        return a.toUpperCase();
+                    });
+                } else {
+                    return "";
+                }
+
             }
         });
     </script>
