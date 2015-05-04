@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.babelomics.population-variant-server</groupId>
         <artifactId>population-variant-server</artifactId>
-        <version>1.0.0</version>
+        <version>${pvs.version}</version>
         <relativePath>..</relativePath>
     </parent>
 

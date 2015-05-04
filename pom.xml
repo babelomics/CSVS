@@ -6,7 +6,7 @@
 
     <groupId>org.babelomics.population-variant-server</groupId>
     <artifactId>population-variant-server</artifactId>
-    <version>1.0.0</version>
+    <version>${pvs.version}</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -17,12 +17,11 @@
 
     <properties>
         <opencga.version>0.3.3</opencga.version>
-        <!--<variant.version>1.2.0</variant.version>-->
         <datastore.version>0.2.0</datastore.version>
         <biodata.version>0.2.0</biodata.version>
         <jcl.version>2.0.0</jcl.version>
         <compileSource>1.8</compileSource>
-        <pvs.version>1.0.0</pvs.version>
+        <pvs.version>1.0.1</pvs.version>
     </properties>
 
     <dependencyManagement>
@@ -58,19 +57,11 @@
                 <artifactId>opencga-catalog</artifactId>
                 <version>${opencga.version}</version>
             </dependency>
-            <!--<dependency>-->
-            <!--<groupId>org.opencb.variant</groupId>-->
-            <!--<artifactId>variant-lib</artifactId>-->
-            <!--<version>${variant.version}</version>-->
-            <!--</dependency>-->
-
             <dependency>
                 <groupId>org.opencb.datastore</groupId>
                 <artifactId>datastore-mongodb</artifactId>
                 <version>${datastore.version}</version>
             </dependency>
-
-
             <dependency>
                 <groupId>org.opencb.biodata</groupId>
                 <artifactId>biodata-models</artifactId>
@@ -192,11 +183,6 @@
                 <artifactId>asm</artifactId>
                 <version>3.3.1</version>
             </dependency>
-            <!--<dependency>-->
-            <!--<groupId>org.opencb.variant</groupId>-->
-            <!--<artifactId>variant-lib</artifactId>-->
-            <!--<version>1.2.0</version>-->
-            <!--</dependency>-->
         </dependencies>
     </dependencyManagement>
 
