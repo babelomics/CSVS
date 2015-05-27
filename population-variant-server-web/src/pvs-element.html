@@ -124,7 +124,7 @@
     </template>
     <script>
         Polymer({
-            selectedOption: 'search',
+            selectedOption: 'home',
             idSearch: null,
             created: function () {
                 this.allowLogin = false;
@@ -152,23 +152,14 @@
                                     } else {
                                         staticStudies.push(elem);
                                     }
-
                                 }
-
                                 me.studies = studies;
                                 me.staticStudies = staticStudies;
-
                             } catch (err) {
                                 console.log("Error loading studies: " + err);
                                 me.studies = [];
                                 me.staticStudies = [];
                             }
-
-//                             console.log("---------------- STUDIES -------------------");
-//                             console.log(me.studies);
-// 
-//                             console.log("---------------- STATIC STUDIES -------------------");
-//                             console.log(me.staticStudies);
                         },
                         error: function (response) {
                             console.log("ERROR downloading studies");
@@ -177,7 +168,6 @@
                     }
                 });
             }
-        })
-        ;
+        });
     </script>
 </polymer-element>

@@ -8,13 +8,13 @@
 <link rel="import" href="../bower_components/core-menu/core-menu.html">
 <link rel="import" href="../bower_components/core-collapse/core-collapse.html">
 <link rel="import" href="../bower_components/sortable-table/sortable-table.html">
-<link rel="import" href="opencb-ajax.html">
 
 <link rel="import" href="../lib/jsorolla/src/lib/components/jso-genome-viewer-element.html">
 <link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-effect-grid.html">
 <link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-frequencies-grid.html">
 <link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-phenotype-grid.html">
 
+<link rel="import" href="opencb-ajax.html">
 
 <polymer-element name="es-search-element" attributes="studies staticStudies">
     <template>
@@ -278,6 +278,10 @@
                 height: 300px;
             }
 
+            #exportBtn {
+                height: 20px;
+            }
+
         </style>
 
         <div horizontal layout center-justified>
@@ -296,12 +300,6 @@
                                           value="{{ regionValue }}" rows="3">
                                 </textarea>
                             </div>
-                            <!--<div class="input_container" vertical layout>-->
-                            <!--<label class="input_label">SNP id</label>-->
-                            <!--<textarea id="region" name="region" value="{{ regionValue }}" rows="3"-->
-                            <!--required?="{{ (regionValue == '') }}">-->
-                            <!--</textarea>-->
-                            <!--</div>-->
                             <div class="input_container" vertical layout>
                                 <label class="input_label">Gene</label>
                                 <textarea id="gene" name="gene" placeholder="BRCA2,PPL"
@@ -539,7 +537,6 @@
                             </style>
                             <td>
                                 <div horizontal layout class="row-total">
-                                    <!--<div flex horizontal layout center-justified flex>{{ value.stats.gt00 || "." }}</div>-->
                                     <div flex horizontal layout center-justified flex>{{ value.stats.gt00 }}</div>
                                     <div flex horizontal layout center-justified flex>{{ value.stats.gt01 || "." }}
                                     </div>
@@ -586,12 +583,12 @@
                         <core-item icon="" label="Frequencies">Population Frequencies</core-item>
                         <core-item icon="" label="Phenotype">Phenotypes</core-item>
                     </core-menu>
-                    <i horizontal layout end-justified on-click="{{exportQueryToCSV}}">Export to CSV</i>
-                </div>
-                <!--<paper-button raised on-click="{{  }}" horizontal layout end-justified="">Export to CSV</paper-button>-->
-                <div id="tools" vertical layout flex>
-                    <!--<div id="genomeViewer"></div>-->
+                    <paper-button raised on-click="{{ exportQueryToCSV }}" horizontal layout end-justified
+                                  id="exportBtn">Export to CSV
+                    </paper-button>
 
+                </div>
+                <div id="tools" vertical layout flex>
                     <jso-genome-viewer-element id="gvEl" hidden?="{{ selectedTab != 0}}"></jso-genome-viewer-element>
                     <jso-variant-effect-grid hidden?="{{ selectedTab != 1}}"
                                              variant="{{ variantEffect }}"></jso-variant-effect-grid>
@@ -607,7 +604,7 @@
     </template>
     <script>
         Polymer({
-            regionValue: '2:1-20000,1:1-20000',
+            regionValue: '1:1-100000',
             geneValue: '',
             snpValue: '',
             floatDecimals: 3,
@@ -627,14 +624,11 @@
                 this.formDiseases = {};
                 this.formPhenotypes = {};
 
-
                 this.selectedSpecies = DEFAULT_SPECIES;
                 this.region = new Region();
                 this.region.load("1:1004608-1004608");
 
-
                 this.variants = [];
-
 
             },
             ready: function () {
@@ -790,24 +784,7 @@
                             }
 
                             total = countRef + countAlt;
-//
-//                            Object.keys(genotypes).forEach(function (key) {
-//                                var value = genotypes[key];
-//                                var splits = key.split(/[/|]/);
-//                                for (var i = 0; i < splits.length; i++) {
-//                                    var g = splits[i];
-//                                    if (g == "0") {
-//                                        countRef += value;
-//                                    } else if (g == "1") {
-//                                        countAlt += value;
-//                                    }
-//                                    total += value;
-//                                }
-//                            });
-//
 
-
-                            var refmaf = countRef / total;
                             var altmaf = countAlt / total;
                             var maf = (refmaf < altmaf) ? refmaf : altmaf;
                             entry.stats.refmaf = refmaf.toFixed(me.floatDecimals);
@@ -866,7 +843,7 @@
 
                             for (var j = 0, l = variant.annots.conservedRegionScores.length; j < l; j++) {
                                 var crs = variant.annots.conservedRegionScores[j];
-                                if(crs){
+                                if (crs) {
                                     score = crs.score.toFixed(me.floatDecimals)
                                     switch (crs.source) {
                                         case 'phastCons':
@@ -920,8 +897,18 @@
                                 }
                             }
                             if (sif != -1 && poly != -1) {
-                                variant.sift = sif + " (" + sifDesc + ")";
-                                variant.polyphen = poly + " (" + polyDesc + ")";
+
+                                if (sifDesc) {
+                                    variant.sift = sif + " (" + sifDesc + ")";
+                                } else {
+                                    variant.sift = sif;
+                                }
+
+                                if (polyDesc) {
+                                    variant.polyphen = poly + " (" + polyDesc + ")";
+                                } else {
+                                    variant.polyphen = poly;
+                                }
                             }
                         }
 
@@ -1065,11 +1052,8 @@
                             if (this._checkFileIdStudies(elem, auxStudies)) {
                                 finalStudies.push(elem);
                             }
-
                         }
-
                     }
-
 
                     if (auxDiseases.length > 0) {
                         if (finalStudies.length == 0) {
@@ -1113,12 +1097,12 @@
                         query.regions = regionQuery;
 
                         var url = PVSManager.variants.fetch({
-//                            id: regionQuery,
                             query: query,
                             request: {
                                 url: true
                             }
                         });
+                        console.log(url);
 
                         if (this.formURL !== url) {
                             this.$.dataGrid.data = [];
@@ -1158,7 +1142,6 @@
                     }
                 }
                 return false;
-
             },
             _checkFileIdPhenotypes: function (elem, auxPhenotypes) {
                 for (var i = 0; i < auxPhenotypes.length; i++) {
@@ -1168,7 +1151,6 @@
                     }
                 }
                 return false;
-
             },
             studiesChanged: function (oldValue, newValue) {
                 var me = this;
@@ -1206,8 +1188,6 @@
                     })
                     me.formPhenotypes[key] = true;
                 });
-
-
             },
             _formatText: function (text) {
                 return Utils.formatText(text, "_").toLowerCase().replace(/(?:^|\s)\S/g, function (a) {
@@ -1307,12 +1287,10 @@
                 this.formDiseases = {};
                 this.formPhenotypes = {};
 
-
                 for (var i = 0; i < this.diseases.length; i++) {
                     var dis = this.diseases[i].name;
                     this.formDiseases[dis] = true;
                 }
-
 
                 for (var i = 0; i < this.studies.length; i++) {
                     var study = this.studies[i].sname;
@@ -1331,8 +1309,6 @@
                 this.$.collapseGrid.toggle();
                 this.page = 1;
                 this.expanded = !this.expanded;
-
-//                this.genomeViewer.setHeight(this.$.genomeViewer.getBoundingClientRect().height);
 
             }, createGenomeViewer: function () {
                 this.genomeViewer = new GenomeViewer({
@@ -1501,8 +1477,6 @@
                 return this.genomeViewer;
             },
             handleDataGridSelected: function (oldValue, newValue) {
-
-                var me = this;
                 var reg = newValue.chromosome + ":" + newValue.start + "-" + newValue.end;
                 var region = new Region(reg);
 
@@ -1513,137 +1487,13 @@
                 this.$.gvEl.genomeViewer.setRegion(region);
             }
             ,
-            _getSNPId: function (records) {
-                var speciesCode = Utils.getSpeciesCode(this.species);
-
-                var regs = [];
-                for (var i = 0; i < records.length; i++) {
-                    var variant = records[i];
-                    var chr = variant.chromosome;
-                    regs.push(chr + ":" + variant.start + "-" + variant.end);
-                }
-
-                if (regs.length > 0) {
-                    var query = regs.join(",");
-                    CellBaseManager.get({
-                        host: CELLBASE_HOST,
-                        version: CELLBASE_VERSION,
-                        species: speciesCode,
-                        category: 'genomic',
-                        subCategory: 'region',
-                        query: query,
-                        resource: 'snp',
-                        params: {
-                            include: 'id'
-                        },
-                        async: false,
-                        success: function (data, textStatus, jqXHR) {
-                            var results = data.response;
-
-                            for (var i = 0; i < results.length; i++) {
-                                var elem = results[i];
-                                var record = records[i];
-
-                                if (record.id == null && elem.numResults > 0) {
-                                    record.id = elem.result[0].id;
-                                }
-                            }
-                        }
-                    });
-                }
-            }
-            ,
-            _getEffect: function (record) {
-                var req = record.chromosome + ":" + record.start + ":" + record.reference + ":" + record.alternate;
-                var url = "http://ws.bioinfo.cipf.es/cellbase/rest/latest/hsa/genomic/variant/" + req + "/consequence_type?of=json";
-
-                $.ajax({
-                    url: url,
-                    dataType: 'json',
-                    async: false,
-                    success: function (response, textStatus, jqXHR) {
-                        if (response) {
-                            for (var j = 0; j < response.length; j++) {
-                                var elem = response[j];
-
-                                if (elem.aaPosition != -1 && elem.transcriptId != "" && elem.aminoacidChange.length >= 3 && record.transcriptId === undefined && record.aaPos === undefined && record.aaChange === undefined) {
-                                    record.transcript = elem.transcriptId;
-                                    record.aaPos = elem.aaPosition;
-                                    record.aaChange = elem.aminoacidChange;
-                                }
-                            }
-                        }
-                    },
-                    error: function (jqXHR, textStatus, errorThrown) {
-                        console.log('Error loading Effect');
-                    }
-                });
-            }
-            ,
-            _getPolyphenSift: function (variant) {
-
-                if (variant.aaPos != undefined && variant.aaPos >= 0) {
-                    var change = variant.aaChange.split("/")[1];
-                    var url = "http://ws-beta.bioinfo.cipf.es/cellbase/rest/v3/hsapiens/feature/transcript/" + variant.transcript + "/function_prediction?aaPosition=" + variant.aaPos + "&aaChange=" + change;
-                    $.ajax({
-                        url: url,
-                        dataType: 'json',
-                        async: false,
-                        success: function (response, textStatus, jqXHR) {
-                            var res = response.response[0];
-                            if (res.numResults > 0) {
-                                if (res.result[0].aaPositions[variant.aaPos]) {
-                                    res = res.result[0].aaPositions[variant.aaPos][change];
-                                    if (res !== undefined) {
-                                        if (res.ps != null) {
-                                            variant.polyphen = res.ps
-                                        }
-                                        if (res.ss != null) {
-                                            variant.sift = res.ss;
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        error: function (jqXHR, textStatus, errorThrown) {
-                            console.log('Error loading PolyPhen/SIFT');
-                        }
-                    });
-                }
-            }
-            ,
-            _getPhenotypes: function (records) {
-                var regs = [];
-                for (var i = 0; i < records.length; i++) {
-                    var variant = records[i];
-                    var chr = variant.chromosome;
-                    regs.push(chr + ":" + variant.start + "-" + variant.end);
-                }
-                if (regs.length > 0) {
-                    var url = "http://ws-beta.bioinfo.cipf.es/cellbase/rest/v3/hsapiens/genomic/region/" + regs.join(",") + "/phenotype?include=phenotype";
-                    $.ajax({
-                        url: url,
-                        dataType: 'json',
-                        async: false,
-                        success: function (response, textStatus, jqXHR) {
-                            if (response != undefined && response.response.length > 0 && response.response.length == records.length) {
-                                for (var i = 0; i < response.response.length; i++) {
-                                    var elem = response.response[i];
-                                    var phenotypes = [];
-                                    for (var k = 0; k < elem.numResults; k++) {
-                                        phenotypes.push(elem.result[k].phenotype);
-                                    }
-                                    records[i].phenotype = phenotypes.join(",");
-                                }
-                            }
-                        },
-                        error: function (jqXHR, textStatus, errorThrown) {
-                            console.log('Error loading Phenotypes');
-                        }
-                    });
-                }
-            },
             exportQueryToCSV: function () {
+                var numVariants = this.$.dataGrid.dataSize;
+
+                if (numVariants > 200) {
+                    alert("Sorry, you are trying to export a CSV with more than 200 Variants. Please restrict your query, the maximum allowed variants are 200.");
+                    return;
+                }
 
                 var me = this;
                 if (this.formUrl != "") {
@@ -1661,7 +1511,7 @@
 
                                 // Create CSV
 
-                                var csvData = [['chromosome', 'position', 'ref', 'alt', 'snpId', 'MAF', '1000G', 'EVS'].join(";")];
+                                var csvData = [['chromosome', 'position', 'ref', 'alt', 'snpId', 'MAF', '1000G MAF', 'EVS MAF'].join(";")];
 
                                 for (var i = 0; i < finalData.length; i++) {
                                     var row = finalData[i];
@@ -1694,22 +1544,16 @@
                                 a.target = '_blank';
                                 a.download = 'variants.csv';
 
-//                                document.body.appendChild(a);
                                 a.click();
-
-
                             }
 
                         },
                         error: function (jqXHR, textStatus, errorThrown) {
                             console.log('Error exporting to CSV');
                         }
-
                     });
                 }
-
             }
-
         });
     </script>
 </polymer-element>

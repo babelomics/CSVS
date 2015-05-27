@@ -20,7 +20,7 @@
         <datastore.version>0.2.0</datastore.version>
         <biodata.version>0.2.0</biodata.version>
         <jcl.version>2.0.0</jcl.version>
-        <compileSource>1.8</compileSource>
+        <compileSource>1.7</compileSource>
         <pvs.version>1.0.1</pvs.version>
     </properties>
 

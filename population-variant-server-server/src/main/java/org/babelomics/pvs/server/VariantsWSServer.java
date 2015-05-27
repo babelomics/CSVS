@@ -55,7 +55,6 @@ public class VariantsWSServer extends PVSWSServer {
                                         @ApiParam(value = "diseases") @QueryParam("diseases") String diseases,
                                         @ApiParam(value = "phenotypes") @QueryParam("phenotypes") String phenotypes,
                                         @ApiParam(value = "csv") @QueryParam("csv") @DefaultValue("false") boolean csv
-
     ) {
 
         queryOptions.put("merge", true);
@@ -91,6 +90,8 @@ public class VariantsWSServer extends PVSWSServer {
             StudyElement se = new StudyElement(fid);
 
             se.setStaticStudy(((BasicDBObject) study.get("meta")).getString("sta").equalsIgnoreCase("false"));
+            se.setNumSamples(((BasicDBObject) study.get("st")).getInt("nSamp"));
+
             if (!se.getStaticStudy()) {
                 staticStudyElements.add(se);
             } else {
@@ -150,8 +151,11 @@ public class VariantsWSServer extends PVSWSServer {
 
         List<String> aux = new ArrayList<>(finalStudyElements.size());
         List<String> staticStudies = new ArrayList<>(finalStudyElements.size());
+
+        int totalSamples = 0;
         for (StudyElement se : finalStudyElements) {
             aux.add(se.toString());
+            totalSamples += se.getNumSamples();
         }
 
         for (StudyElement se : staticStudyElements) {
@@ -167,7 +171,7 @@ public class VariantsWSServer extends PVSWSServer {
             finalStudyElements.addAll(staticStudyElements);
             removeStudies(allVariantsByRegionList, finalStudyElements);
 
-            transformVariants(allVariantsByRegionList, staticStudies);
+            transformVariants(allVariantsByRegionList, staticStudies, totalSamples);
 
             return createOkResponse(allVariantsByRegionList);
         } else {
@@ -224,43 +228,91 @@ public class VariantsWSServer extends PVSWSServer {
         return false;
     }
 
-    private void transformVariants(List<QueryResult> allVariantsByRegionList, List<String> staticStudies) {
+    private void transformVariants(List<QueryResult> allVariantsByRegionList, List<String> staticStudies, int totalSamples) {
         for (QueryResult qr : allVariantsByRegionList) {
             List<Variant> variantList = qr.getResult();
 
             for (Variant v : variantList) {
-                combineFiles(v.getSourceEntries(), staticStudies);
+                combineFiles(v, staticStudies, totalSamples);
             }
         }
     }
 
-    private void combineFiles(Map<String, VariantSourceEntry> files, List<String> staticStudies) {
+    private void combineFiles(Variant variant, List<String> staticStudies, int totalSamples) {
         Map<String, VariantSourceEntry> map = new HashMap<>();
         VariantStats mafStats = new VariantStats();
         VariantSourceEntry mafVSE = new VariantSourceEntry("MAF", "MAF");
         mafVSE.setStats(mafStats);
 
-        for (Map.Entry<String, VariantSourceEntry> entry : files.entrySet()) {
+        for (Map.Entry<String, VariantSourceEntry> entry : variant.getSourceEntries().entrySet()) {
             VariantSourceEntry avf = entry.getValue();
             if (staticStudies.contains(entry.getKey().toUpperCase())) {
                 map.put(avf.getStudyId(), entry.getValue());
             } else {
                 for (Map.Entry<Genotype, Integer> o : avf.getStats().getGenotypesCount().entrySet()) {
+                    Genotype g = o.getKey();
                     mafStats.addGenotype(o.getKey(), o.getValue());
                 }
             }
 
         }
-        files.clear();
+        variant.getSourceEntries().clear();
+
+        calculateMAF(mafStats, totalSamples, variant);
+
         map.put("MAF", mafVSE);
-        files.putAll(map);
+        variant.getSourceEntries().putAll(map);
     }
 
+    private void calculateMAF(VariantStats mafStats, int totalSamples, Variant variant) {
 
-    @OPTIONS
-    @Path("/{region}/variants")
-    public Response getVariantsByRegion() {
-        return createOkResponse("");
+        Map<Genotype, Integer> genotypes = mafStats.getGenotypesCount();
+
+        int refCount = 0;
+        int altCount = 0;
+        int total = 0;
+
+        for (Map.Entry<Genotype, Integer> entry : genotypes.entrySet()) {
+
+            Genotype genotype = entry.getKey();
+            Integer count = entry.getValue();
+
+            refCount += (genotype.getAllele(0) == 0 ? 1 : 0) * count;
+            refCount += (genotype.getAllele(1) == 0 ? 1 : 0) * count;
+
+            altCount += (genotype.getAllele(0) == 1 ? 1 : 0) * count;
+            altCount += (genotype.getAllele(1) == 1 ? 1 : 0) * count;
+
+            total += count;
+        }
+        refCount += ((totalSamples - total) * 2);
+
+        for (Map.Entry<Genotype, Integer> entry : genotypes.entrySet()) {
+            Genotype genotype = entry.getKey();
+
+            if (genotype.getAllele(0) == 0 && genotype.getAllele(1) == 0) {
+                Integer count = entry.getValue();
+                count += (totalSamples - total);
+                entry.setValue(count);
+            }
+
+        }
+
+
+        float refMAF = ((float) refCount) / (altCount + refCount);
+        float altMAF = ((float) altCount) / (altCount + refCount);
+        float maf;
+
+        if (refMAF <= altMAF) {
+            maf = refMAF;
+            mafStats.setMafAllele(variant.getReference());
+        } else {
+            maf = altMAF;
+            mafStats.setMafAllele(variant.getAlternate());
+        }
+
+        mafStats.setMaf(maf);
+
     }
 
     private class StudyElement {
@@ -268,12 +320,14 @@ public class VariantsWSServer extends PVSWSServer {
         private String disease;
         private String phenotype;
         private Boolean staticStudy;
+        private int numSamples;
 
         public StudyElement(String fid) {
             String[] aux = fid.split(PVSMain.SEPARATOR);
             study = aux[0];
             disease = aux[1];
             phenotype = aux[2];
+            numSamples = 0;
         }
 
         public String getStudy() {
@@ -299,6 +353,14 @@ public class VariantsWSServer extends PVSWSServer {
         @Override
         public String toString() {
             return this.study + PVSMain.SEPARATOR + this.disease + PVSMain.SEPARATOR + this.phenotype;
+        }
+
+        public int getNumSamples() {
+            return numSamples;
+        }
+
+        public void setNumSamples(int numSamples) {
+            this.numSamples = numSamples;
         }
     }
 }
