@@ -604,7 +604,7 @@
     </template>
     <script>
         Polymer({
-            regionValue: '1:1-100000',
+            regionValue: '',
             geneValue: '',
             snpValue: '',
             floatDecimals: 3,
@@ -786,6 +786,8 @@
                             total = countRef + countAlt;
 
                             var altmaf = countAlt / total;
+                            var refmaf = countRef / total;
+
                             var maf = (refmaf < altmaf) ? refmaf : altmaf;
                             entry.stats.refmaf = refmaf.toFixed(me.floatDecimals);
                             entry.stats.altmaf = altmaf.toFixed(me.floatDecimals);
@@ -985,6 +987,8 @@
                     if (this.regionValue) {
                         regions = this.regionValue.split(",");
                     }
+
+                    // this.geneValue = ""
 
                     if (this.geneValue) {
                         var gene = this.geneValue.toUpperCase();
@@ -1505,6 +1509,9 @@
                         async: false,
                         success: function (response, textStatus, jqXHR) {
                             if (response != undefined && response.response.length > 0) {
+
+                                debugger
+                                
                                 var data = response.response[0].result; // TODO aaleman: Fix this!
 
                                 var finalData = me.parseFunction(data);

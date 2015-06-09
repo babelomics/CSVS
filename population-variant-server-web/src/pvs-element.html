@@ -110,7 +110,7 @@
                 <pvs-home selectedOption="{{selectedOption}}"></pvs-home>
             </template>
             <template if="{{ selectedOption == 'search' }}">
-                <es-search-element studies="{{ studies }}" staticStudies="{{ staticStudies }}"></es-search-element>
+                <es-search-element studies="{{ studies }}" staticStudies="{{ staticStudies }}" id="pvsSearchElement"></es-search-element>
             </template>
 
             <template if="{{ selectedOption == 'studies' }}">
