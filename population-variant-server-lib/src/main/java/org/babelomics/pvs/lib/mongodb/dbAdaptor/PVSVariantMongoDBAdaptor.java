@@ -439,33 +439,24 @@ public class PVSVariantMongoDBAdaptor implements VariantDBAdaptor {
     }
 
     public List<QueryResult> getAllVariantsByRegionListAndFileIds(List<Region> regions, List<String> fileIds, QueryOptions options) {
+        MongoDBCollection coll = db.getCollection(collectionName);
 
         List<QueryResult> allResults = new LinkedList<>();
+        QueryBuilder qb = QueryBuilder.start();
 
-        for (Region r : regions) {
-            QueryResult queryResult = getAllVariantsByRegionAndFileIds(r, fileIds, options);
-            allResults.add(queryResult);
-        }
+        getRegionFilter(regions, qb);
+
+        qb.and("files.fid").in(fileIds);
+        parseQueryOptions(options, qb);
+
+        QueryResult queryResult = coll.find(qb.get(), options, variantConverter);
+        allResults.add(queryResult);
 
         return allResults;
 
     }
 
-    public QueryResult getAllVariantsByRegionAndFileIds(Region region, List<String> fileIds, QueryOptions options) {
-        MongoDBCollection coll = db.getCollection(collectionName);
-
-        QueryBuilder qb = QueryBuilder.start();
-        getRegionFilter(region, qb);
-        qb.and("files.fid").in(fileIds);
-
-        parseQueryOptions(options, qb);
-
-        return coll.find(qb.get(), options, variantConverter);
-    }
-
-
-
-    /* *******************
+      /* *******************
      *  Auxiliary types  *
      * *******************/
 

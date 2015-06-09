@@ -51,7 +51,8 @@ public class PVSStudyMongoDBAdaptor implements PVSStudyDBAdaptor {
         QueryBuilder qb = QueryBuilder.start();
         DBObject returnFields = new BasicDBObject("_id", Integer.valueOf(0)).
                 append("fid", Integer.valueOf(1)).
-                append("meta.sta", Integer.valueOf(1));
+                append("meta.sta", Integer.valueOf(1)).
+                append("st.nSamp", Integer.valueOf(1));
         return coll.find(qb.get(), options, null, returnFields);
     }
 
