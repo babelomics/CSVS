@@ -282,6 +282,10 @@
                 height: 20px;
             }
 
+            .diseaseButton {
+                color: #435f7a;
+            }
+
         </style>
 
         <div horizontal layout center-justified>
@@ -315,25 +319,6 @@
                                 </div>
                             </div>
                         </div>
-                        <!--<div class="form_block" vertical layout>-->
-                        <!--<div id="headerTitle">Studies</div>-->
-                        <!--<div id="studies_div">-->
-                        <!--<core-list data="{{ studyNames }}" height="20px" class="selector_list">-->
-                        <!--<template>-->
-                        <!--<core-label center horizontal layout>-->
-                        <!--<paper-checkbox class="blue studyName"-->
-                        <!--for-->
-                        <!--on-click="{{ studyClick }}"-->
-                        <!--value="{{ model.name }}" checked></paper-checkbox>-->
-                        <!--<div class="elemLabel" flex>{{ model.label }}</div>-->
-                        <!--</core-label>-->
-                        <!--</template>-->
-                        <!--</core-list>-->
-                        <!--</div>-->
-                        <!--<div class="filter_box" layout end-justified horizontal>-->
-                        <!--<input type="text" on-keyup="{{ studyKeyUp }}" placeholder="Filter:"/>-->
-                        <!--</div>-->
-                        <!--</div>-->
                         <div class="form_block">
                             <div id="headerTitle">Diseases</div>
                             <div id="diseases_div">
@@ -351,6 +336,10 @@
 
                                     </template>
                                 </core-list>
+                                <div>
+                                    <paper-button on-click="{{ selectAllDiseases }}">All</paper-button>
+                                    <paper-button on-click="{{ deselectAllDiseases }}">None</paper-button>
+                                </div>
                             </div>
                             <!--<div class="filter_box" layout end-justified horizontal>-->
                             <!--<input type="text" on-keyup="{{ diseaseKeyUp }}" placeholder="Filter:"/>-->
@@ -915,7 +904,7 @@
                         }
 
                         if (variant.annots.clinicalData.length > 0) {
-                            debugger
+//                            debugger
                         }
                     }
                     return data;
@@ -1005,11 +994,24 @@
                             success: function (data) {
                                 for (var i = 0; i < data.response.length; i++) {
                                     var queryResult = data.response[i];
-                                    var region = new Region(queryResult.result[0]);
-                                    regions.push(region.toString());
+
+                                    if (queryResult.result.length > 0) {
+                                        var region = new Region(queryResult.result[0]);
+                                        regions.push(region.toString());
+
+                                    } else {
+
+                                        alert("Wrong gene: " + gene);
+
+                                    }
+
                                 }
                             }
                         });
+                    }
+
+                    if (regions.length == 0) {
+                        return;
                     }
 
                     Object.keys(this.formStudies).forEach(function (key) {
@@ -1108,12 +1110,12 @@
                         });
                         console.log(url);
 
-                        if (this.formURL !== url) {
-                            this.$.dataGrid.data = [];
-                            this.$.dataGrid.dataSize = 0;
-                            this.$.dataGrid.page = 1;
-                            this.formURL = url;
-                        }
+//                        if (this.formURL !== url) {
+//                        this.$.dataGrid.data = [];
+//                        this.$.dataGrid.dataSize = 0;
+                        this.$.dataGrid.page = 1;
+                        this.formURL = url;
+//                        }
                     }
                 } else {
                     alert("Please add a region/gene and check any study, disease or phenotype");
@@ -1209,7 +1211,7 @@
                         cellTemplate: 'mafStaticCT',
                         headerTemplate: 'mafStaticHT',
                         formula: new Function("row", "var res = {}; " +
-                        "try { var res = row.sourceEntries['" + study.sname + "']; } catch (e) { console.log('ERROR FORMULA STATIC STUDY'); } return res; ")
+                                "try { var res = row.sourceEntries['" + study.sname + "']; } catch (e) { console.log('ERROR FORMULA STATIC STUDY'); } return res; ")
                     });
                 }
             },
@@ -1305,8 +1307,6 @@
                     var phe = this.phenotype[i].name;
                     this.formPhenotypes[phe] = true;
                 }
-
-                this.regionValue = '1:1-100000';
 
             },
             handleExpand: function () {
@@ -1510,8 +1510,6 @@
                         success: function (response, textStatus, jqXHR) {
                             if (response != undefined && response.response.length > 0) {
 
-                                debugger
-                                
                                 var data = response.response[0].result; // TODO aaleman: Fix this!
 
                                 var finalData = me.parseFunction(data);
@@ -1560,6 +1558,38 @@
                         }
                     });
                 }
+            },
+            selectAllDiseases: function (e, d, s) {
+                console.log("select all")
+                var checkboxes = this.$.filter_form.getElementsByClassName("diseaseName");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    elem.checked = true;
+                }
+
+                this.formDiseases = {};
+
+                for (var i = 0; i < this.diseases.length; i++) {
+                    var dis = this.diseases[i].name;
+                    this.formDiseases[dis] = true;
+                }
+            },
+            deselectAllDiseases: function (e, d, s) {
+
+                this.formDiseases = {};
+
+                for (var i = 0; i < this.diseases.length; i++) {
+                    var dis = this.diseases[i].name;
+                    this.formDiseases[dis] = false;
+                }
+
+                var checkboxes = this.$.filter_form.getElementsByClassName("diseaseName");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    elem.checked = false;
+                }
+
+
             }
         });
     </script>
