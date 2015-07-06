@@ -20,6 +20,7 @@ public class OptionsParser {
     private final CommandLoadVariants load;
     private final CommandAddVariants add;
     private final CommandCompressVariants compress;
+    private final CommandSetup setup;
 
 
     public OptionsParser() {
@@ -28,6 +29,7 @@ public class OptionsParser {
         jcommander.addCommand(load = new CommandLoadVariants());
         jcommander.addCommand(add = new CommandAddVariants());
         jcommander.addCommand(compress = new CommandCompressVariants());
+        jcommander.addCommand(setup = new CommandSetup());
 
     }
 
@@ -77,9 +79,8 @@ public class OptionsParser {
         @Parameter(names = {"-i", "--input"}, description = "Prefix of files to save in the selected backend", required = true, arity = 1)
         String input;
 
-        @Parameter(names = {"-c", "--credentials"}, description = "Path to the file where the backend credentials are stored", required = true, arity = 1)
-        String credentials;
-
+        @Parameter(names = {"-d", "--diseaseId"}, description = "Disease group Id", required = true, arity = 1)
+        int disease;
     }
 
     @Parameters(commandNames = {"add-variants"}, commandDescription = "Add an already generated data model in an existing Study into a backend")
@@ -101,6 +102,11 @@ public class OptionsParser {
 
         @Parameter(names = {"-o", "--output"}, description = "Output File", arity = 1)
         String output;
+
+    }
+
+    @Parameters(commandNames = {"setup"}, commandDescription = "Setup DataBase")
+    class CommandSetup implements Command {
 
     }
 
@@ -130,6 +136,9 @@ public class OptionsParser {
 
     CommandCompressVariants getCompressComand() {
         return compress;
+    }
+
+    CommandSetup getSetupCommand() {return setup;
     }
 
     enum PhenotypeEnum {

@@ -13,6 +13,13 @@
     <artifactId>population-variant-server-lib</artifactId>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.mongodb.morphia</groupId>
+            <artifactId>morphia</artifactId>
+        </dependency>
+
+        <!--old-->
         <dependency>
             <groupId>org.opencb.biodata</groupId>
             <artifactId>biodata-models</artifactId>
@@ -23,12 +30,37 @@
         </dependency>
         <dependency>
             <groupId>org.opencb.opencga</groupId>
-            <artifactId>opencga-storage</artifactId>
+            <artifactId>opencga-storage-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.opencb.opencga</groupId>
-            <artifactId>opencga-lib</artifactId>
+            <artifactId>opencga-core</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>org/babelomics/pvs/lib/io/PVSJsonWriter.java</exclude>
+                        <exclude>org/babelomics/pvs/lib/io/PVSVariantJsonReader.java</exclude>
+                        <exclude>org/babelomics/pvs/lib/json/*.java</exclude>
+                        <exclude>org/babelomics/pvs/lib/mongodb/**/*.java</exclude>
+                        <exclude>org/babelomics/pvs/lib/tasks/*.java</exclude>
+                    </excludes>
+                    <testExcludes>
+                        <exclude>org/babelomics/pvs/lib/io/*.java</exclude>
+                        <exclude>org/babelomics/pvs/lib/json/*.java</exclude>
+                        <exclude>org/babelomics/pvs/lib/mongodb/**/*.java</exclude>
+                        <exclude>org/babelomics/pvs/lib/tasks/*.java</exclude>
+                    </testExcludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 
 </project>

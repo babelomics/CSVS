@@ -12,16 +12,16 @@
     <modules>
         <module>population-variant-server-app</module>
         <module>population-variant-server-lib</module>
-        <module>population-variant-server-server</module>
+        <!--<module>population-variant-server-server</module>-->
     </modules>
 
     <properties>
-        <opencga.version>0.3.3</opencga.version>
-        <datastore.version>0.2.0</datastore.version>
-        <biodata.version>0.2.0</biodata.version>
-        <jcl.version>2.0.0</jcl.version>
-        <compileSource>1.7</compileSource>
-        <pvs.version>1.0.1</pvs.version>
+        <opencga.version>0.6-SNAPSHOT</opencga.version>
+        <datastore.version>0.4-SNAPSHOT</datastore.version>
+        <biodata.version>0.5-SNAPSHOT</biodata.version>
+        <jcl.version>3.0-SNAPSHOT</jcl.version>
+        <compileSource>1.8</compileSource>
+        <pvs.version>1.1.0</pvs.version>
     </properties>
 
     <dependencyManagement>
@@ -44,7 +44,7 @@
             </dependency>
             <dependency>
                 <groupId>org.opencb.opencga</groupId>
-                <artifactId>opencga-lib</artifactId>
+                <artifactId>opencga-core</artifactId>
                 <version>${opencga.version}</version>
             </dependency>
             <dependency>
@@ -70,7 +70,7 @@
 
             <dependency>
                 <groupId>org.opencb.opencga</groupId>
-                <artifactId>opencga-storage</artifactId>
+                <artifactId>opencga-storage-core</artifactId>
                 <version>${opencga.version}</version>
             </dependency>
             <dependency>
@@ -99,7 +99,7 @@
             <dependency>
                 <groupId>com.beust</groupId>
                 <artifactId>jcommander</artifactId>
-                <version>1.47</version>
+                <version>1.48</version>
             </dependency>
             <dependency>
                 <groupId>org.utgenome.thirdparty</groupId>
@@ -182,6 +182,14 @@
                 <groupId>asm</groupId>
                 <artifactId>asm</artifactId>
                 <version>3.3.1</version>
+            </dependency>
+
+
+
+            <dependency>
+                <groupId>org.mongodb.morphia</groupId>
+                <artifactId>morphia</artifactId>
+                <version>1.0.0-rc0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
