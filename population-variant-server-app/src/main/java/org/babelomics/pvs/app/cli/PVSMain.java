@@ -1,7 +1,6 @@
 package org.babelomics.pvs.app.cli;
 
 import com.beust.jcommander.ParameterException;
-import com.google.common.base.Joiner;
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoClient;
 import org.babelomics.pvs.lib.io.PVSRunner;
@@ -54,10 +53,6 @@ public class PVSMain {
             switch (parser.parse(args)) {
                 case "setup":
                     command = parser.getSetupCommand();
-                    break;
-                // OLD
-                case "transform-variants":
-                    command = parser.getTransformCommand();
                     break;
                 case "load-variants":
                     command = parser.getLoadCommand();
@@ -116,36 +111,6 @@ public class PVSMain {
                     System.err.println("Duplicated Disase Group: " + dg);
                 }
             }
-
-
-        } else if (command instanceof OptionsParser.CommandTransformVariants) {
-            OptionsParser.CommandTransformVariants c = (OptionsParser.CommandTransformVariants) command;
-
-            Path file = Paths.get(c.file);
-            Path outdir = Paths.get(c.outdir);
-
-            String disease = Joiner.on("_").join(c.disease).toUpperCase();
-            String study = Joiner.on("_").join(c.study).toUpperCase();
-            String phenotype = c.phenotype.toString();
-
-            String fileId = study + SEPARATOR + disease + SEPARATOR + phenotype;
-
-            String paper = c.paper == null ? "" : c.paper;
-            String description = c.description == null ? "" : c.description;
-
-            VariantStudy.StudyType studyType = VariantStudy.StudyType.CASE_CONTROL;
-            VariantSource.Aggregation aggregated = c.aggregated;
-            VariantSource source = new VariantSource(file.getFileName().toString(), fileId, study, study, studyType, aggregated);
-
-            source.addMetadata("disease", disease);
-            source.addMetadata("phenotype", phenotype);
-            source.addMetadata("paper", paper);
-            source.addMetadata("desc", description);
-            source.addMetadata("sta", Boolean.toString(c.staticStudy));
-            source.addMetadata("cov", String.valueOf(c.coverage));
-            source.addMetadata("tech", c.technology);
-
-            transformVariants(source, file, outdir);
         } else if (command instanceof OptionsParser.CommandLoadVariants) {
             OptionsParser.CommandLoadVariants c = (OptionsParser.CommandLoadVariants) command;
 
@@ -210,42 +175,4 @@ public class PVSMain {
 
     }
 
-    private static void transformVariants(VariantSource source, Path file, Path outdir) throws IOException {
-
-//        VariantReader reader = null;
-//
-//        switch (source.getAggregation()) {
-//            case NONE:
-//                reader = new VariantVcfReader(source, file.toAbsolutePath().toString());
-//                break;
-//            case BASIC:
-//                reader = new VariantVcfReader(source, file.toAbsolutePath().toString(), new VariantAggregatedVcfFactory());
-//                break;
-//            case EVS:
-//                reader = new VariantVcfReader(source, file.toAbsolutePath().toString(), new VariantVcfEVSFactory());
-//                break;
-//            default:
-//                reader = new VariantVcfReader(source, file.toAbsolutePath().toString());
-//        }
-//
-//        List<Task<Variant>> taskList = new SortedList<>();
-//        List<VariantWriter> writers = new ArrayList<>();
-//
-//        VariantWriter jsonWriter = new PVSJsonWriter(source, outdir);
-//
-//
-//        taskList.add(new PVSVariantStatsTask(reader, source));
-//        jsonWriter.includeStats(true);
-//        jsonWriter.includeEffect(false);
-//        jsonWriter.includeSamples(false);
-//
-//        writers.add(jsonWriter);
-//
-//        VariantRunner variantRunner = new VariantRunner(source, reader, null, writers, taskList, 100);
-//
-//        System.out.println("Indexing variants...");
-//        variantRunner.run();
-//        System.out.println("Variants indexed!");
-
-    }
 }

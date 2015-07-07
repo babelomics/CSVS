@@ -16,18 +16,14 @@ public class OptionsParser {
 
     private final JCommander jcommander;
 
-    private final CommandTransformVariants transform;
     private final CommandLoadVariants load;
-    private final CommandAddVariants add;
     private final CommandCompressVariants compress;
     private final CommandSetup setup;
 
 
     public OptionsParser() {
         jcommander = new JCommander();
-        jcommander.addCommand(transform = new CommandTransformVariants());
         jcommander.addCommand(load = new CommandLoadVariants());
-        jcommander.addCommand(add = new CommandAddVariants());
         jcommander.addCommand(compress = new CommandCompressVariants());
         jcommander.addCommand(setup = new CommandSetup());
 
@@ -126,19 +122,12 @@ public class OptionsParser {
         return load;
     }
 
-    CommandTransformVariants getTransformCommand() {
-        return transform;
-    }
-
-    CommandAddVariants getAddCommand() {
-        return add;
-    }
-
     CommandCompressVariants getCompressComand() {
         return compress;
     }
 
-    CommandSetup getSetupCommand() {return setup;
+    CommandSetup getSetupCommand() {
+        return setup;
     }
 
     enum PhenotypeEnum {

@@ -14,10 +14,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.babelomics.population-variant-server</groupId>
-            <artifactId>population-variant-server-lib</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.opencb.biodata</groupId>
             <artifactId>biodata-models</artifactId>
         </dependency>
@@ -32,6 +28,11 @@
         <dependency>
             <groupId>org.opencb.commons</groupId>
             <artifactId>commons-lib</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.babelomics.population-variant-server</groupId>
+            <artifactId>population-variant-server-lib</artifactId>
         </dependency>
 
         <dependency>
