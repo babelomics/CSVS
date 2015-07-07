@@ -111,8 +111,6 @@ public class PVSVariantCountCSVDataReader implements DataReader<Variant> {
             i += variants.size();
         }
 
-        System.out.println("listRecords = " + listRecords);
-
         return listRecords;
     }
 }

@@ -47,8 +47,6 @@ public class PVSVariantCountsMongoWriter implements DataWriter<Variant> {
 
     @Override
     public boolean write(Variant elem) {
-        System.out.println("elem = " + elem);
-
         Query<Variant> query = datastore.createQuery(Variant.class);
 
         Variant v = query.field("chromosome").equal(elem.getChromosome())

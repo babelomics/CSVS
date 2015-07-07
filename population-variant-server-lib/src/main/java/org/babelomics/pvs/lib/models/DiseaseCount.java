@@ -1,10 +1,7 @@
 package org.babelomics.pvs.lib.models;
 
 import org.bson.types.ObjectId;
-import org.mongodb.morphia.annotations.Entity;
-import org.mongodb.morphia.annotations.Id;
-import org.mongodb.morphia.annotations.Property;
-import org.mongodb.morphia.annotations.Reference;
+import org.mongodb.morphia.annotations.*;
 
 /**
  * @author Alejandro Alemán Ramos <aaleman@cipf.es>
@@ -19,11 +16,21 @@ public class DiseaseCount {
     @Reference
     private DiseaseGroup diseaseGroup;
 
+    @Property("dgid")
+    private int diseaseGroupId;
+
     private int gt00;
     private int gt01;
     private int gt11;
     @Property("gtm")
     private int gtmissing;
+
+    @Property("m")
+    private float maf;
+    @Property("rm")
+    private float refFreq;
+    @Property("am")
+    private float altFreq;
 
     public DiseaseCount(DiseaseGroup diseaseGroup, int gt00, int gt01, int gt11, int gtmissing) {
         this.diseaseGroup = diseaseGroup;
@@ -95,4 +102,42 @@ public class DiseaseCount {
         this.gtmissing += gtmissing;
 
     }
+
+    public float getMaf() {
+        return maf;
+    }
+
+    public void setMaf(float maf) {
+        this.maf = maf;
+    }
+
+    public float getRefFreq() {
+        return refFreq;
+    }
+
+    public void setRefFreq(float refFreq) {
+        this.refFreq = refFreq;
+    }
+
+    public float getAltFreq() {
+        return altFreq;
+    }
+
+    public void setAltFreq(float altFreq) {
+        this.altFreq = altFreq;
+    }
+
+    @PrePersist
+    void prePersist() {
+        this.diseaseGroupId = this.diseaseGroup.getGroupId();
+
+        int refCount = gt00 * 2 + gt01;
+        int altCount = gt11 * 2 + gt01;
+
+        this.refFreq = (float) refCount / (refCount + altCount);
+        this.altFreq = (float) altCount / (refCount + altCount);
+
+        this.maf = Math.min(this.refFreq, this.altFreq);
+    }
+
 }
