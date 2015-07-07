@@ -4,70 +4,31 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Parameters;
-import org.opencb.biodata.models.variant.VariantSource;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
- * @author Alejandro Alemán Ramos <aaleman@cipf.es>
+ * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
  */
 public class OptionsParser {
 
     private final JCommander jcommander;
 
     private final CommandLoadVariants load;
-    private final CommandCompressVariants compress;
+    private final CommandCalculateCounts calculateCounts;
+    private final CommandQuery query;
     private final CommandSetup setup;
 
 
     public OptionsParser() {
         jcommander = new JCommander();
         jcommander.addCommand(load = new CommandLoadVariants());
-        jcommander.addCommand(compress = new CommandCompressVariants());
+        jcommander.addCommand(calculateCounts = new CommandCalculateCounts());
+        jcommander.addCommand(query = new CommandQuery());
         jcommander.addCommand(setup = new CommandSetup());
 
     }
 
     interface Command {
     }
-
-    @Parameters(commandNames = {"transform-variants"}, commandDescription = "Generates a data model from an input file")
-    class CommandTransformVariants implements Command {
-
-        @Parameter(names = {"-i", "--input"}, description = "File to transform into the OpenCGA data model", required = true, arity = 1)
-        String file;
-
-        @Parameter(names = {"-s", "--study"}, description = "Full name of the study where the file is classified", required = true, variableArity = true)
-        List<String> study = new ArrayList<>();
-
-        @Parameter(names = {"-o", "--outdir"}, description = "Directory where output files will be saved", arity = 1)
-        String outdir;
-
-        @Parameter(names = {"-d", "--disease"}, description = "Disease", required = true, variableArity = true)
-        List<String> disease = new ArrayList<>();
-
-        @Parameter(names = {"-p", "--phenotype"}, description = "Phenotype. Values = [CASE, CONTROL]", arity = 1)
-        PhenotypeEnum phenotype;
-
-        @Parameter(names = {"--paper"}, description = "Paper", arity = 1)
-        String paper;
-
-        @Parameter(names = {"--description"}, description = "Description", arity = 1)
-        String description;
-
-        @Parameter(names = {"--static"}, description = "Static study, its MAF will not be combined", arity = 0)
-        boolean staticStudy;
-
-        @Parameter(names = {"-c, --coverage"}, description = "Coverage", arity = 1)
-        int coverage = -1;
-
-        @Parameter(names = {"--aggregated"}, description = "Aggregated VCF File: BASIC or EVS (optional)", arity = 1)
-        VariantSource.Aggregation aggregated = VariantSource.Aggregation.NONE;
-        @Parameter(names = {"-t", "--technology"}, description = "Sequencing Technology", arity = 1)
-        String technology = "NONE";
-    }
-
 
     @Parameters(commandNames = {"load-variants"}, commandDescription = "Loads an already generated data model into a backend")
     class CommandLoadVariants implements Command {
@@ -79,33 +40,31 @@ public class OptionsParser {
         int disease;
     }
 
-    @Parameters(commandNames = {"add-variants"}, commandDescription = "Add an already generated data model in an existing Study into a backend")
-    class CommandAddVariants implements Command {
-
-        @Parameter(names = {"-i", "--input"}, description = "Prefix of files to save in the selected backend", required = true, arity = 1)
-        String input;
-
-        @Parameter(names = {"-c", "--credentials"}, description = "Path to the file where the backend credentials are stored", required = true, arity = 1)
-        String credentials;
-
-    }
-
-    @Parameters(commandNames = {"compress-variants"}, commandDescription = "Compress Variants")
-    class CommandCompressVariants implements Command {
+    @Parameters(commandNames = {"calculate-counts"}, commandDescription = "Calculate genotype counts")
+    class CommandCalculateCounts implements Command {
 
         @Parameter(names = {"-i", "--input"}, description = "Input File", required = true, arity = 1)
         String input;
 
-        @Parameter(names = {"-o", "--output"}, description = "Output File", arity = 1)
+        @Parameter(names = {"-o", "--output"}, description = "Output File", required = true, arity = 1)
         String output;
 
     }
 
-    @Parameters(commandNames = {"setup"}, commandDescription = "Setup DataBase")
-    class CommandSetup implements Command {
+    @Parameters(commandNames = {"query"}, commandDescription = "Query")
+    class CommandQuery implements Command {
+
+        @Parameter(names = {"--diseases"}, description = "List all disease groups", arity = 0)
+        boolean diseases;
+
 
     }
 
+    @Parameters(commandNames = {"setup"}, commandDescription = "Setup Database")
+    class CommandSetup implements Command {
+
+
+    }
 
     String parse(String[] args) throws ParameterException {
         jcommander.parse(args);
@@ -122,16 +81,16 @@ public class OptionsParser {
         return load;
     }
 
-    CommandCompressVariants getCompressComand() {
-        return compress;
+    CommandCalculateCounts getCalculateCuntsCommand() {
+        return calculateCounts;
     }
 
     CommandSetup getSetupCommand() {
         return setup;
     }
 
-    enum PhenotypeEnum {
-        CASE, CONTROL
+    CommandQuery getQueryCommand() {
+        return query;
     }
 
 }

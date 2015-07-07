@@ -4,7 +4,7 @@ import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.*;
 
 /**
- * @author Alejandro Alemán Ramos <aaleman@cipf.es>
+ * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
  */
 
 @Entity

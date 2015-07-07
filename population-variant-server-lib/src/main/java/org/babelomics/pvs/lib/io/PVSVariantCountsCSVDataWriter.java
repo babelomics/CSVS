@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by aleman on 13/12/14.
+ * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
  */
 public class PVSVariantCountsCSVDataWriter implements VariantWriter {
     private PrintWriter printer;

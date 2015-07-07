@@ -10,7 +10,7 @@ import org.opencb.commons.io.DataWriter;
 import java.util.List;
 
 /**
- * @author Alejandro Alemán Ramos <aaleman@cipf.es>
+ * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
  */
 public class PVSVariantCountsMongoWriter implements DataWriter<Variant> {
 

@@ -9,7 +9,7 @@ import org.opencb.commons.run.Task;
 import java.util.List;
 
 /**
- * @author Alejandro Alemán Ramos <aaleman@cipf.es>
+ * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
  */
 public class PVSRunner extends Runner<Variant> {
     public PVSRunner(DataReader<Variant> reader, List<? extends DataWriter<Variant>> dataWriters, List<Task<Variant>> tasks, int batchSize) {

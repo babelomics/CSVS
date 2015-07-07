@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Alejandro Alemán Ramos <aaleman@cipf.es>
+ * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
  */
 public class PVSMain {
 
@@ -58,7 +58,10 @@ public class PVSMain {
                     command = parser.getLoadCommand();
                     break;
                 case "compress-variants":
-                    command = parser.getCompressComand();
+                    command = parser.getCalculateCuntsCommand();
+                    break;
+                case "query":
+                    command = parser.getQueryCommand();
                     break;
                 default:
                     System.out.println("Command not implemented!!");
@@ -120,13 +123,29 @@ public class PVSMain {
             VariantSource source = new VariantSource(inputFile.getFileName().toString(), null, null, null, VariantStudy.StudyType.CASE_CONTROL, VariantSource.Aggregation.NONE);
 
             loadVariants(inputFile, diseaseGroupId, datastore);
-        } else if (command instanceof OptionsParser.CommandCompressVariants) {
-            OptionsParser.CommandCompressVariants c = (OptionsParser.CommandCompressVariants) command;
+        } else if (command instanceof OptionsParser.CommandCalculateCounts) {
+            OptionsParser.CommandCalculateCounts c = (OptionsParser.CommandCalculateCounts) command;
 
             Path input = Paths.get(c.input);
             Path output = Paths.get(c.output);
 
             compressVariants(input, output);
+        } else if (command instanceof OptionsParser.CommandQuery) {
+            OptionsParser.CommandQuery c = (OptionsParser.CommandQuery) command;
+            if (c.diseases) {
+
+
+                System.out.println("\n\nList of Groups of Diseases\n==========================\n");
+
+                List<DiseaseGroup> query = datastore.createQuery(DiseaseGroup.class).order("groupId").asList();
+
+                for (DiseaseGroup dg : query) {
+                    System.out.println(dg.getGroupId() + "\t" + dg.getName());
+                }
+
+            }
+        } else {
+            System.err.println("Comand not found");
         }
 
     }
