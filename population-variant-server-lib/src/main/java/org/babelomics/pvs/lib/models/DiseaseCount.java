@@ -138,6 +138,7 @@ public class DiseaseCount {
         this.altFreq = (float) altCount / (refCount + altCount);
 
         this.maf = Math.min(this.refFreq, this.altFreq);
+
     }
 
 }

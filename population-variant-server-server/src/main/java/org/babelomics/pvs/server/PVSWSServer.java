@@ -3,24 +3,11 @@ package org.babelomics.pvs.server;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import org.babelomics.pvs.lib.json.PVSVariantSourceEntryJsonMixin;
-import org.babelomics.pvs.lib.json.PVSVariantStatsJsonMixin;
-import org.babelomics.pvs.lib.json.VariantAnnotationJsonMixin;
-import org.babelomics.pvs.lib.json.VariantJsonMixin;
-import org.opencb.biodata.models.feature.Genotype;
-import org.opencb.biodata.models.variant.VariantSource;
-import org.opencb.biodata.models.variant.VariantSourceEntry;
-import org.opencb.biodata.models.variant.effect.VariantAnnotation;
-import org.opencb.biodata.models.variant.stats.VariantStats;
+import org.babelomics.pvs.lib.io.PVSQueryManager;
 import org.opencb.datastore.core.ObjectMap;
 import org.opencb.datastore.core.QueryOptions;
 import org.opencb.datastore.core.QueryResponse;
 import org.opencb.datastore.core.QueryResult;
-import org.opencb.opencga.lib.auth.IllegalOpenCGACredentialsException;
-import org.opencb.opencga.lib.auth.MongoCredentials;
-import org.opencb.opencga.lib.common.Config;
-import org.opencb.opencga.storage.variant.json.GenotypeJsonMixin;
-import org.opencb.opencga.storage.variant.json.VariantSourceJsonMixin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,17 +20,14 @@ import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Properties;
+import java.util.*;
 
 @Path("/")
 public class PVSWSServer {
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
     protected static Properties properties;
-    protected static Config config;
+//    protected static Config config;
 
     protected String version;
     protected UriInfo uriInfo;
@@ -77,6 +61,8 @@ public class PVSWSServer {
     @QueryParam("metadata")
     protected Boolean metadata;
 
+    static final PVSQueryManager qm;
+
     static {
 
         InputStream is = PVSWSServer.class.getClassLoader().getResourceAsStream("pvs.properties");
@@ -92,19 +78,15 @@ public class PVSWSServer {
         }
 
         jsonObjectMapper = new ObjectMapper();
-        jsonObjectMapper.addMixInAnnotations(VariantSourceEntry.class, PVSVariantSourceEntryJsonMixin.class);
-        jsonObjectMapper.addMixInAnnotations(Genotype.class, GenotypeJsonMixin.class);
-        jsonObjectMapper.addMixInAnnotations(VariantStats.class, PVSVariantStatsJsonMixin.class);
-        jsonObjectMapper.addMixInAnnotations(VariantSource.class, VariantSourceJsonMixin.class);
-        jsonObjectMapper.addMixInAnnotations(VariantAnnotation.class, VariantAnnotationJsonMixin.class);
-        jsonObjectMapper.addMixInAnnotations(Variant.class, VariantJsonMixin.class);
         jsonObjectWriter = jsonObjectMapper.writer();
+
+        qm = new PVSQueryManager();
 
     }
 
-    protected MongoCredentials credentials;
+//    protected MongoCredentials credentials;
 
-    public PVSWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest httpServletRequest) throws IOException, IllegalOpenCGACredentialsException {
+    public PVSWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest httpServletRequest) throws IOException {
 
         this.startTime = System.currentTimeMillis();
         this.version = version;
@@ -117,7 +99,6 @@ public class PVSWSServer {
         queryOptions.put("metadata", metadata);
 
         this.sessionIp = httpServletRequest.getRemoteAddr();
-        credentials = new MongoCredentials(properties.getProperty("DB.HOST"), Integer.parseInt(properties.getProperty("DB.PORT")), properties.getProperty("DB.DATABASE"), properties.getProperty("DB.USER"), properties.getProperty("DB.PASS"));
     }
 
 
@@ -142,13 +123,11 @@ public class PVSWSServer {
             coll = new ArrayList();
             coll.add(obj);
         }
-        queryResponse.setResponse(coll);
+        queryResponse.setResponse((List) coll);
 
         switch (outputFormat.toLowerCase()) {
             case "json":
                 return createJsonResponse(queryResponse);
-            case "xml":
-//                return createXmlResponse(queryResponse);
             default:
                 return buildResponse(Response.ok());
         }

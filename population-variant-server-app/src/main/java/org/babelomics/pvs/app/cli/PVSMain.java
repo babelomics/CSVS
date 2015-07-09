@@ -3,11 +3,9 @@ package org.babelomics.pvs.app.cli;
 import com.beust.jcommander.ParameterException;
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoClient;
-import org.babelomics.pvs.lib.io.PVSRunner;
-import org.babelomics.pvs.lib.io.PVSVariantCountCSVDataReader;
-import org.babelomics.pvs.lib.io.PVSVariantCountsCSVDataWriter;
-import org.babelomics.pvs.lib.io.PVSVariantCountsMongoWriter;
+import org.babelomics.pvs.lib.io.*;
 import org.babelomics.pvs.lib.models.DiseaseGroup;
+import org.babelomics.pvs.lib.models.File;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 import org.mongodb.morphia.query.Query;
@@ -25,9 +23,12 @@ import org.opencb.commons.io.DataWriter;
 import org.opencb.commons.run.Runner;
 import org.opencb.commons.run.Task;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +39,7 @@ public class PVSMain {
 
     public static final String SEPARATOR = "#-#";
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
         OptionsParser parser = new OptionsParser();
 
         // If no arguments are provided, or -h/--help is the first argument, the usage is shown
@@ -57,7 +58,7 @@ public class PVSMain {
                 case "load-variants":
                     command = parser.getLoadCommand();
                     break;
-                case "compress-variants":
+                case "calculate-counts":
                     command = parser.getCalculateCuntsCommand();
                     break;
                 case "query":
@@ -73,7 +74,6 @@ public class PVSMain {
             System.exit(1);
         }
 
-
         final Morphia morphia = new Morphia();
 
         morphia.mapPackage("org.babelomics.pvs.lib.models");
@@ -83,7 +83,6 @@ public class PVSMain {
 
 
         if (command instanceof OptionsParser.CommandSetup) {
-            System.out.println("SETUP");
 
             List<DiseaseGroup> diseaseGroups = new ArrayList<>();
 
@@ -105,7 +104,6 @@ public class PVSMain {
             diseaseGroups.add(new DiseaseGroup(16, "Certain conditions originating in the perinatal period"));
             diseaseGroups.add(new DiseaseGroup(17, "Congenital malformations, deformations and chromosomal abnormalities"));
             diseaseGroups.add(new DiseaseGroup(18, "Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified"));
-
 
             for (DiseaseGroup dg : diseaseGroups) {
                 try {
@@ -132,12 +130,14 @@ public class PVSMain {
             compressVariants(input, output);
         } else if (command instanceof OptionsParser.CommandQuery) {
             OptionsParser.CommandQuery c = (OptionsParser.CommandQuery) command;
-            if (c.diseases) {
 
+            PVSQueryManager qm = new PVSQueryManager();
+
+            if (c.diseases) {
 
                 System.out.println("\n\nList of Groups of Diseases\n==========================\n");
 
-                List<DiseaseGroup> query = datastore.createQuery(DiseaseGroup.class).order("groupId").asList();
+                List<DiseaseGroup> query = qm.getAllDiseaseGroups();
 
                 for (DiseaseGroup dg : query) {
                     System.out.println(dg.getGroupId() + "\t" + dg.getName());
@@ -156,7 +156,6 @@ public class PVSMain {
         VariantReader reader = new VariantVcfReader(source, input.toAbsolutePath().toString());
         VariantWriter writer = new PVSVariantCountsCSVDataWriter(reader, output.toAbsolutePath().toString());
 
-
         List<Task<Variant>> taskList = new SortedList<>();
         List<VariantWriter> writers = new ArrayList<>();
 
@@ -169,29 +168,60 @@ public class PVSMain {
         variantRunner.run();
         System.out.println("Variants compressed!");
 
-
     }
 
-    private static void loadVariants(Path variantsPath, int diseaseGroupId, Datastore datastore) throws IOException {
+    private static void loadVariants(Path variantsPath, int diseaseGroupId, Datastore datastore) throws IOException, NoSuchAlgorithmException {
 
-        Query<DiseaseGroup> query = datastore.createQuery(DiseaseGroup.class).field("groupId").equal(diseaseGroupId);
-        DiseaseGroup dg = query.get();
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        FileInputStream fis = new FileInputStream(variantsPath.toAbsolutePath().toString());
+
+        byte[] dataBytes = new byte[1024];
+
+        int nread;
+        while ((nread = fis.read(dataBytes)) != -1) {}{
+            md.update(dataBytes, 0, nread);
+        }
+
+        byte[] mdbytes = md.digest();
+
+        StringBuffer sb = new StringBuffer();
+        for (byte mdbyte : mdbytes) {
+            sb.append(Integer.toString((mdbyte & 0xff) + 0x100, 16).substring(1));
+        }
+
+        File fDb = datastore.createQuery(File.class).field("sum").equal(sb.toString()).get();
+
+        if (true || fDb == null) {
 
 
-        DataReader<org.babelomics.pvs.lib.models.Variant> reader = new PVSVariantCountCSVDataReader(variantsPath.toAbsolutePath().toString(), dg);
+            Query<DiseaseGroup> query = datastore.createQuery(DiseaseGroup.class).field("groupId").equal(diseaseGroupId);
+            DiseaseGroup dg = query.get();
 
-        List<Task<org.babelomics.pvs.lib.models.Variant>> taskList = new SortedList<>();
-        List<DataWriter<org.babelomics.pvs.lib.models.Variant>> writers = new ArrayList<>();
-        DataWriter<org.babelomics.pvs.lib.models.Variant> writer = new PVSVariantCountsMongoWriter(dg, datastore);
+            DataReader<org.babelomics.pvs.lib.models.Variant> reader = new PVSVariantCountCSVDataReader(variantsPath.toAbsolutePath().toString(), dg);
 
-        writers.add(writer);
+            List<Task<org.babelomics.pvs.lib.models.Variant>> taskList = new SortedList<>();
+            List<DataWriter<org.babelomics.pvs.lib.models.Variant>> writers = new ArrayList<>();
+            DataWriter<org.babelomics.pvs.lib.models.Variant> writer = new PVSVariantCountsMongoWriter(dg, datastore);
 
-        Runner<org.babelomics.pvs.lib.models.Variant> pvsRunner = new PVSRunner(reader, writers, taskList, 100);
+            writers.add(writer);
 
-        System.out.println("Loading variants...");
-        pvsRunner.run();
-        System.out.println("Variants loaded!");
+            Runner<org.babelomics.pvs.lib.models.Variant> pvsRunner = new PVSRunner(reader, writers, taskList, 100);
 
+            System.out.println("Loading variants...");
+            pvsRunner.run();
+            System.out.println("Variants loaded!");
+
+            File f = new File(sb.toString());
+
+            try {
+                datastore.save(f);
+            } catch (DuplicateKeyException e) {
+                System.out.println("");
+
+            }
+        } else {
+            System.out.println("File is already in the database");
+            System.exit(0);
+        }
     }
-
 }

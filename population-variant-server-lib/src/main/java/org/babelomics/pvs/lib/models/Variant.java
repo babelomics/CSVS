@@ -1,10 +1,10 @@
 package org.babelomics.pvs.lib.models;
 
+import org.babelomics.pvs.lib.io.PVSVariantCountsMongoWriter;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
@@ -26,6 +26,10 @@ public class Variant {
     @Property("a")
     private String alternate;
 
+    @Property("_at")
+    private Map<String, Object> attr;
+
+
     private List<DiseaseCount> diseases;
 
     public Variant(String chromosome, int position, String reference, String alternate) {
@@ -34,6 +38,7 @@ public class Variant {
         this.reference = reference;
         this.alternate = alternate;
         this.diseases = new ArrayList<>();
+        attr = new HashMap<>();
     }
 
     public Variant() {
@@ -107,4 +112,18 @@ public class Variant {
         }
         return null;
     }
+
+
+    @PrePersist
+    private void prePresist() {
+
+        String chunkSmall = this.getChromosome() + "_" + this.getPosition() / PVSVariantCountsMongoWriter.CHUNK_SIZE_SMALL + "_" + PVSVariantCountsMongoWriter.CHUNK_SIZE_SMALL / 1000 + "k";
+        String chunkBig = this.getChromosome() + "_" + this.getPosition() / PVSVariantCountsMongoWriter.CHUNK_SIZE_BIG + "_" + PVSVariantCountsMongoWriter.CHUNK_SIZE_BIG / 1000 + "k";
+        List<String> chunks = Arrays.asList(chunkSmall, chunkBig);
+
+        this.attr.put("chIds", chunks);
+
+    }
+
+
 }

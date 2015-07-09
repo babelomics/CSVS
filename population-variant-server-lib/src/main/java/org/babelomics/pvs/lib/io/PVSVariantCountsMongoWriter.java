@@ -17,9 +17,14 @@ public class PVSVariantCountsMongoWriter implements DataWriter<Variant> {
     private DiseaseGroup diseaseGroup;
     private Datastore datastore;
 
+    public static final int CHUNK_SIZE_SMALL = 1000;
+    public static final int CHUNK_SIZE_BIG = 10000;
+
     public PVSVariantCountsMongoWriter(DiseaseGroup diseaseGroup, Datastore datastore) {
         this.diseaseGroup = diseaseGroup;
         this.datastore = datastore;
+
+
     }
 
     @Override
@@ -35,7 +40,6 @@ public class PVSVariantCountsMongoWriter implements DataWriter<Variant> {
 
     @Override
     public boolean pre() {
-
 
         return true;
     }
