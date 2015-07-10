@@ -33,4 +33,8 @@ public class File {
     public void setSum(String sum) {
         this.sum = sum;
     }
+
+    public ObjectId getId() {
+        return id;
+    }
 }

@@ -178,24 +178,9 @@ public class PVSMain {
 
     private static void loadVariants(Path variantsPath, int diseaseGroupId, Datastore datastore) throws IOException, NoSuchAlgorithmException {
 
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        FileInputStream fis = new FileInputStream(variantsPath.toAbsolutePath().toString());
+        String sha256 = calculateSHA256(variantsPath);
 
-        byte[] dataBytes = new byte[1024];
-
-        int nread;
-        while ((nread = fis.read(dataBytes)) != -1) {
-            md.update(dataBytes, 0, nread);
-        }
-
-        byte[] mdbytes = md.digest();
-
-        StringBuffer sb = new StringBuffer();
-        for (byte mdbyte : mdbytes) {
-            sb.append(Integer.toString((mdbyte & 0xff) + 0x100, 16).substring(1));
-        }
-
-        File fDb = datastore.createQuery(File.class).field("sum").equal(sb.toString()).get();
+        File fDb = datastore.createQuery(File.class).field("sum").equal(sha256).get();
 
         if (true || fDb == null) {
 
@@ -217,7 +202,7 @@ public class PVSMain {
             pvsRunner.run();
             System.out.println("Variants loaded!");
 
-            File f = new File(sb.toString());
+            File f = new File(sha256.toString());
 
             try {
                 datastore.save(f);
@@ -229,6 +214,26 @@ public class PVSMain {
             System.out.println("File is already in the database");
             System.exit(0);
         }
+    }
+
+    private static String calculateSHA256(Path variantsPath) throws NoSuchAlgorithmException, IOException {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        FileInputStream fis = new FileInputStream(variantsPath.toAbsolutePath().toString());
+
+        byte[] dataBytes = new byte[1024];
+
+        int nread;
+        while ((nread = fis.read(dataBytes)) != -1) {
+            md.update(dataBytes, 0, nread);
+        }
+
+        byte[] mdbytes = md.digest();
+
+        StringBuffer sb = new StringBuffer();
+        for (byte mdbyte : mdbytes) {
+            sb.append(Integer.toString((mdbyte & 0xff) + 0x100, 16).substring(1));
+        }
+        return sb.toString();
     }
 
     private static void unloadVariants(Path variantsPath, int diseaseGroupId, Datastore datastore) throws IOException, NoSuchAlgorithmException {
@@ -270,7 +275,7 @@ public class PVSMain {
                             v.deleteDiseaseCount(vDc);
 
                             if (v.getDiseases().size() == 0) {
-                                datastore.delete(Variant.class,v.getId());
+                                datastore.delete(Variant.class, v.getId());
                             } else {
                                 datastore.save(v);
                             }
@@ -288,6 +293,13 @@ public class PVSMain {
 
         reader.post();
         reader.close();
+
+
+        String sha256 = calculateSHA256(variantsPath);
+
+        File fDb = datastore.createQuery(File.class).field("sum").equal(sha256).get();
+
+        datastore.delete(File.class, fDb.getId());
 
 
     }
