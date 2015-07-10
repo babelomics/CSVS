@@ -103,6 +103,26 @@ public class DiseaseCount {
 
     }
 
+    public void decGt00(int gt00) {
+        this.gt00 -= gt00;
+
+    }
+
+    public void decGt01(int gt01) {
+        this.gt01 -= gt01;
+
+    }
+
+    public void decGt11(int gt11) {
+        this.gt11 -= gt11;
+
+    }
+
+    public void decGtMissing(int gtmissing) {
+        this.gtmissing -= gtmissing;
+
+    }
+
     public float getMaf() {
         return maf;
     }
@@ -125,6 +145,10 @@ public class DiseaseCount {
 
     public void setAltFreq(float altFreq) {
         this.altFreq = altFreq;
+    }
+
+    public int getTotalGts() {
+        return gt00 + gt01 + gt11 + gtmissing;
     }
 
     @PrePersist

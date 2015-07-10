@@ -13,6 +13,7 @@ public class OptionsParser {
     private final JCommander jcommander;
 
     private final CommandLoadVariants load;
+    private final CommandUnloadVariants unload;
     private final CommandCalculateCounts calculateCounts;
     private final CommandQuery query;
     private final CommandSetup setup;
@@ -21,6 +22,7 @@ public class OptionsParser {
     public OptionsParser() {
         jcommander = new JCommander();
         jcommander.addCommand(load = new CommandLoadVariants());
+        jcommander.addCommand(unload = new CommandUnloadVariants());
         jcommander.addCommand(calculateCounts = new CommandCalculateCounts());
         jcommander.addCommand(query = new CommandQuery());
         jcommander.addCommand(setup = new CommandSetup());
@@ -34,6 +36,16 @@ public class OptionsParser {
     class CommandLoadVariants implements Command {
 
         @Parameter(names = {"-i", "--input"}, description = "Prefix of files to save in the selected backend", required = true, arity = 1)
+        String input;
+
+        @Parameter(names = {"-d", "--diseaseId"}, description = "Disease group Id", required = true, arity = 1)
+        int disease;
+    }
+
+    @Parameters(commandNames = {"unload-variants"}, commandDescription = "Unloads variants from the DB")
+    class CommandUnloadVariants implements Command {
+
+        @Parameter(names = {"-i", "--input"}, description = "DESC", required = true, arity = 1)
         String input;
 
         @Parameter(names = {"-d", "--diseaseId"}, description = "Disease group Id", required = true, arity = 1)
@@ -79,6 +91,10 @@ public class OptionsParser {
 
     CommandLoadVariants getLoadCommand() {
         return load;
+    }
+
+    CommandUnloadVariants getUnloadCommand() {
+        return unload;
     }
 
     CommandCalculateCounts getCalculateCuntsCommand() {

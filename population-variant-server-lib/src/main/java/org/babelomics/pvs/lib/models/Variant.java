@@ -29,7 +29,6 @@ public class Variant {
     @Property("_at")
     private Map<String, Object> attr;
 
-
     private List<DiseaseCount> diseases;
 
     public Variant(String chromosome, int position, String reference, String alternate) {
@@ -62,6 +61,10 @@ public class Variant {
 
     public void addDiseaseCount(DiseaseCount dc) {
         this.diseases.add(dc);
+    }
+
+    public void deleteDiseaseCount(DiseaseCount dc) {
+        this.diseases.remove(dc);
     }
 
     public String getChromosome() {
@@ -125,5 +128,7 @@ public class Variant {
 
     }
 
-
+    public ObjectId getId() {
+        return id;
+    }
 }

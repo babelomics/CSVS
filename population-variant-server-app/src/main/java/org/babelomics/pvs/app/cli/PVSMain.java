@@ -4,17 +4,17 @@ import com.beust.jcommander.ParameterException;
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoClient;
 import org.babelomics.pvs.lib.io.*;
+import org.babelomics.pvs.lib.models.DiseaseCount;
 import org.babelomics.pvs.lib.models.DiseaseGroup;
 import org.babelomics.pvs.lib.models.File;
+import org.babelomics.pvs.lib.models.Variant;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 import org.mongodb.morphia.query.Query;
 import org.opencb.biodata.formats.variant.io.VariantReader;
 import org.opencb.biodata.formats.variant.io.VariantWriter;
 import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfReader;
-import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantSource;
-import org.opencb.biodata.models.variant.VariantStudy;
 import org.opencb.biodata.tools.variant.tasks.VariantRunner;
 import org.opencb.biodata.tools.variant.tasks.VariantStatsTask;
 import org.opencb.commons.containers.list.SortedList;
@@ -37,8 +37,6 @@ import java.util.List;
  */
 public class PVSMain {
 
-    public static final String SEPARATOR = "#-#";
-
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
         OptionsParser parser = new OptionsParser();
 
@@ -57,6 +55,9 @@ public class PVSMain {
                     break;
                 case "load-variants":
                     command = parser.getLoadCommand();
+                    break;
+                case "unload-variants":
+                    command = parser.getUnloadCommand();
                     break;
                 case "calculate-counts":
                     command = parser.getCalculateCuntsCommand();
@@ -118,9 +119,14 @@ public class PVSMain {
             Path inputFile = Paths.get(c.input);
             int diseaseGroupId = c.disease;
 
-            VariantSource source = new VariantSource(inputFile.getFileName().toString(), null, null, null, VariantStudy.StudyType.CASE_CONTROL, VariantSource.Aggregation.NONE);
-
             loadVariants(inputFile, diseaseGroupId, datastore);
+        } else if (command instanceof OptionsParser.CommandUnloadVariants) {
+            OptionsParser.CommandUnloadVariants c = (OptionsParser.CommandUnloadVariants) command;
+
+            Path inputFile = Paths.get(c.input);
+            int diseaseGroupId = c.disease;
+
+            unloadVariants(inputFile, diseaseGroupId, datastore);
         } else if (command instanceof OptionsParser.CommandCalculateCounts) {
             OptionsParser.CommandCalculateCounts c = (OptionsParser.CommandCalculateCounts) command;
 
@@ -156,7 +162,7 @@ public class PVSMain {
         VariantReader reader = new VariantVcfReader(source, input.toAbsolutePath().toString());
         VariantWriter writer = new PVSVariantCountsCSVDataWriter(reader, output.toAbsolutePath().toString());
 
-        List<Task<Variant>> taskList = new SortedList<>();
+        List<Task<org.opencb.biodata.models.variant.Variant>> taskList = new SortedList<>();
         List<VariantWriter> writers = new ArrayList<>();
 
         taskList.add(new VariantStatsTask(reader, source));
@@ -178,7 +184,7 @@ public class PVSMain {
         byte[] dataBytes = new byte[1024];
 
         int nread;
-        while ((nread = fis.read(dataBytes)) != -1) {}{
+        while ((nread = fis.read(dataBytes)) != -1) {
             md.update(dataBytes, 0, nread);
         }
 
@@ -197,15 +203,15 @@ public class PVSMain {
             Query<DiseaseGroup> query = datastore.createQuery(DiseaseGroup.class).field("groupId").equal(diseaseGroupId);
             DiseaseGroup dg = query.get();
 
-            DataReader<org.babelomics.pvs.lib.models.Variant> reader = new PVSVariantCountCSVDataReader(variantsPath.toAbsolutePath().toString(), dg);
+            DataReader<Variant> reader = new PVSVariantCountCSVDataReader(variantsPath.toAbsolutePath().toString(), dg);
 
-            List<Task<org.babelomics.pvs.lib.models.Variant>> taskList = new SortedList<>();
-            List<DataWriter<org.babelomics.pvs.lib.models.Variant>> writers = new ArrayList<>();
-            DataWriter<org.babelomics.pvs.lib.models.Variant> writer = new PVSVariantCountsMongoWriter(dg, datastore);
+            List<Task<Variant>> taskList = new SortedList<>();
+            List<DataWriter<Variant>> writers = new ArrayList<>();
+            DataWriter<Variant> writer = new PVSVariantCountsMongoWriter(dg, datastore);
 
             writers.add(writer);
 
-            Runner<org.babelomics.pvs.lib.models.Variant> pvsRunner = new PVSRunner(reader, writers, taskList, 100);
+            Runner<Variant> pvsRunner = new PVSRunner(reader, writers, taskList, 100);
 
             System.out.println("Loading variants...");
             pvsRunner.run();
@@ -223,5 +229,66 @@ public class PVSMain {
             System.out.println("File is already in the database");
             System.exit(0);
         }
+    }
+
+    private static void unloadVariants(Path variantsPath, int diseaseGroupId, Datastore datastore) throws IOException, NoSuchAlgorithmException {
+
+        Query<DiseaseGroup> queryDG = datastore.createQuery(DiseaseGroup.class).field("groupId").equal(diseaseGroupId);
+        DiseaseGroup dg = queryDG.get();
+
+        DataReader<Variant> reader = new PVSVariantCountCSVDataReader(variantsPath.toAbsolutePath().toString(), dg);
+
+        reader.open();
+        reader.pre();
+
+        List<Variant> batch;
+
+        batch = reader.read(1);
+
+        while (!batch.isEmpty()) {
+
+            for (Variant elem : batch) {
+
+                Variant v = datastore.createQuery(Variant.class).field("chromosome").equal(elem.getChromosome())
+                        .field("position").equal(elem.getPosition()).
+                                field("reference").equal(elem.getReference()).
+                                field("alternate").equal(elem.getAlternate())
+                        .get();
+
+                if (v != null) {
+
+                    DiseaseCount vDc = v.getDiseaseCount(dg);
+                    DiseaseCount elemDC = elem.getDiseaseCount(dg);
+                    if (vDc != null) {
+
+                        vDc.decGt00(elemDC.getGt00());
+                        vDc.decGt01(elemDC.getGt01());
+                        vDc.decGt11(elemDC.getGt11());
+                        vDc.decGtMissing(elemDC.getGtmissing());
+
+                        if (vDc.getTotalGts() <= 0) {
+                            v.deleteDiseaseCount(vDc);
+
+                            if (v.getDiseases().size() == 0) {
+                                datastore.delete(Variant.class,v.getId());
+                            } else {
+                                datastore.save(v);
+                            }
+                        } else {
+                            datastore.save(v);
+                        }
+                    }
+
+                }
+
+            }
+            batch.clear();
+            batch = reader.read();
+        }
+
+        reader.post();
+        reader.close();
+
+
     }
 }
