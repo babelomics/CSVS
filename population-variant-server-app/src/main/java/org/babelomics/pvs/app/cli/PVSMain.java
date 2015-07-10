@@ -160,7 +160,7 @@ public class PVSMain {
 
         VariantSource source = new VariantSource("file", "file", "file", "file");
         VariantReader reader = new VariantVcfReader(source, input.toAbsolutePath().toString());
-        VariantWriter writer = new PVSVariantCountsCSVDataWriter(reader, output.toAbsolutePath().toString());
+        VariantWriter writer = new PVSVariantCountsCSVDataWriter(output.toAbsolutePath().toString());
 
         List<Task<org.opencb.biodata.models.variant.Variant>> taskList = new SortedList<>();
         List<VariantWriter> writers = new ArrayList<>();
@@ -184,7 +184,6 @@ public class PVSMain {
 
         if (true || fDb == null) {
 
-
             Query<DiseaseGroup> query = datastore.createQuery(DiseaseGroup.class).field("groupId").equal(diseaseGroupId);
             DiseaseGroup dg = query.get();
 
@@ -202,12 +201,11 @@ public class PVSMain {
             pvsRunner.run();
             System.out.println("Variants loaded!");
 
-            File f = new File(sha256.toString());
+            File f = new File(sha256);
 
             try {
                 datastore.save(f);
-            } catch (DuplicateKeyException e) {
-                System.out.println("");
+            } catch (DuplicateKeyException ignored) {
 
             }
         } else {

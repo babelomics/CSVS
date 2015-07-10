@@ -19,7 +19,7 @@ public class PVSVariantCountsCSVDataWriter implements VariantWriter {
     private PrintWriter printer;
     private String filename;
 
-    public PVSVariantCountsCSVDataWriter(VariantReader reader, String filename) {
+    public PVSVariantCountsCSVDataWriter(String filename) {
         this.filename = filename;
     }
 
@@ -55,7 +55,7 @@ public class PVSVariantCountsCSVDataWriter implements VariantWriter {
         sb.append("./.").append("\t");
         sb.append("total").append("\t");
 
-        printer.append(sb.toString() + "\n");
+        printer.append(sb.toString()).append("\n");
         return true;
     }
 
@@ -92,9 +92,6 @@ public class PVSVariantCountsCSVDataWriter implements VariantWriter {
         if (file.getStats() != null) {
             VariantStats stats = file.getStats();
 
-            StringBuffer sbAux = new StringBuffer();
-
-
             for (Map.Entry<Genotype, Integer> entry : stats.getGenotypesCount().entrySet()) {
 
                 Genotype g = entry.getKey();
@@ -123,7 +120,6 @@ public class PVSVariantCountsCSVDataWriter implements VariantWriter {
             sb.append(gt11).append("\t");
             sb.append(gtmissing).append("\t");
             sb.append(total).append("\t");
-
 
         }
 
