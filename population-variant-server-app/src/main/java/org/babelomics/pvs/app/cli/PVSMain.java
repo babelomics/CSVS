@@ -113,22 +113,22 @@ public class PVSMain {
                     System.err.println("Duplicated Disase Group: " + dg);
                 }
             }
-        } else if (command instanceof OptionsParser.CommandLoadVariants) {
-            OptionsParser.CommandLoadVariants c = (OptionsParser.CommandLoadVariants) command;
+        } else if (command instanceof OptionsParser.CommandLoad) {
+            OptionsParser.CommandLoad c = (OptionsParser.CommandLoad) command;
 
             Path inputFile = Paths.get(c.input);
             int diseaseGroupId = c.disease;
 
             loadVariants(inputFile, diseaseGroupId, datastore);
-        } else if (command instanceof OptionsParser.CommandUnloadVariants) {
-            OptionsParser.CommandUnloadVariants c = (OptionsParser.CommandUnloadVariants) command;
+        } else if (command instanceof OptionsParser.CommandUnload) {
+            OptionsParser.CommandUnload c = (OptionsParser.CommandUnload) command;
 
             Path inputFile = Paths.get(c.input);
             int diseaseGroupId = c.disease;
 
             unloadVariants(inputFile, diseaseGroupId, datastore);
-        } else if (command instanceof OptionsParser.CommandCalculateCounts) {
-            OptionsParser.CommandCalculateCounts c = (OptionsParser.CommandCalculateCounts) command;
+        } else if (command instanceof OptionsParser.CommandCount) {
+            OptionsParser.CommandCount c = (OptionsParser.CommandCount) command;
 
             Path input = Paths.get(c.input);
             Path output = Paths.get(c.output);

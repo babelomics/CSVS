@@ -12,18 +12,18 @@ public class OptionsParser {
 
     private final JCommander jcommander;
 
-    private final CommandLoadVariants load;
-    private final CommandUnloadVariants unload;
-    private final CommandCalculateCounts calculateCounts;
+    private final CommandLoad load;
+    private final CommandUnload unload;
+    private final CommandCount calculateCounts;
     private final CommandQuery query;
     private final CommandSetup setup;
 
 
     public OptionsParser() {
         jcommander = new JCommander();
-        jcommander.addCommand(load = new CommandLoadVariants());
-        jcommander.addCommand(unload = new CommandUnloadVariants());
-        jcommander.addCommand(calculateCounts = new CommandCalculateCounts());
+        jcommander.addCommand(load = new CommandLoad());
+        jcommander.addCommand(unload = new CommandUnload());
+        jcommander.addCommand(calculateCounts = new CommandCount());
         jcommander.addCommand(query = new CommandQuery());
         jcommander.addCommand(setup = new CommandSetup());
 
@@ -32,8 +32,8 @@ public class OptionsParser {
     interface Command {
     }
 
-    @Parameters(commandNames = {"load-variants"}, commandDescription = "Loads an already generated data model into a backend")
-    class CommandLoadVariants implements Command {
+    @Parameters(commandNames = {"load"}, commandDescription = "Loads an already generated data model into a backend")
+    class CommandLoad implements Command {
 
         @Parameter(names = {"-i", "--input"}, description = "Prefix of files to save in the selected backend", required = true, arity = 1)
         String input;
@@ -42,8 +42,8 @@ public class OptionsParser {
         int disease;
     }
 
-    @Parameters(commandNames = {"unload-variants"}, commandDescription = "Unloads variants from the DB")
-    class CommandUnloadVariants implements Command {
+    @Parameters(commandNames = {"unload"}, commandDescription = "Unloads variants from the DB")
+    class CommandUnload implements Command {
 
         @Parameter(names = {"-i", "--input"}, description = "DESC", required = true, arity = 1)
         String input;
@@ -52,8 +52,8 @@ public class OptionsParser {
         int disease;
     }
 
-    @Parameters(commandNames = {"calculate-counts"}, commandDescription = "Calculate genotype counts")
-    class CommandCalculateCounts implements Command {
+    @Parameters(commandNames = {"count"}, commandDescription = "Calculate genotype counts")
+    class CommandCount implements Command {
 
         @Parameter(names = {"-i", "--input"}, description = "Input File", required = true, arity = 1)
         String input;
@@ -89,15 +89,15 @@ public class OptionsParser {
         return builder.toString();
     }
 
-    CommandLoadVariants getLoadCommand() {
+    CommandLoad getLoadCommand() {
         return load;
     }
 
-    CommandUnloadVariants getUnloadCommand() {
+    CommandUnload getUnloadCommand() {
         return unload;
     }
 
-    CommandCalculateCounts getCalculateCuntsCommand() {
+    CommandCount getCalculateCuntsCommand() {
         return calculateCounts;
     }
 
