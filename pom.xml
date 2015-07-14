@@ -16,12 +16,12 @@
     </modules>
 
     <properties>
-        <opencga.version>0.3.3</opencga.version>
-        <datastore.version>0.2.0</datastore.version>
-        <biodata.version>0.2.0</biodata.version>
-        <jcl.version>2.0.0</jcl.version>
-        <compileSource>1.7</compileSource>
-        <pvs.version>1.0.1</pvs.version>
+        <datastore.version>0.4-SNAPSHOT</datastore.version>
+        <biodata.version>0.5-SNAPSHOT</biodata.version>
+        <cellbase.version>3.1.0</cellbase.version>
+        <jcl.version>3.0-SNAPSHOT</jcl.version>
+        <compileSource>1.8</compileSource>
+        <pvs.version>1.1.0</pvs.version>
     </properties>
 
     <dependencyManagement>
@@ -37,29 +37,15 @@
                 <version>${pvs.version}</version>
             </dependency>
             <!-- Intra-module dependencies -->
-            <dependency>
-                <groupId>org.opencb.opencga</groupId>
-                <artifactId>opencga-account</artifactId>
-                <version>${opencga.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.opencb.opencga</groupId>
-                <artifactId>opencga-lib</artifactId>
-                <version>${opencga.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.opencb.opencga</groupId>
-                <artifactId>opencga-analysis</artifactId>
-                <version>${opencga.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.opencb.opencga</groupId>
-                <artifactId>opencga-catalog</artifactId>
-                <version>${opencga.version}</version>
-            </dependency>
+
             <dependency>
                 <groupId>org.opencb.datastore</groupId>
                 <artifactId>datastore-mongodb</artifactId>
+                <version>${datastore.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opencb.datastore</groupId>
+                <artifactId>datastore-core</artifactId>
                 <version>${datastore.version}</version>
             </dependency>
             <dependency>
@@ -67,16 +53,32 @@
                 <artifactId>biodata-models</artifactId>
                 <version>${biodata.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.opencb.biodata</groupId>
+                <artifactId>biodata-formats</artifactId>
+                <version>${biodata.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opencb.biodata</groupId>
+                <artifactId>biodata-tools</artifactId>
+                <version>${biodata.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.opencb.opencga</groupId>
-                <artifactId>opencga-storage</artifactId>
+                <artifactId>opencga-storage-core</artifactId>
                 <version>${opencga.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.opencb.commons</groupId>
                 <artifactId>commons-lib</artifactId>
                 <version>${jcl.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.opencb.cellbase</groupId>
+                <artifactId>cellbase-core</artifactId>
+                <version>${cellbase.version}</version>
             </dependency>
 
 
@@ -99,7 +101,7 @@
             <dependency>
                 <groupId>com.beust</groupId>
                 <artifactId>jcommander</artifactId>
-                <version>1.47</version>
+                <version>1.48</version>
             </dependency>
             <dependency>
                 <groupId>org.utgenome.thirdparty</groupId>
@@ -182,6 +184,17 @@
                 <groupId>asm</groupId>
                 <artifactId>asm</artifactId>
                 <version>3.3.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mongodb</groupId>
+                <artifactId>mongo-java-driver</artifactId>
+                <version>3.0.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mongodb.morphia</groupId>
+                <artifactId>morphia</artifactId>
+                <version>1.0.0-rc0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
