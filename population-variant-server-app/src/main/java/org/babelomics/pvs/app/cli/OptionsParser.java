@@ -17,6 +17,7 @@ public class OptionsParser {
     private final CommandCount calculateCounts;
     private final CommandQuery query;
     private final CommandSetup setup;
+    private final CommandAnnot annot;
 
 
     public OptionsParser() {
@@ -26,6 +27,7 @@ public class OptionsParser {
         jcommander.addCommand(calculateCounts = new CommandCount());
         jcommander.addCommand(query = new CommandQuery());
         jcommander.addCommand(setup = new CommandSetup());
+        jcommander.addCommand(annot = new CommandAnnot());
 
     }
 
@@ -78,6 +80,23 @@ public class OptionsParser {
 
     }
 
+    @Parameters(commandNames = {"annot"}, commandDescription = "Annot Variants")
+    class CommandAnnot implements Command {
+
+        @Parameter(names = {"--ct"}, description = "Annot consequence Type", arity = 0)
+        boolean ct;
+
+        @Parameter(names = {"--gene"}, description = "Annot Gene", arity = 0)
+        boolean gene;
+
+        @Parameter(names = {"--remove"}, description = "Remove selected annotations", arity = 0)
+        boolean remove;
+
+        @Parameter(names = {"--override"}, description = "Oerride selected annotations", arity = 0)
+        boolean override;
+
+    }
+
     String parse(String[] args) throws ParameterException {
         jcommander.parse(args);
         return jcommander.getParsedCommand();
@@ -107,6 +126,10 @@ public class OptionsParser {
 
     CommandQuery getQueryCommand() {
         return query;
+    }
+
+    CommandAnnot getAnnotCommand() {
+        return annot;
     }
 
 }

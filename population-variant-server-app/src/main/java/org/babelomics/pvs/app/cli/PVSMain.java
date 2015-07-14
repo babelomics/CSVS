@@ -3,6 +3,7 @@ package org.babelomics.pvs.app.cli;
 import com.beust.jcommander.ParameterException;
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoClient;
+import org.babelomics.pvs.lib.annot.CellBaseAnnotator;
 import org.babelomics.pvs.lib.io.*;
 import org.babelomics.pvs.lib.models.DiseaseCount;
 import org.babelomics.pvs.lib.models.DiseaseGroup;
@@ -30,6 +31,7 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -53,18 +55,23 @@ public class PVSMain {
                 case "setup":
                     command = parser.getSetupCommand();
                     break;
-                case "load-variants":
+                case "load":
                     command = parser.getLoadCommand();
                     break;
-                case "unload-variants":
+                case "unload":
                     command = parser.getUnloadCommand();
                     break;
-                case "calculate-counts":
+                case "count":
                     command = parser.getCalculateCuntsCommand();
                     break;
+                case "annot":
+                    command = parser.getAnnotCommand();
+                    break;
+
                 case "query":
                     command = parser.getQueryCommand();
                     break;
+
                 default:
                     System.out.println("Command not implemented!!");
                     System.exit(1);
@@ -134,6 +141,39 @@ public class PVSMain {
             Path output = Paths.get(c.output);
 
             compressVariants(input, output);
+        } else if (command instanceof OptionsParser.CommandAnnot) {
+
+            OptionsParser.CommandAnnot c = (OptionsParser.CommandAnnot) command;
+
+            CellBaseAnnotator cba = new CellBaseAnnotator();
+
+            cba.setCt(c.ct);
+            cba.setRemove(c.remove);
+            cba.setOverride(c.override);
+            cba.setGene(c.gene);
+
+
+
+
+            Iterator<Variant> it = datastore.createQuery(Variant.class).batchSize(10).iterator();
+
+
+            while (it.hasNext()) {
+                List<Variant> batch = new ArrayList<>();
+
+                for (int i = 0; i < 10 && it.hasNext(); i++) {
+                    batch.add(it.next());
+                }
+
+
+                cba.annot(batch);
+
+                datastore.save(batch);
+
+                batch.clear();
+            }
+
+
         } else if (command instanceof OptionsParser.CommandQuery) {
             OptionsParser.CommandQuery c = (OptionsParser.CommandQuery) command;
 

@@ -18,6 +18,7 @@
     <properties>
         <datastore.version>0.4-SNAPSHOT</datastore.version>
         <biodata.version>0.5-SNAPSHOT</biodata.version>
+        <cellbase.version>3.1.0</cellbase.version>
         <jcl.version>3.0-SNAPSHOT</jcl.version>
         <compileSource>1.8</compileSource>
         <pvs.version>1.1.0</pvs.version>
@@ -40,6 +41,11 @@
             <dependency>
                 <groupId>org.opencb.datastore</groupId>
                 <artifactId>datastore-mongodb</artifactId>
+                <version>${datastore.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.opencb.datastore</groupId>
+                <artifactId>datastore-core</artifactId>
                 <version>${datastore.version}</version>
             </dependency>
             <dependency>
@@ -67,6 +73,12 @@
                 <groupId>org.opencb.commons</groupId>
                 <artifactId>commons-lib</artifactId>
                 <version>${jcl.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.opencb.cellbase</groupId>
+                <artifactId>cellbase-core</artifactId>
+                <version>${cellbase.version}</version>
             </dependency>
 
 

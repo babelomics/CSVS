@@ -31,17 +31,24 @@ public class Variant {
 
     private List<DiseaseCount> diseases;
 
+    @Property("an")
+    private Map<String, Object> annots;
+
     public Variant(String chromosome, int position, String reference, String alternate) {
+        this();
         this.chromosome = chromosome;
         this.position = position;
         this.reference = reference;
         this.alternate = alternate;
-        this.diseases = new ArrayList<>();
-        attr = new HashMap<>();
+
+
+
     }
 
     public Variant() {
-
+        this.attr = new HashMap<>();
+        this.annots = new HashMap<>();
+        this.diseases = new ArrayList<>();
     }
 
     @Override
@@ -51,6 +58,9 @@ public class Variant {
                 ", position=" + position +
                 ", reference='" + reference + '\'' +
                 ", alternate='" + alternate + '\'' +
+                ", attr=" + attr +
+                ", diseases=" + diseases +
+                ", annots=" + annots +
                 '}';
     }
 
@@ -130,5 +140,13 @@ public class Variant {
 
     public ObjectId getId() {
         return id;
+    }
+
+    public Map<String, Object> getAnnots() {
+        return annots;
+    }
+
+    public void setAnnots(Map<String, Object> annots) {
+        this.annots = annots;
     }
 }

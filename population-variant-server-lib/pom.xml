@@ -12,7 +12,7 @@
 
     <artifactId>population-variant-server-lib</artifactId>
 
-   <dependencies>
+    <dependencies>
 
         <dependency>
             <groupId>org.mongodb.morphia</groupId>
@@ -35,6 +35,16 @@
         <dependency>
             <groupId>org.opencb.commons</groupId>
             <artifactId>commons-lib</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opencb.cellbase</groupId>
+            <artifactId>cellbase-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.opencb.datastore</groupId>
+            <artifactId>datastore-core</artifactId>
         </dependency>
 
     </dependencies>
