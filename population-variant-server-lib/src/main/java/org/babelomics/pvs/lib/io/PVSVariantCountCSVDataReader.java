@@ -82,17 +82,22 @@ public class PVSVariantCountCSVDataReader implements DataReader<Variant> {
         try {
             variants = new ArrayList<>();
             while ((line = this.reader.readLine()) != null) {
-                String[] splits = line.split("\t");
 
+                if (!line.trim().equals("")) {
 
-                Variant v = new Variant(splits[0], Integer.parseInt(splits[1]), splits[2], splits[3]);
+                    String[] splits = line.split("\t");
 
-                v.addGenotypesToDisease(this.diseaseGroup, Integer.parseInt(splits[5]), Integer.parseInt(splits[6]), Integer.parseInt(splits[7]), Integer.parseInt(splits[8]));
+                    Variant v = new Variant(splits[0], Integer.parseInt(splits[1]), splits[2], splits[3]);
 
-                variants.add(v);
+                    v.addGenotypesToDisease(this.diseaseGroup, Integer.parseInt(splits[5]), Integer.parseInt(splits[6]), Integer.parseInt(splits[7]), Integer.parseInt(splits[8]));
+
+                    variants.add(v);
+                    return variants;
+                }
 
             }
             return variants;
+
         } catch (IOException e) {
             e.printStackTrace();
         }
