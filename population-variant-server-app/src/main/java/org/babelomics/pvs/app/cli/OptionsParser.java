@@ -5,6 +5,9 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.Parameters;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
  */
@@ -70,6 +73,18 @@ public class OptionsParser {
 
         @Parameter(names = {"--diseases"}, description = "List all disease groups", arity = 0)
         boolean diseases;
+
+        @Parameter(names = {"--regions"}, description = "Comma-separated list of regions")
+        List<String> regionLIst = new ArrayList<>();
+
+        @Parameter(names = {"--diseaseId"}, description = "DiseaseId")
+        List<Integer> diseaseId = new ArrayList<>();
+
+        @Parameter(names = {"--skip"}, description = "Skip")
+        Integer skip = null;
+
+        @Parameter(names = {"--limit"}, description = "Skip")
+        Integer limit = null;
 
 
     }

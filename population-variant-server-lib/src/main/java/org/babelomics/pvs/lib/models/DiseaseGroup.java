@@ -10,7 +10,7 @@ import org.mongodb.morphia.annotations.Property;
 /**
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
  */
-@Entity
+@Entity(noClassnameStored = true)
 public class DiseaseGroup {
 
     @JsonIgnore
@@ -25,11 +25,13 @@ public class DiseaseGroup {
     private int groupId;
 
 
+    public DiseaseGroup() {
+    }
+
     public DiseaseGroup(int groupId, String name) {
         this.groupId = groupId;
         this.name = name;
     }
-
 
     public ObjectId getId() {
         return id;
@@ -46,8 +48,6 @@ public class DiseaseGroup {
     public void setName(String name) {
         this.name = name;
     }
-
-    public DiseaseGroup() {}
 
     public int getGroupId() {
         return groupId;

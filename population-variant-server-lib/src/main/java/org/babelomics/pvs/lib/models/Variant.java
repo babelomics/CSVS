@@ -10,7 +10,7 @@ import java.util.*;
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
  */
 
-@Entity
+@Entity(noClassnameStored = true)
 @Indexes(@Index(name = "index", value = "c,p,r,a", unique = true))
 public class Variant {
 
@@ -29,21 +29,11 @@ public class Variant {
     @Property("_at")
     private Map<String, Object> attr;
 
+    @Embedded("d")
     private List<DiseaseCount> diseases;
 
     @Property("an")
     private Map<String, Object> annots;
-
-    public Variant(String chromosome, int position, String reference, String alternate) {
-        this();
-        this.chromosome = chromosome;
-        this.position = position;
-        this.reference = reference;
-        this.alternate = alternate;
-
-
-
-    }
 
     public Variant() {
         this.attr = new HashMap<>();
@@ -51,30 +41,12 @@ public class Variant {
         this.diseases = new ArrayList<>();
     }
 
-    @Override
-    public String toString() {
-        return "Variant{" +
-                "chromosome='" + chromosome + '\'' +
-                ", position=" + position +
-                ", reference='" + reference + '\'' +
-                ", alternate='" + alternate + '\'' +
-                ", attr=" + attr +
-                ", diseases=" + diseases +
-                ", annots=" + annots +
-                '}';
-    }
-
-    public void addGenotypesToDisease(DiseaseGroup diseaseId, int gt00, int gt01, int gt11, int gtmissing) {
-        DiseaseCount dc = new DiseaseCount(diseaseId, gt00, gt01, gt11, gtmissing);
-        this.diseases.add(dc);
-    }
-
-    public void addDiseaseCount(DiseaseCount dc) {
-        this.diseases.add(dc);
-    }
-
-    public void deleteDiseaseCount(DiseaseCount dc) {
-        this.diseases.remove(dc);
+    public Variant(String chromosome, int position, String reference, String alternate) {
+        this();
+        this.chromosome = chromosome;
+        this.position = position;
+        this.reference = reference;
+        this.alternate = alternate;
     }
 
     public String getChromosome() {
@@ -117,6 +89,31 @@ public class Variant {
         this.diseases = diseases;
     }
 
+    public ObjectId getId() {
+        return id;
+    }
+
+    public Map<String, Object> getAnnots() {
+        return annots;
+    }
+
+    public void setAnnots(Map<String, Object> annots) {
+        this.annots = annots;
+    }
+
+    public void addGenotypesToDisease(DiseaseGroup diseaseId, int gt00, int gt01, int gt11, int gtmissing) {
+        DiseaseCount dc = new DiseaseCount(diseaseId, gt00, gt01, gt11, gtmissing);
+        this.diseases.add(dc);
+    }
+
+    public void addDiseaseCount(DiseaseCount dc) {
+        this.diseases.add(dc);
+    }
+
+    public void deleteDiseaseCount(DiseaseCount dc) {
+        this.diseases.remove(dc);
+    }
+
     public DiseaseCount getDiseaseCount(DiseaseGroup dg) {
         for (DiseaseCount dc : this.diseases) {
             if (dc.getDiseaseGroup().getGroupId() == dg.getGroupId()) {
@@ -125,7 +122,6 @@ public class Variant {
         }
         return null;
     }
-
 
     @PrePersist
     private void prePresist() {
@@ -138,15 +134,16 @@ public class Variant {
 
     }
 
-    public ObjectId getId() {
-        return id;
-    }
-
-    public Map<String, Object> getAnnots() {
-        return annots;
-    }
-
-    public void setAnnots(Map<String, Object> annots) {
-        this.annots = annots;
+    @Override
+    public String toString() {
+        return "Variant{" +
+                "chromosome='" + chromosome + '\'' +
+                ", position=" + position +
+                ", reference='" + reference + '\'' +
+                ", alternate='" + alternate + '\'' +
+//                ", attr=" + attr +
+//                ", diseases=" + diseases +
+//                ", annots=" + annots +
+                '}';
     }
 }

@@ -15,6 +15,7 @@ import org.mongodb.morphia.query.Query;
 import org.opencb.biodata.formats.variant.io.VariantReader;
 import org.opencb.biodata.formats.variant.io.VariantWriter;
 import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfReader;
+import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variant.VariantSource;
 import org.opencb.biodata.tools.variant.tasks.VariantRunner;
 import org.opencb.biodata.tools.variant.tasks.VariantStatsTask;
@@ -33,6 +34,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
@@ -153,8 +156,6 @@ public class PVSMain {
             cba.setGene(c.gene);
 
 
-
-
             Iterator<Variant> it = datastore.createQuery(Variant.class).batchSize(10).iterator();
 
 
@@ -177,7 +178,8 @@ public class PVSMain {
         } else if (command instanceof OptionsParser.CommandQuery) {
             OptionsParser.CommandQuery c = (OptionsParser.CommandQuery) command;
 
-            PVSQueryManager qm = new PVSQueryManager();
+            PVSQueryManager qm = new PVSQueryManager(datastore);
+
 
             if (c.diseases) {
 
@@ -189,7 +191,49 @@ public class PVSMain {
                     System.out.println(dg.getGroupId() + "\t" + dg.getName());
                 }
 
+            } else if (c.regionLIst.size() > 0) {
+
+                List<Integer> diseaseId = c.diseaseId;
+
+                Pattern p = Pattern.compile("(\\w+):(\\d+)-(\\d+)");
+                List<Region> regionList = new ArrayList<>();
+
+                for (String region : c.regionLIst) {
+                    Matcher m = p.matcher(region);
+
+                    if (m.matches()) {
+                        String chr = m.group(1);
+                        int start = Integer.parseInt(m.group(2));
+                        int end = Integer.parseInt(m.group(3));
+
+                        Region r = new Region(chr, start, end);
+                        regionList.add(r);
+
+                    } else {
+                        System.out.println("no: " + region);
+                    }
+
+                }
+
+                long start = System.currentTimeMillis();
+                Iterable<Variant> query = qm.getVariantsByRegionList(regionList, diseaseId, c.skip, c.limit);
+
+
+                int count = 0;
+                for (Variant v : query) {
+                    count++;
+//                    System.out.println(v);
+                }
+                long end = System.currentTimeMillis();
+                System.out.println(end - start);
+                System.out.println("count: " + count);
+
+
+
+
             }
+
+
         } else {
             System.err.println("Comand not found");
         }

@@ -80,7 +80,7 @@ public class PVSWSServer {
         jsonObjectMapper = new ObjectMapper();
         jsonObjectWriter = jsonObjectMapper.writer();
 
-        qm = new PVSQueryManager();
+        qm = new PVSQueryManager("pvs");
 
     }
 

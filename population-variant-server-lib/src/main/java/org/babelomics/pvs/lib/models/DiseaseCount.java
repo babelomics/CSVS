@@ -7,13 +7,13 @@ import org.mongodb.morphia.annotations.*;
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
  */
 
-@Entity
+@Entity(noClassnameStored = true)
 public class DiseaseCount {
 
     @Id
     private ObjectId id;
 
-    @Reference
+    @Reference("dg")
     private DiseaseGroup diseaseGroup;
 
     @Property("dgid")
@@ -32,15 +32,15 @@ public class DiseaseCount {
     @Property("am")
     private float altFreq;
 
+    public DiseaseCount() {
+    }
+
     public DiseaseCount(DiseaseGroup diseaseGroup, int gt00, int gt01, int gt11, int gtmissing) {
         this.diseaseGroup = diseaseGroup;
         this.gt00 = gt00;
         this.gt01 = gt01;
         this.gt11 = gt11;
         this.gtmissing = gtmissing;
-    }
-
-    public DiseaseCount() {
     }
 
     public DiseaseGroup getDiseaseGroup() {
@@ -83,6 +83,34 @@ public class DiseaseCount {
         this.gtmissing = gtmissing;
     }
 
+    public float getMaf() {
+        return maf;
+    }
+
+    public void setMaf(float maf) {
+        this.maf = maf;
+    }
+
+    public float getRefFreq() {
+        return refFreq;
+    }
+
+    public void setRefFreq(float refFreq) {
+        this.refFreq = refFreq;
+    }
+
+    public float getAltFreq() {
+        return altFreq;
+    }
+
+    public void setAltFreq(float altFreq) {
+        this.altFreq = altFreq;
+    }
+
+    public int getTotalGts() {
+        return gt00 + gt01 + gt11 + gtmissing;
+    }
+
     public void incGt00(int gt00) {
         this.gt00 += gt00;
 
@@ -121,34 +149,6 @@ public class DiseaseCount {
     public void decGtMissing(int gtmissing) {
         this.gtmissing -= gtmissing;
 
-    }
-
-    public float getMaf() {
-        return maf;
-    }
-
-    public void setMaf(float maf) {
-        this.maf = maf;
-    }
-
-    public float getRefFreq() {
-        return refFreq;
-    }
-
-    public void setRefFreq(float refFreq) {
-        this.refFreq = refFreq;
-    }
-
-    public float getAltFreq() {
-        return altFreq;
-    }
-
-    public void setAltFreq(float altFreq) {
-        this.altFreq = altFreq;
-    }
-
-    public int getTotalGts() {
-        return gt00 + gt01 + gt11 + gtmissing;
     }
 
     @PrePersist

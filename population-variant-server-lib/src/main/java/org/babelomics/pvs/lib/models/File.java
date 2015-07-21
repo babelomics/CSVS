@@ -10,7 +10,7 @@ import org.mongodb.morphia.annotations.Indexes;
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
  */
 
-@Entity
+@Entity(noClassnameStored = true)
 @Indexes(@Index(name = "index", value = "sum", unique = true))
 public class File {
 
@@ -19,11 +19,11 @@ public class File {
 
     private String sum;
 
-    public File(String sum) {
-        this.sum = sum;
+    public File() {
     }
 
-    public File() {
+    public File(String sum) {
+        this.sum = sum;
     }
 
     public String getSum() {
