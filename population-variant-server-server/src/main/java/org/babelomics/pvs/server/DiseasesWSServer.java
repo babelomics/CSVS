@@ -3,6 +3,7 @@ package org.babelomics.pvs.server;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.babelomics.pvs.lib.models.DiseaseGroup;
+import org.babelomics.pvs.lib.ws.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -35,7 +36,10 @@ public class DiseasesWSServer extends PVSWSServer {
 
         List<DiseaseGroup> res = qm.getAllDiseaseGroups();
 
-        return createOkResponse(res);
+        QueryResponse qr = createQueryResponse(res);
+        qr.setNumResults(qr.getNumTotalResults());
+
+        return createOkResponse(qr);
 //        return createErrorResponse("The total size of all regions provided can't exceed 1 million positions. ");
 
     }

@@ -3,6 +3,7 @@ package org.babelomics.pvs.app.cli;
 import com.beust.jcommander.ParameterException;
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoClient;
+import org.apache.commons.lang3.mutable.MutableLong;
 import org.babelomics.pvs.lib.annot.CellBaseAnnotator;
 import org.babelomics.pvs.lib.io.*;
 import org.babelomics.pvs.lib.models.DiseaseCount;
@@ -216,20 +217,16 @@ public class PVSMain {
                 }
 
                 long start = System.currentTimeMillis();
-                Iterable<Variant> query = qm.getVariantsByRegionList(regionList, diseaseId, c.skip, c.limit);
+                MutableLong count = new MutableLong(-1);
 
-
-                int count = 0;
+                Iterable<Variant> query = qm.getVariantsByRegionList(regionList, diseaseId, c.skip, c.limit, count);
                 for (Variant v : query) {
-                    count++;
-//                    System.out.println(v);
+                    System.out.println("v = " + v);
                 }
+
                 long end = System.currentTimeMillis();
                 System.out.println(end - start);
                 System.out.println("count: " + count);
-
-
-
 
             }
 

@@ -1,5 +1,6 @@
 package org.babelomics.pvs.lib.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.babelomics.pvs.lib.io.PVSVariantCountsMongoWriter;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.*;
@@ -14,6 +15,7 @@ import java.util.*;
 @Indexes(@Index(name = "index", value = "c,p,r,a", unique = true))
 public class Variant {
 
+    @JsonIgnore
     @Id
     private ObjectId id;
 
@@ -136,13 +138,19 @@ public class Variant {
 
     @Override
     public String toString() {
+
+        List<Integer> disIds = new ArrayList<>();
+        for (DiseaseCount dg : this.diseases) {
+            disIds.add(dg.getDiseaseGroup().getGroupId());
+        }
+
         return "Variant{" +
                 "chromosome='" + chromosome + '\'' +
                 ", position=" + position +
                 ", reference='" + reference + '\'' +
                 ", alternate='" + alternate + '\'' +
 //                ", attr=" + attr +
-//                ", diseases=" + diseases +
+                ", diseases=" + disIds +
 //                ", annots=" + annots +
                 '}';
     }

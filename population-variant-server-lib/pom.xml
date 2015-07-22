@@ -42,11 +42,6 @@
             <artifactId>cellbase-core</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.opencb.datastore</groupId>
-            <artifactId>datastore-core</artifactId>
-        </dependency>
-
     </dependencies>
 
 

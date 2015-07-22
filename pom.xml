@@ -16,7 +16,6 @@
     </modules>
 
     <properties>
-        <datastore.version>0.4-SNAPSHOT</datastore.version>
         <biodata.version>0.5-SNAPSHOT</biodata.version>
         <cellbase.version>3.1.1</cellbase.version>
         <jcl.version>3.0-SNAPSHOT</jcl.version>
@@ -38,16 +37,6 @@
             </dependency>
             <!-- Intra-module dependencies -->
 
-            <dependency>
-                <groupId>org.opencb.datastore</groupId>
-                <artifactId>datastore-mongodb</artifactId>
-                <version>${datastore.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.opencb.datastore</groupId>
-                <artifactId>datastore-core</artifactId>
-                <version>${datastore.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.opencb.biodata</groupId>
                 <artifactId>biodata-models</artifactId>

@@ -1,6 +1,7 @@
 package org.babelomics.pvs.lib.io;
 
 import com.mongodb.MongoClient;
+import org.apache.commons.lang3.mutable.MutableLong;
 import org.babelomics.pvs.lib.models.DiseaseGroup;
 import org.babelomics.pvs.lib.models.Variant;
 import org.mongodb.morphia.Datastore;
@@ -37,8 +38,7 @@ public class PVSQueryManager {
         return query;
     }
 
-
-    public Iterable<Variant> getVariantsByRegionList(List<Region> regions, List<Integer> diseaseId, Integer skip, Integer limit) {
+    public Iterable<Variant> getVariantsByRegionList(List<Region> regions, List<Integer> diseaseId, Integer skip, Integer limit, MutableLong count) {
 
         Criteria[] or = new Criteria[regions.size()];
 
@@ -54,7 +54,8 @@ public class PVSQueryManager {
             and.add(auxQuery.criteria("position").lessThanOrEq(r.getEnd()));
 
             if (diseaseId != null && diseaseId.size() > 0) {
-                and.add(auxQuery.criteria("diseases.diseaseGroupId").in(diseaseId));
+//                and.add(auxQuery.criteria("diseases.diseaseGroupId").in(diseaseId));
+                and.add(auxQuery.criteria("diseases.diseaseGroupId").hasAllOf(diseaseId));
             }
             or[i++] = auxQuery.and(and.toArray(new Criteria[and.size()]));
         }
@@ -63,16 +64,16 @@ public class PVSQueryManager {
 
         query.or(or);
 
-        System.out.println("query = " + query);
-
-
         if (skip != null && limit != null) {
             query.offset(skip).limit(limit);
-
         }
 
+        System.out.println("query = " + query);
 
-        return query.fetch();
+        Iterable<Variant> res = query.fetch();
+        count.setValue(query.countAll());
+
+        return res;
     }
 
 
