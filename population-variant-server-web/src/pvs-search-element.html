@@ -14,9 +14,9 @@
 <link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-frequencies-grid.html">
 <link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-phenotype-grid.html">
 
-<link rel="import" href="opencb-ajax.html">
+<link rel="import" href="pvs-ajax.html">
 
-<polymer-element name="es-search-element" attributes="studies staticStudies">
+<polymer-element name="es-search-element" attributes="diseases">
     <template>
 
         <link rel="stylesheet" href="../bower_components/sortable-table/css/bootstrap.css" shim-shadowdom>
@@ -200,6 +200,10 @@
 
             }
 
+            sortable-table::shadow table{
+                table-layout: fixed;
+            }
+
             sortable-table::shadow .column-chromosome {
                 width: 30px !important;
                 min-width: 30px !important;
@@ -210,7 +214,7 @@
             }
 
             sortable-table::shadow .column-alleles {
-                width: 30px !important;
+                width: 39px !important;
                 min-width: 30px !important;
             }
 
@@ -222,13 +226,27 @@
                 width: 70px;
             }
 
-            sortable-table::shadow .column-sift {
+            sortable-table::shadow .column-position {
                 width: 70px;
             }
 
+            sortable-table::shadow .column-sift {
+                width: 30px !important;
+            }
+
+            sortable-table::shadow .column-maf1000G,
+            sortable-table::shadow .column-maf1000GAME,
+            sortable-table::shadow .column-maf1000GASI,
+            sortable-table::shadow .column-maf1000GAFR,
+            sortable-table::shadow .column-maf1000GEUR {
+                width: 67px !important;
+                word-wrap: break-word !important;
+
+
+            }
+
             sortable-table::shadow .column-phastcons {
-                width: 60px !important;
-                min-width: 60px !important;
+                width: 63px !important;
             }
 
             sortable-table::shadow .column-phylop {
@@ -329,8 +347,8 @@
                                             <paper-checkbox class="blue diseaseName"
                                                             for
                                                             on-click="{{ diseaseClick }}"
-                                                            value="{{ model.name }}" checked></paper-checkbox>
-                                            <div flex>{{ model.label }}</div>
+                                                            value="{{ model.groupId }}" checked></paper-checkbox>
+                                            <div flex>{{ model.name }}</div>
                                         </core-label>
 
 
@@ -341,31 +359,8 @@
                                     <paper-button on-click="{{ deselectAllDiseases }}">None</paper-button>
                                 </div>
                             </div>
-                            <!--<div class="filter_box" layout end-justified horizontal>-->
-                            <!--<input type="text" on-keyup="{{ diseaseKeyUp }}" placeholder="Filter:"/>-->
-                            <!--</div>-->
-                        </div>
-                        <div class="form_block">
-                            <div id="headerTitle">Phenotypes</div>
-                            <div class="sdp_block" id="phenotypes_div">
-                                <core-list data="{{ phenotype }}" height="20px">
-                                    <template>
-                                        <core-label center horizontal layout>
-                                            <paper-checkbox class="blue phenotypeName"
-                                                            for
-                                                            on-click="{{ phenotypeClick }}"
-                                                            value="{{ model.name }}" checked></paper-checkbox>
-                                            <div flex>{{ model.label }}</div>
-                                        </core-label>
-                                    </template>
-                                </core-list>
-                            </div>
-                            <!--<div class="filter_box" horizontal layout end-justified>-->
-                            <!--<input type="text" on-keyup="{{ phenotypeKeyUp }}" placeholder="Filter:"/>-->
-                            <!--</div>-->
                         </div>
                     </div>
-
                 </form>
             </div>
             <div id="dataGridElement" class="panel panel-shadow" flex vertical layout>
@@ -546,21 +541,21 @@
                                 }
                             </style>
                             <td horizontal layout class="row-total">
-                                <div flex horizontal layout center-justified flex>{{ value.stats.gt00 || "." }}</div>
-                                <div flex horizontal layout center-justified flex>{{ value.stats.gt01 || "."}}</div>
-                                <div flex horizontal layout center-justified flex>{{ value.stats.gt11 || "."}}</div>
-                                <div flex horizontal layout center-justified flex>{{ value.stats.refmaf}}</div>
-                                <div flex horizontal layout center-justified flex>{{ value.stats.altmaf }}</div>
-                                <div flex horizontal layout center-justified flex>{{ value.stats.maf }}</div>
+                                <div flex horizontal layout center-justified flex>{{ value.gt00 || "." }}</div>
+                                <div flex horizontal layout center-justified flex>{{ value.gt01 || "."}}</div>
+                                <div flex horizontal layout center-justified flex>{{ value.gt11 || "."}}</div>
+                                <div flex horizontal layout center-justified flex>{{ value.refFreq}}</div>
+                                <div flex horizontal layout center-justified flex>{{ value.altFreq }}</div>
+                                <div flex horizontal layout center-justified flex>{{ value.maf }}</div>
                             </td>
                         </template>
-                        <opencb-ajax id="opencbAjax"
-                                     role="datasource"
-                                     url="{{ formURL }}"
-                                     start=0
-                                     length=10
-                                     parseFunction="{{ parseFunction }}">
-                        </opencb-ajax>
+                        <pvs-ajax id="opencbAjax"
+                                  role="datasource"
+                                  url="{{ formURL }}"
+                                  start=0
+                                  length=10
+                                  parseFunction="{{ parseFunction }}">
+                        </pvs-ajax>
 
                     </sortable-table>
                 </core-collapse>
@@ -593,7 +588,7 @@
     </template>
     <script>
         Polymer({
-            regionValue: '',
+            regionValue: '1:63643-70000',
             geneValue: '',
             snpValue: '',
             floatDecimals: 3,
@@ -656,7 +651,7 @@
 
                 this.columns = [
                     {name: 'chromosome', title: "Chr"},
-                    {name: 'start', title: 'Position'},
+                    {name: 'position', title: 'Position'},
                     {
                         name: 'alleles',
                         title: 'Alleles',
@@ -672,9 +667,14 @@
                         cellTemplate: 'mafCT',
                         headerTemplate: 'mafHeaderTemplate',
                         formula: function (row) {
-                            return row.sourceEntries["MAF"];
+                            return row.stats;
                         }
                     },
+                    {name: 'maf1000G', title: '1000G'},
+                    {name: 'maf1000GAME', title: '1000G AME'},
+                    {name: 'maf1000GASI', title: '1000G ASI'},
+                    {name: 'maf1000GAFR', title: '1000G AFR'},
+                    {name: 'maf1000GEUR', title: '1000G EUR'},
                     {
                         name: 'sift', title: 'SIFT'
                     },
@@ -698,94 +698,93 @@
                     for (var i = 0; i < data.length; i++) {
                         var row = data[i];
 
-                        var variant = row.chromosome + ":" + row.start + ":" + row.reference + ":" + row.alternate;
+                        var variant = row.chromosome + ":" + row.position + ":" + row.reference + ":" + row.alternate;
                         positions.push(variant);
 
-
-                        for (var key in row.sourceEntries) {
-
-                            var entry = row.sourceEntries[key];
-
-                            var gt00;
-                            if (entry.fileId == "MAF") {
-                                gt00 = me.sampleCount;
-                            }
-                            else {
-
-                                gt00 = entry.stats.genotypesCount["0/0"];
-                                if ("0|0" in entry.stats.genotypesCount) {
-                                    if (gt00 != null) {
-                                        gt00 += entry.stats.genotypesCount["0|0"];
-                                    } else {
-                                        gt00 = entry.stats.genotypesCount["0|0"];
-                                    }
-                                }
-                                entry.stats.gt00 = gt00;
-                            }
-
-                            var gt01 = entry.stats.genotypesCount["0/1"];
-                            if ("0|1" in entry.stats.genotypesCount) {
-                                if (gt01 != null) {
-                                    gt01 += entry.stats.genotypesCount["0|1"];
-
-                                } else {
-                                    gt01 = entry.stats.genotypesCount["0|1"];
-                                }
-                            }
-                            entry.stats.gt01 = gt01;
-
-                            var gt11 = entry.stats.genotypesCount["1/1"];
-                            if ("0|1" in entry.stats.genotypesCount) {
-                                if (gt11 != null) {
-                                    gt11 += entry.stats.genotypesCount["1|1"];
-                                } else {
-                                    gt11 = entry.stats.genotypesCount["1|1"];
-                                }
-                            }
-                            entry.stats.gt11 = gt11;
-                            if (entry.fileId == "MAF") {
-                                if (gt01 != null) {
-                                    gt00 -= gt01;
-                                }
-                                if (gt11 != null) {
-                                    gt00 -= gt11;
-                                }
-                                entry.stats.gt00 = gt00;
-                            }
-
-
-                            var genotypes = entry.stats.genotypesCount;
-
-                            var countRef = 0;
-                            var countAlt = 0;
-                            var total = 0;
-
-
-                            if (gt00 != null) {
-                                countRef = gt00 * 2;
-                            }
-                            if (gt01 != null) {
-                                countRef += gt01;
-                                countAlt += gt01;
-                            }
-                            if (gt11 != null) {
-                                countAlt += (gt11 * 2);
-                            }
-
-                            total = countRef + countAlt;
-
-                            var altmaf = countAlt / total;
-                            var refmaf = countRef / total;
-
-                            var maf = (refmaf < altmaf) ? refmaf : altmaf;
-                            entry.stats.refmaf = refmaf.toFixed(me.floatDecimals);
-                            entry.stats.altmaf = altmaf.toFixed(me.floatDecimals);
-//                            if (entry.stats.maf == null) {
-                            entry.stats.maf = maf.toFixed(me.floatDecimals);
-//                            }else{
-//                                entry.stats.maf = entry.stats.maf.toFixed(me.floatDecimals);
-//                           }
-                        }
+                        //                        for (var key in row.sourceEntries) {
+//
+//                            var entry = row.sourceEntries[key];
+//
+//                            var gt00;
+//                            if (entry.fileId == "MAF") {
+//                                gt00 = me.sampleCount;
+//                            }
+//                            else {
+//
+//                                gt00 = entry.stats.genotypesCount["0/0"];
+//                                if ("0|0" in entry.stats.genotypesCount) {
+//                                    if (gt00 != null) {
+//                                        gt00 += entry.stats.genotypesCount["0|0"];
+//                                    } else {
+//                                        gt00 = entry.stats.genotypesCount["0|0"];
+//                                    }
+//                                }
+//                                entry.stats.gt00 = gt00;
+//                            }
+//
+//                            var gt01 = entry.stats.genotypesCount["0/1"];
+//                            if ("0|1" in entry.stats.genotypesCount) {
+//                                if (gt01 != null) {
+//                                    gt01 += entry.stats.genotypesCount["0|1"];
+//
+//                                } else {
+//                                    gt01 = entry.stats.genotypesCount["0|1"];
+//                                }
+//                            }
+//                            entry.stats.gt01 = gt01;
+//
+//                            var gt11 = entry.stats.genotypesCount["1/1"];
+//                            if ("0|1" in entry.stats.genotypesCount) {
+//                                if (gt11 != null) {
+//                                    gt11 += entry.stats.genotypesCount["1|1"];
+//                                } else {
+//                                    gt11 = entry.stats.genotypesCount["1|1"];
+//                                }
+//                            }
+//                            entry.stats.gt11 = gt11;
+//                            if (entry.fileId == "MAF") {
+//                                if (gt01 != null) {
+//                                    gt00 -= gt01;
+//                                }
+//                                if (gt11 != null) {
+//                                    gt00 -= gt11;
+//                                }
+//                                entry.stats.gt00 = gt00;
+//                            }
+//
+//
+//                            var genotypes = entry.stats.genotypesCount;
+//
+//                            var countRef = 0;
+//                            var countAlt = 0;
+//                            var total = 0;
+//
+//
+//                            if (gt00 != null) {
+//                                countRef = gt00 * 2;
+//                            }
+//                            if (gt01 != null) {
+//                                countRef += gt01;
+//                                countAlt += gt01;
+//                            }
+//                            if (gt11 != null) {
+//                                countAlt += (gt11 * 2);
+//                            }
+//
+//                            total = countRef + countAlt;
+//
+//                            var altmaf = countAlt / total;
+//                            var refmaf = countRef / total;
+//
+//                            var maf = (refmaf < altmaf) ? refmaf : altmaf;
+//                            entry.stats.refmaf = refmaf.toFixed(me.floatDecimals);
+//                            entry.stats.altmaf = altmaf.toFixed(me.floatDecimals);
+////                            if (entry.stats.maf == null) {
+//                            entry.stats.maf = maf.toFixed(me.floatDecimals);
+////                            }else{
+////                                entry.stats.maf = entry.stats.maf.toFixed(me.floatDecimals);
+////                           }
+//                        }
 //                        }
                     }
 
@@ -825,12 +824,12 @@
 //                        debugger
                         }
                         // Annotate SNPid
-                        if (variant.annots.id) {
+                        if (variant.annots.id != null && variant.annots.id) {
                             variant.id = variant.annots.id;
                         }
 
                         // Annotate Cons
-                        if (variant.annots.conservedRegionScores.length > 0) {
+                        if (variant.annots.conservedRegionScores != null && variant.annots.conservedRegionScores.length > 0) {
 
                             for (var j = 0, l = variant.annots.conservedRegionScores.length; j < l; j++) {
                                 var crs = variant.annots.conservedRegionScores[j];
@@ -850,7 +849,7 @@
                         }
 
                         // Annotate CT && Subs. Score
-                        if (variant.annots.consequenceTypes.length > 0) {
+                        if (variant.annots.consequenceTypes != null && variant.annots.consequenceTypes.length > 0) {
 
                             var sif = -1;
                             var sifDesc = "";
@@ -903,8 +902,46 @@
                             }
                         }
 
-                        if (variant.annots.clinicalData.length > 0) {
+                        if (variant.annots.clinicalData != null && variant.annots.clinicalData.length > 0) {
 //                            debugger
+                        }
+
+                        if (variant.annots.populationFrequencies != null) {
+
+                            for (var j = 0; j < variant.annots.populationFrequencies.length; j++) {
+
+                                var pfreq = variant.annots.populationFrequencies[j];
+
+                                switch (pfreq.pop) {
+                                    case "phase_1_ALL":
+                                        var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                        variant.maf1000G = me._toFixed(maf, me.floatDecimals);
+                                        break;
+
+                                    case "phase_1_AMR":
+                                        var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                        variant.maf1000GAME = me._toFixed(maf, me.floatDecimals);
+                                        break;
+
+                                    case "phase_1_ASN":
+                                        var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                        variant.maf1000GASI = me._toFixed(maf, me.floatDecimals);
+                                        break;
+
+                                    case "phase_1_AFR":
+                                        var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                        variant.maf1000GAFR = me._toFixed(maf, me.floatDecimals);
+                                        break;
+
+                                    case "phase_1_EUR":
+                                        var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                        variant.maf1000GEUR = me._toFixed(maf, me.floatDecimals);
+                                        break;
+                                }
+
+                            }
+
+
                         }
                     }
                     return data;
@@ -1012,95 +1049,107 @@
 
                     if (regions.length == 0) {
                         return;
+                    } else {
+                        search = true;
                     }
 
-                    Object.keys(this.formStudies).forEach(function (key) {
-                        var value = me.formStudies[key];
-                        if (value) {
-                            auxStudies.push(key);
-                        }
-                    });
 
-                    Object.keys(this.formDiseases).forEach(function (key) {
-                        var value = me.formDiseases[key];
-                        if (value) {
-                            auxDiseases.push(key);
-                        }
-                    });
+                    var diseaseEls = this.$.diseases_div.querySelectorAll(".diseaseName[checked]");
+                    var diseaseIds = [];
 
-                    Object.keys(this.formPhenotypes).forEach(function (key) {
-                        var value = me.formPhenotypes[key];
-                        if (value) {
-                            auxPhenotypes.push(key);
-                        }
-                    });
-
-
-                    if (auxStudies.length > 0) {
-                        query.studies = auxStudies.join(",");
-                        search |= true;
-                    }
-                    if (auxDiseases.length > 0) {
-                        query.diseases = auxDiseases.join(",");
-                        search |= true;
+                    for (var i = 0; i < diseaseEls.length; i++) {
+                        var el = diseaseEls[i];
+                        diseaseIds.push(el.getAttribute("value"));
                     }
 
-                    if (auxPhenotypes.length > 0) {
-                        query.phenotypes = auxPhenotypes.join(",");
-                        search |= true;
-                    }
+//                    Object.keys(this.formStudies).forEach(function (key) {
+//                        var value = me.formStudies[key];
+//                        if (value) {
+//                            auxStudies.push(key);
+//                        }
+//                    });
 
-                    var finalStudies = [];
+//                    Object.keys(this.formDiseases).forEach(function (key) {
+//                        var value = me.formDiseases[key];
+//                        if (value) {
+//                            auxDiseases.push(key);
+//                        }
+//                    });
 
-                    if (auxStudies.length > 0) {
-                        for (var i = 0; i < this.studies.length; i++) {
-                            var elem = this.studies[i];
-                            if (this._checkFileIdStudies(elem, auxStudies)) {
-                                finalStudies.push(elem);
-                            }
-                        }
-                    }
+//                    Object.keys(this.formPhenotypes).forEach(function (key) {
+//                        var value = me.formPhenotypes[key];
+//                        if (value) {
+//                            auxPhenotypes.push(key);
+//                        }
+//                    });
 
-                    if (auxDiseases.length > 0) {
-                        if (finalStudies.length == 0) {
-                            for (var i = 0; i < this.studies.length; i++) {
-                                var elem = this.studies[i];
-                                if (this._checkFileIdDiseases(elem, auxDiseases)) {
-                                    finalStudies.push(elem);
-                                }
-                            }
-                        } else {
-                            finalStudies = finalStudies.filter(function (elem) {
-                                return me._checkFileIdDiseases(elem, auxDiseases);
-                            });
-                        }
-                    }
 
-                    if (auxPhenotypes.length > 0) {
-                        if (finalStudies.length == 0) {
-                            for (var i = 0; i < this.studies.length; i++) {
-                                var elem = this.studies[i];
-                                if (this._checkFileIdPhenotypes(elem, auxPhenotypes)) {
-                                    finalStudies.push(elem);
-                                }
-                            }
-                        } else {
-                            finalStudies = finalStudies.filter(function (elem) {
-                                return me._checkFileIdPhenotypes(elem, auxPhenotypes);
-                            });
-                        }
-                    }
-
-                    for (var i = 0; i < finalStudies.length; i++) {
-                        var study = finalStudies[i];
-                        if (this._containsStudy(study)) {
-                            this.sampleCount += study.st.nSamp;
-                        }
-                    }
+//                    if (auxStudies.length > 0) {
+//                        query.studies = auxStudies.join(",");
+//                        search |= true;
+//                    }
+//                    if (auxDiseases.length > 0) {
+//                        query.diseases = auxDiseases.join(",");
+//                        search |= true;
+//                    }
+//
+//                    if (auxPhenotypes.length > 0) {
+//                        query.phenotypes = auxPhenotypes.join(",");
+//                        search |= true;
+//                    }
+//
+//                    var finalStudies = [];
+//
+//                    if (auxStudies.length > 0) {
+//                        for (var i = 0; i < this.studies.length; i++) {
+//                            var elem = this.studies[i];
+//                            if (this._checkFileIdStudies(elem, auxStudies)) {
+//                                finalStudies.push(elem);
+//                            }
+//                        }
+//                    }
+//
+//                    if (auxDiseases.length > 0) {
+//                        if (finalStudies.length == 0) {
+//                            for (var i = 0; i < this.studies.length; i++) {
+//                                var elem = this.studies[i];
+//                                if (this._checkFileIdDiseases(elem, auxDiseases)) {
+//                                    finalStudies.push(elem);
+//                                }
+//                            }
+//                        } else {
+//                            finalStudies = finalStudies.filter(function (elem) {
+//                                return me._checkFileIdDiseases(elem, auxDiseases);
+//                            });
+//                        }
+//                    }
+//
+//                    if (auxPhenotypes.length > 0) {
+//                        if (finalStudies.length == 0) {
+//                            for (var i = 0; i < this.studies.length; i++) {
+//                                var elem = this.studies[i];
+//                                if (this._checkFileIdPhenotypes(elem, auxPhenotypes)) {
+//                                    finalStudies.push(elem);
+//                                }
+//                            }
+//                        } else {
+//                            finalStudies = finalStudies.filter(function (elem) {
+//                                return me._checkFileIdPhenotypes(elem, auxPhenotypes);
+//                            });
+//                        }
+//                    }
+//
+//                    for (var i = 0; i < finalStudies.length; i++) {
+//                        var study = finalStudies[i];
+//                        if (this._containsStudy(study)) {
+//                            this.sampleCount += study.st.nSamp;
+//                        }
+//                    }
 
                     if (search) {
                         var regionQuery = regions.join(",");
                         query.regions = regionQuery;
+                        query.diseases = diseaseIds.join(",");
 
                         var url = PVSManager.variants.fetch({
                             query: query,
@@ -1158,42 +1207,43 @@
                 }
                 return false;
             },
-            studiesChanged: function (oldValue, newValue) {
+            diseasesChanged: function (oldValue, newValue) {
                 var me = this;
 
-                this.studies = newValue;
-                var names = {};
-                var dis = {};
-                var phen = {};
-                for (var i = 0; i < this.studies.length; i++) {
-                    var study = this.studies[i];
+//                this.studies = newValue;
+//                var names = {};
+//                var dis = {};
+//                var phen = {};
+//                for (var i = 0; i < this.studies.length; i++) {
+//                    var study = this.studies[i];
+//
+//                    names[study.sname] = study.sname;
+//                    dis[study.meta.dis] = study.meta.dis;
+//                    phen[study.meta.phe] = study.meta.phe;
+//                }
+//                Object.keys(names).forEach(function (key) {
+//                    me.studyNames.push({
+//                        name: key,
+//                        label: me._formatText(key)
+//                    })
+////                    me.formStudies[key] = true;
+//                });
 
-                    names[study.sname] = study.sname;
-                    dis[study.meta.dis] = study.meta.dis;
-                    phen[study.meta.phe] = study.meta.phe;
-                }
-                Object.keys(names).forEach(function (key) {
-                    me.studyNames.push({
-                        name: key,
-                        label: me._formatText(key)
-                    })
-//                    me.formStudies[key] = true;
-                });
-                Object.keys(dis).forEach(function (key) {
-                    me.diseases.push({
-                        name: key,
-                        label: me._formatText(key)
-                    })
-                    me.formDiseases[key] = true;
-                });
-
-                Object.keys(phen).forEach(function (key) {
-                    me.phenotype.push({
-                        name: key,
-                        label: me._formatText(key)
-                    })
-                    me.formPhenotypes[key] = true;
-                });
+//                Object.keys(dis).forEach(function (key) {
+//                    me.diseases.push({
+//                        name: key,
+//                        label: me._formatText(key)
+//                    })
+//                    me.formDiseases[key] = true;
+//                });
+//
+//                Object.keys(phen).forEach(function (key) {
+//                    me.phenotype.push({
+//                        name: key,
+//                        label: me._formatText(key)
+//                    })
+//                    me.formPhenotypes[key] = true;
+//                });
             },
             _formatText: function (text) {
                 return Utils.formatText(text, "_").toLowerCase().replace(/(?:^|\s)\S/g, function (a) {
@@ -1481,11 +1531,11 @@
                 return this.genomeViewer;
             },
             handleDataGridSelected: function (oldValue, newValue) {
-                var reg = newValue.chromosome + ":" + newValue.start + "-" + newValue.end;
+                var reg = newValue.chromosome + ":" + newValue.position + "-" + newValue.position;
                 var region = new Region(reg);
 
                 // update Effect
-                var variant = newValue.chromosome + ":" + newValue.start + ":" + newValue.reference + ":" + newValue.alternate;
+                var variant = newValue.chromosome + ":" + newValue.position + ":" + newValue.reference + ":" + newValue.alternate;
                 this.variantEffect = variant;
 
                 this.$.gvEl.genomeViewer.setRegion(region);

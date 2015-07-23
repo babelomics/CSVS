@@ -1,4 +1,5 @@
 PVS_HOST = "http://ws.bioinfo.cipf.es/pvs/rest";
+PVS_HOST = "http://localhost:8080/pvs/rest";
 CELLBASE_VERSION = "v3";
 CELLBASE_HOST = "http://wwwdev.ebi.ac.uk/cellbase/webservices/rest";
 CELLBASE_HOST = "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest";

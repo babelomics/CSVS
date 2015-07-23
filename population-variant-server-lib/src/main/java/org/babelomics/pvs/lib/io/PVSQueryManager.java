@@ -2,6 +2,7 @@ package org.babelomics.pvs.lib.io;
 
 import com.mongodb.MongoClient;
 import org.apache.commons.lang3.mutable.MutableLong;
+import org.babelomics.pvs.lib.models.DiseaseCount;
 import org.babelomics.pvs.lib.models.DiseaseGroup;
 import org.babelomics.pvs.lib.models.Variant;
 import org.mongodb.morphia.Datastore;
@@ -10,6 +11,8 @@ import org.mongodb.morphia.query.Criteria;
 import org.mongodb.morphia.query.Query;
 import org.opencb.biodata.models.feature.Region;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,6 +23,7 @@ import java.util.List;
 public class PVSQueryManager {
 
     final Datastore datastore;
+    static final int DECIMAL_POSITIONS = 3;
 
     public PVSQueryManager(String dbName) {
         Morphia morphia = new Morphia();
@@ -54,8 +58,8 @@ public class PVSQueryManager {
             and.add(auxQuery.criteria("position").lessThanOrEq(r.getEnd()));
 
             if (diseaseId != null && diseaseId.size() > 0) {
-//                and.add(auxQuery.criteria("diseases.diseaseGroupId").in(diseaseId));
-                and.add(auxQuery.criteria("diseases.diseaseGroupId").hasAllOf(diseaseId));
+                and.add(auxQuery.criteria("diseases.diseaseGroupId").in(diseaseId));
+//                and.add(auxQuery.criteria("diseases.diseaseGroupId").hasAllOf(diseaseId));
             }
             or[i++] = auxQuery.and(and.toArray(new Criteria[and.size()]));
         }
@@ -68,12 +72,51 @@ public class PVSQueryManager {
             query.offset(skip).limit(limit);
         }
 
-        System.out.println("query = " + query);
-
-        Iterable<Variant> res = query.fetch();
+        Iterable<Variant> aux = query.fetch();
         count.setValue(query.countAll());
 
+        List<Variant> res = new ArrayList<>();
+
+        for (Variant v : aux) {
+            v.setStats(calculateStats(v, diseaseId));
+            res.add(v);
+        }
+
         return res;
+    }
+
+    private DiseaseCount calculateStats(Variant v, List<Integer> diseaseId) {
+        DiseaseCount dc;
+
+        int gt00 = 0;
+        int gt01 = 0;
+        int gt11 = 0;
+        int gtmissing = 0;
+
+        for (DiseaseCount auxDc : v.getDiseases()) {
+            if (diseaseId.contains(auxDc.getDiseaseGroup().getGroupId())) {
+                gt00 += auxDc.getGt00();
+                gt01 += auxDc.getGt01();
+                gt11 += auxDc.getGt11();
+                gtmissing += auxDc.getGtmissing();
+            }
+        }
+
+        int refCount = gt00 * 2 + gt01;
+        int altCount = gt11 * 2 + gt01;
+
+        float refFreq = (float) refCount / (refCount + altCount);
+        float altFreq = (float) altCount / (refCount + altCount);
+
+        float maf = Math.min(refFreq, altFreq);
+
+        dc = new DiseaseCount(null, gt00, gt01, gt11, gtmissing);
+
+        dc.setRefFreq(round(refFreq, DECIMAL_POSITIONS));
+        dc.setAltFreq(round(altFreq, DECIMAL_POSITIONS));
+        dc.setMaf(round(maf, DECIMAL_POSITIONS));
+
+        return dc;
     }
 
 
@@ -92,6 +135,14 @@ public class PVSQueryManager {
         }
 
         return chunkIds;
+    }
+
+    private static float round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        BigDecimal bd = new BigDecimal(value);
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        return bd.floatValue();
     }
 
 }

@@ -3,13 +3,22 @@ var PVSManager = {
     host: PVS_HOST,
     version: 'v3',
 
-    studies: {
+    //studies: {
+    //    list: function (args) {
+    //        return PVSManager._doRequest(args, 'studies', 'list');
+    //    },
+    //    read: function (args) {
+    //        return PVSManager._doRequest(args, 'studies', 'info');
+    //    }
+    //},
+
+    diseases: {
         list: function (args) {
-            return PVSManager._doRequest(args, 'studies', 'list');
+            return PVSManager._doRequest(args, 'diseases', 'list');
         },
-        read: function (args) {
-            return PVSManager._doRequest(args, 'studies', 'info');
-        }
+        //read: function (args) {
+        //    return PVSManager._doRequest(args, 'studies', 'info');
+        //}
     },
 
     variants: {

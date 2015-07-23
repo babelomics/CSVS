@@ -2,7 +2,7 @@
 <link rel="import" href="../bower_components/core-ajax/core-ajax.html">
 
 <polymer-element hidden
-                 name="opencb-ajax"
+                 name="pvs-ajax"
                  attributes="url withCredentials start length search sortColumn
                  sortDescending columns data dataSize loading parseFunction"
         >
@@ -43,13 +43,13 @@
                 var response = e.detail.response;
                 if (response) {
 
-                    var data = response.response[0]; // TODO aaleman: what if response.length > 1
-                    var dataSize = data.numTotalResults;
+                    var data = response.result; // TODO aaleman: what if response.length > 1
+                    var dataSize = response.numTotalResults;
 
                     if (this.parseFunction != null) {
-                        this.data = this.parseFunction(data.result);
+                        this.data = this.parseFunction(data);
                     } else {
-                        this.data = data.result;
+                        this.data = data;
                     }
                     this.dataSize = dataSize;
 
