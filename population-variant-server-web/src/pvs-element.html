@@ -2,6 +2,7 @@
 <link rel="import" href="../bower_components/polymer-fontawesome/polymer-fontawesome.html">
 
 <link rel="import" href="../lib/jsorolla/src/lib/components/opencga/jso-header.html">
+
 <link rel="import" href="pvs-search-element.html">
 <link rel="import" href="pvs-studies-browser-element.html">
 <link rel="import" href="pvs-stats-element.html">
@@ -110,7 +111,7 @@
                 <pvs-home selectedOption="{{selectedOption}}"></pvs-home>
             </template>
             <template if="{{ selectedOption == 'search' }}">
-                <es-search-element studies="{{ studies }}" staticStudies="{{ staticStudies }}" id="pvsSearchElement"></es-search-element>
+                <es-search-element diseases="{{ diseases }}" id="pvsSearchElement"></es-search-element>
             </template>
 
             <template if="{{ selectedOption == 'studies' }}">
@@ -128,37 +129,29 @@
             idSearch: null,
             created: function () {
                 this.allowLogin = false;
-                this.studies = [];
-                this.staticStudies = [];
+                this.diseases = [];
             },
             ready: function () {
                 this.clear = true;
-                this.getStudies();
+                this.getDiseases();
             },
-            getStudies: function (event, response) {
+            getDiseases: function (event, response) {
                 var me = this;
-                PVSManager.studies.list({
+                PVSManager.diseases.list({
                     request: {
                         async: false,
                         success: function (response) {
                             try {
-                                var studies = [];
-                                var staticStudies = [];
+                                var diseases = [];
 
-                                for (var i = 0; i < response.response[0].result.length; i++) {
-                                    var elem = response.response[0].result[i];
-                                    if (elem.meta.sta == "false") {
-                                        studies.push(elem);
-                                    } else {
-                                        staticStudies.push(elem);
-                                    }
+                                for (var i = 0; i < response.result.length; i++) {
+                                    var elem = response.result[i];
+                                    diseases.push(elem);
                                 }
-                                me.studies = studies;
-                                me.staticStudies = staticStudies;
+                                me.diseases = diseases;
                             } catch (err) {
-                                console.log("Error loading studies: " + err);
-                                me.studies = [];
-                                me.staticStudies = [];
+                                console.log("Error loading diseases: " + err);
+                                me.diseases = [];
                             }
                         },
                         error: function (response) {

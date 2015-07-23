@@ -16,6 +16,7 @@ public class PVSVariantCountsMongoWriter implements DataWriter<Variant> {
 
     private DiseaseGroup diseaseGroup;
     private Datastore datastore;
+    private int samples;
 
     public static final int CHUNK_SIZE_SMALL = 1000;
     public static final int CHUNK_SIZE_BIG = 10000;
@@ -23,8 +24,7 @@ public class PVSVariantCountsMongoWriter implements DataWriter<Variant> {
     public PVSVariantCountsMongoWriter(DiseaseGroup diseaseGroup, Datastore datastore) {
         this.diseaseGroup = diseaseGroup;
         this.datastore = datastore;
-
-
+        this.samples = 0;
     }
 
     @Override
@@ -46,6 +46,15 @@ public class PVSVariantCountsMongoWriter implements DataWriter<Variant> {
 
     @Override
     public boolean post() {
+
+        DiseaseGroup dg = this.datastore.get(DiseaseGroup.class, diseaseGroup.getId());
+
+        dg.incSamples(this.samples);
+
+        System.out.println("dg = " + dg);
+
+        this.datastore.save(dg);
+
         return true;
     }
 
@@ -53,6 +62,9 @@ public class PVSVariantCountsMongoWriter implements DataWriter<Variant> {
     public boolean write(Variant elem) {
 
         Query<Variant> query = datastore.createQuery(Variant.class);
+
+
+        this.samples = (this.samples == 0) ? elem.getDiseaseCount(this.diseaseGroup).getTotalGts() : this.samples;
 
         Variant v = query.field("chromosome").equal(elem.getChromosome())
                 .field("position").equal(elem.getPosition()).
@@ -72,6 +84,7 @@ public class PVSVariantCountsMongoWriter implements DataWriter<Variant> {
                     dc.incGt01(aux.getGt01());
                     dc.incGt11(aux.getGt11());
                     dc.incGtMissing(aux.getGtmissing());
+
                     this.datastore.save(v);
                     b = true;
                 }
@@ -81,6 +94,7 @@ public class PVSVariantCountsMongoWriter implements DataWriter<Variant> {
                 DiseaseCount aux = elem.getDiseaseCount(this.diseaseGroup);
                 DiseaseCount newDc = new DiseaseCount(aux.getDiseaseGroup(), aux.getGt00(), aux.getGt01(), aux.getGt11(), aux.getGtmissing());
                 v.addDiseaseCount(newDc);
+
                 this.datastore.save(v);
             }
 

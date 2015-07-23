@@ -263,7 +263,7 @@ public class PVSMain {
 
         File fDb = datastore.createQuery(File.class).field("sum").equal(sha256).get();
 
-        if (true || fDb == null) {
+        if (fDb == null) {
 
             Query<DiseaseGroup> query = datastore.createQuery(DiseaseGroup.class).field("groupId").equal(diseaseGroupId);
             DiseaseGroup dg = query.get();
@@ -317,6 +317,7 @@ public class PVSMain {
 
     private static void unloadVariants(Path variantsPath, int diseaseGroupId, Datastore datastore) throws IOException, NoSuchAlgorithmException {
 
+        int samples = 0;
         Query<DiseaseGroup> queryDG = datastore.createQuery(DiseaseGroup.class).field("groupId").equal(diseaseGroupId);
         DiseaseGroup dg = queryDG.get();
 
@@ -344,6 +345,10 @@ public class PVSMain {
                     DiseaseCount vDc = v.getDiseaseCount(dg);
                     DiseaseCount elemDC = elem.getDiseaseCount(dg);
                     if (vDc != null) {
+
+                        if (samples == 0) {
+                            samples = elemDC.getTotalGts();
+                        }
 
                         vDc.decGt00(elemDC.getGt00());
                         vDc.decGt01(elemDC.getGt01());
@@ -380,6 +385,11 @@ public class PVSMain {
 
         datastore.delete(File.class, fDb.getId());
 
+        DiseaseGroup dgDB = datastore.get(DiseaseGroup.class, dg.getId());
+
+        dg.decSamples(samples);
+
+        datastore.save(dg);
 
     }
 }

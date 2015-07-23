@@ -31,8 +31,12 @@ public class Variant {
     @Property("_at")
     private Map<String, Object> attr;
 
+    @JsonIgnore
     @Embedded("d")
     private List<DiseaseCount> diseases;
+
+    @Transient
+    private DiseaseCount stats;
 
     @Property("an")
     private Map<String, Object> annots;
@@ -41,6 +45,7 @@ public class Variant {
         this.attr = new HashMap<>();
         this.annots = new HashMap<>();
         this.diseases = new ArrayList<>();
+        this.stats = new DiseaseCount();
     }
 
     public Variant(String chromosome, int position, String reference, String alternate) {
@@ -101,6 +106,14 @@ public class Variant {
 
     public void setAnnots(Map<String, Object> annots) {
         this.annots = annots;
+    }
+
+    public DiseaseCount getStats() {
+        return stats;
+    }
+
+    public void setStats(DiseaseCount stats) {
+        this.stats = stats;
     }
 
     public void addGenotypesToDisease(DiseaseGroup diseaseId, int gt00, int gt01, int gt11, int gtmissing) {

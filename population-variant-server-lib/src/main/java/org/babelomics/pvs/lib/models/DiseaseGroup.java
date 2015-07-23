@@ -24,11 +24,16 @@ public class DiseaseGroup {
     @Property("gid")
     private int groupId;
 
+    @Property("s")
+    private int samples;
+
 
     public DiseaseGroup() {
+        this.samples = 0;
     }
 
     public DiseaseGroup(int groupId, String name) {
+        this();
         this.groupId = groupId;
         this.name = name;
     }
@@ -57,11 +62,28 @@ public class DiseaseGroup {
         this.groupId = groupId;
     }
 
+    public int getSamples() {
+        return samples;
+    }
+
+    public void setSamples(int samples) {
+        this.samples = samples;
+    }
+
+    public void incSamples(int samples) {
+        this.samples += samples;
+    }
+
+    public void decSamples(int samples) {
+        this.samples -= samples;
+    }
+
     @Override
     public String toString() {
         return "DiseaseGroup{" +
-                ", name='" + name + '\'' +
+                "name='" + name + '\'' +
                 ", groupId=" + groupId +
+                ", samples=" + samples +
                 '}';
     }
 }
