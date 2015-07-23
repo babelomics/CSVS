@@ -66,6 +66,12 @@ public class VariantsWSServer extends PVSWSServer {
         }
 
         MutableLong count = new MutableLong(-1);
+
+        if (csv) {
+            skip = 0;
+            limit = 200;
+        }
+
         Iterable<Variant> variants = qm.getVariantsByRegionList(regionList, diseaseList, skip, limit, count);
 
         QueryResponse qr = createQueryResponse(variants);
@@ -75,8 +81,14 @@ public class VariantsWSServer extends PVSWSServer {
         if (diseases.length() > 0) {
             qr.addQueryOption("diseases", diseases);
         }
-        qr.addQueryOption("limit", limit);
-        qr.addQueryOption("skip", skip);
+
+        if (!csv) {
+            qr.addQueryOption("limit", limit);
+            qr.addQueryOption("skip", skip);
+        } else {
+            qr.addQueryOption("csv", csv);
+        }
+
 
         return createOkResponse(qr);
     }

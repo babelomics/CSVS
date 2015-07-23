@@ -200,7 +200,7 @@
 
             }
 
-            sortable-table::shadow table{
+            sortable-table::shadow table {
                 table-layout: fixed;
             }
 
@@ -241,7 +241,6 @@
             sortable-table::shadow .column-maf1000GEUR {
                 width: 67px !important;
                 word-wrap: break-word !important;
-
 
             }
 
@@ -346,7 +345,6 @@
                                         <core-label center horizontal layout>
                                             <paper-checkbox class="blue diseaseName"
                                                             for
-                                                            on-click="{{ diseaseClick }}"
                                                             value="{{ model.groupId }}" checked></paper-checkbox>
                                             <div flex>{{ model.name }}</div>
                                         </core-label>
@@ -604,10 +602,6 @@
                 this.phenotype = [];
                 this.log = [];
 
-                this.formStudies = {};
-                this.formDiseases = {};
-                this.formPhenotypes = {};
-
                 this.selectedSpecies = DEFAULT_SPECIES;
                 this.region = new Region();
                 this.region.load("1:1004608-1004608");
@@ -701,91 +695,6 @@
                         var variant = row.chromosome + ":" + row.position + ":" + row.reference + ":" + row.alternate;
                         positions.push(variant);
 
-                        //                        for (var key in row.sourceEntries) {
-//
-//                            var entry = row.sourceEntries[key];
-//
-//                            var gt00;
-//                            if (entry.fileId == "MAF") {
-//                                gt00 = me.sampleCount;
-//                            }
-//                            else {
-//
-//                                gt00 = entry.stats.genotypesCount["0/0"];
-//                                if ("0|0" in entry.stats.genotypesCount) {
-//                                    if (gt00 != null) {
-//                                        gt00 += entry.stats.genotypesCount["0|0"];
-//                                    } else {
-//                                        gt00 = entry.stats.genotypesCount["0|0"];
-//                                    }
-//                                }
-//                                entry.stats.gt00 = gt00;
-//                            }
-//
-//                            var gt01 = entry.stats.genotypesCount["0/1"];
-//                            if ("0|1" in entry.stats.genotypesCount) {
-//                                if (gt01 != null) {
-//                                    gt01 += entry.stats.genotypesCount["0|1"];
-//
-//                                } else {
-//                                    gt01 = entry.stats.genotypesCount["0|1"];
-//                                }
-//                            }
-//                            entry.stats.gt01 = gt01;
-//
-//                            var gt11 = entry.stats.genotypesCount["1/1"];
-//                            if ("0|1" in entry.stats.genotypesCount) {
-//                                if (gt11 != null) {
-//                                    gt11 += entry.stats.genotypesCount["1|1"];
-//                                } else {
-//                                    gt11 = entry.stats.genotypesCount["1|1"];
-//                                }
-//                            }
-//                            entry.stats.gt11 = gt11;
-//                            if (entry.fileId == "MAF") {
-//                                if (gt01 != null) {
-//                                    gt00 -= gt01;
-//                                }
-//                                if (gt11 != null) {
-//                                    gt00 -= gt11;
-//                                }
-//                                entry.stats.gt00 = gt00;
-//                            }
-//
-//
-//                            var genotypes = entry.stats.genotypesCount;
-//
-//                            var countRef = 0;
-//                            var countAlt = 0;
-//                            var total = 0;
-//
-//
-//                            if (gt00 != null) {
-//                                countRef = gt00 * 2;
-//                            }
-//                            if (gt01 != null) {
-//                                countRef += gt01;
-//                                countAlt += gt01;
-//                            }
-//                            if (gt11 != null) {
-//                                countAlt += (gt11 * 2);
-//                            }
-//
-//                            total = countRef + countAlt;
-//
-//                            var altmaf = countAlt / total;
-//                            var refmaf = countRef / total;
-//
-//                            var maf = (refmaf < altmaf) ? refmaf : altmaf;
-//                            entry.stats.refmaf = refmaf.toFixed(me.floatDecimals);
-//                            entry.stats.altmaf = altmaf.toFixed(me.floatDecimals);
-////                            if (entry.stats.maf == null) {
-//                            entry.stats.maf = maf.toFixed(me.floatDecimals);
-////                            }else{
-////                                entry.stats.maf = entry.stats.maf.toFixed(me.floatDecimals);
-////                           }
-//                        }
-//                        }
                     }
 
                     // Annotate
@@ -820,9 +729,6 @@
                     for (var i = 0; i < data.length; i++) {
                         var variant = data[i];
 
-                        if (variant.annots.clinicalData != null) {
-//                        debugger
-                        }
                         // Annotate SNPid
                         if (variant.annots.id != null && variant.annots.id) {
                             variant.id = variant.annots.id;
@@ -938,15 +844,11 @@
                                         variant.maf1000GEUR = me._toFixed(maf, me.floatDecimals);
                                         break;
                                 }
-
                             }
-
-
                         }
                     }
                     return data;
                 }
-
             },
             _toFixed: function (value, precision) {
                 return Number(value).toFixed(precision);
@@ -996,13 +898,7 @@
             },
             submitForm: function () {
                 var me = this;
-                var auxStudies = [];
-                var auxDiseases = [];
-                var auxPhenotypes = [];
                 var query = {};
-
-                var search = false;
-
 
                 this.sampleCount = 0;
 
@@ -1013,8 +909,6 @@
                     if (this.regionValue) {
                         regions = this.regionValue.split(",");
                     }
-
-                    // this.geneValue = ""
 
                     if (this.geneValue) {
                         var gene = this.geneValue.toUpperCase();
@@ -1037,22 +931,12 @@
                                         regions.push(region.toString());
 
                                     } else {
-
                                         alert("Wrong gene: " + gene);
-
                                     }
-
                                 }
                             }
                         });
                     }
-
-                    if (regions.length == 0) {
-                        return;
-                    } else {
-                        search = true;
-                    }
-
 
                     var diseaseEls = this.$.diseases_div.querySelectorAll(".diseaseName[checked]");
                     var diseaseIds = [];
@@ -1062,91 +946,7 @@
                         diseaseIds.push(el.getAttribute("value"));
                     }
 
-//                    Object.keys(this.formStudies).forEach(function (key) {
-//                        var value = me.formStudies[key];
-//                        if (value) {
-//                            auxStudies.push(key);
-//                        }
-//                    });
-
-//                    Object.keys(this.formDiseases).forEach(function (key) {
-//                        var value = me.formDiseases[key];
-//                        if (value) {
-//                            auxDiseases.push(key);
-//                        }
-//                    });
-
-//                    Object.keys(this.formPhenotypes).forEach(function (key) {
-//                        var value = me.formPhenotypes[key];
-//                        if (value) {
-//                            auxPhenotypes.push(key);
-//                        }
-//                    });
-
-
-//                    if (auxStudies.length > 0) {
-//                        query.studies = auxStudies.join(",");
-//                        search |= true;
-//                    }
-//                    if (auxDiseases.length > 0) {
-//                        query.diseases = auxDiseases.join(",");
-//                        search |= true;
-//                    }
-//
-//                    if (auxPhenotypes.length > 0) {
-//                        query.phenotypes = auxPhenotypes.join(",");
-//                        search |= true;
-//                    }
-//
-//                    var finalStudies = [];
-//
-//                    if (auxStudies.length > 0) {
-//                        for (var i = 0; i < this.studies.length; i++) {
-//                            var elem = this.studies[i];
-//                            if (this._checkFileIdStudies(elem, auxStudies)) {
-//                                finalStudies.push(elem);
-//                            }
-//                        }
-//                    }
-//
-//                    if (auxDiseases.length > 0) {
-//                        if (finalStudies.length == 0) {
-//                            for (var i = 0; i < this.studies.length; i++) {
-//                                var elem = this.studies[i];
-//                                if (this._checkFileIdDiseases(elem, auxDiseases)) {
-//                                    finalStudies.push(elem);
-//                                }
-//                            }
-//                        } else {
-//                            finalStudies = finalStudies.filter(function (elem) {
-//                                return me._checkFileIdDiseases(elem, auxDiseases);
-//                            });
-//                        }
-//                    }
-//
-//                    if (auxPhenotypes.length > 0) {
-//                        if (finalStudies.length == 0) {
-//                            for (var i = 0; i < this.studies.length; i++) {
-//                                var elem = this.studies[i];
-//                                if (this._checkFileIdPhenotypes(elem, auxPhenotypes)) {
-//                                    finalStudies.push(elem);
-//                                }
-//                            }
-//                        } else {
-//                            finalStudies = finalStudies.filter(function (elem) {
-//                                return me._checkFileIdPhenotypes(elem, auxPhenotypes);
-//                            });
-//                        }
-//                    }
-//
-//                    for (var i = 0; i < finalStudies.length; i++) {
-//                        var study = finalStudies[i];
-//                        if (this._containsStudy(study)) {
-//                            this.sampleCount += study.st.nSamp;
-//                        }
-//                    }
-
-                    if (search) {
+                    if (regions.length > 0) {
                         var regionQuery = regions.join(",");
                         query.regions = regionQuery;
                         query.diseases = diseaseIds.join(",");
@@ -1171,163 +971,10 @@
                 }
 
             },
-            _containsStudy: function (elem) {
-                for (var i = 0; i < this.studies.length; i++) {
-                    var study = this.studies[i];
-                    if (elem.fid === study.fid) {
-                        return true;
-                    }
-                }
-                return false;
-            },
-            _checkFileIdStudies: function (elem, auxStudies) {
-                for (var i = 0; i < auxStudies.length; i++) {
-                    var study = auxStudies[i];
-                    if (study === elem.sid) {
-                        return true;
-                    }
-                }
-                return false;
-            },
-            _checkFileIdDiseases: function (elem, auxDiseases) {
-                for (var i = 0; i < auxDiseases.length; i++) {
-                    var disease = auxDiseases[i];
-                    if (disease === elem.meta.dis) {
-                        return true;
-                    }
-                }
-                return false;
-            },
-            _checkFileIdPhenotypes: function (elem, auxPhenotypes) {
-                for (var i = 0; i < auxPhenotypes.length; i++) {
-                    var phenotype = auxPhenotypes[i];
-                    if (phenotype === elem.meta.phe) {
-                        return true;
-                    }
-                }
-                return false;
-            },
-            diseasesChanged: function (oldValue, newValue) {
-                var me = this;
-
-//                this.studies = newValue;
-//                var names = {};
-//                var dis = {};
-//                var phen = {};
-//                for (var i = 0; i < this.studies.length; i++) {
-//                    var study = this.studies[i];
-//
-//                    names[study.sname] = study.sname;
-//                    dis[study.meta.dis] = study.meta.dis;
-//                    phen[study.meta.phe] = study.meta.phe;
-//                }
-//                Object.keys(names).forEach(function (key) {
-//                    me.studyNames.push({
-//                        name: key,
-//                        label: me._formatText(key)
-//                    })
-////                    me.formStudies[key] = true;
-//                });
-
-//                Object.keys(dis).forEach(function (key) {
-//                    me.diseases.push({
-//                        name: key,
-//                        label: me._formatText(key)
-//                    })
-//                    me.formDiseases[key] = true;
-//                });
-//
-//                Object.keys(phen).forEach(function (key) {
-//                    me.phenotype.push({
-//                        name: key,
-//                        label: me._formatText(key)
-//                    })
-//                    me.formPhenotypes[key] = true;
-//                });
-            },
             _formatText: function (text) {
                 return Utils.formatText(text, "_").toLowerCase().replace(/(?:^|\s)\S/g, function (a) {
                     return a.toUpperCase();
                 });
-            },
-            staticStudiesChanged: function (oldValue, newValue) {
-                var pos = 5;
-
-                for (var i = 0; i < newValue.length; i++) {
-                    var study = newValue[i];
-                    this.columns.splice(pos++, 0, {
-                        name: study.sname,
-                        title: study.sname,
-                        cellTemplate: 'mafStaticCT',
-                        headerTemplate: 'mafStaticHT',
-                        formula: new Function("row", "var res = {}; " +
-                                "try { var res = row.sourceEntries['" + study.sname + "']; } catch (e) { console.log('ERROR FORMULA STATIC STUDY'); } return res; ")
-                    });
-                }
-            },
-            studyClick: function (event, detail, sender) {
-                this.formStudies[sender.getAttribute("value")] = !sender.checked;
-            },
-            diseaseClick: function (event, detail, sender) {
-                this.formDiseases[sender.getAttribute("value")] = !sender.checked;
-            },
-            phenotypeClick: function (event, detail, sender) {
-                this.formPhenotypes[sender.getAttribute("value")] = !sender.checked;
-            },
-            studyKeyUp: function (event, detail, sender) {
-                var reg = new RegExp(sender.value, "i");
-                var snames = [];
-                var names = {};
-
-                for (var i = 0; i < this.studies.length; i++) {
-                    var study = this.studies[i];
-                    if (reg.test(study.sname)) {
-                        names[study.sname] = study.sname;
-                    }
-                }
-                Object.keys(names).forEach(function (key) {
-                    snames.push({
-                        name: key
-                    })
-                });
-                this.studyNames = snames;
-            },
-            diseaseKeyUp: function (event, detail, sender) {
-                var reg = new RegExp(sender.value, "i");
-                var snames = [];
-                var names = {};
-
-                for (var i = 0; i < this.studies.length; i++) {
-                    var study = this.studies[i];
-                    if (reg.test(study.meta.dis)) {
-                        names[study.meta.dis] = study.meta.dis;
-                    }
-                }
-                Object.keys(names).forEach(function (key) {
-                    snames.push({
-                        name: key
-                    })
-                });
-
-                this.diseases = snames;
-            },
-            phenotypeKeyUp: function (event, detail, sender) {
-                var reg = new RegExp(sender.value, "i");
-                var snames = [];
-                var names = {};
-
-                for (var i = 0; i < this.studies.length; i++) {
-                    var study = this.studies[i];
-                    if (reg.test(study.meta.phe)) {
-                        names[study.meta.phe] = study.meta.phe;
-                    }
-                }
-                Object.keys(names).forEach(function (key) {
-                    snames.push({
-                        name: key
-                    })
-                });
-                this.phenotype = snames;
             },
             clearForm: function () {
 
@@ -1338,33 +985,13 @@
                     var elem = checkboxes[i];
                     elem.checked = true;
                 }
-
-                this.formStudies = {};
-                this.formDiseases = {};
-                this.formPhenotypes = {};
-
-                for (var i = 0; i < this.diseases.length; i++) {
-                    var dis = this.diseases[i].name;
-                    this.formDiseases[dis] = true;
-                }
-
-                for (var i = 0; i < this.studies.length; i++) {
-                    var study = this.studies[i].sname;
-                    this.formStudies[study] = true;
-                }
-
-                for (var i = 0; i < this.phenotype.length; i++) {
-                    var phe = this.phenotype[i].name;
-                    this.formPhenotypes[phe] = true;
-                }
-
             },
             handleExpand: function () {
                 this.$.collapseGrid.toggle();
                 this.page = 1;
                 this.expanded = !this.expanded;
-
-            }, createGenomeViewer: function () {
+            },
+            createGenomeViewer: function () {
                 this.genomeViewer = new GenomeViewer({
                     cellBaseHost: 'https://www.ebi.ac.uk/cellbase/webservices/rest',
                     cellBaseVersion: 'v3',
@@ -1558,9 +1185,9 @@
                         dataType: 'json',
                         async: false,
                         success: function (response, textStatus, jqXHR) {
-                            if (response != undefined && response.response.length > 0) {
+                            if (response != undefined && response.result.length > 0) {
 
-                                var data = response.response[0].result; // TODO aaleman: Fix this!
+                                var data = response.result; // TODO aaleman: Fix this!
 
                                 var finalData = me.parseFunction(data);
 
@@ -1572,20 +1199,20 @@
                                     var row = finalData[i];
                                     var maf1000G = '.';
                                     var mafEVS = '.';
-                                    if (row.sourceEntries["1000G"]) {
-                                        maf1000G = row.sourceEntries["1000G"].stats.maf
+                                    if (row.maf1000G) {
+                                        maf1000G = row.maf1000G;
                                     }
-                                    if (row.sourceEntries["EVS"]) {
-                                        mafEVS = row.sourceEntries["EVS"].stats.maf;
+                                    if (row.mafEVS) {
+                                        mafEVS = row.mafEVS;
                                     }
 
                                     csvData.push([
                                         row.chromosome,
-                                        row.start,
+                                        row.position,
                                         row.reference,
                                         row.alternate,
                                         row.id,
-                                        row.sourceEntries.MAF.stats.maf,
+                                        row.stats.maf,
                                         maf1000G,
                                         mafEVS
 
@@ -1638,8 +1265,6 @@
                     var elem = checkboxes[i];
                     elem.checked = false;
                 }
-
-
             }
         });
     </script>
