@@ -116,6 +116,7 @@ public class PVSMain {
             diseaseGroups.add(new DiseaseGroup(16, "Certain conditions originating in the perinatal period"));
             diseaseGroups.add(new DiseaseGroup(17, "Congenital malformations, deformations and chromosomal abnormalities"));
             diseaseGroups.add(new DiseaseGroup(18, "Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified"));
+            diseaseGroups.add(new DiseaseGroup(19, "Unknown"));
 
             for (DiseaseGroup dg : diseaseGroups) {
                 try {

@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 
-import sys
 import csv
 import argparse
-import os
-from pprint import pprint
 import resource
 import mimetypes
 import gzip

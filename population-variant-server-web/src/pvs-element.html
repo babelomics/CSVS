@@ -78,7 +78,7 @@
         <jso-header id="jsoHeader"
                     on-logout="{{handleLogout}}"
                     selectedOption="{{selectedOption}}"
-                    allowLogin="{{allowLogin}}"
+                    allowLogin="false"
                     showMenu="true">
             <div class="title">CIBERER Spanish Variant Server</div>
             <div class="description">1.0.1</div>
@@ -126,13 +126,10 @@
     <script>
         Polymer({
             selectedOption: 'home',
-            idSearch: null,
             created: function () {
-                this.allowLogin = false;
                 this.diseases = [];
             },
             ready: function () {
-                this.clear = true;
                 this.getDiseases();
             },
             getDiseases: function (event, response) {
@@ -155,7 +152,7 @@
                             }
                         },
                         error: function (response) {
-                            console.log("ERROR downloading studies");
+                            console.log("ERROR downloading diseases");
                             console.log(response);
                         }
                     }
