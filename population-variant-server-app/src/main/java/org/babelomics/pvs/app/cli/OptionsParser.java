@@ -92,6 +92,14 @@ public class OptionsParser {
     @Parameters(commandNames = {"setup"}, commandDescription = "Setup Database")
     class CommandSetup implements Command {
 
+        @Parameter(names = {"--populate-diseases"}, description = "Populate diseases", arity = 0)
+        boolean populateDiseases;
+
+        @Parameter(names = {"--new-disease"}, description = "New Diseases", arity =1 )
+        String newDisease;
+
+
+
 
     }
 

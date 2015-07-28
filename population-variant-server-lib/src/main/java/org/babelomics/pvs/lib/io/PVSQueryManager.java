@@ -7,6 +7,8 @@ import org.babelomics.pvs.lib.models.DiseaseGroup;
 import org.babelomics.pvs.lib.models.Variant;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
+import org.mongodb.morphia.annotations.Entity;
+import org.mongodb.morphia.annotations.Id;
 import org.mongodb.morphia.query.Criteria;
 import org.mongodb.morphia.query.Query;
 import org.opencb.biodata.models.feature.Region;
@@ -42,7 +44,18 @@ public class PVSQueryManager {
         return query;
     }
 
-    public Iterable<Variant> getVariantsByRegionList(List<Region> regions, List<Integer> diseaseId, Integer skip, Integer limit, MutableLong count) {
+    public int getMaxDiseaseId() {
+        int id = -1;
+
+        DiseaseGroup query = datastore.createQuery(DiseaseGroup.class).order("-groupId").limit(1).get();
+        if (query != null) {
+            id = query.getGroupId();
+        }
+
+        return id;
+    }
+
+    public Iterable<Variant> getVariantsByRegionList(List<Region> regions, List<Integer> diseaseIds, Integer skip, Integer limit, MutableLong count) {
 
         Criteria[] or = new Criteria[regions.size()];
 
@@ -57,8 +70,8 @@ public class PVSQueryManager {
             and.add(auxQuery.criteria("position").greaterThanOrEq(r.getStart()));
             and.add(auxQuery.criteria("position").lessThanOrEq(r.getEnd()));
 
-            if (diseaseId != null && diseaseId.size() > 0) {
-                and.add(auxQuery.criteria("diseases.diseaseGroupId").in(diseaseId));
+            if (diseaseIds != null && diseaseIds.size() > 0) {
+                and.add(auxQuery.criteria("diseases.diseaseGroupId").in(diseaseIds));
 //                and.add(auxQuery.criteria("diseases.diseaseGroupId").hasAllOf(diseaseId));
             }
             or[i++] = auxQuery.and(and.toArray(new Criteria[and.size()]));
@@ -77,15 +90,30 @@ public class PVSQueryManager {
 
         List<Variant> res = new ArrayList<>();
 
+        int sampleCount = calculateSampleCount(diseaseIds);
+
         for (Variant v : aux) {
-            v.setStats(calculateStats(v, diseaseId));
+            v.setStats(calculateStats(v, diseaseIds, sampleCount));
             res.add(v);
         }
 
         return res;
     }
 
-    private DiseaseCount calculateStats(Variant v, List<Integer> diseaseId) {
+    private int calculateSampleCount(List<Integer> diseaseId) {
+        int res = 0;
+
+
+        Iterable<DiseaseGroup> groupId = this.datastore.createQuery(DiseaseGroup.class).field("groupId").in(diseaseId).fetch();
+
+        for (DiseaseGroup dg : groupId) {
+            res += dg.getSamples();
+        }
+
+        return res;
+    }
+
+    private DiseaseCount calculateStats(Variant v, List<Integer> diseaseId, int sampleCount) {
         DiseaseCount dc;
 
         int gt00 = 0;
@@ -101,6 +129,9 @@ public class PVSQueryManager {
                 gtmissing += auxDc.getGtmissing();
             }
         }
+
+        gt00 = sampleCount - gt01 - gt11 - gtmissing;
+
 
         int refCount = gt00 * 2 + gt01;
         int altCount = gt11 * 2 + gt01;
@@ -143,6 +174,17 @@ public class PVSQueryManager {
         BigDecimal bd = new BigDecimal(value);
         bd = bd.setScale(places, RoundingMode.HALF_UP);
         return bd.floatValue();
+    }
+
+    @Entity
+    private static class CountResult {
+
+        @Id
+        private int count;
+
+        public int getCount() {
+            return count;
+        }
     }
 
 }

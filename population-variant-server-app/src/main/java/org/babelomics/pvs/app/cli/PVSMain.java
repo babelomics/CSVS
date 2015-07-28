@@ -95,36 +95,51 @@ public class PVSMain {
 
 
         if (command instanceof OptionsParser.CommandSetup) {
+            OptionsParser.CommandSetup c = (OptionsParser.CommandSetup) command;
 
-            List<DiseaseGroup> diseaseGroups = new ArrayList<>();
+            if (c.populateDiseases) {
+                List<DiseaseGroup> diseaseGroups = new ArrayList<>();
 
-            diseaseGroups.add(new DiseaseGroup(1, "Certain infectious and parasitic diseases"));
-            diseaseGroups.add(new DiseaseGroup(2, "Neoplasms"));
-            diseaseGroups.add(new DiseaseGroup(3, "Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism"));
-            diseaseGroups.add(new DiseaseGroup(4, "Endocrine, nutritional and metabolic diseases"));
-            diseaseGroups.add(new DiseaseGroup(5, "Mental and behavioural disorders"));
-            diseaseGroups.add(new DiseaseGroup(6, "Diseases of the nervous system"));
-            diseaseGroups.add(new DiseaseGroup(7, "Diseases of the eye and adnexa"));
-            diseaseGroups.add(new DiseaseGroup(8, "Diseases of the ear and mastoid process"));
-            diseaseGroups.add(new DiseaseGroup(9, "Diseases of the circulatory system"));
-            diseaseGroups.add(new DiseaseGroup(10, "Diseases of the respiratory system"));
-            diseaseGroups.add(new DiseaseGroup(11, "Diseases of the digestive system"));
-            diseaseGroups.add(new DiseaseGroup(12, "Diseases of the skin and subcutaneous tissue"));
-            diseaseGroups.add(new DiseaseGroup(13, "Diseases of the musculoskeletal system and connective tissue"));
-            diseaseGroups.add(new DiseaseGroup(14, "Diseases of the genitourinary system"));
-            diseaseGroups.add(new DiseaseGroup(15, "Pregnancy, childbirth and the puerperium"));
-            diseaseGroups.add(new DiseaseGroup(16, "Certain conditions originating in the perinatal period"));
-            diseaseGroups.add(new DiseaseGroup(17, "Congenital malformations, deformations and chromosomal abnormalities"));
-            diseaseGroups.add(new DiseaseGroup(18, "Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified"));
-            diseaseGroups.add(new DiseaseGroup(19, "Unknown"));
+                diseaseGroups.add(new DiseaseGroup(1, "Certain infectious and parasitic diseases"));
+                diseaseGroups.add(new DiseaseGroup(2, "Neoplasms"));
+                diseaseGroups.add(new DiseaseGroup(3, "Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism"));
+                diseaseGroups.add(new DiseaseGroup(4, "Endocrine, nutritional and metabolic diseases"));
+                diseaseGroups.add(new DiseaseGroup(5, "Mental and behavioural disorders"));
+                diseaseGroups.add(new DiseaseGroup(6, "Diseases of the nervous system"));
+                diseaseGroups.add(new DiseaseGroup(7, "Diseases of the eye and adnexa"));
+                diseaseGroups.add(new DiseaseGroup(8, "Diseases of the ear and mastoid process"));
+                diseaseGroups.add(new DiseaseGroup(9, "Diseases of the circulatory system"));
+                diseaseGroups.add(new DiseaseGroup(10, "Diseases of the respiratory system"));
+                diseaseGroups.add(new DiseaseGroup(11, "Diseases of the digestive system"));
+                diseaseGroups.add(new DiseaseGroup(12, "Diseases of the skin and subcutaneous tissue"));
+                diseaseGroups.add(new DiseaseGroup(13, "Diseases of the musculoskeletal system and connective tissue"));
+                diseaseGroups.add(new DiseaseGroup(14, "Diseases of the genitourinary system"));
+                diseaseGroups.add(new DiseaseGroup(15, "Pregnancy, childbirth and the puerperium"));
+                diseaseGroups.add(new DiseaseGroup(16, "Certain conditions originating in the perinatal period"));
+                diseaseGroups.add(new DiseaseGroup(17, "Congenital malformations, deformations and chromosomal abnormalities"));
+                diseaseGroups.add(new DiseaseGroup(18, "Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified"));
+                diseaseGroups.add(new DiseaseGroup(19, "Unknown"));
 
-            for (DiseaseGroup dg : diseaseGroups) {
-                try {
-                    datastore.save(dg);
-                } catch (DuplicateKeyException e) {
-                    System.err.println("Duplicated Disase Group: " + dg);
+                for (DiseaseGroup dg : diseaseGroups) {
+                    try {
+                        datastore.save(dg);
+                    } catch (DuplicateKeyException e) {
+                        System.err.println("Duplicated Disase Group: " + dg);
+                    }
                 }
             }
+
+            if (c.newDisease != null && c.newDisease.length() > 0) {
+                PVSQueryManager qm = new PVSQueryManager("pvs");
+
+                int newId = qm.getMaxDiseaseId();
+                if (newId != -1) {
+                    newId++;
+                    DiseaseGroup dg = new DiseaseGroup(newId, c.newDisease);
+                    datastore.save(dg);
+                }
+            }
+
         } else if (command instanceof OptionsParser.CommandLoad) {
             OptionsParser.CommandLoad c = (OptionsParser.CommandLoad) command;
 
