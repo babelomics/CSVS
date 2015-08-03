@@ -1,6 +1,6 @@
 {
   "name": "Population Variant Server",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "homepage": "https://github.com/babelomics/pvs",
   "authors": [
     "aaleman <alejandro.aleman.ramos@gmail.com>"
@@ -12,26 +12,20 @@
     "bower_components"
   ],
   "dependencies": {
-    "cookies-js": "~0.4.0",
-    "crypto-js-evanvosberg": "~3.1.2",
+    "polymer": "Polymer/polymer#1.0.0",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#1.0.1",
+    "paper-drawer-panel": "PolymerElements/paper-drawer-panel#~1.0.1",
+    "fontawesome": "*",
+    "cookies-js": "~1.1.0",
+    "crypto-js-evanvosberg": "3.1.4",
     "highcharts-release": "~4.0.4",
-    "fontawesome": "~4.2.0",
-    "backbone": "~1.1.2",
     "underscore": "~1.7.0",
-    "jquery": "~2.1.1",
+    "jquery": "1.11.3",
+    "backbone": "~1.1.2",
     "qtip2": "~2.2.1",
-    "polymer": "Polymer/polymer#~0.5.0",
-    "polymer-fontawesome": "~1.0.0-beta.2",
-    "core-list": "polymer/core-list#~0.5.0",
-    "paper-button": "Polymer/paper-button#~0.5.1",
-    "core-ajax": "Polymer/core-ajax#~0.5.1",
-    "core-collapse": "Polymer/core-collapse#~0.5.1",
-    "paper-checkbox": "Polymer/paper-checkbox#~0.5.1",
-    "core-menu": "Polymer/core-menu#~0.5.5",
-    "sortable-table": "~0.11.1",
-    "core-label": "Polymer/core-label#~0.5.5"
-  },
-  "devDependencies": {
-    "backbone": "~1.1.2"
+    "bowser": "~0.7.2",
+    "pako": "~0.2.6",
+    "iron-menu-behavior": "PolymerElements/iron-menu-behavior#~1.0.1",
+    "iron-pages": "PolymerElements/iron-pages#~1.0.0"
   }
 }

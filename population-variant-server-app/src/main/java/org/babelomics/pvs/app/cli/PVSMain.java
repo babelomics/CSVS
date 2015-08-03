@@ -10,6 +10,7 @@ import org.babelomics.pvs.lib.models.DiseaseCount;
 import org.babelomics.pvs.lib.models.DiseaseGroup;
 import org.babelomics.pvs.lib.models.File;
 import org.babelomics.pvs.lib.models.Variant;
+import org.babelomics.pvs.lib.stats.PVSVariantStatsTask;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 import org.mongodb.morphia.query.Query;
@@ -19,7 +20,6 @@ import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfReader;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variant.VariantSource;
 import org.opencb.biodata.tools.variant.tasks.VariantRunner;
-import org.opencb.biodata.tools.variant.tasks.VariantStatsTask;
 import org.opencb.commons.containers.list.SortedList;
 import org.opencb.commons.io.DataReader;
 import org.opencb.commons.io.DataWriter;
@@ -262,7 +262,7 @@ public class PVSMain {
         List<Task<org.opencb.biodata.models.variant.Variant>> taskList = new SortedList<>();
         List<VariantWriter> writers = new ArrayList<>();
 
-        taskList.add(new VariantStatsTask(reader, source));
+        taskList.add(new PVSVariantStatsTask(reader, source));
         writers.add(writer);
 
         VariantRunner variantRunner = new VariantRunner(source, reader, null, writers, taskList, 100);

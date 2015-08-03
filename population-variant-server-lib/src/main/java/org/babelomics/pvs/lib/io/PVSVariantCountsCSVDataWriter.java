@@ -1,6 +1,5 @@
 package org.babelomics.pvs.lib.io;
 
-import org.opencb.biodata.formats.variant.io.VariantReader;
 import org.opencb.biodata.formats.variant.io.VariantWriter;
 import org.opencb.biodata.models.feature.Genotype;
 import org.opencb.biodata.models.variant.Variant;
@@ -9,6 +8,7 @@ import org.opencb.biodata.models.variant.stats.VariantStats;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -92,25 +92,39 @@ public class PVSVariantCountsCSVDataWriter implements VariantWriter {
         if (file.getStats() != null) {
             VariantStats stats = file.getStats();
 
+
             for (Map.Entry<Genotype, Integer> entry : stats.getGenotypesCount().entrySet()) {
 
                 Genotype g = entry.getKey();
                 int count = entry.getValue();
 
-                if (g.getAllele(0) == 0 && g.getAllele(1) == 0) {
-                    gt00 += count;
-                } else if (g.getAllele(0) == 1 && g.getAllele(1) == 1) {
-                    gt11 += count;
-                } else if (g.getAllele(0) == -1 || g.getAllele(1) == -1) {
-                    gtmissing += count;
-                } else if (g.getAllele(0) == 0 || g.getAllele(1) == 0) {
-                    gt01 += count;
-                } else if (g.getAllele(0) == g.getAllele(1)) {
-                    gt11 += count;
-                } else {
-                    gt11 += count;
-                }
+                if (g.getAllelesIdx().length == 2) {
 
+                    if (g.getAllele(0) == 0 && g.getAllele(1) == 0) {
+                        gt00 += count;
+                    } else if (g.getAllele(0) == 1 && g.getAllele(1) == 1) {
+                        gt11 += count;
+                    } else if (g.getAllele(0) == -1 || g.getAllele(1) == -1) {
+                        gtmissing += count;
+                    } else if (g.getAllele(0) == 0 || g.getAllele(1) == 0) {
+                        gt01 += count;
+                    } else if (g.getAllele(0) == g.getAllele(1)) {
+                        gt11 += count;
+                    } else {
+                        gt11 += count;
+                    }
+                } else if (g.getAllelesIdx().length == 1) {
+                    if (g.getAllele(0) == 0) {
+                        gt00 += count;
+                    } else if (g.getAllele(0) == 1) {
+                        gt11 += count;
+                    }
+
+                } else {
+                    System.err.println("Alleles size > 2");
+                    System.err.println(Arrays.toString(g.getAllelesIdx()));
+                    System.err.println(Arrays.toString(g.getNormalizedAllelesIdx()));
+                }
                 total += count;
 
             }
