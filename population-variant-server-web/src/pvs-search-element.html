@@ -147,7 +147,7 @@
                             <div class="input_container vertical layout">
                                 <label class="input_label">Chromosomal Location</label>
                                 <textarea id="region" name="region" placeholder="1:1-100000,2:1-100000"
-                                          value="{{ regionValue }}" rows="3">
+                                          value="{{regionValue::change}}" rows="3">
                                 </textarea>
                             </div>
                             <div class="input_container vertical layout">
@@ -222,7 +222,7 @@
             },
             regionValue: {
                 type: String,
-                value: '1:1-200000'
+                value: ''
             },
             columns: {
                 type: Array,
@@ -369,7 +369,7 @@
                     ]
                 },
                 {
-                    title: "1000G MAF", width: 250,
+                    title: "1000G MAF (phase 1)", width: 250,
                     columns: [
                         {
                             name: "maf1000G",
@@ -433,6 +433,113 @@
                         }
 
                     ]
+                },
+                {
+                    title: "1000G MAF (phase 3)", width: 300,
+                    columns: [
+                        {
+                            name: "maf1000G_PHASE_3_ALL",
+                            title: "ALL",
+                            defaultValue: ".",
+                            formula: function (row) {
+                                if (row.maf1000G_PHASE_3_ALL != null) {
+                                    return row.maf1000G_PHASE_3_ALL;
+                                } else {
+                                    return ".";
+                                }
+                            }
+                        },
+                        {
+                            name: "maf1000G_PHASE_3_AMR",
+                            title: "AME",
+                            defaultValue: ".",
+                            formula: function (row) {
+                                if (row.maf1000G_PHASE_3_AMR != null) {
+                                    return row.maf1000G_PHASE_3_AMR;
+                                } else {
+                                    return ".";
+                                }
+                            }
+                        },
+                        {
+                            name: "maf1000G_PHASE_3_SAS",
+                            title: "South ASI",
+                            defaultValue: ".",
+                            formula: function (row) {
+                                if (row.maf1000G_PHASE_3_SAS != null) {
+                                    return row.maf1000G_PHASE_3_SAS;
+                                } else {
+                                    return ".";
+                                }
+                            }
+                        },
+                        {
+                            name: "maf1000G_PHASE_3_EAS",
+                            title: "East ASI",
+                            defaultValue: ".",
+                            formula: function (row) {
+                                if (row.maf1000G_PHASE_3_EAS != null) {
+                                    return row.maf1000G_PHASE_3_EAS;
+                                } else {
+                                    return ".";
+                                }
+                            }
+                        },
+                        {
+                            name: "maf1000G_PHASE_3_AFR",
+                            title: "AFR",
+                            defaultValue: ".",
+                            formula: function (row) {
+                                if (row.maf1000G_PHASE_3_AFR != null) {
+                                    return row.maf1000G_PHASE_3_AFR;
+                                } else {
+                                    return ".";
+                                }
+                            }
+                        },
+                        {
+                            name: "maf1000G_PHASE_3_EUR",
+                            title: "EUR",
+                            defaultValue: ".",
+                            formula: function (row) {
+                                if (row.maf1000G_PHASE_3_EUR != null) {
+                                    return row.maf1000G_PHASE_3_EUR;
+                                } else {
+                                    return ".";
+                                }
+                            }
+                        },
+                    ]
+
+                },
+                {
+                    title: "ESP 6500", width: 100,
+                    columns: [
+                        {
+                            name: "mafESP_EA",
+                            title: "Eur. Ame.",
+                            defaultValue: ".",
+                            formula: function (row) {
+                                if (row.mafESP_EA != null) {
+                                    return row.mafESP_EA;
+                                } else {
+                                    return ".";
+                                }
+                            }
+                        },
+                        {
+                            name: "mafESP_AA",
+                            title: "Afr. Ame.",
+                            defaultValue: ".",
+                            formula: function (row) {
+                                if (row.mafESP_AA != null) {
+                                    return row.mafESP_AA;
+                                } else {
+                                    return ".";
+                                }
+                            }
+                        }
+                        ]
                 },
                 {
                     name: 'sift', title: 'SIFT'
@@ -729,6 +836,10 @@
             for (var i = 0; i < data.length; i++) {
                 var variant = data[i];
 
+                if(variant.annots == null){
+                    contine
+                }
+
                 // Annotate SNPid
                 if (variant.annots.id != null && variant.annots.id) {
                     variant.id = variant.annots.id;
@@ -744,10 +855,10 @@
                             switch (crs.source) {
                                 case 'phastCons':
                                     variant.phastcons = score;
-                                    break;
+                                break;
                                 case 'phylop':
                                     variant.phylop = score;
-                                    break;
+                                break;
                                 default:
                             }
                         }
@@ -772,12 +883,12 @@
 
                                 var pss = ct.proteinSubstitutionScores[k];
                                 switch (pss.source) {
-                                    case 'Sift':
+                                    case 'sift':
                                         auxSift = pss;
-                                        break;
-                                    case 'Polyphen':
+                                    break;
+                                    case 'polyphen':
                                         auxPoly = pss;
-                                        break;
+                                    break;
                                 }
                             }
 
@@ -808,8 +919,48 @@
                     }
                 }
 
-                if (variant.annots.clinicalData != null && variant.annots.clinicalData.length > 0) {
-//                            debugger
+                // Clinical
+                if (variant.annots.clinical != null ) {
+                    var clinical = variant.annots.clinical;
+
+                    var phenotypes = [];
+
+                    if(clinical.cosmic != null){
+                        for(var i = 0; i< clinical.cosmic.length ; i++){
+                            var cosmic = clinical.cosmic[i];
+                            if(cosmic.primaryHistology != null && cosmic.primaryHistology != ""){
+                                phenotypes.push(cosmic.primaryHistology);
+                            }
+                        } 
+                    }
+
+                    if(clinical.gwas != null){
+                        for(var i = 0; i< clinical.gwas.length ; i++){
+                            var gwas = clinical.gwas[i];
+                            for(var j = 0; j< gwas.traits.length; j++){
+                                var trait = gwas.traits[j];
+                                if(trait != null && trait != ""){
+                                    phenotypes.push(trait);
+                                }
+                            }
+                        } 
+                    }
+
+                    if(clinical.clinvar != null){
+                        for(var i = 0; i< clinical.clinvar.length ; i++){
+                            var clinvar = clinical.clinvar[i];
+                            for(var j = 0; j< clinvar.traits.length; j++){
+                                var trait = clinvar.traits[j];
+                                if(trait != null && trait != ""){
+                                    phenotypes.push(trait);
+                                }
+                            }
+                        } 
+                    }
+
+                    if(phenotypes.length > 0){
+                        variant.phenotype = phenotypes.join(", ");
+                    }
                 }
 
                 if (variant.annots.populationFrequencies != null) {
@@ -818,31 +969,77 @@
 
                         var pfreq = variant.annots.populationFrequencies[j];
 
-                        switch (pfreq.pop) {
-                            case "phase_1_ALL":
-                                var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                variant.maf1000G = me._toFixed(maf, me.floatDecimals);
+                        if(pfreq.study === "1000GENOMES_phase_1"){
+                            switch (pfreq.pop) {
+                                case "ALL":
+                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                variant.maf1000G= Number(maf).toFixed(3) 
                                 break;
 
-                            case "phase_1_AMR":
-                                var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                variant.maf1000GAME = me._toFixed(maf, me.floatDecimals);
+                                case "AMR":
+                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                variant.maf1000GAME= Number(maf).toFixed(3) 
                                 break;
 
-                            case "phase_1_ASN":
-                                var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                variant.maf1000GASI = me._toFixed(maf, me.floatDecimals);
+                                case "ASN":
+                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                variant.maf1000GASI= Number(maf).toFixed(3) 
                                 break;
 
-                            case "phase_1_AFR":
-                                var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                variant.maf1000GAFR = me._toFixed(maf, me.floatDecimals);
+                                case "AFR":
+                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                variant.maf1000GAFR= Number(maf).toFixed(3) 
                                 break;
 
-                            case "phase_1_EUR":
-                                var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                variant.maf1000GEUR = me._toFixed(maf, me.floatDecimals);
+                                case "EUR":
+                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                variant.maf1000GEUR= Number(maf).toFixed(3) 
                                 break;
+                            }
+                        }
+                        else if(pfreq.study === "1000G_PHASE_3"){
+                            switch (pfreq.pop) {
+                                case "1000G_PHASE_3_ALL":
+                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    variant.maf1000G_PHASE_3_ALL= Number(maf).toFixed(3) 
+                                    break;
+                                case "1000G_PHASE_3_SAS":
+                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    variant.maf1000G_PHASE_3_SAS= Number(maf).toFixed(3) 
+                                    break;
+                                case "1000G_PHASE_3_EAS":
+                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    variant.maf1000G_PHASE_3_EAS= Number(maf).toFixed(3) 
+                                    break;
+                                case "1000G_PHASE_3_AMR":
+                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    variant.maf1000G_PHASE_3_AMR= Number(maf).toFixed(3) 
+                                    break;
+                                case "1000G_PHASE_3_AFR":
+                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    variant.maf1000G_PHASE_3_AFR= Number(maf).toFixed(3) 
+                                    break;
+                                case "1000G_PHASE_3_EUR":
+                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    variant.maf1000G_PHASE_3_EUR= Number(maf).toFixed(3) 
+                                    break;
+
+                            }
+                        }
+                        else if (pfreq.study === "ESP_6500"){
+                            switch (pfreq.pop) {
+                                case "European_American":
+                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                variant.mafESP_EA= Number(maf).toFixed(3) 
+                                break;
+
+                                case "African_American":
+                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                variant.mafESP_AA= Number(maf).toFixed(3) 
+                                break;
+
+
+                            }
                         }
                     }
                 }
