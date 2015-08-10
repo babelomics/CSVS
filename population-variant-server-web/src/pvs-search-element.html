@@ -27,9 +27,6 @@
             margin: 10px;
         }
 
-        #filter-form-element label:after {
-            content: ':';
-        }
 
         .input_container {
             margin: 0px;
@@ -85,6 +82,7 @@
         #diseases_div {
             height: 300px;
             max-height: 300px;
+            overflow-y:auto;
         }
 
         #exportBtn {
@@ -95,8 +93,17 @@
             font-size: 11px;
         }
 
+        jso-table{
+            overflow-y:auto;
+        
+        }
         jso-table::shadow .table-header-field > .name.jso-table {
             padding: 4px 0;
+        }
+        
+        jso-table::shadow #list{
+            height:300px;
+            overflow-x:auto
         }
 
         #menu {
@@ -175,11 +182,11 @@
                                         <span>{{item.name}}</span>
                                     </label>
                                 </template>
+                            </div>
                                 <div>
                                     <paper-button on-click="{{ selectAllDiseases }}">All</paper-button>
                                     <paper-button on-click="{{ deselectAllDiseases }}">None</paper-button>
                                 </div>
-                            </div>
                         </div>
                     </div>
                 </form>
@@ -222,7 +229,7 @@
             },
             regionValue: {
                 type: String,
-                value: ''
+                value: '1:1-100000'
             },
             columns: {
                 type: Array,
@@ -304,10 +311,12 @@
                 {name: 'id', title: 'Id', width: 90},
                 {
                     title: 'MAF',
+                    name: 'maf',
                     width: 300,
                     columns: [
                         {
                             title: "Genotypes",
+                            name:'genotypes',
                             width: 150,
                             columns: [
                                 {
@@ -338,6 +347,7 @@
                         },
                         {
                             title: "Freq.",
+                            name: "freq",
                             width: 150,
                             columns: [
                                 {
@@ -370,6 +380,7 @@
                 },
                 {
                     title: "1000G MAF (phase 1)", width: 250,
+                    name:'maf1000g',
                     columns: [
                         {
                             name: "maf1000G",
@@ -436,6 +447,7 @@
                 },
                 {
                     title: "1000G MAF (phase 3)", width: 300,
+                    name: 'maf1000G3',
                     columns: [
                         {
                             name: "maf1000G_PHASE_3_ALL",
@@ -514,6 +526,7 @@
                 },
                 {
                     title: "ESP 6500", width: 100,
+                    name:'maf6500',
                     columns: [
                         {
                             name: "mafESP_EA",
@@ -542,16 +555,16 @@
                         ]
                 },
                 {
-                    name: 'sift', title: 'SIFT'
+                    name: 'sift', title: 'SIFT',width:50
                 },
                 {
-                    name: 'polyphen', title: 'POLYPHEN'
+                    name: 'polyphen', title: 'POLYPHEN', width:50
                 },
                 {
-                    name: 'phastcons', title: 'PhastCons'
+                    name: 'phastcons', title: 'PhastCons',width:50
                 },
                 {
-                    name: 'phylop', title: 'phyloP'
+                    name: 'phylop', title: 'phyloP', width:50
                 },
                 {
                     name: 'phenotype', title: 'Phenotype'
@@ -926,8 +939,8 @@
                     var phenotypes = [];
 
                     if(clinical.cosmic != null){
-                        for(var i = 0; i< clinical.cosmic.length ; i++){
-                            var cosmic = clinical.cosmic[i];
+                        for(var j = 0; j< clinical.cosmic.length ; j++){
+                            var cosmic = clinical.cosmic[j];
                             if(cosmic.primaryHistology != null && cosmic.primaryHistology != ""){
                                 phenotypes.push(cosmic.primaryHistology);
                             }
@@ -935,10 +948,10 @@
                     }
 
                     if(clinical.gwas != null){
-                        for(var i = 0; i< clinical.gwas.length ; i++){
-                            var gwas = clinical.gwas[i];
-                            for(var j = 0; j< gwas.traits.length; j++){
-                                var trait = gwas.traits[j];
+                        for(var j = 0; j< clinical.gwas.length ; j++){
+                            var gwas = clinical.gwas[j];
+                            for(var k = 0; k< gwas.traits.length; k++){
+                                var trait = gwas.traits[k];
                                 if(trait != null && trait != ""){
                                     phenotypes.push(trait);
                                 }
@@ -947,10 +960,10 @@
                     }
 
                     if(clinical.clinvar != null){
-                        for(var i = 0; i< clinical.clinvar.length ; i++){
-                            var clinvar = clinical.clinvar[i];
-                            for(var j = 0; j< clinvar.traits.length; j++){
-                                var trait = clinvar.traits[j];
+                        for(var j = 0; j< clinical.clinvar.length ; j++){
+                            var clinvar = clinical.clinvar[j];
+                            for(var k = 0; k< clinvar.traits.length; k++){
+                                var trait = clinvar.traits[k];
                                 if(trait != null && trait != ""){
                                     phenotypes.push(trait);
                                 }
