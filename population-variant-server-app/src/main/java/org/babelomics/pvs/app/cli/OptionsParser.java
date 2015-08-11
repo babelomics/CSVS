@@ -45,6 +45,14 @@ public class OptionsParser {
 
         @Parameter(names = {"-d", "--diseaseId"}, description = "Disease group Id", required = true, arity = 1)
         int disease;
+
+        @Parameter(names = {"--host"}, description = "DB host", arity = 1)
+        String host = "localhost";
+
+        @Parameter(names = {"--user"}, description = "DB User", arity = 1)
+        String user = "";
+        @Parameter(names = {"--pass"}, description = "DB Pass", arity = 1)
+        String pass = "";
     }
 
     @Parameters(commandNames = {"unload"}, commandDescription = "Unloads variants from the DB")
@@ -55,6 +63,14 @@ public class OptionsParser {
 
         @Parameter(names = {"-d", "--diseaseId"}, description = "Disease group Id", required = true, arity = 1)
         int disease;
+
+        @Parameter(names = {"--host"}, description = "DB host", arity = 1)
+        String host = "localhost";
+
+        @Parameter(names = {"--user"}, description = "DB User", arity = 1)
+        String user = "";
+        @Parameter(names = {"--pass"}, description = "DB Pass", arity = 1)
+        String pass = "";
     }
 
     @Parameters(commandNames = {"count"}, commandDescription = "Calculate genotype counts")
@@ -65,6 +81,7 @@ public class OptionsParser {
 
         @Parameter(names = {"-o", "--output"}, description = "Output File", required = true, arity = 1)
         String output;
+
 
     }
 
@@ -86,6 +103,14 @@ public class OptionsParser {
         @Parameter(names = {"--limit"}, description = "Skip")
         Integer limit = null;
 
+        @Parameter(names = {"--host"}, description = "DB host", arity = 1)
+        String host = "localhost";
+
+        @Parameter(names = {"--user"}, description = "DB User", arity = 1)
+        String user = "";
+        @Parameter(names = {"--pass"}, description = "DB Pass", arity = 1)
+        String pass = "";
+
 
     }
 
@@ -95,10 +120,15 @@ public class OptionsParser {
         @Parameter(names = {"--populate-diseases"}, description = "Populate diseases", arity = 0)
         boolean populateDiseases;
 
-        @Parameter(names = {"--new-disease"}, description = "New Diseases", arity =1 )
+        @Parameter(names = {"--new-disease"}, description = "New Diseases", arity = 1)
         String newDisease;
 
-
+        @Parameter(names = {"--host"}, description = "DB host", arity = 1)
+        String host = "localhost";
+        @Parameter(names = {"--user"}, description = "DB User", arity = 1)
+        String user = "";
+        @Parameter(names = {"--pass"}, description = "DB Pass", arity = 1)
+        String pass = "";
 
 
     }
@@ -117,6 +147,14 @@ public class OptionsParser {
 
         @Parameter(names = {"--override"}, description = "Oerride selected annotations", arity = 0)
         boolean override;
+
+        @Parameter(names = {"--host"}, description = "DB host", arity = 1)
+        String host = "localhost";
+
+        @Parameter(names = {"--user"}, description = "DB User", arity = 1)
+        String user = "";
+        @Parameter(names = {"--pass"}, description = "DB Pass", arity = 1)
+        String pass = "";
 
     }
 

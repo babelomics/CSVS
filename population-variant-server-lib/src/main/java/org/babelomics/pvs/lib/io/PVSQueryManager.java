@@ -27,11 +27,16 @@ public class PVSQueryManager {
     final Datastore datastore;
     static final int DECIMAL_POSITIONS = 3;
 
-    public PVSQueryManager(String dbName) {
+
+    public PVSQueryManager(String host, String dbName) {
         Morphia morphia = new Morphia();
         morphia.mapPackage("org.babelomics.pvs.lib.models");
-        this.datastore = morphia.createDatastore(new MongoClient(), dbName);
+        this.datastore = morphia.createDatastore(new MongoClient(host), dbName);
         this.datastore.ensureIndexes();
+    }
+
+    public PVSQueryManager(String dbName) {
+        this("localhost", dbName);
     }
 
     public PVSQueryManager(Datastore datastore) {
@@ -48,6 +53,7 @@ public class PVSQueryManager {
         int id = -1;
 
         DiseaseGroup query = datastore.createQuery(DiseaseGroup.class).order("-groupId").limit(1).get();
+
         if (query != null) {
             id = query.getGroupId();
         }

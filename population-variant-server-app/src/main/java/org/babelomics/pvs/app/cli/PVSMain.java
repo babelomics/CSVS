@@ -3,6 +3,8 @@ package org.babelomics.pvs.app.cli;
 import com.beust.jcommander.ParameterException;
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.babelomics.pvs.lib.annot.CellBaseAnnotator;
 import org.babelomics.pvs.lib.io.*;
@@ -33,6 +35,7 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -42,6 +45,27 @@ import java.util.regex.Pattern;
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
  */
 public class PVSMain {
+
+
+    private static Datastore getDatastore(String host, String user, String pass) {
+
+        Datastore datastore;
+
+        final Morphia morphia = new Morphia();
+        morphia.mapPackage("org.babelomics.pvs.lib.models");
+
+        MongoClient mongoClient;
+        if (user == "" && pass == "") {
+            mongoClient = new MongoClient(host);
+        } else {
+            MongoCredential credential = MongoCredential.createCredential(user, "pvs", pass.toCharArray());
+            mongoClient = new MongoClient(new ServerAddress(host), Arrays.asList(credential));
+        }
+
+        datastore = morphia.createDatastore(mongoClient, "pvs");
+        datastore.ensureIndexes();
+        return datastore;
+    }
 
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
         OptionsParser parser = new OptionsParser();
@@ -86,16 +110,12 @@ public class PVSMain {
             System.exit(1);
         }
 
-        final Morphia morphia = new Morphia();
-
-        morphia.mapPackage("org.babelomics.pvs.lib.models");
-
-        final Datastore datastore = morphia.createDatastore(new MongoClient(), "pvs");
-        datastore.ensureIndexes();
-
 
         if (command instanceof OptionsParser.CommandSetup) {
             OptionsParser.CommandSetup c = (OptionsParser.CommandSetup) command;
+
+            Datastore datastore = getDatastore(c.host, c.user, c.pass);
+
 
             if (c.populateDiseases) {
                 List<DiseaseGroup> diseaseGroups = new ArrayList<>();
@@ -130,7 +150,7 @@ public class PVSMain {
             }
 
             if (c.newDisease != null && c.newDisease.length() > 0) {
-                PVSQueryManager qm = new PVSQueryManager("pvs");
+                PVSQueryManager qm = new PVSQueryManager(datastore);
 
                 int newId = qm.getMaxDiseaseId();
                 if (newId != -1) {
@@ -146,12 +166,16 @@ public class PVSMain {
             Path inputFile = Paths.get(c.input);
             int diseaseGroupId = c.disease;
 
+            Datastore datastore = getDatastore(c.host, c.user, c.pass);
+
             loadVariants(inputFile, diseaseGroupId, datastore);
         } else if (command instanceof OptionsParser.CommandUnload) {
             OptionsParser.CommandUnload c = (OptionsParser.CommandUnload) command;
 
             Path inputFile = Paths.get(c.input);
             int diseaseGroupId = c.disease;
+
+            Datastore datastore = getDatastore(c.host, c.user, c.pass);
 
             unloadVariants(inputFile, diseaseGroupId, datastore);
         } else if (command instanceof OptionsParser.CommandCount) {
@@ -164,6 +188,8 @@ public class PVSMain {
         } else if (command instanceof OptionsParser.CommandAnnot) {
 
             OptionsParser.CommandAnnot c = (OptionsParser.CommandAnnot) command;
+
+            Datastore datastore = getDatastore(c.host, c.user, c.pass);
 
             CellBaseAnnotator cba = new CellBaseAnnotator();
 
@@ -183,17 +209,16 @@ public class PVSMain {
                     batch.add(it.next());
                 }
 
-
                 cba.annot(batch);
-
                 datastore.save(batch);
-
                 batch.clear();
             }
 
 
         } else if (command instanceof OptionsParser.CommandQuery) {
             OptionsParser.CommandQuery c = (OptionsParser.CommandQuery) command;
+
+            Datastore datastore = getDatastore(c.host, c.user, c.pass);
 
             PVSQueryManager qm = new PVSQueryManager(datastore);
 
