@@ -13,6 +13,8 @@
             display: block;
             box-sizing: border-box;
             position: relative;
+            background-color: var(--text-primary-color);
+            color: var(--primary-text-color);
         }
 
         #filter-form-element {
@@ -20,41 +22,6 @@
             width: 250px;
             margin: 20px;
             min-height: 900px;
-        }
-
-        paper-button {
-            margin: 10px;
-        }
-
-
-        .input_container {
-            margin: 0px;
-            width: 175px;
-            right: auto;
-            top: 0px;
-            /*left: 5px;*/
-            padding: 4px 6px 3px 20px;
-        }
-
-        .input_container label {
-            padding-bottom: 5px;
-            padding-left: 1px;
-        }
-
-        #headerTitle {
-            background: #e4e7e9;
-            color: #435F7A;
-            font-size: 16px;
-            line-height: 22px;
-
-            margin: 10px;
-            padding: 5px;
-        }
-
-        .form_block {
-            width: 250px;
-            max-height: 400px;
-            margin-bottom: 10px;
         }
 
         textarea {
@@ -67,9 +34,6 @@
 
         #dataGridElement {
             border-radius: 0px !important;
-            padding: 5px;
-            padding-left: 10px;
-            padding-right: 10px;
             margin: 20px 20px 20px 0px;
             background-color: #FFFFFF;
         }
@@ -81,7 +45,7 @@
         #diseases_div {
             height: 300px;
             max-height: 300px;
-            overflow-y:auto;
+            overflow-y: auto;
         }
 
         #exportBtn {
@@ -92,17 +56,18 @@
             font-size: 11px;
         }
 
-        jso-table{
-            overflow-y:auto;
-        
+        jso-table {
+            overflow-y: auto;
+
         }
+
         jso-table::shadow .table-header-field > .name.jso-table {
             padding: 4px 0;
         }
-        
-        jso-table::shadow #list{
-            height:300px;
-            overflow-x:auto
+
+        jso-table::shadow #list {
+            height: 300px;
+            overflow-x: auto
         }
 
         #menu {
@@ -130,50 +95,95 @@
         #tools {
             /*height: calc(100% - 375px);*/
             /*overflow-x: hidden;*/
+
+            margin-top: 10px;
         }
 
+        jso-variant-frequencies-grid,
+        jso-variant-effect-grid,
         jso-variant-grid,
         jso-genome-viewer-element,
-        jso-variant-effect-grid {
+        .jso-formbox,
+        #dataTable {
             box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.2);
         }
 
+        jso-variant-frequencies-grid,
+        jso-variant-effect-grid,
+        #dataTable {
+            border: 1px solid var(--divider-color)
+        }
+
+        .check {
+            cursor: pointer;
+            color: var(--secondary-text-color);
+        }
+
+        .check:hover {
+            color: var(--accent-color);
+        }
     </style>
     <template>
         <div class="horizontal layout center-justified">
             <div id="filter-form-element">
                 <form id="filter_form" class="vertical layout">
                     <div vertical layout>
-                        <div id="buttons_container" class="horizontal layout end-justified">
-                            <div class="jso-btn jso-btn-shdw flex" on-click="clearForm">Clear</div>
+                        <div id="buttons_container" class="horizontal layout end-justified" style="margin:10px 5px;">
+                            <div class="jso-btn jso-btn-shdw flex" on-click="clearForm" style="margin-right: 3px;">
+                                Clear
+                            </div>
                             <div class="jso-btn jso-btn-shdw flex" on-click="submitForm">Search</div>
                         </div>
                         <div class="form_block positionBlock">
-                            <div id="headerTitle">Position</div>
-                            <div class="input_container vertical layout">
-                                <label class="input_label">Chromosomal Location</label>
-                                <textarea id="region" name="region" placeholder="1:1-100000,2:1-100000"
-                                          value="{{regionValue::change}}" rows="3">
-                                </textarea>
-                            </div>
-                            <div class="input_container vertical layout">
-                                <label class="input_label">Gene</label>
-                                <textarea id="gene" name="gene" placeholder="BRCA2,PPL"
-                                          value="{{ geneValue }}" rows="3"></textarea>
 
-                                <div class="searchGene horizontal layout end-justified" hidden>
-                                    <input id="searchField" list="searchDataList" placeholder="Search gene" type="text"
-                                           style="width: 100px;">
-                                    <datalist id="searchDataList"></datalist>
-                                    <div id="quickSearchButton" class="button" style="border-left: none;">
-                                        <font-awesome icon="search"></font-awesome>
+                            <div class="jso-formbox">
+                                <div class="jso-formtitle">
+                                    Position
+                                </div>
+                                <div class="jso-formcontent">
+                                    <div class="input_container vertical layout">
+                                        <label class="jso">Chromosomal Location:</label>
+                                        <textarea id="region" name="region" placeholder="1:1-100000,2:1-100000"
+                                                  value="{{regionValue::change}}" rows="3"></textarea>
                                     </div>
+                                    <div class="input_container vertical layout">
+                                        <label class="jso">Gene:</label>
+                                        <textarea id="gene" name="gene" placeholder="BRCA2,PPL"
+                                                  value="{{ geneValue }}" rows="3"></textarea>
+
+                                        <div class="searchGene horizontal layout end-justified" hidden>
+                                            <input id="searchField" list="searchDataList" placeholder="Search gene"
+                                                   type="text"
+                                                   style="width: 100px;">
+                                            <datalist id="searchDataList"></datalist>
+                                            <div id="quickSearchButton" class="button" style="border-left: none;">
+                                                <font-awesome icon="search"></font-awesome>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
+
                         </div>
-                        <div class="form_block">
-                            <div id="headerTitle">Diseases</div>
-                            <div id="diseases_div">
+
+
+                        <div class="jso-formbox">
+                            <div class="jso-formtitle horizontal layout center">
+                                <div>Diseases</div>
+                                <div class="flex"></div>
+                                <div class="check" on-click="selectAllDiseases">
+                                    <i class="fa fa-check"></i>
+                                </div>
+                                <div class="check" on-click="deselectAllDiseases">
+                                    <i class="fa fa-times"></i>
+                                </div>
+
+                                <!--<paper-button on-click="{{ selectAllDiseases }}">All</paper-button>-->
+                                <!--<paper-button on-click="{{ deselectAllDiseases }}">None</paper-button>-->
+
+                            </div>
+                            <div id="diseases_div" class="jso-formcontent" style="padding: 8px 10px">
                                 <template is="dom-repeat" items="{{diseases}}">
                                     <label class="jso-control">
                                         <input type="checkbox" class="diseaseName" name="disease" id="disease"
@@ -182,12 +192,6 @@
                                     </label>
                                 </template>
                             </div>
-                                <div class="horizontal layout end-justified">
-                                    <div class="jso-btn jso-btn-shdw flex" on-click="selectAllDiseases">All</div>
-                                    <div class="jso-btn jso-btn-shdw flex" on-click="deselectAllDiseases">None</div>
-                                    <!--<paper-button on-click="{{ selectAllDiseases }}">All</paper-button>-->
-                                    <!--<paper-button on-click="{{ deselectAllDiseases }}">None</paper-button>-->
-                                </div>
                         </div>
                     </div>
                 </form>
@@ -205,7 +209,7 @@
                 </div>
 
                 <!--<paper-button raised on-click="{{ exportQueryToCSV }}" horizontal layout end-justified-->
-                              <!--id="exportBtn">Export to CSV-->
+                <!--id="exportBtn">Export to CSV-->
                 <!--</paper-button>-->
 
                 <div id="tools">
@@ -317,7 +321,7 @@
                     columns: [
                         {
                             title: "Genotypes",
-                            name:'genotypes',
+                            name: 'genotypes',
                             width: 150,
                             columns: [
                                 {
@@ -381,7 +385,7 @@
                 },
                 {
                     title: "1000G MAF (phase 1)", width: 250,
-                    name:'maf1000g',
+                    name: 'maf1000g',
                     columns: [
                         {
                             name: "maf1000G",
@@ -527,7 +531,7 @@
                 },
                 {
                     title: "ESP 6500", width: 100,
-                    name:'maf6500',
+                    name: 'maf6500',
                     columns: [
                         {
                             name: "mafESP_EA",
@@ -553,22 +557,22 @@
                                 }
                             }
                         }
-                        ]
+                    ]
                 },
                 {
-                    name: 'sift', title: 'SIFT',width:50
+                    name: 'sift', title: 'SIFT', width: 50
                 },
                 {
-                    name: 'polyphen', title: 'POLYPHEN', width:50
+                    name: 'polyphen', title: 'POLYPHEN', width: 50
                 },
                 {
-                    name: 'phastcons', title: 'PhastCons',width:50
+                    name: 'phastcons', title: 'PhastCons', width: 50
                 },
                 {
-                    name: 'phylop', title: 'phyloP', width:50
+                    name: 'phylop', title: 'phyloP', width: 50
                 },
                 {
-                    name: 'phenotype', title: 'Phenotype'
+                    name: 'phenotype', title: 'Phenotype', width: 500
                 }
             ];
         },
@@ -663,7 +667,7 @@
 
                 for (var i = 0; i < diseaseEls.length; i++) {
                     var el = diseaseEls[i];
-                    if(el.checked){
+                    if (el.checked) {
                         diseaseIds.push(el.getAttribute("value"));
                     }
                 }
@@ -698,7 +702,7 @@
             this.$.filter_form.reset();
 
         },
-       exportQueryToCSV: function () {
+        exportQueryToCSV: function () {
             var numVariants = this.$.dataGrid.dataSize;
 
             if (numVariants > 200) {
@@ -840,7 +844,7 @@
             for (var i = 0; i < data.length; i++) {
                 var variant = data[i];
 
-                if(variant.annots == null){
+                if (variant.annots == null) {
                     contine
                 }
 
@@ -859,10 +863,10 @@
                             switch (crs.source) {
                                 case 'phastCons':
                                     variant.phastcons = score;
-                                break;
+                                    break;
                                 case 'phylop':
                                     variant.phylop = score;
-                                break;
+                                    break;
                                 default:
                             }
                         }
@@ -889,10 +893,10 @@
                                 switch (pss.source) {
                                     case 'sift':
                                         auxSift = pss;
-                                    break;
+                                        break;
                                     case 'polyphen':
                                         auxPoly = pss;
-                                    break;
+                                        break;
                                 }
                             }
 
@@ -924,45 +928,45 @@
                 }
 
                 // Clinical
-                if (variant.annots.clinical != null ) {
+                if (variant.annots.clinical != null) {
                     var clinical = variant.annots.clinical;
 
                     var phenotypes = [];
 
-                    if(clinical.cosmic != null){
-                        for(var j = 0; j< clinical.cosmic.length ; j++){
+                    if (clinical.cosmic != null) {
+                        for (var j = 0; j < clinical.cosmic.length; j++) {
                             var cosmic = clinical.cosmic[j];
-                            if(cosmic.primaryHistology != null && cosmic.primaryHistology != ""){
+                            if (cosmic.primaryHistology != null && cosmic.primaryHistology != "") {
                                 phenotypes.push(cosmic.primaryHistology);
                             }
-                        } 
+                        }
                     }
 
-                    if(clinical.gwas != null){
-                        for(var j = 0; j< clinical.gwas.length ; j++){
+                    if (clinical.gwas != null) {
+                        for (var j = 0; j < clinical.gwas.length; j++) {
                             var gwas = clinical.gwas[j];
-                            for(var k = 0; k< gwas.traits.length; k++){
+                            for (var k = 0; k < gwas.traits.length; k++) {
                                 var trait = gwas.traits[k];
-                                if(trait != null && trait != ""){
+                                if (trait != null && trait != "") {
                                     phenotypes.push(trait);
                                 }
                             }
-                        } 
+                        }
                     }
 
-                    if(clinical.clinvar != null){
-                        for(var j = 0; j< clinical.clinvar.length ; j++){
+                    if (clinical.clinvar != null) {
+                        for (var j = 0; j < clinical.clinvar.length; j++) {
                             var clinvar = clinical.clinvar[j];
-                            for(var k = 0; k< clinvar.traits.length; k++){
+                            for (var k = 0; k < clinvar.traits.length; k++) {
                                 var trait = clinvar.traits[k];
-                                if(trait != null && trait != ""){
+                                if (trait != null && trait != "") {
                                     phenotypes.push(trait);
                                 }
                             }
-                        } 
+                        }
                     }
 
-                    if(phenotypes.length > 0){
+                    if (phenotypes.length > 0) {
                         variant.phenotype = phenotypes.join(", ");
                     }
                 }
@@ -973,74 +977,74 @@
 
                         var pfreq = variant.annots.populationFrequencies[j];
 
-                        if(pfreq.study === "1000GENOMES_phase_1"){
+                        if (pfreq.study === "1000GENOMES_phase_1") {
                             switch (pfreq.pop) {
                                 case "ALL":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                variant.maf1000G= Number(maf).toFixed(3) 
-                                break;
+                                    variant.maf1000G = Number(maf).toFixed(3)
+                                    break;
 
                                 case "AMR":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                variant.maf1000GAME= Number(maf).toFixed(3) 
-                                break;
+                                    variant.maf1000GAME = Number(maf).toFixed(3)
+                                    break;
 
                                 case "ASN":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                variant.maf1000GASI= Number(maf).toFixed(3) 
-                                break;
+                                    variant.maf1000GASI = Number(maf).toFixed(3)
+                                    break;
 
                                 case "AFR":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                variant.maf1000GAFR= Number(maf).toFixed(3) 
-                                break;
+                                    variant.maf1000GAFR = Number(maf).toFixed(3)
+                                    break;
 
                                 case "EUR":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                variant.maf1000GEUR= Number(maf).toFixed(3) 
-                                break;
+                                    variant.maf1000GEUR = Number(maf).toFixed(3)
+                                    break;
                             }
                         }
-                        else if(pfreq.study === "1000G_PHASE_3"){
+                        else if (pfreq.study === "1000G_PHASE_3") {
                             switch (pfreq.pop) {
                                 case "1000G_PHASE_3_ALL":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000G_PHASE_3_ALL= Number(maf).toFixed(3) 
+                                    variant.maf1000G_PHASE_3_ALL = Number(maf).toFixed(3)
                                     break;
                                 case "1000G_PHASE_3_SAS":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000G_PHASE_3_SAS= Number(maf).toFixed(3) 
+                                    variant.maf1000G_PHASE_3_SAS = Number(maf).toFixed(3)
                                     break;
                                 case "1000G_PHASE_3_EAS":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000G_PHASE_3_EAS= Number(maf).toFixed(3) 
+                                    variant.maf1000G_PHASE_3_EAS = Number(maf).toFixed(3)
                                     break;
                                 case "1000G_PHASE_3_AMR":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000G_PHASE_3_AMR= Number(maf).toFixed(3) 
+                                    variant.maf1000G_PHASE_3_AMR = Number(maf).toFixed(3)
                                     break;
                                 case "1000G_PHASE_3_AFR":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000G_PHASE_3_AFR= Number(maf).toFixed(3) 
+                                    variant.maf1000G_PHASE_3_AFR = Number(maf).toFixed(3)
                                     break;
                                 case "1000G_PHASE_3_EUR":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000G_PHASE_3_EUR= Number(maf).toFixed(3) 
+                                    variant.maf1000G_PHASE_3_EUR = Number(maf).toFixed(3)
                                     break;
 
                             }
                         }
-                        else if (pfreq.study === "ESP_6500"){
+                        else if (pfreq.study === "ESP_6500") {
                             switch (pfreq.pop) {
                                 case "European_American":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                variant.mafESP_EA= Number(maf).toFixed(3) 
-                                break;
+                                    variant.mafESP_EA = Number(maf).toFixed(3)
+                                    break;
 
                                 case "African_American":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                variant.mafESP_AA= Number(maf).toFixed(3) 
-                                break;
+                                    variant.mafESP_AA = Number(maf).toFixed(3)
+                                    break;
 
 
                             }

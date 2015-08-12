@@ -79,7 +79,7 @@
 </head>
 
 <body unresolved class="fullbleed">
-<pvs-element></pvs-element>
+
 <script>
     (function (i, s, o, g, r, a, m) {
         i['GoogleAnalyticsObject'] = r;
@@ -96,7 +96,43 @@
     ga('create', 'UA-48766088-1', 'auto');
     ga('send', 'pageview');
 
-    var pvs = document.querySelector('pvs-element');
+
+
+
+
+    window.addEventListener('WebComponentsReady', function(e) {
+        getSpecies(function(s) {
+            AVAILABLE_SPECIES = s;
+            DEFAULT_SPECIES = AVAILABLE_SPECIES.vertebrates[0];
+            var pvs = document.createElement('pvs-element');
+            document.body.appendChild(pvs);
+        });
+    });
+
+    function getSpecies(callback) {
+        CellBaseManager.get({
+            host: CELLBASE_HOST,
+            category: "meta",
+            subCategory: "species",
+            success: function(r) {
+                var taxonomies = r.response[0].result[0];
+                for (var taxonomy in taxonomies) {
+                    var newSpecies = [];
+                    for (var i = 0; i < taxonomies[taxonomy].length; i++) {
+                        var species = taxonomies[taxonomy][i];
+                        for (var j = 0; j < species.assemblies.length; j++) {
+                            var s = Utils.clone(species)
+                            s.assembly = species.assemblies[j];
+                            delete s.assemblies;
+                            newSpecies.push(s)
+                        }
+                    }
+                    taxonomies[taxonomy] = newSpecies;
+                }
+                callback(taxonomies);
+            }
+        });
+    }
 </script>
 
 </body>

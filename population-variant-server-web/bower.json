@@ -14,7 +14,6 @@
   "dependencies": {
     "polymer": "Polymer/polymer#1.0.9",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#1.0.3",
-    "paper-drawer-panel": "PolymerElements/paper-drawer-panel#~1.0.3",
     "fontawesome": "*",
     "cookies-js": "~1.1.0",
     "crypto-js-evanvosberg": "3.1.4",
@@ -23,7 +22,6 @@
     "jquery": "1.11.3",
     "backbone": "~1.1.2",
     "qtip2": "~2.2.1",
-    "pako": "~0.2.6",
-    "iron-pages": "PolymerElements/iron-pages#~1.0.3"
+    "pako": "~0.2.6"
   }
 }

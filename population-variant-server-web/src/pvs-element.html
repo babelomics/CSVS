@@ -1,5 +1,4 @@
 <!--<link rel="import" href="../bower_components/polymer/polymer.html">-->
-<link rel="import" href="../bower_components/paper-drawer-panel/paper-drawer-panel.html">
 
 <link rel="import" href="../lib/jsorolla/src/lib/components/jso-help-menu.html">
 <link rel="import" href="../lib/jsorolla/src/lib/components/opencga/jso-opencga-header.html">
@@ -17,7 +16,6 @@
 
 <dom-module id="pvs-element">
     <style>
-
         :host {
             display: block;
             position: relative;
@@ -25,18 +23,6 @@
             font-size: 13px;
             height: 100%;
             background-color: var(--default-primary-color);
-        }
-
-        [drawer] {
-            background-color: var(--default-primary-color);
-            color: var(--text-primary-color);
-        }
-
-        #sidetitle {
-            text-align: center;
-            font-size: 24px;
-            background-color: var(--dark-primary-color);
-            padding: 18px 0;
         }
 
         #sidemenu > div {
@@ -101,75 +87,55 @@
 
     </style>
     <template>
-        <paper-drawer-panel id="paperDrawerPanel" force-narrow>
-            <div drawer>
-                <div id="sidetitle">
-                    CSVS<br>
-                </div>
 
-                <div id="sidemenu">
-                    <div title="Search" class="hover" on-click="">
-                        <i class="fa fa-list-alt"></i>
-                        <span class="">Search</span>
-                    </div>
-                </div>
+        <pvs-content id="content" selected-option="{{selectedOption}}">
+            <pvs-home data-option="home" hidden$="{{computeHome(selectedOption)}}"
+                      selected-option="{{selectedOption}}"></pvs-home>
+            <pvs-search-element diseases="{{diseases}}" id="pvsSearchElement"></pvs-search-element>
+        </pvs-content>
+
+        <jso-opencga-header id="jsoHeader"
+                            selected-option="{{selectedOption}}"
+                            allow-login="false">
+            <div class="icon">
+                <img src="images/bier-text.svg" style="height: 50px;margin: 5px 0px 0 0;">
             </div>
-            <div main>
+            <span class="title">CIBERER Spanish Variant Server</span>
+            <span class="description"></span>
 
-                <pvs-content id="content" selected-option="{{selectedOption}}">
-                    <pvs-home data-option="home" hidden$="{{computeHome(selectedOption)}}"
-                              selected-option="{{selectedOption}}"></pvs-home>
-                    <pvs-search-element diseases="{{diseases}}" id="pvsSearchElement"></pvs-search-element>
-                </pvs-content>
+            <pvs-menubar class="menu" id="teamMenuBar" selected-option="{{selectedOption}}">
+                <div title="Search" class="hover" data-option="search" data-menu-type="unique">
+                    <i class="fa fa-search"></i>
+                    <span class="option-text">Search</span>
+                </div>
+            </pvs-menubar>
 
-                <jso-opencga-header id="jsoHeader"
-                                    selected-option="{{selectedOption}}"
-                                    allow-login="false">
-                    <div class="menu-button" paper-drawer-toggle>
-                        <i class="fa fa-bars" paper-drawer-toggle></i>
-                    </div>
-                    <div class="icon">
-                        <img src="images/bier-text.svg" style="height: 50px;margin: 5px 0px 0 0;">
-                    </div>
-                    <span class="title">CIBERER Spanish Variant Server</span>
-                    <span class="description"></span>
-
-                    <pvs-menubar class="menu" id="teamMenuBar" selected-option="{{selectedOption}}">
-                        <div title="Search" class="hover" data-option="search" data-menu-type="unique">
-                            <i class="fa fa-search"></i>
-                            <span class="option-text">Search</span>
-                        </div>
-
-                    </pvs-menubar>
-
-                    <jso-help-menu class="helpmenu" selectedOption="{{selectedOption}}">
-                        <a href="https://github.com/babelomics/pvs/wiki" target="_blank">
-                            <i class="fa fa-book"></i>
-                            &nbsp; Documentation
-                        </a>
-                        <a href="https://github.com/babelomics/pvs/wiki/tutorial" target="_blank">
-                            <i class="fa fa-compass"></i>
-                            &nbsp; Tutorial
-                        </a>
-                        <a href="https://github.com/babelomics/pvs/" target="_blank">
-                            <i class="fa fa-github"></i>
-                            &nbsp; Source code
-                        </a>
-                    </jso-help-menu>
-                </jso-opencga-header>
+            <jso-help-menu class="helpmenu" selectedOption="{{selectedOption}}">
+                <a href="https://github.com/babelomics/pvs/wiki" target="_blank">
+                    <i class="fa fa-book"></i>
+                    &nbsp; Documentation
+                </a>
+                <a href="https://github.com/babelomics/pvs/wiki/tutorial" target="_blank">
+                    <i class="fa fa-compass"></i>
+                    &nbsp; Tutorial
+                </a>
+                <a href="https://github.com/babelomics/pvs/" target="_blank">
+                    <i class="fa fa-github"></i>
+                    &nbsp; Source code
+                </a>
+            </jso-help-menu>
+        </jso-opencga-header>
 
 
-                <jso-opencga-footer hidden$="{{computeFooter(selectedOption)}}" menu-option="home">
-                    CSVS: created by Computational Genomics Department
-                    <br>
-                    Principe Felipe Research Center
-                    <br>
-                    2015
-                </jso-opencga-footer>
+        <jso-opencga-footer hidden$="{{computeFooter(selectedOption)}}" menu-option="home">
+            CSVS: created by Computational Genomics Department
+            <br>
+            Principe Felipe Research Center
+            <br>
+            2015
+        </jso-opencga-footer>
 
 
-            </div>
-        </paper-drawer-panel>
         <!--<jso-header id="jsoHeader"-->
         <!--on-logout="{{handleLogout}}"-->
         <!--selectedOption="{{selectedOption}}"-->
