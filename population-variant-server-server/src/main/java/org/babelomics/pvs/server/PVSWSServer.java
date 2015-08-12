@@ -4,8 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.collect.Lists;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
 import org.babelomics.pvs.lib.io.PVSQueryManager;
 import org.babelomics.pvs.lib.ws.QueryResponse;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Morphia;
 import org.opencb.datastore.core.ObjectMap;
 import org.opencb.datastore.core.QueryResult;
 import org.slf4j.Logger;
@@ -48,6 +53,8 @@ public class PVSWSServer {
 
     static final PVSQueryManager qm;
 
+    static final Datastore datastore;
+
     static {
 
         InputStream is = PVSWSServer.class.getClassLoader().getResourceAsStream("pvs.properties");
@@ -55,7 +62,7 @@ public class PVSWSServer {
 
         try {
             properties.load(is);
-//            System.out.println("properties = " + properties);
+
         } catch (IOException e) {
             System.out.println("Error loading properties");
             System.out.println(e.getMessage());
@@ -65,7 +72,29 @@ public class PVSWSServer {
         jsonObjectMapper = new ObjectMapper();
         jsonObjectWriter = jsonObjectMapper.writer();
 
-        qm = new PVSQueryManager("pvs");
+        Morphia morphia = new Morphia();
+        morphia.mapPackage("org.babelomics.pvs.lib.models");
+
+        String user = properties.getProperty("PVS.DB.USER", "");
+        String pass = properties.getProperty("PVS.DB.PASS", "");
+        String host = properties.getProperty("PVS.DB.HOST", "localhost");
+        String database = properties.getProperty("PVS.DB.DATABASE", "pvs");
+        int port = Integer.parseInt(properties.getProperty("PVS.DB.PORT"), 27017);
+
+
+        MongoClient mongoClient;
+        if (user == "" && pass == "") {
+            mongoClient = new MongoClient(host);
+        } else {
+            MongoCredential credential = MongoCredential.createCredential(user, database, pass.toCharArray());
+            mongoClient = new MongoClient(new ServerAddress(host, port), Arrays.asList(credential));
+        }
+
+        datastore = morphia.createDatastore(mongoClient, "pvs");
+        datastore.ensureIndexes();
+
+
+        qm = new PVSQueryManager(properties.getProperty("PVS.DB.HOST"), properties.getProperty("PVS.DB.DATABASE"));
 
     }
 
