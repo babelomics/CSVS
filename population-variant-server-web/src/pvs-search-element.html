@@ -1,4 +1,4 @@
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<!--<link rel="import" href="../bower_components/polymer/polymer.html">-->
 
 <link rel="import" href="../lib/jsorolla/src/lib/components/jso-genome-viewer-element.html">
 <link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-effect-grid.html">
@@ -6,7 +6,6 @@
 <link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-phenotype-grid.html">
 
 <link rel="import" href="../lib/jsorolla/src/lib/components/table/jso-table.html">
-<!--<link rel="import" href="pvs-ajax.html">-->
 
 <dom-module id="pvs-search-element">
     <style>
@@ -183,9 +182,11 @@
                                     </label>
                                 </template>
                             </div>
-                                <div>
-                                    <paper-button on-click="{{ selectAllDiseases }}">All</paper-button>
-                                    <paper-button on-click="{{ deselectAllDiseases }}">None</paper-button>
+                                <div class="horizontal layout end-justified">
+                                    <div class="jso-btn jso-btn-shdw flex" on-click="selectAllDiseases">All</div>
+                                    <div class="jso-btn jso-btn-shdw flex" on-click="deselectAllDiseases">None</div>
+                                    <!--<paper-button on-click="{{ selectAllDiseases }}">All</paper-button>-->
+                                    <!--<paper-button on-click="{{ deselectAllDiseases }}">None</paper-button>-->
                                 </div>
                         </div>
                     </div>
@@ -656,12 +657,15 @@
                     });
                 }
 
-                var diseaseEls = this.$.diseases_div.querySelectorAll(".diseaseName[checked]");
+                var diseaseEls = this.$.diseases_div.querySelectorAll(".diseaseName");
                 var diseaseIds = [];
+
 
                 for (var i = 0; i < diseaseEls.length; i++) {
                     var el = diseaseEls[i];
-                    diseaseIds.push(el.getAttribute("value"));
+                    if(el.checked){
+                        diseaseIds.push(el.getAttribute("value"));
+                    }
                 }
 
                 if (regions.length > 0) {
@@ -769,21 +773,8 @@
                 elem.checked = true;
             }
 
-            this.formDiseases = {};
-
-            for (var i = 0; i < this.diseases.length; i++) {
-                var dis = this.diseases[i].name;
-                this.formDiseases[dis] = true;
-            }
         },
         deselectAllDiseases: function (e, d, s) {
-            this.formDiseases = {};
-
-            for (var i = 0; i < this.diseases.length; i++) {
-                var dis = this.diseases[i].name;
-                this.formDiseases[dis] = false;
-            }
-
             var checkboxes = this.$.filter_form.getElementsByClassName("diseaseName");
             for (var i = 0; i < checkboxes.length; i++) {
                 var elem = checkboxes[i];
@@ -1085,7 +1076,5 @@
                 this.$[neo.dataset.option].removeAttribute('hidden');
             }
         }
-
-
     });
 </script>

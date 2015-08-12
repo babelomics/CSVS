@@ -1,8 +1,7 @@
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<!--<link rel="import" href="../bower_components/polymer/polymer.html">-->
 <link rel="import" href="../bower_components/paper-drawer-panel/paper-drawer-panel.html">
 
 <link rel="import" href="../lib/jsorolla/src/lib/components/jso-help-menu.html">
-
 <link rel="import" href="../lib/jsorolla/src/lib/components/opencga/jso-opencga-header.html">
 <link rel="import" href="../lib/jsorolla/src/lib/components/opencga/jso-opencga-footer.html">
 
@@ -270,6 +269,9 @@
             });
         },
         computeFooter: function () {
+            return this.selectedOption != "home";
+        },
+        computeHome: function () {
             return this.selectedOption != "home";
         },
         selectedOptionChanged: function (neo, old) {

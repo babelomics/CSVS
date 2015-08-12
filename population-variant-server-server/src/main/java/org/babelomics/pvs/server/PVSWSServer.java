@@ -63,6 +63,8 @@ public class PVSWSServer {
         try {
             properties.load(is);
 
+            System.out.println("properties = " + properties);
+
         } catch (IOException e) {
             System.out.println("Error loading properties");
             System.out.println(e.getMessage());
@@ -79,22 +81,26 @@ public class PVSWSServer {
         String pass = properties.getProperty("PVS.DB.PASS", "");
         String host = properties.getProperty("PVS.DB.HOST", "localhost");
         String database = properties.getProperty("PVS.DB.DATABASE", "pvs");
-        int port = Integer.parseInt(properties.getProperty("PVS.DB.PORT"), 27017);
+        int port = Integer.parseInt(properties.getProperty("PVS.DB.PORT", "27017"));
 
+
+        System.out.println("user = " + user);
+        System.out.println("pass = " + pass);
+        System.out.println("host = " + host);
+        System.out.println("database = " + database);
 
         MongoClient mongoClient;
         if (user == "" && pass == "") {
             mongoClient = new MongoClient(host);
         } else {
+            System.out.println("ELSE\" ELSE");
             MongoCredential credential = MongoCredential.createCredential(user, database, pass.toCharArray());
             mongoClient = new MongoClient(new ServerAddress(host, port), Arrays.asList(credential));
         }
 
         datastore = morphia.createDatastore(mongoClient, "pvs");
-        datastore.ensureIndexes();
 
-
-        qm = new PVSQueryManager(properties.getProperty("PVS.DB.HOST"), properties.getProperty("PVS.DB.DATABASE"));
+        qm = new PVSQueryManager(datastore);
 
     }
 
