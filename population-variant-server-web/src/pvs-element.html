@@ -89,9 +89,10 @@
     <template>
 
         <pvs-content id="content" selected-option="{{selectedOption}}">
-            <pvs-home data-option="home" hidden$="{{computeHome(selectedOption)}}"
+            <pvs-home data-option="home" hidden$="{{computeSelectedOption(selectedOption, 'home')}}"
                       selected-option="{{selectedOption}}"></pvs-home>
-            <pvs-search-element data-option="search" diseases="{{diseases}}" id="pvsSearchElement"></pvs-search-element>
+            <pvs-search-element data-option="search" hidden$="{{computeSelectedOption(selectedOption, 'search')}}"
+                                diseases="{{diseases}}" id="pvsSearchElement"></pvs-search-element>
         </pvs-content>
 
         <jso-opencga-header id="jsoHeader"
@@ -127,7 +128,7 @@
         </jso-opencga-header>
 
 
-        <jso-opencga-footer hidden$="{{computeFooter(selectedOption)}}" menu-option="home">
+        <jso-opencga-footer hidden$="{{computeSelectedOption(selectedOption, 'home')}}" menu-option="home">
             CSVS: created by Computational Genomics Department
             <br>
             Principe Felipe Research Center
@@ -207,6 +208,7 @@
         },
         ready: function () {
             this.getDiseases();
+            this.$.jsoHeader.allowLogin = false;
         },
         getDiseases: function (event, response) {
             var me = this;
@@ -234,11 +236,8 @@
                 }
             });
         },
-        computeFooter: function () {
-            return this.selectedOption != "home";
-        },
-        computeHome: function () {
-            return this.selectedOption != "home";
+        computeSelectedOption: function (selectedOption, option) {
+            return this.selectedOption != option;
         },
         selectedOptionChanged: function (neo, old) {
 
