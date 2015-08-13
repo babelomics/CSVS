@@ -127,7 +127,6 @@
             </jso-help-menu>
         </jso-opencga-header>
 
-
         <jso-opencga-footer hidden$="{{computeSelectedOption(selectedOption, 'home')}}" menu-option="home">
             CSVS: created by Computational Genomics Department
             <br>
@@ -155,7 +154,6 @@
                 }
             }
         }, created: function () {
-//            this.diseases = [];
         },
         ready: function () {
             this.getDiseases();
@@ -191,8 +189,6 @@
             return this.selectedOption != option;
         },
         selectedOptionChanged: function (neo, old) {
-
-            console.log(neo);
         },
     });
 </script>

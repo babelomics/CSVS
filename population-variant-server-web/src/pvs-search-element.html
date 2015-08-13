@@ -1,5 +1,3 @@
-<!--<link rel="import" href="../bower_components/polymer/polymer.html">-->
-
 <link rel="import" href="../lib/jsorolla/src/lib/components/jso-genome-viewer-element.html">
 <link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-effect-grid.html">
 <link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-frequencies-grid.html">
@@ -234,7 +232,7 @@
             },
             regionValue: {
                 type: String,
-                value:"" 
+                value: ""
             },
             columns: {
                 type: Array,
@@ -259,6 +257,18 @@
             geneValue: {
                 type: String,
                 value: ""
+            },
+            hidden: {
+                type: Boolean,
+                reflectToAttribute: true,
+                observer: 'hiddenChanged',
+                nofity: true
+            }
+        },
+        hiddenChanged: function (neo, old) {
+            
+            if (!neo && this.selectedMenuTool) {
+                this.$.gv.removeAttribute("hidden");
             }
         },
         created: function () {
@@ -1116,7 +1126,7 @@
                 old.removeAttribute('selected');
                 this.$[old.dataset.option].setAttribute('hidden', '');
             }
-            if (neo) {
+            if (neo && !this.hidden) {
                 neo.setAttribute('selected', '');
                 this.$[neo.dataset.option].removeAttribute('hidden');
             }
