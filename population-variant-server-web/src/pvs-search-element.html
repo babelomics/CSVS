@@ -149,7 +149,7 @@
                                     <div class="input_container vertical layout">
                                         <label class="jso">Gene:</label>
                                         <textarea id="gene" name="gene" placeholder="BRCA2,PPL"
-                                                  value="{{ geneValue }}" rows="3"></textarea>
+                                                  value="{{geneValue::change}}" rows="3"></textarea>
 
                                         <div class="searchGene horizontal layout end-justified" hidden>
                                             <input id="searchField" list="searchDataList" placeholder="Search gene"
@@ -234,7 +234,7 @@
             },
             regionValue: {
                 type: String,
-                value: '1:1-100000'
+                value:"" 
             },
             columns: {
                 type: Array,
@@ -256,8 +256,10 @@
                 type: Object,
                 observer: 'selectedMenuChanged'
             },
-
-            geneValue: '',
+            geneValue: {
+                type: String,
+                value: ""
+            }
         },
         created: function () {
             this.selectedSpecies = DEFAULT_SPECIES;
@@ -648,8 +650,6 @@
         submitForm: function () {
             var me = this;
             var query = {};
-
-            this.sampleCount = 0;
 
             if (this.$.filter_form.checkValidity() && (this.regionValue != '' || this.geneValue != '')) {
 
@@ -1106,7 +1106,6 @@
             this.$.effect.row = row;
             this.$.frequency.row = row;
             this.$.phenotype.row = row;
-            this.$.stats.row = row;
 
         },
         handleMenuClick: function (e) {

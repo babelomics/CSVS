@@ -135,55 +135,6 @@
             <br>
             2015
         </jso-opencga-footer>
-
-
-        <!--<jso-header id="jsoHeader"-->
-        <!--on-logout="{{handleLogout}}"-->
-        <!--selectedOption="{{selectedOption}}"-->
-        <!--allowLogin="false"-->
-        <!--showMenu="true">-->
-        <!--<div class="title">CIBERER Spanish Variant Server</div>-->
-        <!--<div class="description">1.0.1</div>-->
-        <!--<pvs-menu class="menu" selectedOption="{{selectedOption}}"></pvs-menu>-->
-
-        <!--<jso-help-menu class="helpmenu" selectedOption="{{selectedOption}}">-->
-        <!--<div class="link">-->
-        <!--<font-awesome icon="book"></font-awesome>-->
-        <!--<a class="a" href="https://github.com/babelomics/pvs/wiki" target="_blank">-->
-        <!--&nbsp; Documentation-->
-        <!--</a>-->
-        <!--</div>-->
-        <!--<div class="link">-->
-        <!--<font-awesome icon="compass"></font-awesome>-->
-        <!--<a class="a" href="https://github.com/babelomics/pvs/wiki/Tutorial" target="_blank">-->
-        <!--&nbsp; Tutorial-->
-        <!--</a>-->
-        <!--</div>-->
-        <!--<div class="link">-->
-        <!--<font-awesome icon="github"></font-awesome>-->
-        <!--<a class="a" href="https://github.com/babelomics/pvs/" target="_blank">-->
-        <!--&nbsp; Source code-->
-        <!--</a>-->
-        <!--</div>-->
-        <!--</jso-help-menu>-->
-        <!--</jso-header>-->
-
-        <!--<div id="content">-->
-        <!--<template if="{{ selectedOption == 'home' || selectedOption == 'none' || selectedOption == ''}}">-->
-        <!--<pvs-home selectedOption="{{selectedOption}}"></pvs-home>-->
-        <!--</template>-->
-        <!--<template if="{{ selectedOption == 'search' }}">-->
-        <!--<es-search-element diseases="{{ diseases }}" id="pvsSearchElement"></es-search-element>-->
-        <!--</template>-->
-
-        <!--<template if="{{ selectedOption == 'studies' }}">-->
-        <!--<es-studies-browser-element studies="{{ studies }}"></es-studies-browser-element>-->
-        <!--</template>-->
-        <!--<template if="{{ selectedOption == 'stats' }}">-->
-        <!--<es-stats-element studies="{{ studies }}"></es-stats-element>-->
-        <!--</template>-->
-        <!--</div>-->
-
     </template>
 </dom-module>
 <script>
@@ -192,7 +143,7 @@
         properties: {
             selectedOption: {
                 type: String,
-                value: "search",
+                value: "home",
                 notify: true,
                 reflectToAttribute: true,
                 observer: 'selectedOptionChanged'
