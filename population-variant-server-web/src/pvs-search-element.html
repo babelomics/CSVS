@@ -563,16 +563,42 @@
                     name: 'sift', title: 'SIFT', width: 50
                 },
                 {
-                    name: 'polyphen', title: 'POLYPHEN', width: 50
+                    name: 'polyphen', title: 'POLYPHEN', width: 60
                 },
                 {
-                    name: 'phastcons', title: 'PhastCons', width: 50
+                    name: 'phastcons', title: 'PhastCons', width: 60
                 },
                 {
                     name: 'phylop', title: 'phyloP', width: 50
                 },
                 {
-                    name: 'phenotype', title: 'Phenotype', width: 500
+                    name: 'phenotypes', title: 'Phenotypes', width: 450,
+                    columns: [
+                        {
+                            name: 'clinvar',
+                            title: 'Clinvar',
+                            width: 150,
+                            formula: function (row) {
+                                return row.phenotypes.clinvar;
+                            }
+                        },
+                        {
+                            name: 'cosmic',
+                            title: 'Cosmic',
+                            width: 150,
+                            formula: function (row) {
+                                return row.phenotypes.cosmic;
+                            }
+                        },
+                        {
+                            name: 'gwas',
+                            title: 'GWas',
+                            width: 150,
+                            formula: function (row) {
+                                return row.phenotypes.gwas;
+                            }
+                        }
+                    ]
                 }
             ];
         },
@@ -928,16 +954,19 @@
                 }
 
                 // Clinical
+                variant.phenotypes = {cosmic: "", gwas: "", clinvar: ""};
+
                 if (variant.annots.clinical != null) {
                     var clinical = variant.annots.clinical;
 
-                    var phenotypes = [];
-
+                    var phenotypesCosmic = [];
+                    var phenotypesGwas = [];
+                    var phenotypesClinvar = [];
                     if (clinical.cosmic != null) {
                         for (var j = 0; j < clinical.cosmic.length; j++) {
                             var cosmic = clinical.cosmic[j];
                             if (cosmic.primaryHistology != null && cosmic.primaryHistology != "") {
-                                phenotypes.push(cosmic.primaryHistology);
+                                phenotypesCosmic.push(cosmic.primaryHistology);
                             }
                         }
                     }
@@ -948,7 +977,7 @@
                             for (var k = 0; k < gwas.traits.length; k++) {
                                 var trait = gwas.traits[k];
                                 if (trait != null && trait != "") {
-                                    phenotypes.push(trait);
+                                    phenotypesGwas.push(trait);
                                 }
                             }
                         }
@@ -960,15 +989,28 @@
                             for (var k = 0; k < clinvar.traits.length; k++) {
                                 var trait = clinvar.traits[k];
                                 if (trait != null && trait != "") {
-                                    phenotypes.push(trait);
+                                    phenotypesClinvar.push(trait);
                                 }
                             }
                         }
                     }
 
-                    if (phenotypes.length > 0) {
-                        variant.phenotype = phenotypes.join(", ");
-                    }
+                    var phenotypesCosmicFinal = phenotypesCosmic.filter(function (item, pos) {
+                        return phenotypesCosmic.indexOf(item) == pos;
+                    });
+                    var phenotypesGwasFinal = phenotypesGwas.filter(function (item, pos) {
+                        return phenotypesGwas.indexOf(item) == pos;
+                    })
+                    var phenotypesClinvarFinal = phenotypesClinvar.filter(function (item, pos) {
+                        return phenotypesClinvar.indexOf(item) == pos;
+                    })
+
+
+                    variant.phenotypes = {
+                        cosmic: phenotypesCosmicFinal.join(","),
+                        gwas: phenotypesGwasFinal.join(","),
+                        clinvar: phenotypesClinvarFinal.join(",")
+                    };
                 }
 
                 if (variant.annots.populationFrequencies != null) {

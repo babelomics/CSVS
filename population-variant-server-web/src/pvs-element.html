@@ -91,7 +91,7 @@
         <pvs-content id="content" selected-option="{{selectedOption}}">
             <pvs-home data-option="home" hidden$="{{computeHome(selectedOption)}}"
                       selected-option="{{selectedOption}}"></pvs-home>
-            <pvs-search-element diseases="{{diseases}}" id="pvsSearchElement"></pvs-search-element>
+            <pvs-search-element data-option="search" diseases="{{diseases}}" id="pvsSearchElement"></pvs-search-element>
         </pvs-content>
 
         <jso-opencga-header id="jsoHeader"
