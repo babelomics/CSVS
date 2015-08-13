@@ -2,7 +2,7 @@
     <style>
     </style>
     <template>
-        <content></content>
+        <content id="content"></content>
     </template>
 </dom-module>
 
@@ -45,7 +45,8 @@
 
                     default:
 
-                        var aux = this.querySelectorAll("[data-option]");
+                        var aux = this.$.content.querySelectorAll("[data-option]");
+
                         for (var i = 0; i < aux.length; i++) {
                             var el = aux[i];
                             el.hidden = true;
