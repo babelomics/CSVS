@@ -17,7 +17,7 @@
 
         #filter-form-element {
             background-color: #FFFFFF;
-            width: 250px;
+            width: 350px;
             margin: 20px;
             min-height: 900px;
         }
@@ -34,6 +34,7 @@
             border-radius: 0px !important;
             margin: 20px 20px 20px 0px;
             background-color: #FFFFFF;
+            width:calc(100% - 290px);
         }
 
         .container > span {
@@ -122,7 +123,7 @@
         }
     </style>
     <template>
-        <div class="horizontal layout center-justified">
+        <div class="horizontal layout">
             <div id="filter-form-element">
                 <form id="filter_form" class="vertical layout">
                     <div vertical layout>
@@ -194,7 +195,7 @@
                     </div>
                 </form>
             </div>
-            <div id="dataGridElement" class="panel panel-shadow flex vertical layout">
+            <div id="dataGridElement" class="vertical layout">
                 <jso-table id="dataTable" enable-paging enable-remote enable-select request="{{request}}"
                            columns="{{columns}}" on-rowclick="handleRowClick">
                 </jso-table>
@@ -266,7 +267,7 @@
             }
         },
         hiddenChanged: function (neo, old) {
-            
+
             if (!neo && this.selectedMenuTool) {
                 this.$.gv.removeAttribute("hidden");
             }
