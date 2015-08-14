@@ -1,5 +1,3 @@
-<!--<link rel="import" href="../bower_components/polymer/polymer.html">-->
-
 <link rel="import" href="../lib/jsorolla/src/lib/components/jso-genome-viewer-element.html">
 <link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-effect-grid.html">
 <link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-frequencies-grid.html">
@@ -19,7 +17,7 @@
 
         #filter-form-element {
             background-color: #FFFFFF;
-            width: 250px;
+            width: 350px;
             margin: 20px;
             min-height: 900px;
         }
@@ -36,6 +34,7 @@
             border-radius: 0px !important;
             margin: 20px 20px 20px 0px;
             background-color: #FFFFFF;
+            width:calc(100% - 290px);
         }
 
         .container > span {
@@ -124,7 +123,7 @@
         }
     </style>
     <template>
-        <div class="horizontal layout center-justified">
+        <div class="horizontal layout">
             <div id="filter-form-element">
                 <form id="filter_form" class="vertical layout">
                     <div vertical layout>
@@ -149,7 +148,7 @@
                                     <div class="input_container vertical layout">
                                         <label class="jso">Gene:</label>
                                         <textarea id="gene" name="gene" placeholder="BRCA2,PPL"
-                                                  value="{{ geneValue }}" rows="3"></textarea>
+                                                  value="{{geneValue::change}}" rows="3"></textarea>
 
                                         <div class="searchGene horizontal layout end-justified" hidden>
                                             <input id="searchField" list="searchDataList" placeholder="Search gene"
@@ -196,8 +195,8 @@
                     </div>
                 </form>
             </div>
-            <div id="dataGridElement" class="panel panel-shadow flex vertical layout">
-                <jso-table id="dataTable" enable-paging enable-remote enable-select flex request="{{request}}"
+            <div id="dataGridElement" class="vertical layout">
+                <jso-table id="dataTable" enable-paging enable-remote enable-select request="{{request}}"
                            columns="{{columns}}" on-rowclick="handleRowClick">
                 </jso-table>
 
@@ -234,7 +233,7 @@
             },
             regionValue: {
                 type: String,
-                value: '1:1-100000'
+                value: ""
             },
             columns: {
                 type: Array,
@@ -256,8 +255,22 @@
                 type: Object,
                 observer: 'selectedMenuChanged'
             },
+            geneValue: {
+                type: String,
+                value: ""
+            },
+            hidden: {
+                type: Boolean,
+                reflectToAttribute: true,
+                observer: 'hiddenChanged',
+                nofity: true
+            }
+        },
+        hiddenChanged: function (neo, old) {
 
-            geneValue: '',
+            if (!neo && this.selectedMenuTool) {
+                this.$.gv.removeAttribute("hidden");
+            }
         },
         created: function () {
             this.selectedSpecies = DEFAULT_SPECIES;
@@ -648,8 +661,6 @@
         submitForm: function () {
             var me = this;
             var query = {};
-
-            this.sampleCount = 0;
 
             if (this.$.filter_form.checkValidity() && (this.regionValue != '' || this.geneValue != '')) {
 
@@ -1106,7 +1117,6 @@
             this.$.effect.row = row;
             this.$.frequency.row = row;
             this.$.phenotype.row = row;
-            this.$.stats.row = row;
 
         },
         handleMenuClick: function (e) {
@@ -1117,7 +1127,7 @@
                 old.removeAttribute('selected');
                 this.$[old.dataset.option].setAttribute('hidden', '');
             }
-            if (neo) {
+            if (neo && !this.hidden) {
                 neo.setAttribute('selected', '');
                 this.$[neo.dataset.option].removeAttribute('hidden');
             }
