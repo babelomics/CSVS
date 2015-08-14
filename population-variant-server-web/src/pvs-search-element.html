@@ -92,8 +92,6 @@
         }
 
         #tools {
-            /*height: calc(100% - 375px);*/
-            /*overflow-x: hidden;*/
 
             margin-top: 10px;
         }
@@ -196,7 +194,7 @@
                 </form>
             </div>
             <div id="dataGridElement" class="vertical layout">
-                <jso-table id="dataTable" enable-paging enable-remote enable-select request="{{request}}"
+                <jso-table id="dataTable" enable-paging enable-remote enable-select enable-resize request="{{request}}"
                            columns="{{columns}}" on-rowclick="handleRowClick">
                 </jso-table>
 
@@ -257,7 +255,7 @@
             },
             geneValue: {
                 type: String,
-                value: ""
+                value: "ppl"
             },
             hidden: {
                 type: Boolean,
