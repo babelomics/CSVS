@@ -173,10 +173,10 @@
                                 <div>Diseases</div>
                                 <div class="flex"></div>
                                 <div class="check" on-click="selectAllDiseases">
-                                    <i class="fa fa-check"></i>
+                                    <i class="fa fa-check-square-o"></i>
                                 </div>
                                 <div class="check" on-click="deselectAllDiseases">
-                                    <i class="fa fa-times"></i>
+                                    <i class="fa fa-square-o"></i>
                                 </div>
 
                                 <!--<paper-button on-click="{{ selectAllDiseases }}">All</paper-button>-->
@@ -197,7 +197,7 @@
                 </form>
             </div>
             <div id="dataGridElement" class="panel panel-shadow flex vertical layout">
-                <jso-table id="dataTable" enable-paging enable-remote enable-select request="{{request}}"
+                <jso-table id="dataTable" enable-paging enable-remote enable-select flex request="{{request}}"
                            columns="{{columns}}" on-rowclick="handleRowClick">
                 </jso-table>
 
