@@ -120,24 +120,24 @@ public class PVSMain {
             if (c.populateDiseases) {
                 List<DiseaseGroup> diseaseGroups = new ArrayList<>();
 
-                diseaseGroups.add(new DiseaseGroup(1, "Certain infectious and parasitic diseases"));
-                diseaseGroups.add(new DiseaseGroup(2, "Neoplasms"));
-                diseaseGroups.add(new DiseaseGroup(3, "Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism"));
-                diseaseGroups.add(new DiseaseGroup(4, "Endocrine, nutritional and metabolic diseases"));
-                diseaseGroups.add(new DiseaseGroup(5, "Mental and behavioural disorders"));
-                diseaseGroups.add(new DiseaseGroup(6, "Diseases of the nervous system"));
-                diseaseGroups.add(new DiseaseGroup(7, "Diseases of the eye and adnexa"));
-                diseaseGroups.add(new DiseaseGroup(8, "Diseases of the ear and mastoid process"));
-                diseaseGroups.add(new DiseaseGroup(9, "Diseases of the circulatory system"));
-                diseaseGroups.add(new DiseaseGroup(10, "Diseases of the respiratory system"));
-                diseaseGroups.add(new DiseaseGroup(11, "Diseases of the digestive system"));
-                diseaseGroups.add(new DiseaseGroup(12, "Diseases of the skin and subcutaneous tissue"));
-                diseaseGroups.add(new DiseaseGroup(13, "Diseases of the musculoskeletal system and connective tissue"));
-                diseaseGroups.add(new DiseaseGroup(14, "Diseases of the genitourinary system"));
-                diseaseGroups.add(new DiseaseGroup(15, "Pregnancy, childbirth and the puerperium"));
-                diseaseGroups.add(new DiseaseGroup(16, "Certain conditions originating in the perinatal period"));
-                diseaseGroups.add(new DiseaseGroup(17, "Congenital malformations, deformations and chromosomal abnormalities"));
-                diseaseGroups.add(new DiseaseGroup(18, "Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified"));
+                diseaseGroups.add(new DiseaseGroup(1, "I Certain infectious and parasitic diseases"));
+                diseaseGroups.add(new DiseaseGroup(2, "II Neoplasms"));
+                diseaseGroups.add(new DiseaseGroup(3, "III Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism"));
+                diseaseGroups.add(new DiseaseGroup(4, "IV Endocrine, nutritional and metabolic diseases"));
+                diseaseGroups.add(new DiseaseGroup(5, "V Mental and behavioural disorders"));
+                diseaseGroups.add(new DiseaseGroup(6, "VI Diseases of the nervous system"));
+                diseaseGroups.add(new DiseaseGroup(7, "VII Diseases of the eye and adnexa"));
+                diseaseGroups.add(new DiseaseGroup(8, "VIII Diseases of the ear and mastoid process"));
+                diseaseGroups.add(new DiseaseGroup(9, "IX Diseases of the circulatory system"));
+                diseaseGroups.add(new DiseaseGroup(10, "X Diseases of the respiratory system"));
+                diseaseGroups.add(new DiseaseGroup(11, "XI Diseases of the digestive system"));
+                diseaseGroups.add(new DiseaseGroup(12, "XII Diseases of the skin and subcutaneous tissue"));
+                diseaseGroups.add(new DiseaseGroup(13, "XIII Diseases of the musculoskeletal system and connective tissue"));
+                diseaseGroups.add(new DiseaseGroup(14, "XIV Diseases of the genitourinary system"));
+                diseaseGroups.add(new DiseaseGroup(15, "XV Pregnancy, childbirth and the puerperium"));
+                diseaseGroups.add(new DiseaseGroup(16, "XVI Certain conditions originating in the perinatal period"));
+                diseaseGroups.add(new DiseaseGroup(17, "XVII Congenital malformations, deformations and chromosomal abnormalities"));
+                diseaseGroups.add(new DiseaseGroup(18, "XVIII Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified"));
 
                 for (DiseaseGroup dg : diseaseGroups) {
                     try {
