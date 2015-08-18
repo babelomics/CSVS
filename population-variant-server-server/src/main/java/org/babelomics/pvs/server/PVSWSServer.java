@@ -63,8 +63,6 @@ public class PVSWSServer {
         try {
             properties.load(is);
 
-            System.out.println("properties = " + properties);
-
         } catch (IOException e) {
             System.out.println("Error loading properties");
             System.out.println(e.getMessage());
@@ -83,14 +81,8 @@ public class PVSWSServer {
         String database = properties.getProperty("PVS.DB.DATABASE", "pvs");
         int port = Integer.parseInt(properties.getProperty("PVS.DB.PORT", "27017"));
 
-
-        System.out.println("user = " + user);
-        System.out.println("pass = " + pass);
-        System.out.println("host = " + host);
-        System.out.println("database = " + database);
-
         MongoClient mongoClient;
-        if (user == "" && pass == "") {
+        if (user.equals("") && pass.equals("")) {
             mongoClient = new MongoClient(host);
         } else {
             MongoCredential credential = MongoCredential.createCredential(user, database, pass.toCharArray());
