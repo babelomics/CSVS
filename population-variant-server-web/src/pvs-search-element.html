@@ -34,7 +34,7 @@
             border-radius: 0px !important;
             margin: 20px 20px 20px 0px;
             background-color: #FFFFFF;
-            width:calc(100% - 290px);
+            width: calc(100% - 290px);
         }
 
         .container > span {
@@ -210,7 +210,8 @@
                 <!--</paper-button>-->
 
                 <div id="tools">
-                    <jso-genome-viewer-element id="gv" hidden></jso-genome-viewer-element>
+                    <jso-genome-viewer-element id="gv" hidden
+                                               on-created="handleGenomeViewerCreated"></jso-genome-viewer-element>
                     <jso-variant-frequencies-grid id="frequency" hidden></jso-variant-frequencies-grid>
                     <jso-variant-phenotype-grid id="phenotype" hidden></jso-variant-phenotype-grid>
                     <jso-variant-effect-grid id="effect" hidden></jso-variant-effect-grid>
@@ -280,6 +281,7 @@
 
             this.async(function () { // DOM READY
                 me.selectedMenuTool = me.$.menu.querySelector('div');
+
             }, 50);
 
 
@@ -612,6 +614,7 @@
                     ]
                 }
             ];
+
         },
         _toFixed: function (value, precision) {
             return Number(value).toFixed(precision);
@@ -1129,6 +1132,68 @@
                 neo.setAttribute('selected', '');
                 this.$[neo.dataset.option].removeAttribute('hidden');
             }
+        },
+        handleGenomeViewerCreated: function () {
+
+            var adapter = new FeatureTemplateAdapter({
+                uriTemplate: PVS_HOST + '/regions/{region}/fetch',
+//                templateVariables: {
+//                    customVar: 'info',
+//                },
+                species: this.$.gv.genomeViewer.species,
+                getRegionsFromIntervals: function (response) {
+
+                    var regions = [];
+                    for (var i = 0; i < response.result.length; i++) {
+                        var r = response.result[i];
+                        for (var j = 0; j < r.length; j++) {
+                            var interval = r[j];
+                            var region = new Region(interval);
+                            regions.push(region);
+                        }
+                    }
+                    return regions;
+
+                },
+                parse: function (response, dataType) {
+                    var itemsArray = [];
+
+                    if (dataType == "histogram") {
+                        for (var i = 0; i < response.result.length; i++) {
+                            var r = response.result[i]
+                            for (var j = 0; j < r.length; j++) {
+                                var interval = r[j];
+                                interval.features_count = interval.featuresCount;
+                                itemsArray.push(interval);
+                            }
+                        }
+                    } else {
+                        for (var i = 0; i < response.result.length; i++) {
+                            var r = response.result[i];
+                            for (var j = 0; j < r.length; j++) {
+                                var elem = r[j];
+                                elem.start = elem.position;
+                                elem.end = elem.position;
+                            }
+                            itemsArray.push(r);
+                        }
+                    }
+                    return itemsArray;
+                }
+            });
+
+            var track = new FeatureTrack({
+                title: 'CSVS',
+                featureType: 'csvs',
+                minHistogramRegionSize: 12000,
+                maxLabelRegionSize: 3000,
+                height: 120,
+
+                renderer: new FeatureRenderer(),
+                dataAdapter: adapter
+            });
+
+            this.$.gv.genomeViewer.addTrack(track);
         }
     });
 </script>

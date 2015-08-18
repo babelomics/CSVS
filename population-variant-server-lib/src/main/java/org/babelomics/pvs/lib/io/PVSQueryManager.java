@@ -1,9 +1,10 @@
 package org.babelomics.pvs.lib.io;
 
-import com.mongodb.MongoClient;
+import com.mongodb.*;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.babelomics.pvs.lib.models.DiseaseCount;
 import org.babelomics.pvs.lib.models.DiseaseGroup;
+import org.babelomics.pvs.lib.models.IntervalFrequency;
 import org.babelomics.pvs.lib.models.Variant;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
@@ -15,9 +16,7 @@ import org.opencb.biodata.models.feature.Region;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
@@ -59,6 +58,131 @@ public class PVSQueryManager {
         }
 
         return id;
+    }
+
+    public List<List<Variant>> getVariantsByRegionList(List<Region> regions) {
+
+        List<List<Variant>> res = new ArrayList<>();
+
+        for (Region r : regions) {
+
+            List<String> chunkIds = getChunkIds(r);
+            Query<Variant> auxQuery = this.datastore.createQuery(Variant.class);
+
+            auxQuery.filter("_at.chIds in", chunkIds).
+                    filter("chromosome =", r.getChromosome()).
+                    filter("position >=", r.getStart()).
+                    filter("position <=", r.getEnd());
+
+            List<Variant> variants = auxQuery.asList();
+
+            for (Variant v : variants) {
+                v.setStats(null);
+                v.setAnnots(null);
+            }
+            res.add(variants);
+        }
+
+        return res;
+    }
+
+    public List<List<IntervalFrequency>> getAllIntervalFrequencies(List<Region> regions, boolean histogramLogarithm, int histogramMax, int interval) {
+
+        List<List<IntervalFrequency>> res = new ArrayList<>();
+        for (Region r : regions) {
+            res.add(getIntervalFrequencies(r, histogramLogarithm, histogramMax, interval));
+        }
+
+        return res;
+
+
+    }
+
+
+    public List<IntervalFrequency> getIntervalFrequencies(Region region, boolean histogramLogarithm, int histogramMax, int interval) {
+
+        List<IntervalFrequency> res = new ArrayList<>();
+
+        BasicDBObject start = new BasicDBObject("$gt", region.getStart());
+        start.append("$lt", region.getEnd());
+
+        BasicDBList andArr = new BasicDBList();
+        andArr.add(new BasicDBObject("c", region.getChromosome()));
+        andArr.add(new BasicDBObject("p", start));
+
+        BasicDBObject match = new BasicDBObject("$match", new BasicDBObject("$and", andArr));
+
+
+        BasicDBList divide1 = new BasicDBList();
+        divide1.add("$p");
+        divide1.add(interval);
+
+        BasicDBList divide2 = new BasicDBList();
+        divide2.add(new BasicDBObject("$mod", divide1));
+        divide2.add(interval);
+
+        BasicDBList subtractList = new BasicDBList();
+        subtractList.add(new BasicDBObject("$divide", divide1));
+        subtractList.add(new BasicDBObject("$divide", divide2));
+
+
+        BasicDBObject substract = new BasicDBObject("$subtract", subtractList);
+
+        DBObject totalCount = new BasicDBObject("$sum", 1);
+
+        BasicDBObject g = new BasicDBObject("_id", substract);
+        g.append("features_count", totalCount);
+        BasicDBObject group = new BasicDBObject("$group", g);
+
+        BasicDBObject sort = new BasicDBObject("$sort", new BasicDBObject("_id", 1));
+
+
+        DBCollection collection = datastore.getCollection(Variant.class);
+
+        List<BasicDBObject> aggList = new ArrayList<>();
+        aggList.add(match);
+        aggList.add(group);
+        aggList.add(sort);
+
+        AggregationOutput aggregation = collection.aggregate(aggList);
+
+        Map<Long, IntervalFrequency> ids = new HashMap<>();
+
+        for (DBObject intervalObj : aggregation.results()) {
+
+            Long _id = Math.round((Double) intervalObj.get("_id"));//is double
+
+            IntervalFrequency intervalVisited = ids.get(_id);
+
+            if (intervalVisited == null) {
+                intervalVisited = new IntervalFrequency();
+
+                intervalVisited.setId(_id);
+                intervalVisited.setStart(getChunkStart(_id.intValue(), interval));
+                intervalVisited.setEnd(getChunkEnd(_id.intValue(), interval));
+                intervalVisited.setChromosome(region.getChromosome());
+                intervalVisited.setFeaturesCount(Math.log((int) intervalObj.get("features_count")));
+                ids.put(_id, intervalVisited);
+            } else {
+                double sum = intervalVisited.getFeaturesCount() + Math.log((int) intervalObj.get("features_count"));
+                intervalVisited.setFeaturesCount(sum);
+            }
+        }
+
+        int firstChunkId = getChunkId(region.getStart(), interval);
+        int lastChunkId = getChunkId(region.getEnd(), interval);
+
+        IntervalFrequency intervalObj;
+        for (int chunkId = firstChunkId; chunkId <= lastChunkId; chunkId++) {
+            intervalObj = ids.get((long) chunkId);
+
+            if (intervalObj == null) {
+                intervalObj = new IntervalFrequency(chunkId, getChunkStart(chunkId, interval), getChunkEnd(chunkId, interval), region.getChromosome(), 0);
+            }
+            res.add(intervalObj);
+        }
+
+        return res;
     }
 
     public Iterable<Variant> getVariantsByRegionList(List<Region> regions, List<Integer> diseaseIds, Integer skip, Integer limit, MutableLong count) {
@@ -191,6 +315,18 @@ public class PVSQueryManager {
         public int getCount() {
             return count;
         }
+    }
+
+    protected int getChunkId(int position, int chunksize) {
+        return position / chunksize;
+    }
+
+    private int getChunkStart(int id, int chunksize) {
+        return (id == 0) ? 1 : id * chunksize;
+    }
+
+    private int getChunkEnd(int id, int chunksize) {
+        return (id * chunksize) + chunksize - 1;
     }
 
 }

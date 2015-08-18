@@ -93,7 +93,6 @@ public class PVSWSServer {
         if (user == "" && pass == "") {
             mongoClient = new MongoClient(host);
         } else {
-            System.out.println("ELSE\" ELSE");
             MongoCredential credential = MongoCredential.createCredential(user, database, pass.toCharArray());
             mongoClient = new MongoClient(new ServerAddress(host, port), Arrays.asList(credential));
         }
