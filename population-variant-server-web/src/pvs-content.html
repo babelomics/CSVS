@@ -18,10 +18,8 @@
                 reflectToAttribute: true
             }
         },
-
         selectedOptionChanged: function (neo, old) {
             if (neo) {
-
                 var selectedEl = this.querySelector("[data-option=" + neo + "]");
 
                 var elType = selectedEl && selectedEl.dataset && selectedEl.dataset.menuType ? selectedEl.dataset.menuType : "";
@@ -33,33 +31,23 @@
                             var el = aux[i];
                             el.hidden = true;
                         }
-                        ;
                         selectedEl.hidden = false;
-
                         break;
                     case "toggle":
-
                         selectedEl.hidden = !selectedEl.hidden;
-
                         break;
 
                     default:
-
                         var aux = this.$.content.querySelectorAll("[data-option]");
-
                         for (var i = 0; i < aux.length; i++) {
                             var el = aux[i];
                             el.hidden = true;
                         }
-                        ;
                         if (selectedEl) {
                             selectedEl.hidden = false;
                         }
-
-
                 }
             }
         }
-
     });
 </script>
