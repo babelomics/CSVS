@@ -1134,6 +1134,7 @@
             }
         },
         handleGenomeViewerCreated: function () {
+            var me = this;
 
             var adapter = new FeatureTemplateAdapter({
                 uriTemplate: PVS_HOST + '/regions/{region}/fetch',
@@ -1182,14 +1183,28 @@
                 }
             });
 
+            var args = FEATURE_TYPES.undefined;
+            args.handlers = {
+                "feature:click": function (e) {
+
+                    var elem = e.feature;
+                    console.log(elem);
+
+                    me.$.dataTable.selectElem(elem, function (x, y) {
+                        return x.chromosome == y.chromosome && x.position == y.position &&
+                                x.reference == y.reference && x.alternate == y.alternate;
+                    });
+                }
+
+            }
+
             var track = new FeatureTrack({
                 title: 'CSVS',
                 featureType: 'csvs',
                 minHistogramRegionSize: 12000,
                 maxLabelRegionSize: 3000,
                 height: 120,
-
-                renderer: new FeatureRenderer(),
+                renderer: new FeatureRenderer(args),
                 dataAdapter: adapter
             });
 
