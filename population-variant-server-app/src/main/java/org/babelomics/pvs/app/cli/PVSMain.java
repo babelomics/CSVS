@@ -30,6 +30,7 @@ import org.opencb.commons.run.Task;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
@@ -38,8 +39,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
@@ -229,44 +228,113 @@ public class PVSMain {
                 List<DiseaseGroup> query = qm.getAllDiseaseGroups();
 
                 for (DiseaseGroup dg : query) {
-                    System.out.println(dg.getGroupId() + "\t" + dg.getName());
+                    System.out.println(dg.getGroupId() + "\t" + dg.getName() + "\t" + dg.getSamples());
                 }
 
             } else if (c.regionLIst.size() > 0) {
 
                 List<Integer> diseaseId = c.diseaseId;
+                PrintWriter pw = null;
 
-                Pattern p = Pattern.compile("(\\w+):(\\d+)-(\\d+)");
                 List<Region> regionList = new ArrayList<>();
 
                 for (String region : c.regionLIst) {
-                    Matcher m = p.matcher(region);
 
-                    if (m.matches()) {
-                        String chr = m.group(1);
-                        int start = Integer.parseInt(m.group(2));
-                        int end = Integer.parseInt(m.group(3));
-
-                        Region r = new Region(chr, start, end);
-                        regionList.add(r);
-
-                    } else {
-                        System.out.println("no: " + region);
-                    }
+                    Region r = new Region(region);
+                    regionList.add(r);
 
                 }
 
-                long start = System.currentTimeMillis();
                 MutableLong count = new MutableLong(-1);
 
                 Iterable<Variant> query = qm.getVariantsByRegionList(regionList, diseaseId, c.skip, c.limit, count);
-                for (Variant v : query) {
-                    System.out.println("v = " + v);
+
+                if (!c.csv) {
+                    System.out.println("chr\tpos\tref\talt\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF");
+                } else {
+                    pw = new PrintWriter("query.csv");
+                    pw.append("chr\tpos\tref\talt\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF").append("\n");
                 }
 
-                long end = System.currentTimeMillis();
-                System.out.println(end - start);
-                System.out.println("count: " + count);
+                for (Variant v : query) {
+
+                    String ref = (v.getReference() == null || v.getReference().isEmpty()) ? "." : v.getReference();
+                    String alt = (v.getAlternate() == null || v.getAlternate().isEmpty()) ? "." : v.getAlternate();
+
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(v.getChromosome()).append("\t");
+                    sb.append(v.getPosition()).append("\t");
+                    sb.append(ref).append("\t");
+                    sb.append(alt).append("\t");
+
+                    DiseaseCount dc = v.getStats();
+
+                    sb.append(dc.getGt00()).append("\t");
+                    sb.append(dc.getGt01()).append("\t");
+                    sb.append(dc.getGt11()).append("\t");
+                    sb.append(dc.getGtmissing()).append("\t");
+                    sb.append(dc.getRefFreq()).append("\t");
+                    sb.append(dc.getAltFreq()).append("\t");
+                    sb.append(dc.getMaf()).append("\t");
+
+                    if (!c.csv) {
+                        System.out.println(sb.toString());
+                    } else {
+                        pw.append(sb.toString()).append("\n");
+                    }
+                }
+
+                if (c.csv) {
+                    pw.close();
+                }
+            } else if (c.all) {
+
+                PrintWriter pw = null;
+                List<Integer> diseaseId = null;
+
+
+                MutableLong count = new MutableLong(-1);
+                Iterable<Variant> query = qm.getAllVariants(diseaseId, c.skip, c.limit, count);
+
+                if (!c.csv) {
+                    System.out.println("chr\tpos\tref\talt\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF");
+                } else {
+                    pw = new PrintWriter("query.csv");
+                    pw.append("chr\tpos\tref\talt\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF").append("\n");
+                }
+
+                for (Variant v : query) {
+
+                    String ref = (v.getReference() == null || v.getReference().isEmpty()) ? "." : v.getReference();
+                    String alt = (v.getAlternate() == null || v.getAlternate().isEmpty()) ? "." : v.getAlternate();
+
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(v.getChromosome()).append("\t");
+                    sb.append(v.getPosition()).append("\t");
+                    sb.append(ref).append("\t");
+                    sb.append(alt).append("\t");
+
+
+                    DiseaseCount dc = v.getStats();
+
+                    sb.append(dc.getGt00()).append("\t");
+                    sb.append(dc.getGt01()).append("\t");
+                    sb.append(dc.getGt11()).append("\t");
+                    sb.append(dc.getGtmissing()).append("\t");
+                    sb.append(dc.getRefFreq()).append("\t");
+                    sb.append(dc.getAltFreq()).append("\t");
+                    sb.append(dc.getMaf()).append("\t");
+
+                    if (!c.csv) {
+                        System.out.println(sb.toString());
+                    } else {
+                        pw.append(sb.toString()).append("\n");
+                    }
+                }
+
+                if (c.csv) {
+                    pw.close();
+                }
 
             }
 

@@ -94,8 +94,6 @@ public class PVSQueryManager {
         }
 
         return res;
-
-
     }
 
 
@@ -126,11 +124,11 @@ public class PVSQueryManager {
         subtractList.add(new BasicDBObject("$divide", divide2));
 
 
-        BasicDBObject substract = new BasicDBObject("$subtract", subtractList);
+        BasicDBObject subtract = new BasicDBObject("$subtract", subtractList);
 
         DBObject totalCount = new BasicDBObject("$sum", 1);
 
-        BasicDBObject g = new BasicDBObject("_id", substract);
+        BasicDBObject g = new BasicDBObject("_id", subtract);
         g.append("features_count", totalCount);
         BasicDBObject group = new BasicDBObject("$group", g);
 
@@ -200,16 +198,16 @@ public class PVSQueryManager {
             and.add(auxQuery.criteria("position").greaterThanOrEq(r.getStart()));
             and.add(auxQuery.criteria("position").lessThanOrEq(r.getEnd()));
 
-            if (diseaseIds != null && diseaseIds.size() > 0) {
-                and.add(auxQuery.criteria("diseases.diseaseGroupId").in(diseaseIds));
-//                and.add(auxQuery.criteria("diseases.diseaseGroupId").hasAllOf(diseaseId));
-            }
             or[i++] = auxQuery.and(and.toArray(new Criteria[and.size()]));
         }
 
         Query<Variant> query = this.datastore.createQuery(Variant.class);
 
         query.or(or);
+
+        if (diseaseIds != null && diseaseIds.size() > 0) {
+            query.filter("diseases.diseaseGroupId in", diseaseIds);
+        }
 
         if (skip != null && limit != null) {
             query.offset(skip).limit(limit);
@@ -219,6 +217,14 @@ public class PVSQueryManager {
         count.setValue(query.countAll());
 
         List<Variant> res = new ArrayList<>();
+
+        if (diseaseIds == null || diseaseIds.size() == 0) {
+            diseaseIds = new ArrayList<>();
+            List<DiseaseGroup> dgList = this.getAllDiseaseGroups();
+            for (DiseaseGroup dg : dgList) {
+                diseaseIds.add(dg.getGroupId());
+            }
+        }
 
         int sampleCount = calculateSampleCount(diseaseIds);
 
@@ -230,9 +236,34 @@ public class PVSQueryManager {
         return res;
     }
 
+    public Iterable<Variant> getAllVariants(List<Integer> diseaseIds, Integer skip, Integer limit, MutableLong count) {
+
+        Query<Variant> query = this.datastore.createQuery(Variant.class);
+
+        if (skip != null && limit != null) {
+            query.offset(skip).limit(limit);
+        }
+
+        if (diseaseIds == null || diseaseIds.size() == 0) {
+            diseaseIds = new ArrayList<>();
+            List<DiseaseGroup> dgList = this.getAllDiseaseGroups();
+            for (DiseaseGroup dg : dgList) {
+                diseaseIds.add(dg.getGroupId());
+            }
+
+        }
+
+        int sampleCount = calculateSampleCount(diseaseIds);
+
+        Iterable<Variant> aux = query.fetch();
+        Iterable<Variant> customIterable = new AllVariantsIterable(aux, diseaseIds, sampleCount);
+
+        return customIterable;
+    }
+
+
     private int calculateSampleCount(List<Integer> diseaseId) {
         int res = 0;
-
 
         Iterable<DiseaseGroup> groupId = this.datastore.createQuery(DiseaseGroup.class).field("groupId").in(diseaseId).fetch();
 
@@ -262,7 +293,6 @@ public class PVSQueryManager {
 
         gt00 = sampleCount - gt01 - gt11 - gtmissing;
 
-
         int refCount = gt00 * 2 + gt01;
         int altCount = gt11 * 2 + gt01;
 
@@ -279,7 +309,6 @@ public class PVSQueryManager {
 
         return dc;
     }
-
 
     private List<String> getChunkIds(Region region) {
         List<String> chunkIds = new LinkedList<>();
@@ -328,5 +357,48 @@ public class PVSQueryManager {
     private int getChunkEnd(int id, int chunksize) {
         return (id * chunksize) + chunksize - 1;
     }
+
+
+    class AllVariantsIterable implements Iterable<Variant> {
+
+        private Iterable iterable;
+        private List<Integer> diseaseIds;
+        private int sampleCount;
+
+        public AllVariantsIterable(Iterable iterable, List<Integer> diseaseIds, int sampleCount) {
+            this.iterable = iterable;
+            this.diseaseIds = diseaseIds;
+            this.sampleCount = sampleCount;
+        }
+
+        @Override
+        public Iterator<Variant> iterator() {
+
+            Iterator<Variant> it = new AllVariantsIterator(this.iterable.iterator());
+            return it;
+        }
+
+        class AllVariantsIterator implements Iterator<Variant> {
+
+            private Iterator<Variant> it;
+
+            public AllVariantsIterator(Iterator<Variant> it) {
+                this.it = it;
+            }
+
+            @Override
+            public boolean hasNext() {
+                return it.hasNext();
+            }
+
+            @Override
+            public Variant next() {
+                Variant v = this.it.next();
+                v.setStats(calculateStats(v, diseaseIds, sampleCount));
+                return v;
+            }
+        }
+    }
+
 
 }

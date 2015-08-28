@@ -89,7 +89,13 @@ public class OptionsParser {
     class CommandQuery implements Command {
 
         @Parameter(names = {"--diseases"}, description = "List all disease groups", arity = 0)
-        boolean diseases;
+        boolean diseases = false;
+
+        @Parameter(names = {"--all"}, description = "List all variants", arity = 0)
+        boolean all = false;
+
+        @Parameter(names = {"--csv"}, description = "Export to CSV", arity = 0)
+        boolean csv;
 
         @Parameter(names = {"--regions"}, description = "Comma-separated list of regions")
         List<String> regionLIst = new ArrayList<>();
@@ -110,6 +116,8 @@ public class OptionsParser {
         String user = "";
         @Parameter(names = {"--pass"}, description = "DB Pass", arity = 1)
         String pass = "";
+
+
 
 
     }

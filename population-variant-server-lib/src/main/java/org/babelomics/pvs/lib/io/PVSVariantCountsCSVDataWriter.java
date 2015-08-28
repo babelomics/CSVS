@@ -71,7 +71,7 @@ public class PVSVariantCountsCSVDataWriter implements VariantWriter {
         sb.append(elem.getStart()).append("\t");
         sb.append(elem.getReference()).append("\t");
         sb.append(elem.getAlternate()).append("\t");
-        if (elem.getId() == null) {
+        if (elem.getId() == null || elem.getId().isEmpty()) {
             sb.append(".").append("\t");
         } else {
             sb.append(elem.getId()).append("\t");
