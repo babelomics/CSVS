@@ -27,6 +27,9 @@ public class Variant {
     private String reference;
     @Property("a")
     private String alternate;
+    @Property("i")
+    private String ids;
+
 
     @Property("_at")
     private Map<String, Object> attr;
@@ -54,6 +57,15 @@ public class Variant {
         this.position = position;
         this.reference = reference;
         this.alternate = alternate;
+    }
+
+
+    public String getIds() {
+        return ids;
+    }
+
+    public void setIds(String ids) {
+        this.ids = ids;
     }
 
     public String getChromosome() {

@@ -76,6 +76,10 @@ public class PVSVariantCountsMongoWriter implements DataWriter<Variant> {
             this.datastore.save(elem);
         } else {
 
+            if (v.getIds() == null || v.getIds().isEmpty()) {
+                v.setIds(elem.getIds());
+            }
+
             boolean b = false;
             for (DiseaseCount dc : v.getDiseases()) {
                 if (dc.getDiseaseGroup().getGroupId() == this.diseaseGroup.getGroupId()) {

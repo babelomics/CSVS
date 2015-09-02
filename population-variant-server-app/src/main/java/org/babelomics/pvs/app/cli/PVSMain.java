@@ -297,23 +297,24 @@ public class PVSMain {
                 Iterable<Variant> query = qm.getAllVariants(diseaseId, c.skip, c.limit, count);
 
                 if (!c.csv) {
-                    System.out.println("chr\tpos\tref\talt\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF");
+                    System.out.println("chr\tpos\tref\talt\tid\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF");
                 } else {
                     pw = new PrintWriter("query.csv");
-                    pw.append("chr\tpos\tref\talt\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF").append("\n");
+                    pw.append("chr\tpos\tref\talt\tid\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF").append("\n");
                 }
 
                 for (Variant v : query) {
 
                     String ref = (v.getReference() == null || v.getReference().isEmpty()) ? "." : v.getReference();
                     String alt = (v.getAlternate() == null || v.getAlternate().isEmpty()) ? "." : v.getAlternate();
+                    String id = (v.getIds() == null) ? "." : v.getIds();
 
                     StringBuilder sb = new StringBuilder();
                     sb.append(v.getChromosome()).append("\t");
                     sb.append(v.getPosition()).append("\t");
                     sb.append(ref).append("\t");
                     sb.append(alt).append("\t");
-
+                    sb.append(id).append("\t");
 
                     DiseaseCount dc = v.getStats();
 

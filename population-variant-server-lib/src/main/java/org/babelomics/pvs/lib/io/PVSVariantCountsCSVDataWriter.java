@@ -8,7 +8,6 @@ import org.opencb.biodata.models.variant.stats.VariantStats;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -92,41 +91,63 @@ public class PVSVariantCountsCSVDataWriter implements VariantWriter {
         if (file.getStats() != null) {
             VariantStats stats = file.getStats();
 
-
             for (Map.Entry<Genotype, Integer> entry : stats.getGenotypesCount().entrySet()) {
 
                 Genotype g = entry.getKey();
                 int count = entry.getValue();
 
-                if (g.getAllelesIdx().length == 2) {
-
-                    if (g.getAllele(0) == 0 && g.getAllele(1) == 0) {
-                        gt00 += count;
-                    } else if (g.getAllele(0) == 1 && g.getAllele(1) == 1) {
-                        gt11 += count;
-                    } else if (g.getAllele(0) == -1 || g.getAllele(1) == -1) {
-                        gtmissing += count;
-                    } else if (g.getAllele(0) == 0 || g.getAllele(1) == 0) {
-                        gt01 += count;
-                    } else if (g.getAllele(0) == g.getAllele(1)) {
-                        gt11 += count;
+                if (elem.getChromosome().toLowerCase().equals("y")) {
+                    if (g.getAllelesIdx().length == 2) {
+                        if (g.getAllele(0) == 0 && g.getAllele(1) == 0) {
+                            gt00 += count;
+                        } else if (g.getAllele(0) == -1 || g.getAllele(1) == -1) {
+                            gtmissing += count;
+                        } else {
+                            gt11 += count;
+                        }
+                    } else if (g.getAllelesIdx().length == 1) {
+                        if (g.getAllele(0) == 0) {
+                            gt00 += count;
+                        } else if (g.getAllele(0) == 1) {
+                            gt11 += count;
+                        } else if (g.getAllele(0) == -1) {
+                            gtmissing += count;
+                        } else {
+                            gt11 += count;
+                        }
                     } else {
-                        gt11 += count;
+                        System.err.println("Alleles size > 2");
                     }
-                } else if (g.getAllelesIdx().length == 1) {
-                    if (g.getAllele(0) == 0) {
-                        gt00 += count;
-                    } else if (g.getAllele(0) == 1) {
-                        gt11 += count;
-                    }
-
                 } else {
-                    System.err.println("Alleles size > 2");
-                    System.err.println(Arrays.toString(g.getAllelesIdx()));
-                    System.err.println(Arrays.toString(g.getNormalizedAllelesIdx()));
+                    if (g.getAllelesIdx().length == 2) {
+                        if (g.getAllele(0) == 0 && g.getAllele(1) == 0) {
+                            gt00 += count;
+                        } else if (g.getAllele(0) == 1 && g.getAllele(1) == 1) {
+                            gt11 += count;
+                        } else if (g.getAllele(0) == -1 || g.getAllele(1) == -1) {
+                            gtmissing += count;
+                        } else if (g.getAllele(0) == 0 || g.getAllele(1) == 0) {
+                            gt01 += count;
+                        } else if (g.getAllele(0) == g.getAllele(1)) {
+                            gt11 += count;
+                        } else {
+                            gt11 += count;
+                        }
+                    } else if (g.getAllelesIdx().length == 1) {
+                        if (g.getAllele(0) == 0) {
+                            gt00 += count;
+                        } else if (g.getAllele(0) == 1) {
+                            gt11 += count;
+                        } else if (g.getAllele(0) == -1) {
+                            gtmissing += count;
+                        } else {
+                            gt11 += count;
+                        }
+                    } else {
+                        System.err.println("Alleles size > 2");
+                    }
                 }
                 total += count;
-
             }
 
             sb.append(gt00).append("\t");
@@ -137,7 +158,10 @@ public class PVSVariantCountsCSVDataWriter implements VariantWriter {
 
         }
 
-        printer.append(sb.toString()).append("\n");
+        printer.append(sb.toString()).
+
+                append("\n");
+
         return true;
     }
 

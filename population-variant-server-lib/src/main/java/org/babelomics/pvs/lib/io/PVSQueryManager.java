@@ -213,6 +213,8 @@ public class PVSQueryManager {
             query.offset(skip).limit(limit);
         }
 
+        System.out.println(query);
+
         Iterable<Variant> aux = query.fetch();
         count.setValue(query.countAll());
 
@@ -333,17 +335,6 @@ public class PVSQueryManager {
         BigDecimal bd = new BigDecimal(value);
         bd = bd.setScale(places, RoundingMode.HALF_UP);
         return bd.floatValue();
-    }
-
-    @Entity
-    private static class CountResult {
-
-        @Id
-        private int count;
-
-        public int getCount() {
-            return count;
-        }
     }
 
     protected int getChunkId(int position, int chunksize) {
