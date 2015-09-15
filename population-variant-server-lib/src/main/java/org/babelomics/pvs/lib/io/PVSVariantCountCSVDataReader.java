@@ -18,7 +18,6 @@ import java.util.List;
  */
 public class PVSVariantCountCSVDataReader implements DataReader<Variant> {
 
-    private Path path;
     private String filePath;
     private BufferedReader reader;
     private DiseaseGroup diseaseGroup;
@@ -31,7 +30,7 @@ public class PVSVariantCountCSVDataReader implements DataReader<Variant> {
     @Override
     public boolean open() {
 
-        this.path = Paths.get(this.filePath);
+        Path path = Paths.get(this.filePath);
         try {
             this.reader = Files.newBufferedReader(path, Charset.defaultCharset());
         } catch (IOException e) {

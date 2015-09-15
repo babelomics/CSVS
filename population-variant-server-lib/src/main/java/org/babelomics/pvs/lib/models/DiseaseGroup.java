@@ -27,9 +27,13 @@ public class DiseaseGroup {
     @Property("s")
     private int samples;
 
+    @Property("v")
+    private long variants;
+
 
     public DiseaseGroup() {
         this.samples = 0;
+        this.variants = 0;
     }
 
     public DiseaseGroup(int groupId, String name) {
@@ -74,16 +78,30 @@ public class DiseaseGroup {
         this.samples += samples;
     }
 
+    public void incVariants(int variants) {
+        this.variants += variants;
+    }
+
     public void decSamples(int samples) {
         this.samples -= samples;
+    }
+
+    public long getVariants() {
+        return variants;
+    }
+
+    public void setVariants(long variants) {
+        this.variants = variants;
     }
 
     @Override
     public String toString() {
         return "DiseaseGroup{" +
-                "name='" + name + '\'' +
+                "id=" + id +
+                ", name='" + name + '\'' +
                 ", groupId=" + groupId +
                 ", samples=" + samples +
+                ", variants=" + variants +
                 '}';
     }
 }

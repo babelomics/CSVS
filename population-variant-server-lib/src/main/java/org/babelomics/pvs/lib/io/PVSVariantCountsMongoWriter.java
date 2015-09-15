@@ -17,6 +17,7 @@ public class PVSVariantCountsMongoWriter implements DataWriter<Variant> {
     private DiseaseGroup diseaseGroup;
     private Datastore datastore;
     private int samples;
+    private int variants;
 
     public static final int CHUNK_SIZE_SMALL = 1000;
     public static final int CHUNK_SIZE_BIG = 10000;
@@ -25,6 +26,7 @@ public class PVSVariantCountsMongoWriter implements DataWriter<Variant> {
         this.diseaseGroup = diseaseGroup;
         this.datastore = datastore;
         this.samples = 0;
+        this.variants = 0;
     }
 
     @Override
@@ -50,8 +52,7 @@ public class PVSVariantCountsMongoWriter implements DataWriter<Variant> {
         DiseaseGroup dg = this.datastore.get(DiseaseGroup.class, diseaseGroup.getId());
 
         dg.incSamples(this.samples);
-
-        System.out.println("dg = " + dg);
+        dg.incVariants(this.variants);
 
         this.datastore.save(dg);
 
@@ -74,6 +75,7 @@ public class PVSVariantCountsMongoWriter implements DataWriter<Variant> {
 
         if (v == null) {
             this.datastore.save(elem);
+            this.variants++;
         } else {
 
             if (v.getIds() == null || v.getIds().isEmpty()) {

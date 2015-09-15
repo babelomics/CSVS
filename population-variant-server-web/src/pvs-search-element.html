@@ -146,6 +146,7 @@
                                     <div class="input_container vertical layout">
                                         <label class="jso">Gene:</label>
                                         <textarea id="gene" name="gene" placeholder="BRCA2,PPL"
+                                                  on-keyup="geneChanged"
                                                   value="{{geneValue::change}}" rows="3"></textarea>
 
                                         <div class="searchGene horizontal layout end-justified" hidden>
@@ -158,10 +159,8 @@
                                             </div>
                                         </div>
                                     </div>
-
                                 </div>
                             </div>
-
                         </div>
 
 
@@ -175,10 +174,6 @@
                                 <div class="check" on-click="deselectAllDiseases">
                                     <i class="fa fa-square-o"></i>
                                 </div>
-
-                                <!--<paper-button on-click="{{ selectAllDiseases }}">All</paper-button>-->
-                                <!--<paper-button on-click="{{ deselectAllDiseases }}">None</paper-button>-->
-
                             </div>
                             <div id="diseases_div" class="jso-formcontent" style="padding: 8px 10px">
                                 <template is="dom-repeat" items="{{diseases}}">
@@ -263,6 +258,18 @@
                 reflectToAttribute: true,
                 observer: 'hiddenChanged',
                 nofity: true
+            },
+            maxLength: {
+                type: Number,
+                value: 1000000
+            }
+        },
+        geneChanged: function (e) {
+            var target = e.currentTarget;
+            var value = target.value;
+            var splits = value.split(",");
+            if (splits.length > 3) {
+                alert("The maximum number of genes is 3");
             }
         },
         hiddenChanged: function (neo, old) {
@@ -270,10 +277,12 @@
             if (!neo && this.selectedMenuTool) {
                 this.$.gv.removeAttribute("hidden");
             }
-        },
+        }
+        ,
         created: function () {
             this.selectedSpecies = DEFAULT_SPECIES;
-        },
+        }
+        ,
         ready: function () {
             var me = this;
             this.species = 'Homo sapiens';
@@ -332,12 +341,12 @@
                 {
                     title: 'MAF',
                     name: 'maf',
-                    width: 300,
+                    width: 350,
                     columns: [
                         {
                             title: "Genotypes",
                             name: 'genotypes',
-                            width: 150,
+                            width: 200,
                             columns: [
                                 {
                                     name: "gt00", width: 50, title: "0/0", formula: function (row) {
@@ -359,6 +368,14 @@
                                     name: "gt11", width: 50, title: "1/1", formula: function (row) {
                                     if (row.stats != null && row.stats.gt11 != null)
                                         return row.stats.gt11;
+                                    else
+                                        return ".";
+                                }
+                                },
+                                {
+                                    name: "gtmissing", width: 50, title: "./.", formula: function (row) {
+                                    if (row.stats != null && row.stats.gtmissing != null)
+                                        return row.stats.gtmissing;
                                     else
                                         return ".";
                                 }
@@ -617,11 +634,14 @@
                 }
             ];
 
-        },
+        }
+        ,
         _toFixed: function (value, precision) {
             return Number(value).toFixed(precision);
-        },
-        observe: {},
+        }
+        ,
+        observe: {}
+        ,
         _setQuickSearchMenu: function (query) {
 
             while (this.$.searchDataList.firstChild) {
@@ -638,7 +658,8 @@
                 this.$.searchDataList.appendChild(menuEntry);
             }
 
-        },
+        }
+        ,
         _quickSearchResultFn: function (query) {
             var results = [];
             var speciesCode = Utils.getSpeciesCode(this.species);
@@ -660,7 +681,8 @@
                 }
             });
             return results;
-        },
+        }
+        ,
         submitForm: function () {
             var me = this;
             var query = {};
@@ -670,10 +692,40 @@
                 var regions = [];
 
                 if (this.regionValue) {
-                    regions = this.regionValue.split(",");
+                    // check Regions)
+                    var aux = this.regionValue.split(",");
+                    var length = 0;
+
+                    for (var i = 0; i < aux.length; i++) {
+                        var region = aux[i];
+                        var r = new Region(region);
+
+                        if (r.chromosome == null || r.start == null || r.end == null) {
+                            alert("Malformed region: " + region);
+                            return;
+                        } else if (r.start > r.end) {
+                            alert("Start must be lower or equal than End: " + region);
+                            return;
+                        } else {
+                            length += (r.end - r.start);
+                            regions.push(r.toString());
+                        }
+                    }
+                }
+
+                if (length > this.maxLength) {
+                    alert("The total size of all provided regions can't exceed " + this.maxLength + " positions");
+                    return
                 }
 
                 if (this.geneValue) {
+
+                    var splits = this.geneValue.split(",");
+                    if (splits.length > 3) {
+                        alert("The maximum number of genes is 3");
+                        return;
+                    }
+
                     var gene = this.geneValue.toUpperCase();
                     CellBaseManager.get({
                         species: 'hsapiens',
@@ -731,17 +783,20 @@
                 alert("Please add a region/gene and check any disease");
             }
 
-        },
+        }
+        ,
         _formatText: function (text) {
             return Utils.formatText(text, "_").toLowerCase().replace(/(?:^|\s)\S/g, function (a) {
                 return a.toUpperCase();
             });
-        },
+        }
+        ,
         clearForm: function () {
 
             this.$.filter_form.reset();
 
-        },
+        }
+        ,
         exportQueryToCSV: function () {
             var numVariants = this.$.dataGrid.dataSize;
 
@@ -809,7 +864,8 @@
                     }
                 });
             }
-        },
+        }
+        ,
         selectAllDiseases: function (e, d, s) {
             var checkboxes = this.$.filter_form.getElementsByClassName("diseaseName");
             for (var i = 0; i < checkboxes.length; i++) {
@@ -817,14 +873,17 @@
                 elem.checked = true;
             }
 
-        },
+        }
+        ,
         deselectAllDiseases: function (e, d, s) {
             var checkboxes = this.$.filter_form.getElementsByClassName("diseaseName");
             for (var i = 0; i < checkboxes.length; i++) {
                 var elem = checkboxes[i];
                 elem.checked = false;
             }
-        }, urlChanged: function (neo, old) {
+        }
+        ,
+        urlChanged: function (neo, old) {
             var me = this;
             if (neo != '') {
                 this.request = {
@@ -835,7 +894,8 @@
                 };
 
             }
-        },
+        }
+        ,
         _parse: function (response) {
 
             var me = this;
@@ -1109,10 +1169,12 @@
                 }
             }
             return data;
-        },
+        }
+        ,
         _parseTotal: function (response) {
             return response.numTotalResults;
-        },
+        }
+        ,
         handleRowClick: function (e) {
             var row = e.detail.row;
 
@@ -1121,10 +1183,12 @@
             this.$.frequency.row = row;
             this.$.phenotype.row = row;
 
-        },
+        }
+        ,
         handleMenuClick: function (e) {
             this.selectedMenuTool = e.currentTarget;
-        },
+        }
+        ,
         selectedMenuChanged: function (neo, old) {
             if (old) {
                 old.removeAttribute('selected');
@@ -1134,7 +1198,8 @@
                 neo.setAttribute('selected', '');
                 this.$[neo.dataset.option].removeAttribute('hidden');
             }
-        },
+        }
+        ,
         handleGenomeViewerCreated: function () {
             var me = this;
 
@@ -1212,5 +1277,6 @@
 
             this.$.gv.genomeViewer.addTrack(track);
         }
-    });
+    })
+    ;
 </script>

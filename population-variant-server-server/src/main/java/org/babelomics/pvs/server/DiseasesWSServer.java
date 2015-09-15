@@ -40,7 +40,6 @@ public class DiseasesWSServer extends PVSWSServer {
         qr.setNumResults(qr.getNumTotalResults());
 
         return createOkResponse(qr);
-//        return createErrorResponse("The total size of all regions provided can't exceed 1 million positions. ");
 
     }
 }

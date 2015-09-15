@@ -6,6 +6,7 @@
 <link rel="import" href="pvs-menubar.html">
 <link rel="import" href="pvs-home.html">
 <link rel="import" href="pvs-search-element.html">
+<link rel="import" href="pvs-stats-element.html">
 
 <dom-module id="pvs-element">
     <style>
@@ -86,6 +87,11 @@
                       selected-option="{{selectedOption}}"></pvs-home>
             <pvs-search-element data-option="search" hidden$="{{computeSelectedOption(selectedOption, 'search')}}"
                                 diseases="{{diseases}}" id="pvsSearchElement"></pvs-search-element>
+            <pvs-stats-element data-option="stats"
+                               hidden$="{{computeSelectedOption(selectedOption, 'stats')}}"
+                               diseases="{{diseases}}" id="pvsStatsElement"
+                    ></pvs-stats-element>
+
         </pvs-content>
 
         <jso-opencga-header id="jsoHeader"
@@ -101,6 +107,11 @@
                 <div title="Search" class="hover" data-option="search" data-menu-type="unique">
                     <i class="fa fa-search"></i>
                     <span class="option-text">Search</span>
+                </div>
+
+                <div title="Stats" class="hover" data-option="stats" data-menu-type="unique">
+                    <i class="fa fa-pie-chart"></i>
+                    <span class="option-text">Stats</span>
                 </div>
             </pvs-menubar>
 
