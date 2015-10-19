@@ -1209,41 +1209,46 @@
 //                    customVar: 'info',
 //                },
                 species: this.$.gv.genomeViewer.species,
-                getRegionsFromIntervals: function (response) {
+//                getRegionsFromIntervals: function (response) {
+//
+//                    debugger
+//                    var regions = [];
+//                    for (var i = 0; i < response.result.length; i++) {
+//                        var r = response.result[i];
+//                        for (var j = 0; j < r.length; j++) {
+//                            var interval = r[j];
+//                            var region = new Region(interval);
+//                            regions.push(region);
+//                        }
+//                    }
+//                    return regions;
+//
+//                },
+                parse: function (response) {
+                    var itemsArray = [];
 
-                    var regions = [];
                     for (var i = 0; i < response.result.length; i++) {
                         var r = response.result[i];
                         for (var j = 0; j < r.length; j++) {
-                            var interval = r[j];
-                            var region = new Region(interval);
-                            regions.push(region);
+                            var elem = r[j];
+                            elem.start = elem.position;
+                            elem.end = elem.position;
                         }
+                        itemsArray.push(r);
                     }
-                    return regions;
 
+                    return itemsArray;
                 },
-                parse: function (response, dataType) {
+                parseHistogram: function (response) {
+//                    debugger
                     var itemsArray = [];
-
-                    if (dataType == "histogram") {
-                        for (var i = 0; i < response.result.length; i++) {
-                            var r = response.result[i]
-                            for (var j = 0; j < r.length; j++) {
-                                var interval = r[j];
-                                interval.features_count = interval.featuresCount;
-                                itemsArray.push(interval);
-                            }
-                        }
-                    } else {
-                        for (var i = 0; i < response.result.length; i++) {
-                            var r = response.result[i];
-                            for (var j = 0; j < r.length; j++) {
-                                var elem = r[j];
-                                elem.start = elem.position;
-                                elem.end = elem.position;
-                            }
-                            itemsArray.push(r);
+                    for (var i = 0; i < response.result.length; i++) {
+                        var r = response.result[i]
+                        for (var j = 0; j < r.length; j++) {
+                            var interval = r[j];
+                            interval.features_count = interval.featuresCount;
+                            console.log(interval.features_count);
+                            itemsArray.push(interval);
                         }
                     }
                     return itemsArray;
@@ -1262,7 +1267,6 @@
                                 x.reference == y.reference && x.alternate == y.alternate;
                     });
                 }
-
             }
 
             var track = new FeatureTrack({
