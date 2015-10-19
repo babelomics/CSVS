@@ -165,4 +165,17 @@ public class DiseaseCount {
 
     }
 
+    @Override
+    public String toString() {
+        return "DiseaseCount{" +
+                "altFreq=" + altFreq +
+                ", refFreq=" + refFreq +
+                ", maf=" + maf +
+                ", gtmissing=" + gtmissing +
+                ", gt11=" + gt11 +
+                ", gt01=" + gt01 +
+                ", gt00=" + gt00 +
+                ", diseaseGroupId=" + diseaseGroupId +
+                '}';
+    }
 }

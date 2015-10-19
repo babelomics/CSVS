@@ -8,8 +8,6 @@ import org.babelomics.pvs.lib.models.IntervalFrequency;
 import org.babelomics.pvs.lib.models.Variant;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
-import org.mongodb.morphia.annotations.Entity;
-import org.mongodb.morphia.annotations.Id;
 import org.mongodb.morphia.query.Criteria;
 import org.mongodb.morphia.query.Query;
 import org.opencb.biodata.models.feature.Region;
@@ -81,6 +79,60 @@ public class PVSQueryManager {
                 v.setAnnots(null);
             }
             res.add(variants);
+        }
+
+        return res;
+    }
+
+    public Variant getVariant(Variant variant, List<Integer> diseaseIds) {
+
+        int i = 0;
+
+        Region r = new Region(variant.getChromosome(), variant.getPosition(), variant.getPosition());
+
+        List<String> chunkIds = getChunkIds(r);
+        Query<Variant> query = this.datastore.createQuery(Variant.class);
+
+        query.filter("_at.chIds in", chunkIds);
+        query.filter("chromosome = ", variant.getChromosome());
+        query.filter("position =", variant.getPosition());
+        query.filter("reference =", variant.getReference().toUpperCase());
+        query.filter("alternate =", variant.getAlternate().toUpperCase());
+
+
+        if (diseaseIds != null && diseaseIds.size() > 0) {
+            query.filter("diseases.diseaseGroupId in", diseaseIds);
+        }
+
+        System.out.println(query);
+
+        Variant res = query.get();
+
+        if (res != null) {
+
+            if (diseaseIds == null || diseaseIds.size() == 0) {
+                diseaseIds = new ArrayList<>();
+                List<DiseaseGroup> dgList = this.getAllDiseaseGroups();
+                for (DiseaseGroup dg : dgList) {
+                    diseaseIds.add(dg.getGroupId());
+                }
+            }
+
+            int sampleCount = calculateSampleCount(diseaseIds);
+            DiseaseCount diseaseCount = calculateStats(res, diseaseIds, sampleCount);
+
+            res.setStats(diseaseCount);
+
+        }
+        return res;
+    }
+
+    public List<Variant> getVariants(List<Variant> variants, List<Integer> diseaseIds) {
+        List<Variant> res = new ArrayList<>();
+
+        for (Variant v : variants) {
+            Variant resVariant = this.getVariant(v, diseaseIds);
+            res.add(resVariant);
         }
 
         return res;

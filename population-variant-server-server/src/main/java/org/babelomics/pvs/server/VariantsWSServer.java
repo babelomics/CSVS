@@ -93,4 +93,51 @@ public class VariantsWSServer extends PVSWSServer {
         return createOkResponse(qr);
     }
 
+    @GET
+    @Path("/{variants}/get")
+    @Produces("application/json")
+    @ApiOperation(value = "Get Variants By Region")
+    public Response getVariants(@ApiParam(value = "variants") @PathParam("variants") @DefaultValue("") String variants,
+                                @ApiParam(value = "limit") @QueryParam("limit") @DefaultValue("10") int limit,
+                                @ApiParam(value = "skip") @QueryParam("skip") @DefaultValue("0") int skip,
+                                @ApiParam(value = "studies") @QueryParam("studies") String studies,
+                                @ApiParam(value = "diseases") @QueryParam("diseases") @DefaultValue("") String diseases,
+                                @ApiParam(value = "phenotypes") @QueryParam("phenotypes") String phenotypes
+    ) {
+
+        List<Variant> variantList = new ArrayList<>();
+        List<Integer> diseaseList = new ArrayList<>();
+
+        if (variants.length() > 0) {
+            String[] varSplit = variants.split(",");
+            for (String s : varSplit) {
+                Variant variant = new Variant(s);
+                variantList.add(variant);
+            }
+        }
+
+        if (diseases.length() > 0) {
+            String[] disSplits = diseases.split(",");
+            for (String d : disSplits) {
+                diseaseList.add(Integer.valueOf(d));
+            }
+        }
+
+        List<Variant> variantRes = qm.getVariants(variantList, diseaseList);
+
+        QueryResponse qr = createQueryResponse(variantRes);
+        qr.setNumTotalResults(variantRes.size());
+
+        qr.addQueryOption("variants", variants);
+        if (diseases.length() > 0) {
+            qr.addQueryOption("diseases", diseases);
+        }
+
+        qr.addQueryOption("limit", limit);
+        qr.addQueryOption("skip", skip);
+
+        return createOkResponse(qr);
+    }
+
+
 }

@@ -59,6 +59,16 @@ public class Variant {
         this.alternate = alternate;
     }
 
+    public Variant(String variant) {
+        this();
+        if (variant != null && !variant.isEmpty()) {
+            String[] fields = variant.split("[:-]", -1);
+            this.chromosome = fields[0];
+            this.position = Integer.parseInt(fields[1]);
+            this.reference = fields[2];
+            this.alternate = fields[3];
+        }
+    }
 
     public String getIds() {
         return ids;
