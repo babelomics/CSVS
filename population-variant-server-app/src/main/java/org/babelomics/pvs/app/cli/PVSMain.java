@@ -1,6 +1,7 @@
 package org.babelomics.pvs.app.cli;
 
 import com.beust.jcommander.ParameterException;
+import com.google.common.base.Joiner;
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
@@ -22,15 +23,22 @@ import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfReader;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variant.VariantSource;
 import org.opencb.biodata.tools.variant.tasks.VariantRunner;
+import org.opencb.cellbase.core.client.CellBaseClient;
+import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.commons.containers.list.SortedList;
 import org.opencb.commons.io.DataReader;
 import org.opencb.commons.io.DataWriter;
 import org.opencb.commons.run.Runner;
 import org.opencb.commons.run.Task;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResponse;
+import org.opencb.datastore.core.QueryResult;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
@@ -66,7 +74,7 @@ public class PVSMain {
         return datastore;
     }
 
-    public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
+    public static void main(String[] args) throws IOException, NoSuchAlgorithmException, URISyntaxException {
         OptionsParser parser = new OptionsParser();
 
         // If no arguments are provided, or -h/--help is the first argument, the usage is shown
@@ -231,7 +239,7 @@ public class PVSMain {
                     System.out.println(dg.getGroupId() + "\t" + dg.getName() + "\t" + dg.getSamples());
                 }
 
-            } else if (c.regionLIst.size() > 0) {
+            } else if (c.regionLIst.size() > 0 || c.geneList.size() > 0) {
 
                 List<Integer> diseaseId = c.diseaseId;
                 PrintWriter pw = null;
@@ -239,10 +247,24 @@ public class PVSMain {
                 List<Region> regionList = new ArrayList<>();
 
                 for (String region : c.regionLIst) {
-
                     Region r = new Region(region);
                     regionList.add(r);
+                }
 
+                if (c.geneList.size() > 0) {
+                    URI cellbaseUri = new URI("http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest");
+                    CellBaseClient cbc = new CellBaseClient(cellbaseUri, "v3", "hsapiens");
+                    String id = Joiner.on(",").join(c.geneList).toUpperCase();
+                    QueryOptions qo = new QueryOptions();
+                    qo.add("include", "chromosome,start,end");
+
+                    QueryResponse<QueryResult<Gene>> info = cbc.getInfo(CellBaseClient.Category.feature, CellBaseClient.SubCategory.gene, id, qo);
+
+                    for (QueryResult<Gene> qr : info.getResponse()) {
+                        for (Gene gene : qr.getResult()) {
+                            regionList.add(new Region(gene.getChromosome(), gene.getStart(), gene.getEnd()));
+                        }
+                    }
                 }
 
                 MutableLong count = new MutableLong(-1);

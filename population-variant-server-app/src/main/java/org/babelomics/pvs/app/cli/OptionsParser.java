@@ -100,13 +100,16 @@ public class OptionsParser {
         @Parameter(names = {"--regions"}, description = "Comma-separated list of regions")
         List<String> regionLIst = new ArrayList<>();
 
+        @Parameter(names = {"--genes"}, description = "Comma-separated list of genes")
+        List<String> geneList = new ArrayList<>();
+
         @Parameter(names = {"--diseaseId"}, description = "DiseaseId")
         List<Integer> diseaseId = new ArrayList<>();
 
         @Parameter(names = {"--skip"}, description = "Skip")
         Integer skip = null;
 
-        @Parameter(names = {"--limit"}, description = "Skip")
+        @Parameter(names = {"--limit"}, description = "Limit")
         Integer limit = null;
 
         @Parameter(names = {"--host"}, description = "DB host", arity = 1)
@@ -116,8 +119,6 @@ public class OptionsParser {
         String user = "";
         @Parameter(names = {"--pass"}, description = "DB Pass", arity = 1)
         String pass = "";
-
-
 
 
     }
