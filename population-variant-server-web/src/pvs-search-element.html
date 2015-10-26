@@ -334,7 +334,7 @@
                         return row.reference + ">" + row.alternate;
                     }
                 },
-                // {name: 'gene', title: 'Gene'},
+                {name: 'genes', title: 'Gene', width: 90, defaultValue: "."},
                 {
                     name: 'id', title: 'Id', width: 90, defaultValue: "."
                 },
@@ -697,7 +697,7 @@
                     var length = 0;
 
                     for (var i = 0; i < aux.length; i++) {
-                        var region = aux[i];
+                        var region = aux[i].trim();
                         var r = new Region(region);
 
                         if (r.chromosome == null || r.start == null || r.end == null) {
@@ -721,12 +721,18 @@
                 if (this.geneValue) {
 
                     var splits = this.geneValue.split(",");
+                    for (var i = 0; i < splits.length; i++) {
+                        splits[i] = splits[i].trim();
+                    }
+
                     if (splits.length > 3) {
                         alert("The maximum number of genes is 3");
                         return;
                     }
 
-                    var gene = this.geneValue.toUpperCase();
+//                    var gene = this.geneValue.toUpperCase();
+                    var gene = splits.join(",").toUpperCase();
+
                     CellBaseManager.get({
                         species: 'hsapiens',
                         category: 'feature',
@@ -746,6 +752,7 @@
                                     regions.push(region.toString());
 
                                 } else {
+                                    debugger
                                     alert("Wrong gene: " + gene);
                                 }
                             }
@@ -901,6 +908,7 @@
             var me = this;
 
             var data = response.result;
+
             var positions = [];
             for (var i = 0; i < data.length; i++) {
                 var row = data[i];
@@ -980,9 +988,14 @@
                     var sifDesc = "";
                     var poly = -1;
                     var polyDesc = "";
+                    var genes = [];
 
                     for (var j = 0, l = variant.annots.consequenceTypes.length; j < l; j++) {
                         var ct = variant.annots.consequenceTypes[j];
+
+                        if (ct.geneName != null && ct.geneName.length > 0 && genes.indexOf(ct.geneName) < 0) {
+                            genes.push(ct.geneName);
+                        }
 
                         if (ct.proteinSubstitutionScores != null && ct.proteinSubstitutionScores.length > 0) {
                             var auxSift = null;
@@ -1024,6 +1037,10 @@
                         } else {
                             variant.polyphen = poly;
                         }
+                    }
+
+                    if (genes.length > 0) {
+                        variant.genes = genes.join(",");
                     }
                 }
 
