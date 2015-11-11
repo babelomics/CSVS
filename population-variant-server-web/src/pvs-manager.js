@@ -1,5 +1,5 @@
 var PVSManager = {
-    host: (typeof PVS_HOST === 'undefined') ? 'http://test.babelomics.org/pvsdev/rest' : PVS_HOST,
+    host: (typeof PVS_HOST === 'undefined') ? 'http://ws.babelomics.org/csvs/rest' : PVS_HOST,
     version: 'v3',
 
     diseases: {

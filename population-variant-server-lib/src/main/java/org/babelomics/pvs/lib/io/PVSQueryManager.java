@@ -440,6 +440,11 @@ public class PVSQueryManager {
                 v.setStats(calculateStats(v, diseaseIds, sampleCount));
                 return v;
             }
+
+            @Override
+            public void remove() {
+                
+            }
         }
     }
 

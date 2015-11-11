@@ -39,6 +39,7 @@
 
     <link href='bower_components/fontawesome/css/font-awesome.min.css' rel='stylesheet' type='text/css'>
     <link href='lib/jsorolla/src/lib/components/jso-global.css' rel='stylesheet' type='text/css'>
+    <link href='lib/jsorolla/src/lib/components/jso-dropdown.css' rel='stylesheet' type='text/css'>
     <link href='lib/jsorolla/src/lib/components/jso-form.css' rel='stylesheet' type='text/css'>
 
     <!--Web Components-->
@@ -99,11 +100,8 @@
     ga('send', 'pageview');
 
 
-
-
-
-    window.addEventListener('WebComponentsReady', function(e) {
-        getSpecies(function(s) {
+    window.addEventListener('WebComponentsReady', function (e) {
+        getSpecies(function (s) {
             AVAILABLE_SPECIES = s;
             DEFAULT_SPECIES = AVAILABLE_SPECIES.vertebrates[0];
             pvs = document.createElement('pvs-element');
@@ -116,7 +114,7 @@
             host: CELLBASE_HOST,
             category: "meta",
             subCategory: "species",
-            success: function(r) {
+            success: function (r) {
                 var taxonomies = r.response[0].result[0];
                 for (var taxonomy in taxonomies) {
                     var newSpecies = [];
