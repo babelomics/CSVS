@@ -16,7 +16,7 @@
     </modules>
 
     <properties>
-        <biodata.version>0.5.0</biodata.version>
+        <biodata.version>0.5.1</biodata.version>
         <cellbase.version>3.1.1</cellbase.version>
         <jcl.version>3.0.0</jcl.version>
         <compileSource>1.8</compileSource>
