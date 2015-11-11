@@ -12,7 +12,6 @@
     </parent>
 
     <artifactId>population-variant-server-server</artifactId>
-    <version>1.0.0</version>
     <packaging>war</packaging>
 
     <dependencies>
@@ -20,22 +19,7 @@
             <groupId>org.babelomics.population-variant-server</groupId>
             <artifactId>population-variant-server-lib</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.babelomics.population-variant-server</groupId>
-            <artifactId>population-variant-server-app</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.opencb.opencga</groupId>
-            <artifactId>opencga-account</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.opencb.opencga</groupId>
-            <artifactId>opencga-lib</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.opencb.opencga</groupId>
-            <artifactId>opencga-analysis</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>

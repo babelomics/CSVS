@@ -1,0 +1,53 @@
+<dom-module id="pvs-content">
+    <style>
+    </style>
+    <template>
+        <content id="content"></content>
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is: 'pvs-content',
+        properties: {
+            selectedOption: {
+                type: String,
+                value: "",
+                notify: true,
+                observer: 'selectedOptionChanged',
+                reflectToAttribute: true
+            }
+        },
+        selectedOptionChanged: function (neo, old) {
+            if (neo) {
+                var selectedEl = this.querySelector("[data-option=" + neo + "]");
+
+                var elType = selectedEl && selectedEl.dataset && selectedEl.dataset.menuType ? selectedEl.dataset.menuType : "";
+
+                switch (elType) {
+                    case "unique":
+                        var aux = this.querySelectorAll("[data-option][data-menu-type=unique]");
+                        for (var i = 0; i < aux.length; i++) {
+                            var el = aux[i];
+                            el.hidden = true;
+                        }
+                        selectedEl.hidden = false;
+                        break;
+                    case "toggle":
+                        selectedEl.hidden = !selectedEl.hidden;
+                        break;
+
+                    default:
+                        var aux = this.$.content.querySelectorAll("[data-option]");
+                        for (var i = 0; i < aux.length; i++) {
+                            var el = aux[i];
+                            el.hidden = true;
+                        }
+                        if (selectedEl) {
+                            selectedEl.hidden = false;
+                        }
+                }
+            }
+        }
+    });
+</script>

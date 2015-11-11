@@ -1,400 +1,210 @@
-<link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/polymer-fontawesome/polymer-fontawesome.html">
-<link rel="import" href="../bower_components/core-list/core-list.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<!--<link rel="import" href="../bower_components/polymer/polymer.html">-->
+<!--<link rel="import" href="../bower_components/polymer-fontawesome/polymer-fontawesome.html">-->
+<!--<link rel="import" href="../bower_components/core-list/core-list.html">-->
+<!--<link rel="import" href="../bower_components/paper-button/paper-button.html">-->
 
 
-<polymer-element name="es-stats-element" attributes="studies">
+<dom-module name="pvs-stats-element">
+    <style>
+        :host {
+            display: block;
+            box-sizing: border-box;
+            position: relative;
+            /*background-color: var(--text-primary-color);*/
+            /*color: var(--primary-text-color);*/
+            width: 100%;
+        }
+
+        .selector_list {
+            height: 200px;
+        }
+
+        .buttons_container {
+            margin-top: 20px;
+            margin-bottom: 50px;
+        }
+
+        .chartElement {
+            margin-top: 200px;
+            width: 1000px;;
+            background-color: red;
+        }
+
+
+    </style>
     <template>
-        <style>
-            :host {
-                display: block;
-                box-sizing: border-box;
-                position: relative;
 
-                /*max-width: 1000px;*/
-                height: 1000px;
-            }
+        <div class="vertical layout center-justified">
+            <!--<div class="buttons_container  horizontal layout center-justified">-->
+            <!--<paper-button raised on-click="{{ statsPerStudy }}">Stats per study</paper-button>-->
+            <!--<paper-button raised on-click="{{ statsPerDisease }}"> Stats per disease</paper-button>-->
+            <!--<paper-button raised on-click="{{ statsPerPhenotype }}"> Stats per phenotype</paper-button>-->
+            <!--</div>-->
 
-            .selector_list {
-                height: 200px;
-            }
-
-            .buttons_container {
-                margin-top: 20px;
-                margin-bottom: 50px;
-            }
-
-            paper-button {
-                background-color: #FFFFFF;
-            }
-
-            .globalStats {
-                margin-top: 40px;
-                border-radius: 10px;
-            }
-
-            .pieChart {
-                border-radius: 10px;
-            }
-
-            .pieChartLeft {
-                margin-right: 40px;
-            }
-
-        </style>
-
-        <div vertical layout center-justified>
-            <div class="buttons_container" horizontal layout center-justified>
-                <!--<paper-button raised on-click="{{ statsPerStudy }}">Stats per study</paper-button>-->
-                <paper-button raised on-click="{{ statsPerDisease }}"> Stats per disease</paper-button>
-                <paper-button raised on-click="{{ statsPerPhenotype }}"> Stats per phenotype</paper-button>
-            </div>
-
-            <div id="chartContainer" vertical layout center-justified></div>
+            <div id="chartContainer" class="vertical layout center"></div>
 
         </div>
 
     </template>
-    <script>
-        Polymer({
-            created: function () {
-            },
-            ready: function () {
+</dom-module>
+<script>
+    Polymer({
+        is: 'pvs-stats-element',
+        properties: {
+            diseases: {
+                type: Array,
+                value: function () {
+                    return [];
+                },
+                observer: 'diseasesChanged'
+            }
+        },
+        created: function () {
+        },
+        ready: function () {
 
-            },
-            studiesChanged: function (oldValue, newValue) {
-                this.statsPerDisease();
-            },
-            _clearChartContainer: function () {
-                while (this.$.chartContainer.firstChild) {
-                    this.$.chartContainer.removeChild(this.$.chartContainer.firstChild);
-                }
-            },
-            _createPieChart: function (container, text, data) {
-                var vpp = new Highcharts.Chart({
-                    chart: {
-                        plotBackgroundColor: null,
-                        plotBorderWidth: 1,//null,
-                        plotShadow: false,
-                        renderTo: container,
-                        borderRadius: 10
+        },
+        diseasesChanged: function (oldValue, newValue) {
+            this.statsPerDisease();
+        },
+        _clearChartContainer: function () {
+            while (this.$.chartContainer.firstChild) {
+                this.$.chartContainer.removeChild(this.$.chartContainer.firstChild);
+            }
+        },
+        _createPieChart: function (container, text, data) {
+            var vpp = new Highcharts.Chart({
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: 1,//null,
+                    plotShadow: false,
+                    renderTo: container,
+                    borderRadius: 10,
+                    width:1000
 
-                    },
-                    legend: {
-                        labelFormatter: function () {
-                            var maxLength = 20;
-                            var res = this.name;
-                            if (this.name.length > maxLength) {
-                                res = this.name.slice(0, maxLength) + '...';
-                            }
-                            return res;
+                },
+                exporting:{
+
+                },
+                legend: {
+                    labelFormatter: function () {
+                        var maxLength = 20;
+                        var res = this.name;
+                        if (this.name.length > maxLength) {
+                            res = this.name.slice(0, maxLength) + '...';
                         }
-                    },
-                    title: {
-                        text: text
-                    },
-                    credits: {
-                        enabled: false
-                    },
-                    plotOptions: {
-                        pie: {
-                            allowPointSelect: true,
-                            cursor: 'pointer',
-                            dataLabels: {
-                                enabled: true,
+                        return res;
+                    }
+                },
+                title: {
+                    text: text
+                },
+                credits: {
+                    enabled: false
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
 //                                format: '<b>{point.name}</b>: {point.y:,.0f}',
-                                formatter: function () {
-                                    var maxLength = 20;
-                                    var res = this.point.name;
-                                    if (res.length > maxLength) {
-                                        res = res.slice(0, maxLength) + '...';
-                                    }
-                                    return '<b>' + res + '</b>: ' + this.point.y;
-
-                                },
-                                style: {
-                                    color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
-
+                            formatter: function () {
+                                var maxLength = 20;
+                                var res = this.point.name;
+                                if (res.length > maxLength) {
+                                    res = res.slice(0, maxLength) + '...';
                                 }
+                                return '<b>' + res + '</b>: ' + this.point.y;
+
                             },
-                            showInLegend: true
+                            style: {
+                                color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black',
+                                width: '400px'
 
-                        }
-                    },
-                    series: [{
-                        type: 'pie',
-                        name: text,
-                        data: data
+                            }
+                        },
+                        showInLegend: true
+
                     }
-                    ]
-                });
-            },
-            _createBarColumnChart: function (container, text, categories, data) {
-
-                var chart = new Highcharts.Chart({
-                    chart: {
-                        plotBackgroundColor: null,
-                        plotBorderWidth: 1,//null,
-                        plotShadow: false,
-                        renderTo: container,
-                        type: 'column',
-                        borderRadius: 10
-                    },
-                    title: {
-                        text: text
-                    },
-                    credits: {
-                        enabled: false
-                    },
-                    xAxis: {
-                        categories: [
-//                            "Variants", "SNPs", "INDELs", "Pass", "Transitions", "Transversions"
-                            "Variants", "Pass", "Transitions", "Transversions"
-                        ]
-                    },
-                    yAxis: {
-                        min: 0,
-                        title: {
-                            text: ''
-                        }
-                    },
-                    tooltip: {
-                        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-                        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                        '<td style="padding:0"><b>{point.y}</b></td></tr>',
-                        footerFormat: '</table>',
-                        shared: true,
-                        useHTML: true
-                    },
-                    plotOptions: {
-                        column: {
-                            pointPadding: 0.2,
-                            borderWidth: 0
-                        }
-                    },
-                    series: data
-                });
-            },
-            _addValueToCategory: function (category, stats, categories) {
-
-                for (var i = 0; i < categories.length; i++) {
-                    var elem = categories[i];
-
-                    if (elem.name == category) {
-                        elem.data[0] += stats.nVar;
-//                        elem.data[1] += stats.nSnp;
-//                        elem.data[2] += stats.nIndel;
-                        elem.data[1] += stats.nPass;
-                        elem.data[2] += stats.nTi;
-                        elem.data[3] += stats.nTv;
-                    }
+                },
+                series: [{
+                    type: 'pie',
+                    name: text,
+                    data: data
                 }
-            },
-            statsPerPhenotype: function () {
-                this._clearChartContainer();
+                ]
+            });
+        },
+        _createCharts: function (variants, variantsText, samples, samplesText) {
 
-                var auxVariants = {};
-                var auxSamples = {};
-                var variants = [];
-                var samples = [];
-                var categories = [];
-                var categoriesData = [];
+            var vppDiv = document.createElement("div");
+            var sppDiv = document.createElement("div");
 
-                for (var i = 0; i < this.studies.length; i++) {
+            vppDiv.style.marginTop  = "20px";
+            sppDiv.style.marginTop  = "20px";
 
-                    var study = this.studies[i];
-                    var studyPhe = this._formatText(study.meta.phe);
+            this._createPieChart(vppDiv, variantsText, variants);
+            this._createPieChart(sppDiv, samplesText, samples);
 
-                    if (!(studyPhe in auxVariants)) {
-                        auxVariants[studyPhe] = 0;
-                        auxSamples[studyPhe] = 0;
-                        var elem = {};
-                        elem.name = studyPhe;
-                        elem.data = [0, 0, 0, 0];
-//                        elem.data = [0, 0, 0, 0, 0, 0];
-                        categoriesData.push(elem);
-                        categories.push(elem.name);
-                    }
+            this.$.chartContainer.appendChild(vppDiv);
+            this.$.chartContainer.appendChild(sppDiv);
 
-                    this._addValueToCategory(studyPhe, study.st, categoriesData);
+        },
+        statsPerDisease: function () {
+            this._clearChartContainer();
 
-                    auxVariants[studyPhe] += study.st.nVar;
-                    auxSamples[studyPhe] += study.st.nSamp;
+            var auxVariants = {};
+            var auxSamples = {};
+            var variants = [];
+            var samples = [];
+            var categories = [];
+            var categoriesData = [];
 
+            for (var i = 0; i < this.diseases.length; i++) {
+
+                var disease = this.diseases[i];
+                var name = disease.name;
+
+
+                if (!(name in auxVariants)) {
+                    auxVariants[name] = 0;
+                    auxSamples[name] = 0;
                 }
-                console.log(categoriesData);
 
-                Object.keys(auxVariants).forEach(function (key) {
-                    variants.push({
-                        name: key,
-                        y: auxVariants[key]
-                    })
-                });
-
-                Object.keys(auxSamples).forEach(function (key) {
-                    samples.push({
-                        name: key,
-                        y: auxSamples[key]
-                    })
-                });
-
-                this._createCharts(variants, "Variants per Phenotype", samples, "Samples per Phenotype", categories, categoriesData);
-
-            },
-            _createCharts: function (variants, variantsText, samples, samplesText, categories, categoriesData) {
-
-                var stats = document.createElement("div");
-                var global = document.createElement("div");
-
-                stats.setAttribute("horizontal", "");
-                stats.setAttribute("layout", "");
-                stats.setAttribute("center-justified", "");
-
-                global.setAttribute("horizontal", "");
-                global.setAttribute("layout", "");
-                global.setAttribute("center-justified", "");
-
-                global.classList.add("globalStats");
-
-
-                var vppDiv = document.createElement("div");
-                vppDiv.classList.add("pieChart");
-                vppDiv.classList.add("pieChartLeft");
-
-                var sppDiv = document.createElement("div");
-                sppDiv.classList.add("pieChart");
-
-                var globalChart = document.createElement("div");
-                globalChart.style.width = "1000px";
-
-
-                this._createPieChart(vppDiv, variantsText, variants);
-                this._createPieChart(sppDiv, samplesText, samples);
-                this._createBarColumnChart(globalChart, "Global Stats", categories, categoriesData);
-
-
-                stats.appendChild(vppDiv);
-                stats.appendChild(sppDiv);
-                global.appendChild(globalChart);
-
-
-                this.$.chartContainer.appendChild(stats);
-                this.$.chartContainer.appendChild(global);
-            },
-            statsPerDisease: function () {
-                this._clearChartContainer();
-
-                var auxVariants = {};
-                var auxSamples = {};
-                var variants = [];
-                var samples = [];
-                var categories = [];
-                var categoriesData = [];
-
-                for (var i = 0; i < this.studies.length; i++) {
-
-                    var study = this.studies[i];
-                    var studyDis = this._formatText(study.meta.dis);
-
-                    if (!(studyDis in auxVariants)) {
-                        auxVariants[studyDis] = 0;
-                        auxSamples[studyDis] = 0;
-                        var elem = {};
-                        elem.name = studyDis;
-                        elem.data = [0, 0, 0, 0];
-//                        elem.data = [0, 0, 0, 0, 0, 0];
-                        categoriesData.push(elem);
-                        categories.push(elem.name);
-                    }
-
-                    this._addValueToCategory(studyDis, study.st, categoriesData);
-
-                    auxVariants[studyDis] += study.st.nVar;
-                    auxSamples[studyDis] += study.st.nSamp;
-
-                }
-                console.log(categoriesData);
-
-                Object.keys(auxVariants).forEach(function (key) {
-                    variants.push({
-                        name: key,
-                        y: auxVariants[key]
-                    })
-                });
-
-                Object.keys(auxSamples).forEach(function (key) {
-                    samples.push({
-                        name: key,
-                        y: auxSamples[key]
-                    })
-                });
-
-
-                this._createCharts(variants, "Variants per Disease", samples, "Samples per Disease", categories, categoriesData);
-            },
-/*            statsPerStudy: function () {
-                this._clearChartContainer();
-
-                var auxVariants = {};
-                var auxSamples = {};
-                var variants = [];
-                var samples = [];
-                var categories = [];
-                var categoriesData = [];
-
-                for (var i = 0; i < this.studies.length; i++) {
-
-                    var study = this.studies[i];
-                    var studyName = this._formatText(study.sname);
-
-                    if (!(studyName in auxVariants)) {
-                        auxVariants[studyName] = 0;
-                        auxSamples[studyName] = 0;
-                        var elem = {};
-                        elem.name = studyName;
-                        elem.data = [0, 0, 0, 0];
-//                        elem.data = [0, 0, 0, 0, 0, 0];
-                        categoriesData.push(elem);
-                        categories.push(elem.name);
-                    }
-
-                    this._addValueToCategory(studyName, study.st, categoriesData);
-
-                    auxVariants[studyName] += study.st.nVar;
-                    auxSamples[studyName] += study.st.nSamp;
-
-                }
-                console.log(categoriesData);
-
-                Object.keys(auxVariants).forEach(function (key) {
-                    variants.push({
-                        name: key,
-                        y: auxVariants[key]
-                    })
-                });
-
-                Object.keys(auxSamples).forEach(function (key) {
-                    samples.push({
-                        name: key,
-                        y: auxSamples[key]
-                    })
-                });
-
-
-                this._createCharts(variants, "Variants per Study", samples, "Samples per Study", categories, categoriesData);
-            },*/
-            _formatText: function (text) {
-                if (text) {
-
-                    return Utils.formatText(text, "_").toLowerCase().replace(/(?:^|\s)\S/g, function (a) {
-                        return a.toUpperCase();
-                    });
-                } else {
-                    return "";
-                }
+                auxVariants[name] += disease.variants;
+                auxSamples[name] += disease.samples;
 
             }
-        });
-    </script>
-</polymer-element>
+
+            Object.keys(auxVariants).forEach(function (key) {
+                variants.push({
+                    name: key,
+                    y: auxVariants[key]
+                })
+            });
+
+            Object.keys(auxSamples).forEach(function (key) {
+                samples.push({
+                    name: key,
+                    y: auxSamples[key]
+                })
+            });
+
+
+            this._createCharts(variants, "Variants per Disease", samples, "Samples per Disease");
+        },
+        _formatText: function (text) {
+            if (text) {
+
+                return Utils.formatText(text, "_").toLowerCase().replace(/(?:^|\s)\S/g, function (a) {
+                    return a.toUpperCase();
+                });
+            } else {
+                return "";
+            }
+
+        }
+    });
+</script>
+

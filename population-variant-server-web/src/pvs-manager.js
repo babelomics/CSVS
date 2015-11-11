@@ -1,32 +1,22 @@
 var PVSManager = {
-//    host: (typeof OPENCGA_HOST === 'undefined') ? 'http://ws.bioinfo.cipf.es/opencga/rest' : OPENCGA_HOST,
-    host: PVS_HOST,
+    host: (typeof PVS_HOST === 'undefined') ? 'http://ws.babelomics.org/csvs/rest' : PVS_HOST,
     version: 'v3',
 
-    studies: {
+    diseases: {
         list: function (args) {
-            return PVSManager._doRequest(args, 'studies', 'list');
-        },
-        read: function (args) {
-            return PVSManager._doRequest(args, 'studies', 'info');
+            return PVSManager._doRequest(args, 'diseases', 'list');
         }
     },
-
     variants: {
         fetch: function (args) {
             return PVSManager._doRequest(args, 'variants', 'fetch');
         }
     },
-
     _url: function (args, api, action) {
         var host = PVSManager.host;
         if (typeof args.request.host !== 'undefined' && args.request.host != null) {
             host = args.request.host;
         }
-        //var version = PVSManager.version;
-        //if (typeof args.request.version !== 'undefined' && args.request.version != null) {
-        //    version = args.request.version;
-        //}
         var id = '';
         if (typeof args.id !== 'undefined' && args.id != null) {
             id = '/' + args.id;

@@ -3,24 +3,16 @@ package org.babelomics.pvs.server;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import org.babelomics.pvs.lib.json.PVSVariantSourceEntryJsonMixin;
-import org.babelomics.pvs.lib.json.PVSVariantStatsJsonMixin;
-import org.babelomics.pvs.lib.json.VariantAnnotationJsonMixin;
-import org.babelomics.pvs.lib.json.VariantJsonMixin;
-import org.opencb.biodata.models.feature.Genotype;
-import org.opencb.biodata.models.variant.VariantSource;
-import org.opencb.biodata.models.variant.VariantSourceEntry;
-import org.opencb.biodata.models.variant.effect.VariantAnnotation;
-import org.opencb.biodata.models.variant.stats.VariantStats;
+import com.google.common.collect.Lists;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
+import org.babelomics.pvs.lib.io.PVSQueryManager;
+import org.babelomics.pvs.lib.ws.QueryResponse;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Morphia;
 import org.opencb.datastore.core.ObjectMap;
-import org.opencb.datastore.core.QueryOptions;
-import org.opencb.datastore.core.QueryResponse;
 import org.opencb.datastore.core.QueryResult;
-import org.opencb.opencga.lib.auth.IllegalOpenCGACredentialsException;
-import org.opencb.opencga.lib.auth.MongoCredentials;
-import org.opencb.opencga.lib.common.Config;
-import org.opencb.opencga.storage.variant.json.GenotypeJsonMixin;
-import org.opencb.opencga.storage.variant.json.VariantSourceJsonMixin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,13 +21,16 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 @Path("/")
@@ -43,20 +38,11 @@ public class PVSWSServer {
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
     protected static Properties properties;
-    protected static Config config;
+//    protected static Config config;
 
     protected String version;
     protected UriInfo uriInfo;
     protected String sessionIp;
-
-    // Common input arguments
-    protected MultivaluedMap<String, String> params;
-    protected QueryOptions queryOptions;
-    protected QueryResponse queryResponse;
-
-    // Common output members
-    protected long startTime;
-    protected long endTime;
 
     protected static ObjectWriter jsonObjectWriter;
     protected static ObjectMapper jsonObjectMapper;
@@ -65,17 +51,9 @@ public class PVSWSServer {
     @QueryParam("of")
     protected String outputFormat;
 
-    @DefaultValue("")
-    @QueryParam("exclude")
-    protected String exclude;
+    static final PVSQueryManager qm;
 
-    @DefaultValue("")
-    @QueryParam("include")
-    protected String include;
-
-    @DefaultValue("true")
-    @QueryParam("metadata")
-    protected Boolean metadata;
+    static final Datastore datastore;
 
     static {
 
@@ -84,7 +62,7 @@ public class PVSWSServer {
 
         try {
             properties.load(is);
-            System.out.println("properties = " + properties);
+
         } catch (IOException e) {
             System.out.println("Error loading properties");
             System.out.println(e.getMessage());
@@ -92,68 +70,74 @@ public class PVSWSServer {
         }
 
         jsonObjectMapper = new ObjectMapper();
-        jsonObjectMapper.addMixInAnnotations(VariantSourceEntry.class, PVSVariantSourceEntryJsonMixin.class);
-        jsonObjectMapper.addMixInAnnotations(Genotype.class, GenotypeJsonMixin.class);
-        jsonObjectMapper.addMixInAnnotations(VariantStats.class, PVSVariantStatsJsonMixin.class);
-        jsonObjectMapper.addMixInAnnotations(VariantSource.class, VariantSourceJsonMixin.class);
-        jsonObjectMapper.addMixInAnnotations(VariantAnnotation.class, VariantAnnotationJsonMixin.class);
-        jsonObjectMapper.addMixInAnnotations(Variant.class, VariantJsonMixin.class);
         jsonObjectWriter = jsonObjectMapper.writer();
+
+        Morphia morphia = new Morphia();
+        morphia.mapPackage("org.babelomics.pvs.lib.models");
+
+        String user = properties.getProperty("PVS.DB.USER", "");
+        String pass = properties.getProperty("PVS.DB.PASS", "");
+        String host = properties.getProperty("PVS.DB.HOST", "localhost");
+        String database = properties.getProperty("PVS.DB.DATABASE", "pvs");
+        int port = Integer.parseInt(properties.getProperty("PVS.DB.PORT", "27017"));
+
+        MongoClient mongoClient;
+        if (user.equals("") && pass.equals("")) {
+            mongoClient = new MongoClient(host);
+        } else {
+            MongoCredential credential = MongoCredential.createCredential(user, database, pass.toCharArray());
+            mongoClient = new MongoClient(new ServerAddress(host, port), Arrays.asList(credential));
+        }
+
+        datastore = morphia.createDatastore(mongoClient, "pvs");
+
+        qm = new PVSQueryManager(datastore);
 
     }
 
-    protected MongoCredentials credentials;
+    public PVSWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest httpServletRequest) throws IOException {
 
-    public PVSWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest httpServletRequest) throws IOException, IllegalOpenCGACredentialsException {
-
-        this.startTime = System.currentTimeMillis();
         this.version = version;
         this.uriInfo = uriInfo;
         logger.debug(uriInfo.getRequestUri().toString());
 
-        this.queryOptions = new QueryOptions();
-        queryOptions.put("exclude", exclude);
-        queryOptions.put("include", include);
-        queryOptions.put("metadata", metadata);
-
         this.sessionIp = httpServletRequest.getRemoteAddr();
-        credentials = new MongoCredentials(properties.getProperty("DB.HOST"), Integer.parseInt(properties.getProperty("DB.PORT")), properties.getProperty("DB.DATABASE"), properties.getProperty("DB.USER"), properties.getProperty("DB.PASS"));
     }
 
 
     protected Response createErrorResponse(Object o) {
+        System.out.println("ERROR");
         QueryResult<ObjectMap> result = new QueryResult();
         result.setErrorMsg(o.toString());
-        return createOkResponse(result);
+//        QueryResponse qr = createQueryResponse(result);
+        return createOkResponse(null);
     }
 
-    protected Response createOkResponse(Object obj) {
-        queryResponse = new QueryResponse();
-        endTime = System.currentTimeMillis() - startTime;
-        queryResponse.setTime(new Long(endTime - startTime).intValue());
-        queryResponse.setApiVersion(version);
-        queryResponse.setQueryOptions(queryOptions);
-
-        // Guarantee that the QueryResponse object contains a coll of results
-        Collection coll;
-        if (obj instanceof Collection) {
-            coll = (Collection) obj;
-        } else {
-            coll = new ArrayList();
-            coll.add(obj);
-        }
-        queryResponse.setResponse(coll);
+    protected Response createOkResponse(QueryResponse qr) {
 
         switch (outputFormat.toLowerCase()) {
             case "json":
-                return createJsonResponse(queryResponse);
-            case "xml":
-//                return createXmlResponse(queryResponse);
+                return createJsonResponse(qr);
             default:
                 return buildResponse(Response.ok());
         }
 
 
+    }
+
+    protected QueryResponse createQueryResponse(Object obj) {
+        QueryResponse queryResponse = new QueryResponse();
+
+        List res;
+        if (obj instanceof Iterable) {
+            res = Lists.newArrayList((Iterable) obj);
+        } else {
+            res = new ArrayList<>();
+            res.add(obj);
+        }
+        queryResponse.setResult(res);
+
+        return queryResponse;
     }
 
     protected Response createJsonResponse(Object object) {

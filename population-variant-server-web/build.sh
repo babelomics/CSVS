@@ -1,17 +1,52 @@
 #!/bin/sh
+rm -rf build
 mkdir -p build
-rm -rf build/index.html build/index.js build/fonts
+mkdir -p build/tmp
+#mkdir -p build/css
+mkdir -p build/fonts
+mkdir -p build/fontawesome
+mkdir -p build/images
 
-vulcanize pvs.html -o build/index.html --inline --strip --csp
+vulcanize \
+    --inline-scripts \
+    --inline-css \
+    --strip-comments \
+    --exclude "conf/config.js" \
+    --exclude "conf/theme.html" \
+    pvs.html \
+    | crisper \
+    --html build/tmp/index.html \
+    --js build/tmp/index.js
 
-cp -r bower_components/fontawesome/fonts build/
-cp -r src/fonts/*.woff* build/fonts/
-cp -r src/images build/
+uglifyjs build/tmp/index.js > build/tmp/index.min.js
+
+#sed -i s@index.js@index.min.js@g build/tmp/index.html
+
+#fix paths
+sed -i s@lib/jsorolla/styles/fonts/@fonts/@g build/tmp/index.html
+cp -r lib/jsorolla/styles/fonts/* build/fonts/
+
+sed -i s@lib/jsorolla/bower_components/fontawesome/fonts/@fontawesome/fonts/@g build/tmp/index.html
+sed -i s@bower_components/fontawesome/fonts/@fontawesome/fonts/@g build/tmp/index.html
+
+cp -r bower_components/fontawesome/css build/fontawesome/
+cp -r bower_components/fontawesome/fonts build/fontawesome/
+
+sed -i s@lib/jsorolla/styles/img/@images/@g build/tmp/index.html
 cp -r lib/jsorolla/styles/img/* build/images/
 
-sed -i s@../bower_components/fontawesome/fonts/fontawesome-webfont.@fonts/fontawesome-webfont.@g build/index.html
-sed -i s@../src/fonts/@fonts/@g build/index.html
-sed -i s@../src/images/@images/@g build/index.html
 
-sed -i s@../lib/jsorolla/styles/img/@images/@g build/index.html
-sed -i s@../lib/jsorolla/styles/fonts/@fonts/@g build/index.html
+sed -i s@src/images/@images/@g build/tmp/index.html
+cp -r src/images/* build/images/
+
+# end fix paths
+
+#cp LICENSE build/
+cp README.md build/
+
+mv build/tmp/index.html build/
+mv build/tmp/index.js build/
+mv build/tmp/index.min.js build/
+cp -r conf build/
+
+rm -rf build/tmp

@@ -2,39 +2,79 @@ package org.babelomics.pvs.app.cli;
 
 import com.beust.jcommander.ParameterException;
 import com.google.common.base.Joiner;
-import org.babelomics.pvs.lib.io.PVSJsonWriter;
-import org.babelomics.pvs.lib.io.PVSVariantCompressedVcfDataWriter;
-import org.babelomics.pvs.lib.io.PVSVariantJsonReader;
-import org.babelomics.pvs.lib.io.PVSVariantMongoWriter;
-import org.babelomics.pvs.lib.tasks.PVSVariantStatsTask;
+import com.mongodb.DuplicateKeyException;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
+import org.apache.commons.lang3.mutable.MutableLong;
+import org.babelomics.pvs.lib.annot.CellBaseAnnotator;
+import org.babelomics.pvs.lib.io.*;
+import org.babelomics.pvs.lib.models.DiseaseCount;
+import org.babelomics.pvs.lib.models.DiseaseGroup;
+import org.babelomics.pvs.lib.models.File;
+import org.babelomics.pvs.lib.models.Variant;
+import org.babelomics.pvs.lib.stats.PVSVariantStatsTask;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Morphia;
+import org.mongodb.morphia.query.Query;
 import org.opencb.biodata.formats.variant.io.VariantReader;
 import org.opencb.biodata.formats.variant.io.VariantWriter;
 import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfReader;
-import org.opencb.biodata.models.variant.*;
+import org.opencb.biodata.models.feature.Region;
+import org.opencb.biodata.models.variant.VariantSource;
+import org.opencb.biodata.tools.variant.tasks.VariantRunner;
+import org.opencb.cellbase.core.client.CellBaseClient;
+import org.opencb.cellbase.core.common.core.Gene;
 import org.opencb.commons.containers.list.SortedList;
+import org.opencb.commons.io.DataReader;
+import org.opencb.commons.io.DataWriter;
+import org.opencb.commons.run.Runner;
 import org.opencb.commons.run.Task;
-import org.opencb.opencga.lib.auth.MongoCredentials;
-import org.opencb.opencga.lib.auth.OpenCGACredentials;
-import org.opencb.variant.lib.runners.VariantRunner;
-import org.opencb.variant.lib.runners.tasks.VariantStatsTask;
+import org.opencb.datastore.core.QueryOptions;
+import org.opencb.datastore.core.QueryResponse;
+import org.opencb.datastore.core.QueryResult;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 
 /**
- * @author Alejandro Alemán Ramos <aaleman@cipf.es>
+ * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
  */
 public class PVSMain {
 
-    public static final String SEPARATOR = "#-#";
 
-    public static void main(String[] args) throws IOException {
+    private static Datastore getDatastore(String host, String user, String pass) {
+
+        Datastore datastore;
+
+        final Morphia morphia = new Morphia();
+        morphia.mapPackage("org.babelomics.pvs.lib.models");
+
+        MongoClient mongoClient;
+        if (user == "" && pass == "") {
+            mongoClient = new MongoClient(host);
+        } else {
+            MongoCredential credential = MongoCredential.createCredential(user, "pvs", pass.toCharArray());
+            mongoClient = new MongoClient(new ServerAddress(host), Arrays.asList(credential));
+        }
+
+        datastore = morphia.createDatastore(mongoClient, "pvs");
+        datastore.ensureIndexes();
+        return datastore;
+    }
+
+    public static void main(String[] args) throws IOException, NoSuchAlgorithmException, URISyntaxException {
         OptionsParser parser = new OptionsParser();
 
         // If no arguments are provided, or -h/--help is the first argument, the usage is shown
@@ -47,15 +87,26 @@ public class PVSMain {
 
         try {
             switch (parser.parse(args)) {
-                case "transform-variants":
-                    command = parser.getTransformCommand();
+                case "setup":
+                    command = parser.getSetupCommand();
                     break;
-                case "load-variants":
+                case "load":
                     command = parser.getLoadCommand();
                     break;
-                case "compress-variants":
-                    command = parser.getCompressComand();
+                case "unload":
+                    command = parser.getUnloadCommand();
                     break;
+                case "count":
+                    command = parser.getCalculateCuntsCommand();
+                    break;
+                case "annot":
+                    command = parser.getAnnotCommand();
+                    break;
+
+                case "query":
+                    command = parser.getQueryCommand();
+                    break;
+
                 default:
                     System.out.println("Command not implemented!!");
                     System.exit(1);
@@ -66,54 +117,253 @@ public class PVSMain {
             System.exit(1);
         }
 
-        if (command instanceof OptionsParser.CommandTransformVariants) {
-            OptionsParser.CommandTransformVariants c = (OptionsParser.CommandTransformVariants) command;
 
-            Path file = Paths.get(c.file);
-            Path outdir = Paths.get(c.outdir);
+        if (command instanceof OptionsParser.CommandSetup) {
+            OptionsParser.CommandSetup c = (OptionsParser.CommandSetup) command;
 
-            String disease = Joiner.on("_").join(c.disease).toUpperCase();
-            String study = Joiner.on("_").join(c.study).toUpperCase();
-            String phenotype = c.phenotype.toString();
-
-            String fileId = study + SEPARATOR + disease + SEPARATOR + phenotype;
-
-            String paper = c.paper == null ? "" : c.paper;
-            String description = c.description == null ? "" : c.description;
-
-            VariantStudy.StudyType studyType = VariantStudy.StudyType.CASE_CONTROL;
-            VariantSource.Aggregation aggregated = c.aggregated;
-            VariantSource source = new VariantSource(file.getFileName().toString(), fileId, study, study, studyType, aggregated);
-
-            source.addMetadata("disease", disease);
-            source.addMetadata("phenotype", phenotype);
-            source.addMetadata("paper", paper);
-            source.addMetadata("desc", description);
-            source.addMetadata("sta", Boolean.toString(c.staticStudy));
-            source.addMetadata("cov", String.valueOf(c.coverage));
-            source.addMetadata("tech", c.technology);
-
-            transformVariants(source, file, outdir);
-        } else if (command instanceof OptionsParser.CommandLoadVariants) {
-            OptionsParser.CommandLoadVariants c = (OptionsParser.CommandLoadVariants) command;
+            Datastore datastore = getDatastore(c.host, c.user, c.pass);
 
 
-            Path variantsPath = Paths.get(c.input + ".variants.json.gz");
-            Path filePath = Paths.get(c.input + ".file.json.gz");
-            Path credentials = Paths.get(c.credentials);
+            if (c.populateDiseases) {
+                List<DiseaseGroup> diseaseGroups = new ArrayList<>();
 
-            VariantStudy.StudyType st = VariantStudy.StudyType.CASE_CONTROL;
+                diseaseGroups.add(new DiseaseGroup(1, "I Certain infectious and parasitic diseases"));
+                diseaseGroups.add(new DiseaseGroup(2, "II Neoplasms"));
+                diseaseGroups.add(new DiseaseGroup(3, "III Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism"));
+                diseaseGroups.add(new DiseaseGroup(4, "IV Endocrine, nutritional and metabolic diseases"));
+                diseaseGroups.add(new DiseaseGroup(5, "V Mental and behavioural disorders"));
+                diseaseGroups.add(new DiseaseGroup(6, "VI Diseases of the nervous system"));
+                diseaseGroups.add(new DiseaseGroup(7, "VII Diseases of the eye and adnexa"));
+                diseaseGroups.add(new DiseaseGroup(8, "VIII Diseases of the ear and mastoid process"));
+                diseaseGroups.add(new DiseaseGroup(9, "IX Diseases of the circulatory system"));
+                diseaseGroups.add(new DiseaseGroup(10, "X Diseases of the respiratory system"));
+                diseaseGroups.add(new DiseaseGroup(11, "XI Diseases of the digestive system"));
+                diseaseGroups.add(new DiseaseGroup(12, "XII Diseases of the skin and subcutaneous tissue"));
+                diseaseGroups.add(new DiseaseGroup(13, "XIII Diseases of the musculoskeletal system and connective tissue"));
+                diseaseGroups.add(new DiseaseGroup(14, "XIV Diseases of the genitourinary system"));
+                diseaseGroups.add(new DiseaseGroup(15, "XV Pregnancy, childbirth and the puerperium"));
+                diseaseGroups.add(new DiseaseGroup(16, "XVI Certain conditions originating in the perinatal period"));
+                diseaseGroups.add(new DiseaseGroup(17, "XVII Congenital malformations, deformations and chromosomal abnormalities"));
+                diseaseGroups.add(new DiseaseGroup(18, "XVIII Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified"));
 
-            VariantSource source = new VariantSource(variantsPath.getFileName().toString(), null, null, null, st, VariantSource.Aggregation.NONE);
+                for (DiseaseGroup dg : diseaseGroups) {
+                    try {
+                        datastore.save(dg);
+                    } catch (DuplicateKeyException e) {
+                        System.err.println("Duplicated Disase Group: " + dg);
+                    }
+                }
+            }
 
-            loadVariants(source, variantsPath, filePath, credentials);
-        } else if (command instanceof OptionsParser.CommandCompressVariants) {
-            OptionsParser.CommandCompressVariants c = (OptionsParser.CommandCompressVariants) command;
+            if (c.newDisease != null && c.newDisease.length() > 0) {
+                PVSQueryManager qm = new PVSQueryManager(datastore);
+
+                int newId = qm.getMaxDiseaseId();
+                if (newId != -1) {
+                    newId++;
+                    DiseaseGroup dg = new DiseaseGroup(newId, c.newDisease);
+                    datastore.save(dg);
+                }
+            }
+
+        } else if (command instanceof OptionsParser.CommandLoad) {
+            OptionsParser.CommandLoad c = (OptionsParser.CommandLoad) command;
+
+            Path inputFile = Paths.get(c.input);
+            int diseaseGroupId = c.disease;
+
+            Datastore datastore = getDatastore(c.host, c.user, c.pass);
+
+            loadVariants(inputFile, diseaseGroupId, datastore);
+        } else if (command instanceof OptionsParser.CommandUnload) {
+            OptionsParser.CommandUnload c = (OptionsParser.CommandUnload) command;
+
+            Path inputFile = Paths.get(c.input);
+            int diseaseGroupId = c.disease;
+
+            Datastore datastore = getDatastore(c.host, c.user, c.pass);
+
+            unloadVariants(inputFile, diseaseGroupId, datastore);
+        } else if (command instanceof OptionsParser.CommandCount) {
+            OptionsParser.CommandCount c = (OptionsParser.CommandCount) command;
 
             Path input = Paths.get(c.input);
             Path output = Paths.get(c.output);
 
             compressVariants(input, output);
+        } else if (command instanceof OptionsParser.CommandAnnot) {
+
+            OptionsParser.CommandAnnot c = (OptionsParser.CommandAnnot) command;
+
+            Datastore datastore = getDatastore(c.host, c.user, c.pass);
+
+            CellBaseAnnotator cba = new CellBaseAnnotator();
+
+            cba.setCt(c.ct);
+            cba.setRemove(c.remove);
+            cba.setOverride(c.override);
+            cba.setGene(c.gene);
+
+
+            Iterator<Variant> it = datastore.createQuery(Variant.class).batchSize(10).iterator();
+
+
+            while (it.hasNext()) {
+                List<Variant> batch = new ArrayList<>();
+
+                for (int i = 0; i < 10 && it.hasNext(); i++) {
+                    batch.add(it.next());
+                }
+
+                cba.annot(batch);
+                datastore.save(batch);
+                batch.clear();
+            }
+
+
+        } else if (command instanceof OptionsParser.CommandQuery) {
+            OptionsParser.CommandQuery c = (OptionsParser.CommandQuery) command;
+
+            Datastore datastore = getDatastore(c.host, c.user, c.pass);
+
+            PVSQueryManager qm = new PVSQueryManager(datastore);
+
+
+            if (c.diseases) {
+
+                System.out.println("\n\nList of Groups of Diseases\n==========================\n");
+
+                List<DiseaseGroup> query = qm.getAllDiseaseGroups();
+
+                for (DiseaseGroup dg : query) {
+                    System.out.println(dg.getGroupId() + "\t" + dg.getName() + "\t" + dg.getSamples());
+                }
+
+            } else if (c.regionLIst.size() > 0 || c.geneList.size() > 0) {
+
+                List<Integer> diseaseId = c.diseaseId;
+                PrintWriter pw = null;
+
+                List<Region> regionList = new ArrayList<>();
+
+                for (String region : c.regionLIst) {
+                    Region r = new Region(region);
+                    regionList.add(r);
+                }
+
+                if (c.geneList.size() > 0) {
+                    URI cellbaseUri = new URI("http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest");
+                    CellBaseClient cbc = new CellBaseClient(cellbaseUri, "v3", "hsapiens");
+                    String id = Joiner.on(",").join(c.geneList).toUpperCase();
+                    QueryOptions qo = new QueryOptions();
+                    qo.add("include", "chromosome,start,end");
+
+                    QueryResponse<QueryResult<Gene>> info = cbc.getInfo(CellBaseClient.Category.feature, CellBaseClient.SubCategory.gene, id, qo);
+
+                    for (QueryResult<Gene> qr : info.getResponse()) {
+                        for (Gene gene : qr.getResult()) {
+                            regionList.add(new Region(gene.getChromosome(), gene.getStart(), gene.getEnd()));
+                        }
+                    }
+                }
+
+                MutableLong count = new MutableLong(-1);
+
+                Iterable<Variant> query = qm.getVariantsByRegionList(regionList, diseaseId, c.skip, c.limit, count);
+
+                if (!c.csv) {
+                    System.out.println("chr\tpos\tref\talt\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF");
+                } else {
+                    pw = new PrintWriter("query.csv");
+                    pw.append("chr\tpos\tref\talt\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF").append("\n");
+                }
+
+                for (Variant v : query) {
+
+                    String ref = (v.getReference() == null || v.getReference().isEmpty()) ? "." : v.getReference();
+                    String alt = (v.getAlternate() == null || v.getAlternate().isEmpty()) ? "." : v.getAlternate();
+
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(v.getChromosome()).append("\t");
+                    sb.append(v.getPosition()).append("\t");
+                    sb.append(ref).append("\t");
+                    sb.append(alt).append("\t");
+
+                    DiseaseCount dc = v.getStats();
+
+                    sb.append(dc.getGt00()).append("\t");
+                    sb.append(dc.getGt01()).append("\t");
+                    sb.append(dc.getGt11()).append("\t");
+                    sb.append(dc.getGtmissing()).append("\t");
+                    sb.append(dc.getRefFreq()).append("\t");
+                    sb.append(dc.getAltFreq()).append("\t");
+                    sb.append(dc.getMaf()).append("\t");
+
+                    if (!c.csv) {
+                        System.out.println(sb.toString());
+                    } else {
+                        pw.append(sb.toString()).append("\n");
+                    }
+                }
+
+                if (c.csv) {
+                    pw.close();
+                }
+            } else if (c.all) {
+
+                PrintWriter pw = null;
+                List<Integer> diseaseId = null;
+
+
+                MutableLong count = new MutableLong(-1);
+                Iterable<Variant> query = qm.getAllVariants(diseaseId, c.skip, c.limit, count);
+
+                if (!c.csv) {
+                    System.out.println("chr\tpos\tref\talt\tid\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF");
+                } else {
+                    pw = new PrintWriter("query.csv");
+                    pw.append("chr\tpos\tref\talt\tid\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF").append("\n");
+                }
+
+                for (Variant v : query) {
+
+                    String ref = (v.getReference() == null || v.getReference().isEmpty()) ? "." : v.getReference();
+                    String alt = (v.getAlternate() == null || v.getAlternate().isEmpty()) ? "." : v.getAlternate();
+                    String id = (v.getIds() == null) ? "." : v.getIds();
+
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(v.getChromosome()).append("\t");
+                    sb.append(v.getPosition()).append("\t");
+                    sb.append(ref).append("\t");
+                    sb.append(alt).append("\t");
+                    sb.append(id).append("\t");
+
+                    DiseaseCount dc = v.getStats();
+
+                    sb.append(dc.getGt00()).append("\t");
+                    sb.append(dc.getGt01()).append("\t");
+                    sb.append(dc.getGt11()).append("\t");
+                    sb.append(dc.getGtmissing()).append("\t");
+                    sb.append(dc.getRefFreq()).append("\t");
+                    sb.append(dc.getAltFreq()).append("\t");
+                    sb.append(dc.getMaf()).append("\t");
+
+                    if (!c.csv) {
+                        System.out.println(sb.toString());
+                    } else {
+                        pw.append(sb.toString()).append("\n");
+                    }
+                }
+
+                if (c.csv) {
+                    pw.close();
+                }
+
+            }
+
+
+        } else {
+            System.err.println("Comand not found");
         }
 
     }
@@ -122,13 +372,12 @@ public class PVSMain {
 
         VariantSource source = new VariantSource("file", "file", "file", "file");
         VariantReader reader = new VariantVcfReader(source, input.toAbsolutePath().toString());
+        VariantWriter writer = new PVSVariantCountsCSVDataWriter(output.toAbsolutePath().toString());
 
-        List<Task<Variant>> taskList = new SortedList<>();
+        List<Task<org.opencb.biodata.models.variant.Variant>> taskList = new SortedList<>();
         List<VariantWriter> writers = new ArrayList<>();
 
-        VariantWriter writer = new PVSVariantCompressedVcfDataWriter(reader, output.toAbsolutePath().toString());
-
-        taskList.add(new VariantStatsTask(reader, source));
+        taskList.add(new PVSVariantStatsTask(reader, source));
         writers.add(writer);
 
         VariantRunner variantRunner = new VariantRunner(source, reader, null, writers, taskList, 100);
@@ -137,73 +386,141 @@ public class PVSMain {
         variantRunner.run();
         System.out.println("Variants compressed!");
 
-
     }
 
-    private static void loadVariants(VariantSource source, Path variantsPath, Path filePath, Path credentialsPath) throws IOException {
+    private static void loadVariants(Path variantsPath, int diseaseGroupId, Datastore datastore) throws IOException, NoSuchAlgorithmException {
 
-        VariantReader reader = new PVSVariantJsonReader(source, variantsPath.toAbsolutePath().toString(), filePath.toAbsolutePath().toString());
+        String sha256 = calculateSHA256(variantsPath);
 
-        List<Task<Variant>> taskList = new SortedList<>();
-        List<VariantWriter> writers = new ArrayList<>();
+        File fDb = datastore.createQuery(File.class).field("sum").equal(sha256).get();
 
-        Properties properties = new Properties();
-        properties.load(new InputStreamReader(new FileInputStream(credentialsPath.toString())));
-        OpenCGACredentials credentials = new MongoCredentials(properties);
-        VariantWriter mongoWriter = new PVSVariantMongoWriter(source, (MongoCredentials) credentials,
-                properties.getProperty("collection_variants", "variants"),
-                properties.getProperty("collection_files", "files"));
+        if (fDb == null) {
 
-        mongoWriter.includeStats(true);
-        mongoWriter.includeEffect(false);
-        mongoWriter.includeSamples(false);
+            Query<DiseaseGroup> query = datastore.createQuery(DiseaseGroup.class).field("groupId").equal(diseaseGroupId);
+            DiseaseGroup dg = query.get();
 
-        writers.add(mongoWriter);
+            DataReader<Variant> reader = new PVSVariantCountCSVDataReader(variantsPath.toAbsolutePath().toString(), dg);
 
-        VariantRunner variantRunner = new VariantRunner(source, reader, null, writers, taskList, 100);
+            List<Task<Variant>> taskList = new SortedList<>();
+            List<DataWriter<Variant>> writers = new ArrayList<>();
+            DataWriter<Variant> writer = new PVSVariantCountsMongoWriter(dg, datastore);
 
-        System.out.println("Loading variants...");
-        variantRunner.run();
-        System.out.println("Variants loaded!");
+            writers.add(writer);
 
+            Runner<Variant> pvsRunner = new PVSRunner(reader, writers, taskList, 100);
+
+            System.out.println("Loading variants...");
+            pvsRunner.run();
+            System.out.println("Variants loaded!");
+
+            File f = new File(sha256);
+
+            try {
+                datastore.save(f);
+            } catch (DuplicateKeyException ignored) {
+
+            }
+        } else {
+            System.out.println("File is already in the database");
+            System.exit(0);
+        }
     }
 
-    private static void transformVariants(VariantSource source, Path file, Path outdir) throws IOException {
+    private static String calculateSHA256(Path variantsPath) throws NoSuchAlgorithmException, IOException {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        FileInputStream fis = new FileInputStream(variantsPath.toAbsolutePath().toString());
 
-        VariantReader reader = null;
+        byte[] dataBytes = new byte[1024];
 
-        switch (source.getAggregation()) {
-            case NONE:
-                reader = new VariantVcfReader(source, file.toAbsolutePath().toString());
-                break;
-            case BASIC:
-                reader = new VariantVcfReader(source, file.toAbsolutePath().toString(), new VariantAggregatedVcfFactory());
-                break;
-            case EVS:
-                reader = new VariantVcfReader(source, file.toAbsolutePath().toString(), new VariantVcfEVSFactory());
-                break;
-            default:
-                reader = new VariantVcfReader(source, file.toAbsolutePath().toString());
+        int nread;
+        while ((nread = fis.read(dataBytes)) != -1) {
+            md.update(dataBytes, 0, nread);
         }
 
-        List<Task<Variant>> taskList = new SortedList<>();
-        List<VariantWriter> writers = new ArrayList<>();
+        byte[] mdbytes = md.digest();
 
-        VariantWriter jsonWriter = new PVSJsonWriter(source, outdir);
+        StringBuffer sb = new StringBuffer();
+        for (byte mdbyte : mdbytes) {
+            sb.append(Integer.toString((mdbyte & 0xff) + 0x100, 16).substring(1));
+        }
+        return sb.toString();
+    }
+
+    private static void unloadVariants(Path variantsPath, int diseaseGroupId, Datastore datastore) throws IOException, NoSuchAlgorithmException {
+
+        int samples = 0;
+        Query<DiseaseGroup> queryDG = datastore.createQuery(DiseaseGroup.class).field("groupId").equal(diseaseGroupId);
+        DiseaseGroup dg = queryDG.get();
+
+        DataReader<Variant> reader = new PVSVariantCountCSVDataReader(variantsPath.toAbsolutePath().toString(), dg);
+
+        reader.open();
+        reader.pre();
+
+        List<Variant> batch;
+
+        batch = reader.read(1);
+
+        while (!batch.isEmpty()) {
+
+            for (Variant elem : batch) {
+
+                Variant v = datastore.createQuery(Variant.class).field("chromosome").equal(elem.getChromosome())
+                        .field("position").equal(elem.getPosition()).
+                                field("reference").equal(elem.getReference()).
+                                field("alternate").equal(elem.getAlternate())
+                        .get();
+
+                if (v != null) {
+
+                    DiseaseCount vDc = v.getDiseaseCount(dg);
+                    DiseaseCount elemDC = elem.getDiseaseCount(dg);
+                    if (vDc != null) {
+
+                        if (samples == 0) {
+                            samples = elemDC.getTotalGts();
+                        }
+
+                        vDc.decGt00(elemDC.getGt00());
+                        vDc.decGt01(elemDC.getGt01());
+                        vDc.decGt11(elemDC.getGt11());
+                        vDc.decGtMissing(elemDC.getGtmissing());
+
+                        if (vDc.getTotalGts() <= 0) {
+                            v.deleteDiseaseCount(vDc);
+
+                            if (v.getDiseases().size() == 0) {
+                                datastore.delete(Variant.class, v.getId());
+                            } else {
+                                datastore.save(v);
+                            }
+                        } else {
+                            datastore.save(v);
+                        }
+                    }
+
+                }
+
+            }
+            batch.clear();
+            batch = reader.read();
+        }
+
+        reader.post();
+        reader.close();
 
 
-        taskList.add(new PVSVariantStatsTask(reader, source));
-        jsonWriter.includeStats(true);
-        jsonWriter.includeEffect(false);
-        jsonWriter.includeSamples(false);
+        String sha256 = calculateSHA256(variantsPath);
 
-        writers.add(jsonWriter);
+        File fDb = datastore.createQuery(File.class).field("sum").equal(sha256).get();
 
-        VariantRunner variantRunner = new VariantRunner(source, reader, null, writers, taskList, 100);
+        datastore.delete(File.class, fDb.getId());
 
-        System.out.println("Indexing variants...");
-        variantRunner.run();
-        System.out.println("Variants indexed!");
+        DiseaseGroup dgDB = datastore.get(DiseaseGroup.class, dg.getId());
+
+        dg.decSamples(samples);
+
+        datastore.save(dg);
 
     }
 }

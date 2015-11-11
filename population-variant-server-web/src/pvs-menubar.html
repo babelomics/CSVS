@@ -1,0 +1,89 @@
+<dom-module id="pvs-menubar">
+    <style>
+        .content ::content > [selected] {
+            color: white;
+            font-weight: bold;
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .content ::content > [selected][data-menu-type=toggle] {
+            color: white;
+            font-weight: bold;
+            border-bottom: 2px solid var(--text-primary-color);
+        }
+
+        .content ::content > * {
+            display: inline-block;
+            margin: 15px 5px;
+            cursor: pointer;
+            line-height: 30px;
+            padding: 0 5px;
+            box-sizing: border-box;
+            border: 1px solid transparent;
+        }
+    </style>
+    <template>
+        <div class="content" id="content">
+            <content></content>
+        </div>
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is: 'pvs-menubar',
+        properties: {
+            selectedOption: {
+                type: String,
+                value: "",
+                notify: true,
+                reflectToAttribute: true
+            }
+        },
+        ready: function () {
+            var me = this;
+            for (var i = 0; i < this.$.content.children.length; i++) {
+                var menuElem = this.$.content.children[i];
+                menuElem.addEventListener('click', function (e) {
+                    var elem = e.currentTarget;
+                    var elType = elem.dataset.menuType;
+                    switch (elType) {
+                        case "unique":
+                            var aux = me.querySelectorAll("[data-menu-type=unique]");
+                            for (var i = 0; i < aux.length; i++) {
+                                var el = aux[i];
+                                el.removeAttribute("selected");
+                            }
+                            elem.setAttribute("selected", "");
+                            break;
+                        case "toggle":
+                            if (elem.hasAttribute("selected")) {
+                                elem.removeAttribute("selected")
+                            } else {
+                                elem.setAttribute("selected", "");
+                            }
+                            break;
+
+                        default:
+                    }
+                    me.selectedOption = null;
+                    me.selectedOption = e.currentTarget.dataset.option;
+                });
+            }
+        },
+        toggleElement: function (option) {
+            for (var i = 0; i < this.$.content.children.length; i++) {
+                var menuElem = this.$.content.children[i];
+
+                if (menuElem.dataset.option === option) {
+                    if (menuElem.hasAttribute("selected")) {
+                        menuElem.removeAttribute("selected")
+                    } else {
+                        menuElem.setAttribute("selected", "");
+                    }
+                }
+
+            }
+        }
+    });
+</script>
