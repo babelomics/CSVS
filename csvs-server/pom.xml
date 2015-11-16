@@ -5,19 +5,19 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.babelomics.population-variant-server</groupId>
-        <artifactId>population-variant-server</artifactId>
-        <version>${pvs.version}</version>
+        <groupId>org.babelomics.csvs</groupId>
+        <artifactId>csvs</artifactId>
+        <version>${csvs.version}</version>
         <relativePath>..</relativePath>
     </parent>
 
-    <artifactId>population-variant-server-server</artifactId>
+    <artifactId>csvs-server</artifactId>
     <packaging>war</packaging>
 
     <dependencies>
         <dependency>
-            <groupId>org.babelomics.population-variant-server</groupId>
-            <artifactId>population-variant-server-lib</artifactId>
+            <groupId>org.babelomics.csvs</groupId>
+            <artifactId>csvs-lib</artifactId>
         </dependency>
 
         <dependency>

@@ -4,15 +4,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.babelomics.population-variant-server</groupId>
-    <artifactId>population-variant-server</artifactId>
-    <version>${pvs.version}</version>
+    <groupId>org.babelomics.csvs</groupId>
+    <artifactId>csvs</artifactId>
+    <version>${csvs.version}</version>
     <packaging>pom</packaging>
 
     <modules>
-        <module>population-variant-server-app</module>
-        <module>population-variant-server-lib</module>
-        <module>population-variant-server-server</module>
+        <module>csvs-app</module>
+        <module>csvs-lib</module>
+        <module>csvs-server</module>
     </modules>
 
     <properties>
@@ -20,20 +20,20 @@
         <cellbase.version>3.1.1</cellbase.version>
         <jcl.version>3.0.0</jcl.version>
         <compileSource>1.8</compileSource>
-        <pvs.version>1.1.0</pvs.version>
+        <csvs.version>1.1.0</csvs.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.babelomics.population-variant-server</groupId>
-                <artifactId>population-variant-server-lib</artifactId>
-                <version>${pvs.version}</version>
+                <groupId>org.babelomics.csvs</groupId>
+                <artifactId>csvs-lib</artifactId>
+                <version>${csvs.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.babelomics.population-variant-server</groupId>
-                <artifactId>population-variant-server-app</artifactId>
-                <version>${pvs.version}</version>
+                <groupId>org.babelomics.csvs</groupId>
+                <artifactId>csvs-app</artifactId>
+                <version>${csvs.version}</version>
             </dependency>
             <!-- Intra-module dependencies -->
 
@@ -118,9 +118,9 @@
                 <version>7.0.35</version>
             </dependency>
             <!--<dependency>-->
-                <!--<groupId>org.xerial</groupId>-->
-                <!--<artifactId>sqlite-jdbc</artifactId>-->
-                <!--<version>3.8.7</version>-->
+            <!--<groupId>org.xerial</groupId>-->
+            <!--<artifactId>sqlite-jdbc</artifactId>-->
+            <!--<version>3.8.7</version>-->
             <!--</dependency>-->
             <dependency>
                 <groupId>junit</groupId>
