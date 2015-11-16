@@ -1,7 +1,7 @@
 {
-  "name": "Population Variant Server",
+  "name": "CIBERER Spanish Variant Server",
   "version": "1.1.0",
-  "homepage": "https://github.com/babelomics/pvs",
+  "homepage": "https://github.com/babelomics/csvs",
   "authors": [
     "aaleman <alejandro.aleman.ramos@gmail.com>"
   ],

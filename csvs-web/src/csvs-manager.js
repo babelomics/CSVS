@@ -1,19 +1,19 @@
-var PVSManager = {
-    host: (typeof PVS_HOST === 'undefined') ? 'http://ws.babelomics.org/csvs/rest' : PVS_HOST,
+var CSVSManager = {
+    host: (typeof CSVS_HOST === 'undefined') ? 'http://ws.babelomics.org/csvs/rest' : CSVS_HOST,
     version: 'v3',
 
     diseases: {
         list: function (args) {
-            return PVSManager._doRequest(args, 'diseases', 'list');
+            return CSVSManager._doRequest(args, 'diseases', 'list');
         }
     },
     variants: {
         fetch: function (args) {
-            return PVSManager._doRequest(args, 'variants', 'fetch');
+            return CSVSManager._doRequest(args, 'variants', 'fetch');
         }
     },
     _url: function (args, api, action) {
-        var host = PVSManager.host;
+        var host = CSVSManager.host;
         if (typeof args.request.host !== 'undefined' && args.request.host != null) {
             host = args.request.host;
         }
@@ -28,7 +28,7 @@ var PVSManager = {
     },
 
     _doRequest: function (args, api, action) {
-        var url = PVSManager._url(args, api, action);
+        var url = CSVSManager._url(args, api, action);
         if (args.request.url === true) {
             return url;
         } else {

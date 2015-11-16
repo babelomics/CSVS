@@ -5,7 +5,7 @@
 
 <link rel="import" href="../lib/jsorolla/src/lib/components/table/jso-table.html">
 
-<dom-module id="pvs-search-element">
+<dom-module id="csvs-search-element">
     <style>
         :host {
             display: block;
@@ -217,7 +217,7 @@
 </dom-module>
 <script>
     Polymer({
-        is: 'pvs-search-element',
+        is: 'csvs-search-element',
         properties: {
             diseases: {
                 type: Array,
@@ -776,7 +776,7 @@
                     query.regions = regionQuery;
                     query.diseases = diseaseIds.join(",");
 
-                    var url = PVSManager.variants.fetch({
+                    var url = CSVSManager.variants.fetch({
                         query: query,
                         request: {
                             url: true
@@ -1220,7 +1220,7 @@
             var me = this;
 
             var adapter = new FeatureTemplateAdapter({
-                uriTemplate: PVS_HOST + '/regions/{region}/fetch',
+                uriTemplate: CSVS_HOST + '/regions/{region}/fetch',
 //                templateVariables: {
 //                    customVar: 'info',
 //                },

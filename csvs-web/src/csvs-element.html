@@ -2,13 +2,13 @@
 <link rel="import" href="../lib/jsorolla/src/lib/components/opencga/jso-opencga-header.html">
 <link rel="import" href="../lib/jsorolla/src/lib/components/opencga/jso-opencga-footer.html">
 
-<link rel="import" href="pvs-content.html">
-<link rel="import" href="pvs-menubar.html">
-<link rel="import" href="pvs-home.html">
-<link rel="import" href="pvs-search-element.html">
-<link rel="import" href="pvs-stats-element.html">
+<link rel="import" href="csvs-content.html">
+<link rel="import" href="csvs-menubar.html">
+<link rel="import" href="csvs-home.html">
+<link rel="import" href="csvs-search-element.html">
+<link rel="import" href="csvs-stats-element.html">
 
-<dom-module id="pvs-element">
+<dom-module id="csvs-element">
     <style>
         :host {
             display: block;
@@ -82,17 +82,17 @@
     </style>
     <template>
 
-        <pvs-content id="content" selected-option="{{selectedOption}}">
-            <pvs-home data-option="home" hidden$="{{computeSelectedOption(selectedOption, 'home')}}"
-                      selected-option="{{selectedOption}}"></pvs-home>
-            <pvs-search-element data-option="search" hidden$="{{computeSelectedOption(selectedOption, 'search')}}"
-                                diseases="{{diseases}}" id="pvsSearchElement"></pvs-search-element>
-            <pvs-stats-element data-option="stats"
-                               hidden$="{{computeSelectedOption(selectedOption, 'stats')}}"
-                               diseases="{{diseases}}" id="pvsStatsElement"
-                    ></pvs-stats-element>
+        <csvs-content id="content" selected-option="{{selectedOption}}">
+            <csvs-home data-option="home" hidden$="{{computeSelectedOption(selectedOption, 'home')}}"
+                       selected-option="{{selectedOption}}"></csvs-home>
+            <csvs-search-element data-option="search" hidden$="{{computeSelectedOption(selectedOption, 'search')}}"
+                                 diseases="{{diseases}}" id="csvsSearchElement"></csvs-search-element>
+            <csvs-stats-element data-option="stats"
+                                hidden$="{{computeSelectedOption(selectedOption, 'stats')}}"
+                                diseases="{{diseases}}" id="csvsStatsElement"
+            ></csvs-stats-element>
 
-        </pvs-content>
+        </csvs-content>
 
         <jso-opencga-header id="jsoHeader"
                             selected-option="{{selectedOption}}" hide-signup hide-login>
@@ -102,7 +102,7 @@
             <span class="title">CIBERER Spanish Variant Server</span>
             <span class="description"></span>
 
-            <pvs-menubar class="menu" id="teamMenuBar" selected-option="{{selectedOption}}">
+            <csvs-menubar class="menu" id="teamMenuBar" selected-option="{{selectedOption}}">
                 <div title="Search" class="hover" data-option="search" data-menu-type="unique">
                     <i class="fa fa-search"></i>
                     <span class="option-text">Search</span>
@@ -112,18 +112,18 @@
                     <i class="fa fa-pie-chart"></i>
                     <span class="option-text">Stats</span>
                 </div>
-            </pvs-menubar>
+            </csvs-menubar>
 
             <jso-help-menu class="helpmenu" selectedOption="{{selectedOption}}">
-                <a href="https://github.com/babelomics/pvs/wiki" target="_blank">
+                <a href="https://github.com/babelomics/csvs/wiki" target="_blank">
                     <i class="fa fa-book"></i>
                     &nbsp; Documentation
                 </a>
-                <a href="https://github.com/babelomics/pvs/wiki/tutorial" target="_blank">
+                <a href="https://github.com/babelomics/csvs/wiki/tutorial" target="_blank">
                     <i class="fa fa-compass"></i>
                     &nbsp; Tutorial
                 </a>
-                <a href="https://github.com/babelomics/pvs/" target="_blank">
+                <a href="https://github.com/babelomics/csvs/" target="_blank">
                     <i class="fa fa-github"></i>
                     &nbsp; Source code
                 </a>
@@ -141,7 +141,7 @@
 </dom-module>
 <script>
     Polymer({
-        is: 'pvs-element',
+        is: 'csvs-element',
         properties: {
             selectedOption: {
                 type: String,
@@ -164,7 +164,7 @@
         },
         getDiseases: function (event, response) {
             var me = this;
-            PVSManager.diseases.list({
+            CSVSManager.diseases.list({
                 request: {
                     async: false,
                     success: function (response) {
