@@ -4,10 +4,10 @@
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
          version="3.1">
 
-    <display-name>Population Variant Server</display-name>
+    <display-name>CIBERER Spanish Variant Server</display-name>
 
     <servlet>
-        <servlet-name>PVS</servlet-name>
+        <servlet-name>CSVS</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
 
         <init-param>
@@ -24,7 +24,7 @@
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>PVS</servlet-name>
+        <servlet-name>CSVS</servlet-name>
         <url-pattern>/rest/*</url-pattern>
     </servlet-mapping>
 
@@ -43,7 +43,7 @@
         </init-param>
         <init-param>
             <param-name>swagger.api.basepath</param-name>
-            <param-value>/pvs/rest</param-value>
+            <param-value>/csvs/rest</param-value>
         </init-param>
         <load-on-startup>2</load-on-startup>
     </servlet>

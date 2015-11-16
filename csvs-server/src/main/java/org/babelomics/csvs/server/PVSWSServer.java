@@ -1,4 +1,4 @@
-package org.babelomics.pvs.server;
+package org.babelomics.csvs.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -57,7 +57,7 @@ public class PVSWSServer {
 
     static {
 
-        InputStream is = PVSWSServer.class.getClassLoader().getResourceAsStream("pvs.properties");
+        InputStream is = PVSWSServer.class.getClassLoader().getResourceAsStream("csvs.properties");
         properties = new Properties();
 
         try {
@@ -75,11 +75,11 @@ public class PVSWSServer {
         Morphia morphia = new Morphia();
         morphia.mapPackage("org.babelomics.pvs.lib.models");
 
-        String user = properties.getProperty("PVS.DB.USER", "");
-        String pass = properties.getProperty("PVS.DB.PASS", "");
-        String host = properties.getProperty("PVS.DB.HOST", "localhost");
-        String database = properties.getProperty("PVS.DB.DATABASE", "pvs");
-        int port = Integer.parseInt(properties.getProperty("PVS.DB.PORT", "27017"));
+        String user = properties.getProperty("CSVS.DB.USER", "");
+        String pass = properties.getProperty("CSVS.DB.PASS", "");
+        String host = properties.getProperty("CSVS.DB.HOST", "localhost");
+        String database = properties.getProperty("CSVS.DB.DATABASE", "pvs");
+        int port = Integer.parseInt(properties.getProperty("CSVS.DB.PORT", "27017"));
 
         MongoClient mongoClient;
         if (user.equals("") && pass.equals("")) {

@@ -1,4 +1,4 @@
-package org.babelomics.pvs.server;
+package org.babelomics.csvs.server;
 
 
 import com.wordnik.swagger.annotations.Api;
