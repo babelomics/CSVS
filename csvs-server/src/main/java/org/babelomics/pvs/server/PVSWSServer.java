@@ -7,8 +7,8 @@ import com.google.common.collect.Lists;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
-import org.babelomics.pvs.lib.io.PVSQueryManager;
-import org.babelomics.pvs.lib.ws.QueryResponse;
+import org.babelomics.csvs.lib.io.CSVSQueryManager;
+import org.babelomics.csvs.lib.ws.QueryResponse;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 import org.opencb.datastore.core.ObjectMap;
@@ -51,7 +51,7 @@ public class PVSWSServer {
     @QueryParam("of")
     protected String outputFormat;
 
-    static final PVSQueryManager qm;
+    static final CSVSQueryManager qm;
 
     static final Datastore datastore;
 
@@ -91,7 +91,7 @@ public class PVSWSServer {
 
         datastore = morphia.createDatastore(mongoClient, "pvs");
 
-        qm = new PVSQueryManager(datastore);
+        qm = new CSVSQueryManager(datastore);
 
     }
 

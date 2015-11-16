@@ -2,8 +2,8 @@ package org.babelomics.pvs.server;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
-import org.babelomics.pvs.lib.models.DiseaseGroup;
-import org.babelomics.pvs.lib.ws.QueryResponse;
+import org.babelomics.csvs.lib.models.DiseaseGroup;
+import org.babelomics.csvs.lib.ws.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;

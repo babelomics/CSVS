@@ -75,7 +75,7 @@
                     <repositoryName>libs</repositoryName>
                     <programs>
                         <program>
-                            <mainClass>org.babelomics.pvs.app.cli.PVSMain</mainClass>
+                            <mainClass>org.babelomics.csvs.app.cli.CSVSMain</mainClass>
                             <name>csvs.sh</name>
                         </program>
                     </programs>

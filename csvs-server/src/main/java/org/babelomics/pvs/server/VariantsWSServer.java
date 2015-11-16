@@ -5,8 +5,8 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.mutable.MutableLong;
-import org.babelomics.pvs.lib.models.Variant;
-import org.babelomics.pvs.lib.ws.QueryResponse;
+import org.babelomics.csvs.lib.models.Variant;
+import org.babelomics.csvs.lib.ws.QueryResponse;
 import org.opencb.biodata.models.feature.Region;
 
 import javax.servlet.http.HttpServletRequest;
