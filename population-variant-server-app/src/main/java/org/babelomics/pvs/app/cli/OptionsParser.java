@@ -97,6 +97,9 @@ public class OptionsParser {
         @Parameter(names = {"--csv"}, description = "Export to CSV", arity = 0)
         boolean csv;
 
+        @Parameter(names = {"--outfile"}, description = "Output file", arity = 1)
+        String outfile = "query.csv";
+
         @Parameter(names = {"--regions"}, description = "Comma-separated list of regions")
         List<String> regionLIst = new ArrayList<>();
 

@@ -321,7 +321,7 @@ public class PVSMain {
                 if (!c.csv) {
                     System.out.println("chr\tpos\tref\talt\tid\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF");
                 } else {
-                    pw = new PrintWriter("query.csv");
+                    pw = new PrintWriter(c.outfile);
                     pw.append("chr\tpos\tref\talt\tid\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF").append("\n");
                 }
 
