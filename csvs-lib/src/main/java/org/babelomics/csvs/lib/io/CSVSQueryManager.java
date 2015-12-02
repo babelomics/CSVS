@@ -84,20 +84,20 @@ public class CSVSQueryManager {
         return res;
     }
 
-    public Variant getVariant(Variant variant, List<Integer> diseaseIds) {
+    public Variant getVariant(String chromosome, int position, String reference, String alternate, List<Integer> diseaseIds) {
 
         int i = 0;
 
-        Region r = new Region(variant.getChromosome(), variant.getPosition(), variant.getPosition());
+        Region r = new Region(chromosome, position, position);
 
         List<String> chunkIds = getChunkIds(r);
         Query<Variant> query = this.datastore.createQuery(Variant.class);
 
         query.filter("_at.chIds in", chunkIds);
-        query.filter("chromosome = ", variant.getChromosome());
-        query.filter("position =", variant.getPosition());
-        query.filter("reference =", variant.getReference().toUpperCase());
-        query.filter("alternate =", variant.getAlternate().toUpperCase());
+        query.filter("chromosome = ", chromosome);
+        query.filter("position =", position);
+        query.filter("reference =", reference.toUpperCase());
+        query.filter("alternate =", alternate.toUpperCase());
 
 
         if (diseaseIds != null && diseaseIds.size() > 0) {
@@ -123,6 +123,11 @@ public class CSVSQueryManager {
 
         }
         return res;
+    }
+
+    public Variant getVariant(Variant variant, List<Integer> diseaseIds) {
+
+        return this.getVariant(variant.getChromosome(), variant.getPosition(), variant.getReference(), variant.getAlternate(), diseaseIds);
     }
 
     public List<Variant> getVariants(List<Variant> variants, List<Integer> diseaseIds) {
@@ -439,7 +444,7 @@ public class CSVSQueryManager {
 
             @Override
             public void remove() {
-                
+
             }
         }
     }

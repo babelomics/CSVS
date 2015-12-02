@@ -21,6 +21,7 @@ public class OptionsParser {
     private final CommandQuery query;
     private final CommandSetup setup;
     private final CommandAnnot annot;
+    private final CommandAnnotFile annotFile;
 
 
     public OptionsParser() {
@@ -31,7 +32,7 @@ public class OptionsParser {
         jcommander.addCommand(query = new CommandQuery());
         jcommander.addCommand(setup = new CommandSetup());
         jcommander.addCommand(annot = new CommandAnnot());
-
+        jcommander.addCommand(annotFile = new CommandAnnotFile());
     }
 
     interface Command {
@@ -170,6 +171,28 @@ public class OptionsParser {
 
     }
 
+    @Parameters(commandNames = {"annot-file"}, commandDescription = "Annot VCF file")
+    class CommandAnnotFile implements Command {
+
+        @Parameter(names = {"--host"}, description = "DB host", arity = 1)
+        String host = "localhost";
+
+        @Parameter(names = {"--user"}, description = "DB User", arity = 1)
+        String user = "";
+        @Parameter(names = {"--pass"}, description = "DB Pass", arity = 1)
+        String pass = "";
+
+        @Parameter(names = {"--diseaseId"}, description = "DiseaseId")
+        List<Integer> diseaseId = new ArrayList<>();
+
+        @Parameter(names = {"--input"}, description = "Input file", arity = 1)
+        String input = "";
+
+        @Parameter(names = {"--output"}, description = "Output file", arity = 1)
+        String outfile = "output.vcf";
+
+    }
+
     String parse(String[] args) throws ParameterException {
         jcommander.parse(args);
         return jcommander.getParsedCommand();
@@ -205,4 +228,5 @@ public class OptionsParser {
         return annot;
     }
 
+    CommandAnnotFile getAnnotFileCommand() {return annotFile;}
 }

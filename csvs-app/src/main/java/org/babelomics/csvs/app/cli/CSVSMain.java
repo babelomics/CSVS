@@ -6,6 +6,12 @@ import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
+import htsjdk.variant.variantcontext.Allele;
+import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.variantcontext.writer.Options;
+import htsjdk.variant.variantcontext.writer.VariantContextWriter;
+import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
+import htsjdk.variant.vcf.*;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.babelomics.csvs.lib.annot.CellBaseAnnotator;
 import org.babelomics.csvs.lib.io.*;
@@ -105,6 +111,9 @@ public class CSVSMain {
 
                 case "query":
                     command = parser.getQueryCommand();
+                    break;
+                case "annot-file":
+                    command = parser.getAnnotFileCommand();
                     break;
 
                 default:
@@ -359,6 +368,65 @@ public class CSVSMain {
                 }
 
             }
+
+
+        } else if (command instanceof OptionsParser.CommandAnnotFile) {
+            OptionsParser.CommandAnnotFile c = (OptionsParser.CommandAnnotFile) command;
+            String input = c.input;
+            String output = c.outfile;
+            List<Integer> diseases = (c.diseaseId != null && c.diseaseId.size() > 0) ? c.diseaseId : null;
+            Datastore datastore = getDatastore(c.host, c.user, c.pass);
+
+            CSVSQueryManager qm = new CSVSQueryManager(datastore);
+
+            VCFFileReader variantReader = new VCFFileReader(new java.io.File(input), false);
+            VCFHeader fileHeader = variantReader.getFileHeader();
+
+            final VariantContextWriterBuilder builder = new VariantContextWriterBuilder().clearOptions();
+            builder.setOption(Options.ALLOW_MISSING_FIELDS_IN_HEADER);
+
+
+            VCFInfoHeaderLine csvs_maf = new VCFInfoHeaderLine("CSVS_MAF", VCFHeaderLineCount.A, VCFHeaderLineType.Float, "MAF from CSVS, for each ALT allele, in the same order as listed");
+            VCFInfoHeaderLine csvs_dis = new VCFInfoHeaderLine("CSVS_DIS", VCFHeaderLineCount.UNBOUNDED, VCFHeaderLineType.Integer, "Selected diseases from CSVS");
+
+            fileHeader.addMetaDataLine(csvs_maf);
+            fileHeader.addMetaDataLine(csvs_dis);
+
+            final VariantContextWriter vcfWriter = builder.setOutputFile(new java.io.File(output)).build();
+            vcfWriter.writeHeader(fileHeader);
+
+
+            for (VariantContext context : variantReader) {
+                String chr = context.getContig();
+                int pos = context.getStart();
+                String ref = context.getReference().getBaseString();
+
+                List<String> mafs = new ArrayList<>();
+                boolean maf = false;
+
+
+                for (Allele altAllele : context.getAlternateAlleles()) {
+                    String alt = altAllele.getBaseString();
+                    Variant dbVariant = qm.getVariant(chr, pos, ref, alt, diseases);
+                    if (dbVariant != null) {
+                        DiseaseCount dc = dbVariant.getStats();
+                        mafs.add(String.valueOf(dc.getMaf()));
+                        maf = true;
+                    } else {
+                        mafs.add(".");
+                    }
+                }
+                if (maf && mafs.size() == context.getAlternateAlleles().size()) {
+                    context.getCommonInfo().putAttribute("CSVS_MAF", Joiner.on(",").join(mafs));
+                    context.getCommonInfo().putAttribute("CSVS_DIS", (diseases == null || diseases.size() == 0) ? "ALL" : Joiner.on(",").join(diseases));
+                }
+
+
+                vcfWriter.add(context);
+            }
+
+            variantReader.close();
+            vcfWriter.close();
 
 
         } else {

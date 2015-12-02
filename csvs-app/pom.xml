@@ -52,8 +52,10 @@
             <groupId>org.mongodb.morphia</groupId>
             <artifactId>morphia</artifactId>
         </dependency>
-
-
+        <dependency>
+            <groupId>com.github.samtools</groupId>
+            <artifactId>htsjdk</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
