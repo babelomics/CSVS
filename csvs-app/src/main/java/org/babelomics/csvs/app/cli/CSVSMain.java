@@ -274,7 +274,7 @@ public class CSVSMain {
                 if (!c.csv) {
                     System.out.println("chr\tpos\tref\talt\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF");
                 } else {
-                    pw = new PrintWriter("query.csv");
+                    pw = new PrintWriter(c.outfile);
                     pw.append("chr\tpos\tref\talt\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF").append("\n");
                 }
 
@@ -312,8 +312,7 @@ public class CSVSMain {
             } else if (c.all) {
 
                 PrintWriter pw = null;
-                List<Integer> diseaseId = null;
-
+                List<Integer> diseaseId = c.diseaseId;
 
                 MutableLong count = new MutableLong(-1);
                 Iterable<Variant> query = qm.getAllVariants(diseaseId, c.skip, c.limit, count);

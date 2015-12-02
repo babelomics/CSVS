@@ -104,8 +104,6 @@ public class CSVSQueryManager {
             query.filter("diseases.diseaseGroupId in", diseaseIds);
         }
 
-        System.out.println(query);
-
         Variant res = query.get();
 
         if (res != null) {
@@ -264,8 +262,6 @@ public class CSVSQueryManager {
         if (skip != null && limit != null) {
             query.offset(skip).limit(limit);
         }
-
-        System.out.println(query);
 
         Iterable<Variant> aux = query.fetch();
         count.setValue(query.countAll());
