@@ -129,19 +129,8 @@
 <script>
     Polymer({
         is: "csvs-home",
-        properties: {
-            selectedOption: {
-                type: String,
-                value: "",
-                reflectToAttribute: true,
-                notify: true
-
-            }
-        },
-        created: function () {
-        },
         tryItNow: function () {
-            this.selectedOption = 'search';
+            this.fire('try');
         }
     });
 </script>
