@@ -1,0 +1,65 @@
+<dom-module id="csvs-annotation-result">
+    <style>
+        :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+            background-color: var(--default-primary-color);
+
+        }
+
+        .container {
+            margin: 0px auto 0px auto;
+            max-width: 1000px;
+            padding: 15px 40px;
+            border: 1px solid #c6d0da;
+            background-color: #FFFFFF;
+            box-shadow: 2px 6px 15px 8px rgba(0, 0, 0, 0.30);
+        }
+
+        .header {
+            padding: 20px;
+        }
+
+        .down {
+            min-width: 300px;
+        }
+
+    </style>
+    <template>
+        <div class="container vertical layout">
+            <div class="header horizontal layout center-justified">
+                <div class="jso-btn jso-btn-shdw down" on-click="downloadFiles" title="Download File">
+                    <i class="fa fa-cloud-download"></i> &nbsp; Download Annotated File (<span>{{fileName}}</span>)
+                </div>
+            </div>
+            <jso-opencga-file-preview id="filePreview"></jso-opencga-file-preview>
+        </div>
+    </template>
+
+    <script>
+        Polymer({
+            is: 'csvs-annotation-result',
+            behaviors: [JsoOpencgaManagerBehavior],
+            properties: {
+                file: {
+                    type: Object,
+                    value: function () {
+                        return {};
+                    },
+                    observer: 'fileChanged'
+                }
+            },
+            fileChanged: function (neo, old) {
+                if (neo && neo.id) {
+                    this.$.filePreview.file = neo;
+                    this.fileName = neo.name;
+                }
+
+            },
+            downloadFiles: function (e) {
+                this._downloadFile(this.file.id);
+            }
+        });
+    </script>
+</dom-module>

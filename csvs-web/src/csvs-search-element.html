@@ -57,16 +57,15 @@
 
         jso-table {
             overflow-y: auto;
-
-        }
-
-        jso-table::shadow .table-header-field > .name.jso-table {
-            padding: 4px 0;
         }
 
         jso-table::shadow #list {
             height: 300px;
             overflow-x: auto
+        }
+
+        jso-table::shadow {
+            font-size: 11px;
         }
 
         #menu {
@@ -96,7 +95,6 @@
             margin-top: 10px;
         }
 
-        jso-variant-frequencies-grid,
         jso-variant-effect-grid,
         jso-variant-grid,
         jso-genome-viewer-element,
@@ -105,7 +103,6 @@
             box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.2);
         }
 
-        jso-variant-frequencies-grid,
         jso-variant-effect-grid,
         #dataTable {
             border: 1px solid var(--divider-color)
@@ -119,6 +116,8 @@
         .check:hover {
             color: var(--accent-color);
         }
+
+
     </style>
     <template>
         <div class="horizontal layout">
@@ -205,7 +204,7 @@
                 <!--</paper-button>-->
 
                 <div id="tools">
-                    <jso-genome-viewer-element id="gv" hidden
+                    <jso-genome-viewer-element id="gv"
                                                on-created="handleGenomeViewerCreated"></jso-genome-viewer-element>
                     <jso-variant-frequencies-grid id="frequency" hidden></jso-variant-frequencies-grid>
                     <jso-variant-phenotype-grid id="phenotype" hidden></jso-variant-phenotype-grid>
@@ -290,6 +289,8 @@
 
             this.async(function () { // DOM READY
                 me.selectedMenuTool = me.$.menu.querySelector('div');
+                me.$.gv.createGenomeViewer();
+                me.$.gv.genomeViewer.draw();
 
             }, 50);
 

@@ -1,0 +1,258 @@
+<link rel="import" href="../lib/jsorolla/src/lib/components/opencga/files/jso-opencga-file-origin.html">
+<dom-module id="csvs-annotation-form">
+    <style>
+        :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+            background-color: var(--default-primary-color);
+
+        }
+
+        #form {
+            margin: 0px auto 0px auto;
+            max-width: 1000px;
+            padding: 15px 40px;
+            border: 1px solid #c6d0da;
+            background-color: #FFFFFF;
+            box-shadow: 2px 6px 15px 8px rgba(0, 0, 0, 0.30);
+        }
+
+        #title {
+            text-align: center;
+            font-size: 20px;
+            color: #666;
+        }
+
+        .coment {
+            color: #666;
+        }
+
+        .errmsg {
+            color: #8b0000;
+            margin-bottom: 5px;
+            font-style: italic;
+        }
+
+        textarea {
+            resize: none;
+        }
+
+        .jso-btn {
+            width: 200px;
+        }
+
+        jso-select {
+            width: 200px;
+        }
+
+        .diseases {
+            width: 350px;
+        }
+
+        #diseases_div {
+            height: 300px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .vcf-file {
+            min-width: 300px;
+        }
+    </style>
+    <template>
+        <form id="form">
+            <p id="title">
+                <strong>Annotation form</strong>
+            </p>
+            <!-- <div class="horizontal layout center-justified">
+                <div class="jso-btn jso-btn-shdw"><i class="fa fa-rocket"></i> &nbsp; Run example</div>
+            </div>
+            <br> -->
+
+            <div class="horizontal layout wrap">
+                <div class="jso-formbox flex vcf-file">
+                    <div class="jso-formtitle">
+                        Input data
+                    </div>
+                    <div class="jso-formcontent">
+                        <div>VCF file: &nbsp;
+                            <jso-opencga-file-origin id="vcf_file" selectedStudy="{{selectedStudy}}"
+                                                     selection-mode="file"
+                                                     bioformats="{{bioformats}}" projects="{{projects}}">
+                            </jso-opencga-file-origin>
+                            <span id="vcf_fileError" class="errmsg"></span>
+                        </div>
+                        <br>
+                    </div>
+                </div>
+
+                <div class="jso-formbox diseases">
+                    <div class="jso-formtitle horizontal layout center">
+                        <div>Subpopulations</div>
+                        <div class="flex"></div>
+                        <div class="check" on-click="selectAllDiseases">
+                            <i class="fa fa-check-square-o"></i>
+                        </div>
+                        <div class="check" on-click="deselectAllDiseases">
+                            <i class="fa fa-square-o"></i>
+                        </div>
+                    </div>
+                    <div id="diseases_div" class="jso-formcontent" style="padding: 8px 10px">
+                        <template is="dom-repeat" items="{{diseases}}">
+                            <label class="jso-control">
+                                <input type="checkbox" class="diseaseName" name="disease" id="disease"
+                                       value="{{item.groupId}}" checked/>
+                                <span>{{item.name}}</span>
+                            </label>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <div class="jso-formbox">
+                <div class="jso-formtitle">
+                    Job information
+                </div>
+                <div class="jso-formcontent">
+                    <div>Output folder: &nbsp;
+                        <jso-opencga-file-origin id="output_folder" selection-mode="folder" bioformats="{{bioformats}}"
+                                                 projects="{{projects}}">
+                        </jso-opencga-file-origin>
+                        <span id="output_folderError" class="errmsg"></span>
+                    </div>
+                    <br>
+
+                    <div class="coment">Job name</div>
+                    <input type="text" id="jobName" class="jso" style="width:200px;" value="CSVS Annotation job"/>
+
+                    <div class="coment">Description</div>
+                    <textarea id="jobDescription" class="jso" style="width:200px;"></textarea>
+                </div>
+            </div>
+
+            <span class="errmsg">{{errorMessage}}</span>
+
+            <div class="horizontal layout center-justified">
+                <div class="jso-btn jso-btn-shdw jso-btn-big" on-click="launchJob"><i class="fa fa-rocket"></i> &nbsp;
+                    Launch Job
+                </div>
+            </div>
+            <br>
+        </form>
+
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'csvs-annotation-form',
+            behaviors: [JsoOpencgaManagerBehavior],
+            properties: {
+                toolId: {
+                    type: String,
+                    value: 'csvs'
+                },
+                execution: {
+                    type: String,
+                    value: ''
+                },
+                errorMessage: {
+                    type: String,
+                },
+                diseases: {
+                    type: Array,
+                    value: function () {
+                        return [];
+                    }
+                }
+
+            },
+            _setError: function (id, msg) {
+                this.$[id + 'Error'].innerHTML = msg;
+                this.errorMessage = "There are errors in the form. Correct them before launching the job.";
+            },
+            _clearError: function (id) {
+                this.$[id + 'Error'].innerHTML = '';
+                this.errorMessage = '';
+            },
+            _clean: function () {
+                this.errorMessage = '';
+                this.$.vcf_file.reset();
+                this.$.output_folder.reset();
+            },
+            launchJob: function (e) {
+                var me = this;
+
+                var query = {
+                    sid: Cookies("bioinfo_sid"),
+                    toolId: this.toolId,
+                    execution: this.execution,
+                    name: this.$.jobName.value,
+                    description: this.$.jobDescription.value
+                };
+
+                if (this.$.output_folder.selectedFile == null) {
+                    this._setError('output_folder', "No folder selected");
+                } else {
+                    this._clearError('output_folder');
+                    query['outdir'] = this.$.output_folder.selectedFile.id;
+                    query['outfile'] = "test.vcf";
+                    query['studyId'] = this.$.output_folder.selectedStudy.id;
+                }
+
+                if (this.$.vcf_file.selectedFile == null) {
+                    this._setError('vcf_file', 'No vcf file selected');
+                } else {
+                    this._clearError('vcf_file');
+                    query['input'] = this.$.vcf_file.selectedFile.id;
+                }
+
+
+                if (this.errorMessage === '' && this.$.form.checkValidity()) {
+                    console.log(this.$.form.checkValidity())
+                    OpencgaManager.jobs.create({
+                        query: query,
+                        request: {
+                            //method: 'POST',
+                            success: function (response) {
+                                if (response.response[0].errorMsg === '' || response.response[0].errorMsg == null) {
+                                    var job = response.response[0].result[0];
+                                    me.selectedOption = "jobLaunched"
+                                    console.log(job);
+                                    // me._clean();
+                                    me.fire('job-launched');
+                                    //                                    me.message = job.commandLine;
+                                } else {
+                                    me.message = response.response[0].errorMsg;
+                                }
+                            },
+                            error: function () {
+                                me.message = 'Server error, try again later.';
+                            }
+                        }
+                    });
+                }
+
+            },
+            selectAllDiseases: function (e, d, s) {
+                var checkboxes = this.$.diseases_div.getElementsByClassName("diseaseName");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    elem.checked = true;
+                }
+
+            }
+            ,
+            deselectAllDiseases: function (e, d, s) {
+                var checkboxes = this.$.diseases_div.getElementsByClassName("diseaseName");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    elem.checked = false;
+                }
+            }
+
+
+        });
+    </script>
+</dom-module>

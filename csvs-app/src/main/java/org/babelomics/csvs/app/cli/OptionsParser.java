@@ -188,8 +188,12 @@ public class OptionsParser {
         @Parameter(names = {"--input"}, description = "Input file", arity = 1)
         String input = "";
 
-        @Parameter(names = {"--output"}, description = "Output file", arity = 1)
+        @Parameter(names = {"--outfile"}, description = "Output file", arity = 1)
         String outfile = "output.vcf";
+
+        @Parameter(names = {"--outdir"}, description = "Output dir", arity = 1)
+        String outdir = "./";
+
 
     }
 
@@ -228,5 +232,7 @@ public class OptionsParser {
         return annot;
     }
 
-    CommandAnnotFile getAnnotFileCommand() {return annotFile;}
+    CommandAnnotFile getAnnotFileCommand() {
+        return annotFile;
+    }
 }

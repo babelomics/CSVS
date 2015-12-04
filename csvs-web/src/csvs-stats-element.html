@@ -4,8 +4,6 @@
             display: block;
             box-sizing: border-box;
             position: relative;
-            /*background-color: var(--text-primary-color);*/
-            /*color: var(--primary-text-color);*/
             width: 100%;
         }
 
@@ -24,19 +22,11 @@
             background-color: red;
         }
 
-
     </style>
     <template>
 
         <div class="vertical layout center-justified">
-            <!--<div class="buttons_container  horizontal layout center-justified">-->
-            <!--<paper-button raised on-click="{{ statsPerStudy }}">Stats per study</paper-button>-->
-            <!--<paper-button raised on-click="{{ statsPerDisease }}"> Stats per disease</paper-button>-->
-            <!--<paper-button raised on-click="{{ statsPerPhenotype }}"> Stats per phenotype</paper-button>-->
-            <!--</div>-->
-
             <div id="chartContainer" class="vertical layout center"></div>
-
         </div>
 
     </template>
@@ -74,12 +64,10 @@
                     plotShadow: false,
                     renderTo: container,
                     borderRadius: 10,
-                    width:1000
+                    width: 1000
 
                 },
-                exporting:{
-
-                },
+                exporting: {},
                 legend: {
                     labelFormatter: function () {
                         var maxLength = 20;
@@ -135,8 +123,8 @@
             var vppDiv = document.createElement("div");
             var sppDiv = document.createElement("div");
 
-            vppDiv.style.marginTop  = "20px";
-            sppDiv.style.marginTop  = "20px";
+            vppDiv.style.marginTop = "20px";
+            sppDiv.style.marginTop = "20px";
 
             this._createPieChart(vppDiv, variantsText, variants);
             this._createPieChart(sppDiv, samplesText, samples);

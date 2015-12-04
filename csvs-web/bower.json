@@ -12,12 +12,12 @@
     "bower_components"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#1.0.9",
-    "iron-flex-layout": "PolymerElements/iron-flex-layout#1.0.3",
+    "polymer": "Polymer/polymer#1.2.2",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#1.0.5",
     "fontawesome": "*",
     "cookies-js": "~1.1.0",
     "crypto-js-evanvosberg": "3.1.4",
-    "highcharts-release": "~4.1.8",
+    "highcharts-release": "~4.1.9",
     "underscore": "~1.7.0",
     "jquery": "1.11.3",
     "backbone": "~1.1.2",
