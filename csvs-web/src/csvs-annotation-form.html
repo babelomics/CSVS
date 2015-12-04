@@ -211,7 +211,8 @@
                     query['studyId'] = this.$.output_folder.selectedStudy.id;
                 }
 
-                if (this.$.outputFile.getValue() != "") {
+
+                if (this.$.outputFile.getValue() != null && this.$.outputFile.getValue() != "") {
                     query['outfile'] = this.$.outputFile.getValue();
                 } else {
                     query['outfile'] = "output_file.vcf";
