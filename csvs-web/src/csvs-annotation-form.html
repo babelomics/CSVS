@@ -59,6 +59,10 @@
         .vcf-file {
             min-width: 300px;
         }
+
+        #outputFile::shadow > input {
+            width: 400px !important;
+        }
     </style>
     <template>
         <form id="form">
@@ -121,6 +125,13 @@
                         </jso-opencga-file-origin>
                         <span id="output_folderError" class="errmsg"></span>
                     </div>
+
+                    <jso-opencga-input-text
+                            id="outputFile"
+                            label="Output file:"
+                            placeholder="output_file.vcf"
+                            tooltip="Output file"
+                    ></jso-opencga-input-text>
                     <br>
 
                     <div class="coment">Job name</div>
@@ -197,8 +208,13 @@
                 } else {
                     this._clearError('output_folder');
                     query['outdir'] = this.$.output_folder.selectedFile.id;
-                    query['outfile'] = "test.vcf";
                     query['studyId'] = this.$.output_folder.selectedStudy.id;
+                }
+
+                if (this.$.outputFile.getValue() != "") {
+                    query['outfile'] = this.$.outputFile.getValue();
+                } else {
+                    query['outfile'] = "output_file.vcf";
                 }
 
                 if (this.$.vcf_file.selectedFile == null) {
