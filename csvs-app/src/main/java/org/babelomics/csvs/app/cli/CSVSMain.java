@@ -373,7 +373,7 @@ public class CSVSMain {
         } else if (command instanceof OptionsParser.CommandAnnotFile) {
             OptionsParser.CommandAnnotFile c = (OptionsParser.CommandAnnotFile) command;
             String input = c.input;
-            String output = c.outfile;
+            String output = c.outdir + c.outfile;
             List<Integer> diseases = (c.diseaseId != null && c.diseaseId.size() > 0) ? c.diseaseId : null;
             Datastore datastore = getDatastore(c.host, c.user, c.pass);
 
