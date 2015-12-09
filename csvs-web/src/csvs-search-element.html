@@ -261,13 +261,16 @@
             maxLength: {
                 type: Number,
                 value: 1000000
+            },
+            isLogged: {
+                type: Boolean
             }
         },
         geneChanged: function (e) {
             var target = e.currentTarget;
             var value = target.value;
             var splits = value.split(",");
-            if (splits.length > 3) {
+            if (splits.length > 3 && !this.isLogged) {
                 alert("The maximum number of genes is 3");
             }
         },
@@ -714,7 +717,7 @@
                     }
                 }
 
-                if (length > this.maxLength) {
+                if (length > this.maxLength && !this.isLogged) {
                     alert("The total size of all provided regions can't exceed " + this.maxLength + " positions");
                     return
                 }
@@ -726,7 +729,7 @@
                         splits[i] = splits[i].trim();
                     }
 
-                    if (splits.length > 3) {
+                    if (splits.length > 3 && !this.isLogged) {
                         alert("The maximum number of genes is 3");
                         return;
                     }

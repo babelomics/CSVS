@@ -86,7 +86,8 @@
         </div>
 
         <div class="content" menu-option="search">
-            <csvs-search-element diseases="{{diseases}}" id="csvsSearchElement"></csvs-search-element>
+            <csvs-search-element diseases="{{diseases}}" id="csvsSearchElement"
+                                 is-logged="{{isLogged}}"></csvs-search-element>
         </div>
 
         <div class="content" menu-option="stats">
@@ -207,8 +208,12 @@
                     return ["csvs"];
                 }
             },
+            isLogged: {
+                type: Boolean
+            }
         },
         ready: function () {
+            this.isLogged = this.$.jsoHeader.isLogged;
             this.getDiseases();
             this.checkShowMenuOnLogin();
         },
@@ -264,9 +269,11 @@
         handleLogin: function () {
             // this.selectedOption = "panels";
             // this.homeHidden =
+            this.isLogged = this.$.jsoHeader.isLogged;
             this.checkShowMenuOnLogin();
         },
         handleLogout: function () {
+            this.isLogged = this.$.jsoHeader.isLogged;
             this.checkShowMenuOnLogin()
             this.setMenu("home");
             this.$.browserPanel.hide();
