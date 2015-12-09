@@ -225,6 +225,21 @@
                     query['input'] = this.$.vcf_file.selectedFile.id;
                 }
 
+                var subpopulations = [];
+
+                var checkboxes = this.$.diseases_div.getElementsByClassName("diseaseName");
+
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    if (elem.checked) {
+                        subpopulations.push(elem.value);
+                    }
+                }
+
+                if (subpopulations.length > 0) {
+                    query['diseaseId'] = subpopulations.join(",");
+                }
+
 
                 if (this.errorMessage === '' && this.$.form.checkValidity()) {
                     console.log(this.$.form.checkValidity())

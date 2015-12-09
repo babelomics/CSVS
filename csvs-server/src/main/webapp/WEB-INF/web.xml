@@ -12,7 +12,7 @@
 
         <init-param>
             <param-name>jersey.config.server.provider.packages</param-name>
-            <param-value>org.babelomics.pvs.server;com.wordnik.swagger.jersey.listing;</param-value>
+            <param-value>org.babelomics.csvs.server;com.wordnik.swagger.jersey.listing;</param-value>
         </init-param>
 
         <init-param>

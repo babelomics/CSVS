@@ -37,9 +37,7 @@ public class VariantsWSServer extends PVSWSServer {
     public Response getVariantsByRegion(@ApiParam(value = "regions") @QueryParam("regions") @DefaultValue("") String regions,
                                         @ApiParam(value = "limit") @QueryParam("limit") @DefaultValue("10") int limit,
                                         @ApiParam(value = "skip") @QueryParam("skip") @DefaultValue("0") int skip,
-                                        @ApiParam(value = "studies") @QueryParam("studies") String studies,
                                         @ApiParam(value = "diseases") @QueryParam("diseases") @DefaultValue("") String diseases,
-                                        @ApiParam(value = "phenotypes") @QueryParam("phenotypes") String phenotypes,
                                         @ApiParam(value = "csv") @QueryParam("csv") @DefaultValue("false") boolean csv
     ) {
 
@@ -100,9 +98,7 @@ public class VariantsWSServer extends PVSWSServer {
     public Response getVariants(@ApiParam(value = "variants") @PathParam("variants") @DefaultValue("") String variants,
                                 @ApiParam(value = "limit") @QueryParam("limit") @DefaultValue("10") int limit,
                                 @ApiParam(value = "skip") @QueryParam("skip") @DefaultValue("0") int skip,
-                                @ApiParam(value = "studies") @QueryParam("studies") String studies,
-                                @ApiParam(value = "diseases") @QueryParam("diseases") @DefaultValue("") String diseases,
-                                @ApiParam(value = "phenotypes") @QueryParam("phenotypes") String phenotypes
+                                @ApiParam(value = "diseases") @QueryParam("diseases") @DefaultValue("") String diseases
     ) {
 
         List<Variant> variantList = new ArrayList<>();

@@ -27,12 +27,13 @@ public class RegionWSServer extends PVSWSServer {
     public RegionWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest httpServletRequest) throws IOException {
         super(version, uriInfo, httpServletRequest);
     }
+
     @GET
-    @Path("/{regionsParam}/fetch")
+    @Path("/{regions}/fetch")
     @Produces("application/json")
     @ApiOperation(value = "Get Variants By Region")
     public Response getVariantsByRegion(
-            @ApiParam(value = "regionsParam") @PathParam("regionsParam") String regions,
+            @ApiParam(value = "regions") @PathParam("regions") String regions,
             @ApiParam(value = "histogram") @QueryParam("histogram") @DefaultValue("false") boolean histogram,
             @ApiParam(value = "histogramLogarithm") @QueryParam("histogramLogarithm") @DefaultValue("false") boolean histogramLogarithm,
             @ApiParam(value = "histogramMax") @QueryParam("histogramMax") @DefaultValue("500") int histogramMax,
