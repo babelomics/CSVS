@@ -60,7 +60,7 @@ public class VariantsWSServer extends PVSWSServer {
             String[] disSplits = diseases.split(",");
             for (String d : disSplits) {
                 diseaseList.add(Integer.valueOf(d));
-            }
+
         }
 
         MutableLong count = new MutableLong(-1);

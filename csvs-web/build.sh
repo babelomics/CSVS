@@ -42,7 +42,7 @@ cp -r src/images/* build/images/
 # end fix paths
 
 #cp LICENSE build/
-cp README.md build/
+cp ../README.md build/
 
 mv build/tmp/index.html build/
 mv build/tmp/index.js build/
