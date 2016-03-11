@@ -28,298 +28,288 @@
 
 
 <dom-module id="csvs-element">
-    <style>
-        :host {
-            display: block;
-            position: relative;
-            cursor: default;
-            font-size: 13px;
-            height: 100%;
-            background-color: var(--default-primary-color);
-        }
+  <style>
+    :host {
+      display: block;
+      position: relative;
+      cursor: default;
+      font-size: 13px;
+      height: 100%;
+      background-color: var(--default-primary-color);
+    }
 
-        .content {
-            position: absolute;
-            width: 100%;
-            top: 60px;
-        }
+    .content {
+      position: absolute;
+      width: 100%;
+      top: 60px;
+    }
 
-        @media (max-width: 1100px) {
-            .option-text {
-                display: none;
-            }
-        }
+    @media (max-width: 1100px) {
+      .option-text {
+        display: none;
+      }
+    }
 
-        jso-opencga-header {
-            position: absolute;
-            top: 0;
-        }
+    jso-opencga-header {
+      position: absolute;
+      top: 0;
+    }
 
-        jso-opencga-footer {
-            position: absolute;
-            bottom: 0;
-        }
+    jso-opencga-footer {
+      position: absolute;
+      bottom: 0;
+    }
 
-        csvs-search-element {
-            height: calc(100vh - 60px);
-        }
+    csvs-search-element {
+      height: calc(100vh - 60px);
+    }
 
-        #jobBrowserPanel {
-            position: absolute;
-            right: 0;
-            top: 0;
-            width: 600px;
-        }
+    #jobBrowserPanel {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 600px;
+    }
 
-        #browserPanel {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 600px;
-        }
+    #browserPanel {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 600px;
+    }
 
-    </style>
-    <template>
+  </style>
+  <template>
 
-        <div class="content" menu-option="home">
-            <csvs-home on-try="handleTry"></csvs-home>
+    <div class="content" menu-option="home">
+      <csvs-home on-try="handleTry"></csvs-home>
+    </div>
+
+    <div class="content" menu-option="search">
+      <csvs-search-element diseases="{{diseases}}" id="csvsSearchElement" is-logged="{{isLogged}}"></csvs-search-element>
+    </div>
+
+    <div class="content" menu-option="stats">
+      <csvs-stats-element diseases="{{diseases}}" id="csvsStatsElement"></csvs-stats-element>
+    </div>
+
+    <div class="content" menu-option="annot">
+      <csvs-annotation-form id="annotationForm" selectedOption="{{selectedOption}}" bioformats="{{bioformats}}" projects="{{projects}}" diseases="{{diseases}}" on-job-launched="handleJobLaunched"></csvs-annotation-form>
+    </div>
+
+    <div class="content" menu-option="result">
+      <csvs-annotation-result id="annotationResult"></csvs-annotation-result>
+    </div>
+
+
+    <div class="content" menu-option="home,search,stats,annot,result">
+      <jso-panel hidden collapsible closable movable id="browserPanel" on-hidden="handlePanelHidden">
+        <div class="header">
+          <i class="fa fa-folder-open-o"></i> File Browser
+        </div>
+        <jso-opencga-browser class="container" id="browser" projects="{{projects}}" bioformats="{{bioformats}}" mode="file"></jso-opencga-browser>
+      </jso-panel>
+
+      <jso-panel hidden collapsible movable closable id="jobBrowserPanel" on-hidden="handlePanelHidden">
+        <div class="header">Job browserr</div>
+        <jso-opencga-job-browser class="container" id="jobBrowser" on-jobselect="handleJobSelect" projects="{{projects}}" bioformats="{{bioformats}}" allowed-tools="{{allowedTools}}"></jso-opencga-job-browser>
+      </jso-panel>
+    </div>
+
+    <jso-opencga-header id="jsoHeader" user-data="{{userData}}" on-login="handleLogin" on-logout="handleLogout" on-logout="{{handleLogout}}" selected-option="{{selectedOption}}" hide-signup hide-browse>
+      <div class="icon">
+        <img src="images/bier-text.svg" style="height: 50px;margin: 5px 0px 0 0;">
+      </div>
+      <span class="title">CIBERER Spanish Variant Server</span>
+      <span class="description"></span>
+
+      <div id="menu" class="menu horizontal layout flex">
+        <div title="Search" class="option" on-click="handleMenuOption" data-option="search">
+          <i class="fa fa-search"></i>
+          <span class="option-text">Search</span>
         </div>
 
-        <div class="content" menu-option="search">
-            <csvs-search-element diseases="{{diseases}}" id="csvsSearchElement"
-                                 is-logged="{{isLogged}}"></csvs-search-element>
+        <div title="Stats" class="option" on-click="handleMenuOption" data-option="stats">
+          <i class="fa fa-pie-chart"></i>
+          <span class="option-text">Stats</span>
         </div>
-
-        <div class="content" menu-option="stats">
-            <csvs-stats-element diseases="{{diseases}}" id="csvsStatsElement"></csvs-stats-element>
+        <div title="Annotate VCF file" class="option" on-click="handleLoggedOnlyMenuOption" show-on-login data-option="annot">
+          <i class="fa fa-pencil-square-o"></i>
+          <span class="option-text">Annotate VCF File</span>
         </div>
-
-        <div class="content" menu-option="annot">
-            <csvs-annotation-form id="annotationForm" selectedOption="{{selectedOption}}" bioformats="{{bioformats}}"
-                                  projects="{{projects}}" diseases="{{diseases}}"></csvs-annotation-form>
+        <div class="flex"></div>
+        <div title="Browse my data" class="option" on-click="handleLoggedOnlyMenuPanel" show-on-login data-panel="browserPanel">
+          <i class="fa fa-folder-open-o"></i>
+          <span class="option-text">My data</span>
         </div>
-
-        <div class="content" menu-option="result">
-            <csvs-annotation-result id="annotationResult"></csvs-annotation-result>
+        <div title="Show diagnoses" class="option" on-click="handleLoggedOnlyMenuPanel" show-on-login data-panel="jobBrowserPanel">
+          <i class="fa fa-pencil-square-o"></i>
+          <span class="option-text">My annotations</span>
         </div>
+      </div>
 
+      <jso-help-menu class="helpmenu" selectedOption="{{selectedOption}}">
+        <a href="https://github.com/babelomics/csvs/wiki" target="_blank">
+          <i class="fa fa-book"></i> &nbsp; Documentation
+        </a>
+        <a href="https://github.com/babelomics/csvs/wiki/tutorial" target="_blank">
+          <i class="fa fa-compass"></i> &nbsp; Tutorial
+        </a>
+        <a href="https://github.com/babelomics/csvs/" target="_blank">
+          <i class="fa fa-github"></i> &nbsp; Source code
+        </a>
+      </jso-help-menu>
+    </jso-opencga-header>
 
-        <div class="content" menu-option="home,search,stats,annot,result">
-            <jso-panel hidden collapsible closable movable id="browserPanel" on-hidden="handlePanelHidden">
-                <div class="header">
-                    <i class="fa fa-folder-open-o"></i> File Browser
-                </div>
-                <jso-opencga-browser class="container" id="browser" projects="{{projects}}" bioformats="{{bioformats}}"
-                                     mode="file"></jso-opencga-browser>
-            </jso-panel>
-
-            <jso-panel hidden collapsible movable closable id="jobBrowserPanel" on-hidden="handlePanelHidden">
-                <div class="header">Job browserr</div>
-                <jso-opencga-job-browser class="container" id="jobBrowser" on-jobselect="handleJobSelect"
-                                         projects="{{projects}}" bioformats="{{bioformats}}"
-                                         allowed-tools="{{allowedTools}}"></jso-opencga-job-browser>
-            </jso-panel>
-        </div>
-
-        <jso-opencga-header id="jsoHeader" user-data="{{userData}}" on-login="handleLogin" on-logout="handleLogout"
-                            on-logout="{{handleLogout}}"
-                            selected-option="{{selectedOption}}" hide-signup hide-browse>
-            <div class="icon">
-                <img src="images/bier-text.svg" style="height: 50px;margin: 5px 0px 0 0;">
-            </div>
-            <span class="title">CIBERER Spanish Variant Server</span>
-            <span class="description"></span>
-
-            <div id="menu" class="menu horizontal layout flex">
-                <div title="Search" class="option" on-click="handleMenuOption" data-option="search">
-                    <i class="fa fa-search"></i>
-                    <span class="option-text">Search</span>
-                </div>
-
-                <div title="Stats" class="option" on-click="handleMenuOption" data-option="stats">
-                    <i class="fa fa-pie-chart"></i>
-                    <span class="option-text">Stats</span>
-                </div>
-                <div title="Annotate VCF file" class="option" on-click="handleLoggedOnlyMenuOption" show-on-login
-                     data-option="annot">
-                    <i class="fa fa-pencil-square-o"></i>
-                    <span class="option-text">Annotate VCF File</span>
-                </div>
-                <div class="flex"></div>
-                <div title="Browse my data" class="option" on-click="handleLoggedOnlyMenuPanel" show-on-login
-                     data-panel="browserPanel">
-                    <i class="fa fa-folder-open-o"></i>
-                    <span class="option-text">My data</span>
-                </div>
-                <div title="Show diagnoses" class="option" on-click="handleLoggedOnlyMenuPanel" show-on-login
-                     data-panel="jobBrowserPanel">
-                    <i class="fa fa-pencil-square-o"></i>
-                    <span class="option-text">My annotations</span>
-                </div>
-            </div>
-
-            <jso-help-menu class="helpmenu" selectedOption="{{selectedOption}}">
-                <a href="https://github.com/babelomics/csvs/wiki" target="_blank">
-                    <i class="fa fa-book"></i>
-                    &nbsp; Documentation
-                </a>
-                <a href="https://github.com/babelomics/csvs/wiki/tutorial" target="_blank">
-                    <i class="fa fa-compass"></i>
-                    &nbsp; Tutorial
-                </a>
-                <a href="https://github.com/babelomics/csvs/" target="_blank">
-                    <i class="fa fa-github"></i>
-                    &nbsp; Source code
-                </a>
-            </jso-help-menu>
-        </jso-opencga-header>
-
-        <jso-opencga-footer menu-option="home,login,singup,profile,remember">
-            CSVS: created by Computational Genomics Department
-            <br>
-            Principe Felipe Research Center
-            <br>
-            2015
-        </jso-opencga-footer>
-    </template>
+    <jso-opencga-footer menu-option="home,login,singup,profile,remember">
+      CSVS: created by Computational Genomics Department
+      <br> Principe Felipe Research Center
+      <br> 2015
+    </jso-opencga-footer>
+  </template>
 </dom-module>
 <script>
-    Polymer({
-        is: 'csvs-element',
-        behaviors: [JsoApplicationBehavior, JsoOpencgaManagerBehavior],
-        properties: {
-            diseases: {
-                type: Array,
-                value: function () {
-                    return [];
-                }
-            },
-            bioformats: {
-                type: Array,
-                value: [{
-                    text: "VCF 4.0",
-                    value: "VARIANT",
-                    validator: VCFValidator
-                }]
-            },
-            allowedTools: {
-                type: Array,
-                value: function () {
-                    return ["csvs"];
-                }
-            },
-            isLogged: {
-                type: Boolean
-            }
-        },
-        ready: function () {
-            this.isLogged = this.$.jsoHeader.isLogged;
-            this.getDiseases();
-            this.checkShowMenuOnLogin();
-        },
-        getDiseases: function (event, response) {
-            var me = this;
-            CSVSManager.diseases.list({
-                request: {
-                    async: false,
-                    success: function (response) {
-                        try {
-                            var diseases = [];
-
-                            var ibsPos = -1;
-                            var mgpPos = -1;
-
-                            for (var i = 0; i < response.result.length; i++) {
-                                var elem = response.result[i];
-                                if (elem.name === "IBS (107 Spanish individuals from 1000genomes)") {
-                                    ibsPos = i;
-                                } else if (elem.name === "MGP (267 healthy controls)") {
-                                    mgpPos = i;
-                                } else {
-                                    diseases.push(elem);
-                                }
-                            }
-                            if (ibsPos != -1) {
-                                diseases.unshift(response.result[ibsPos]);
-                            }
-                            if (mgpPos != -1) {
-                                diseases.unshift(response.result[mgpPos]);
-                            }
-                            me.diseases = diseases;
-                        } catch (err) {
-                            console.log("Error loading diseases: " + err);
-                            me.diseases = [];
-                        }
-                    },
-                    error: function (response) {
-                        console.log("ERROR downloading diseases");
-                        console.log(response);
-                    }
-                }
-            });
-        },
-        _swap: function (array, x, y) {
-            var b = array[y];
-            array[y] = array[x];
-            array[x] = b;
-        },
-        handleTry: function () {
-            this.setMenu("search");
-        },
-        handleLogin: function () {
-            // this.selectedOption = "panels";
-            // this.homeHidden =
-            this.isLogged = this.$.jsoHeader.isLogged;
-            this.checkShowMenuOnLogin();
-        },
-        handleLogout: function () {
-            this.isLogged = this.$.jsoHeader.isLogged;
-            this.checkShowMenuOnLogin()
-            this.setMenu("home");
-            this.$.browserPanel.hide();
-            this.$.jobBrowserPanel.hide();
-        },
-        handleJobSelect: function (e) {
-            var me = this;
-
-            var job = e.detail;
-            var fileName = job.params.outfile;
-            var dir = job.outDirId;
-            var file = null;
-
-            OpencgaManager.files.list({
-                id: dir,
-                query: {
-                    sid: Cookies('bioinfo_sid')
-                },
-                request: {
-                    success: function (response) {
-
-                        if (response.response[0].errorMsg === '' || response.response[0].errorMsg == null) {
-                            var files = response.response[0].result;
-
-                            for (var i = 0; i < files.length; i++) {
-                                var f = files[i];
-                                if (f.name === fileName) {
-                                    file = f;
-                                    break;
-                                }
-                            }
-
-
-                            me.setMenu("result");
-                            me.$.annotationResult.file = file;
-
-                        } else {
-                            me.message = response.response[0].errorMsg;
-                        }
-//                        callback(files);
-                    },
-                    error: function () {
-                        me.message = 'Server error, try again later.';
-                    }
-                }
-            });
+  Polymer({
+    is: 'csvs-element',
+    behaviors: [JsoApplicationBehavior, JsoOpencgaManagerBehavior],
+    properties: {
+      diseases: {
+        type: Array,
+        value: function() {
+          return [];
         }
-    });
+      },
+      bioformats: {
+        type: Array,
+        value: [{
+          text: "VCF 4.0",
+          value: "VARIANT",
+          validator: VCFValidator
+        }]
+      },
+      allowedTools: {
+        type: Array,
+        value: function() {
+          return ["csvs"];
+        }
+      },
+      isLogged: {
+        type: Boolean
+      }
+    },
+    ready: function() {
+      this.isLogged = this.$.jsoHeader.isLogged;
+      this.getDiseases();
+      this.checkShowMenuOnLogin();
+    },
+    getDiseases: function(event, response) {
+      var me = this;
+      CSVSManager.diseases.list({
+        request: {
+          async: false,
+          success: function(response) {
+            try {
+              var diseases = [];
+
+              var ibsPos = -1;
+              var mgpPos = -1;
+
+              for (var i = 0; i < response.result.length; i++) {
+                var elem = response.result[i];
+                if (elem.name === "IBS (107 Spanish individuals from 1000genomes)") {
+                  ibsPos = i;
+                } else if (elem.name === "MGP (267 healthy controls)") {
+                  mgpPos = i;
+                } else {
+                  diseases.push(elem);
+                }
+              }
+              if (ibsPos != -1) {
+                diseases.unshift(response.result[ibsPos]);
+              }
+              if (mgpPos != -1) {
+                diseases.unshift(response.result[mgpPos]);
+              }
+              me.diseases = diseases;
+            } catch (err) {
+              console.log("Error loading diseases: " + err);
+              me.diseases = [];
+            }
+          },
+          error: function(response) {
+            console.log("ERROR downloading diseases");
+            console.log(response);
+          }
+        }
+      });
+    },
+    _swap: function(array, x, y) {
+      var b = array[y];
+      array[y] = array[x];
+      array[x] = b;
+    },
+    handleTry: function() {
+      this.setMenu("search");
+    },
+    handleLogin: function() {
+      // this.selectedOption = "panels";
+      // this.homeHidden =
+      this.isLogged = this.$.jsoHeader.isLogged;
+      this.checkShowMenuOnLogin();
+    },
+    handleLogout: function() {
+      this.isLogged = this.$.jsoHeader.isLogged;
+      this.checkShowMenuOnLogin()
+      this.setMenu("home");
+      this.$.browserPanel.hide();
+      this.$.jobBrowserPanel.hide();
+    },
+    handleJobSelect: function(e) {
+      var me = this;
+
+      var job = e.detail;
+      var fileName = job.params.outfile;
+      var dir = job.outDirId;
+      var file = null;
+
+      OpencgaManager.files.list({
+        id: dir,
+        query: {
+          sid: Cookies('bioinfo_sid')
+        },
+        request: {
+          success: function(response) {
+
+            if (response.response[0].errorMsg === '' || response.response[0].errorMsg == null) {
+              var files = response.response[0].result;
+
+              for (var i = 0; i < files.length; i++) {
+                var f = files[i];
+                if (f.name === fileName) {
+                  file = f;
+                  break;
+                }
+              }
+
+
+              me.setMenu("result");
+              me.$.annotationResult.file = file;
+
+            } else {
+              me.message = response.response[0].errorMsg;
+            }
+            //                        callback(files);
+          },
+          error: function() {
+            me.message = 'Server error, try again later.';
+          }
+        }
+      });
+    },
+    handleJobLaunched: function(e) {
+      debugger
+      this.$.jobBrowserPanel.show();
+
+    }
+  });
 </script>
