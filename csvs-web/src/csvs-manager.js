@@ -12,6 +12,11 @@ var CSVSManager = {
             return CSVSManager._doRequest(args, 'variants', 'fetch');
         }
     },
+    regions: {
+        saturation: function (args) {
+            return CSVSManager._doRequest(args, 'regions', 'saturation');
+        }
+    },
     _url: function (args, api, action) {
         var host = CSVSManager.host;
         if (typeof args.request.host !== 'undefined' && args.request.host != null) {

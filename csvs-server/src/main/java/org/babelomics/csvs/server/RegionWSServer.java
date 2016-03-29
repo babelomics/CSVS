@@ -4,6 +4,7 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import org.babelomics.csvs.lib.models.IntervalFrequency;
+import org.babelomics.csvs.lib.models.SaturationElement;
 import org.babelomics.csvs.lib.models.Variant;
 import org.babelomics.csvs.lib.ws.QueryResponse;
 import org.opencb.biodata.models.feature.Region;
@@ -15,7 +16,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
@@ -23,7 +26,7 @@ import java.util.List;
 @Path("/regions")
 @Api(value = "regions", description = "Regions")
 @Produces(MediaType.APPLICATION_JSON)
-public class RegionWSServer extends PVSWSServer {
+public class RegionWSServer extends CSVWSServer {
     public RegionWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest httpServletRequest) throws IOException {
         super(version, uriInfo, httpServletRequest);
     }
@@ -65,4 +68,37 @@ public class RegionWSServer extends PVSWSServer {
             return createOkResponse(qr);
         }
     }
+
+    @GET
+    @Path("/{regions}/saturation")
+    @Produces("application/json")
+    @ApiOperation(value = "Get Saturation per gene")
+    public Response getVariantsByRegion(@ApiParam(value = "regions") @PathParam("regions") @DefaultValue("") String regions,
+                                        @ApiParam(value = "limit") @QueryParam("limit") @DefaultValue("10") int limit,
+                                        @ApiParam(value = "skip") @QueryParam("skip") @DefaultValue("0") int skip
+    ) {
+
+
+        List<Region> regionList = new ArrayList<>();
+        List<Integer> diseaseList = new ArrayList<>();
+        int regionsSize = 0;
+
+        if (regions.length() > 0) {
+            String[] regSplits = regions.split(",");
+            for (String s : regSplits) {
+                Region r = Region.parseRegion(s);
+                regionList.add(r);
+                regionsSize += r.getEnd() - r.getStart();
+            }
+        }
+
+
+        Map<Region, List<SaturationElement>> res = qm.getSaturation(regionList);
+
+        QueryResponse qr = createQueryResponse(res);
+        qr.setNumTotalResults(res.size());
+
+        return createOkResponse(qr);
+    }
+
 }

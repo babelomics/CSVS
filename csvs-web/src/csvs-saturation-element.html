@@ -1,0 +1,138 @@
+<dom-module id="csvs-saturation-element">
+    <style>
+        :host {
+            display: block;
+            position: relative;
+            width: 100%;
+        }
+
+    </style>
+    <template>
+
+        <div id="chart"></div>
+
+
+    </template>
+</dom-module>
+<script>
+    Polymer({
+        is: 'csvs-saturation-element',
+        properties: {
+            diseases: {
+                type: Array,
+                value: function () {
+                    return [];
+                },
+                observer: 'diseasesChanged'
+            }
+        },
+        diseasesChanged: function (neo, old) {
+
+            if (neo && Array.isArray(neo)) {
+//                debugger
+                var diseasesSort = [];
+                for (var i = 0; i < neo.length; i++) {
+                    diseasesSort.push(neo[i]);
+                }
+
+                diseasesSort.sort(function (a, b) {
+                    return b.samples - a.samples;
+                });
+                this.diseasesSort = diseasesSort;
+
+            }
+
+        },
+        _getDiseaseCount: function (data, disease) {
+            var count = 0;
+
+            for (var i = 0; i < data.length; i++) {
+                var elem = data[i];
+                if (elem.diseaseId == disease.groupId) {
+                    count = elem.count;
+                }
+            }
+
+            return count;
+
+        },
+        reloadChart: function (data) {
+
+            var chartData = [];
+
+            for (var key in data) {
+                var diseaseData = data[key];
+                var counts = Array(this.diseasesSort.length).fill(0);
+
+                var labels = [];
+                var order = [];
+                for (var i = 0; i < this.diseasesSort.length; i++) {
+                    labels[i] = this.diseasesSort[i].name;
+                    var dis = this.diseasesSort[i];
+                    var count = this._getDiseaseCount(diseaseData, dis);
+                    counts[dis.groupId - 1] = count;
+                    order[i] = dis.groupId - 1;
+                }
+
+
+                var newCounts = Array(this.diseasesSort.length).fill(0);
+
+                for (var i = 0; i < this.diseasesSort.length; i++) {
+                    var dis = this.diseasesSort[i];
+                    var pos = dis.groupId - 1;
+
+                    newCounts[i] = counts[pos];
+                }
+
+                counts = newCounts;
+                for (var i = 1; i < counts.length; i++) {
+                    counts[i] += counts[i - 1];
+                }
+                chartData.push({
+                    name: key,
+                    data: counts
+                });
+            }
+
+            var chart = new Highcharts.Chart({
+                chart: {
+                    type: 'line',
+                    plotBackgroundColor: null,
+                    plotBorderWidth: 1,//null,
+                    plotShadow: false,
+                    renderTo: this.$.chart,
+                    borderRadius: 10,
+                    width: 1000,
+                    height: 500
+                },
+                exporting: {},
+                title: {
+                    text: "Saturation"
+                },
+                credits: {
+                    enabled: false
+                },
+                xAxis: {
+                    categories: labels
+                },
+                yAxis:{
+                  title:{
+                      text:'Num. variants'
+                  }
+                },
+                plotOptions: {
+                    line: {
+                        dataLabels: {
+                            enabled: true
+                        },
+                        enableMouseTracking: false
+                    }
+                },
+
+                series: chartData
+            });
+
+        }
+    })
+    ;
+</script>

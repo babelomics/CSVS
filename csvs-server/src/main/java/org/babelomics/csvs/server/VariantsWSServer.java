@@ -23,7 +23,7 @@ import java.util.List;
 @Path("/variants")
 @Api(value = "variants", description = "Variants")
 @Produces(MediaType.APPLICATION_JSON)
-public class VariantsWSServer extends PVSWSServer {
+public class VariantsWSServer extends CSVWSServer {
 
     public VariantsWSServer(@DefaultValue("") @PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws IOException {
@@ -61,6 +61,7 @@ public class VariantsWSServer extends PVSWSServer {
             for (String d : disSplits) {
                 diseaseList.add(Integer.valueOf(d));
 
+            }
         }
 
         MutableLong count = new MutableLong(-1);
@@ -134,6 +135,7 @@ public class VariantsWSServer extends PVSWSServer {
 
         return createOkResponse(qr);
     }
+
 
 
 }

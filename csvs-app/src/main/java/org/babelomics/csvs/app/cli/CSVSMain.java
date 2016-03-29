@@ -373,7 +373,7 @@ public class CSVSMain {
         } else if (command instanceof OptionsParser.CommandAnnotFile) {
             OptionsParser.CommandAnnotFile c = (OptionsParser.CommandAnnotFile) command;
             String input = c.input;
-            String output = c.outdir + c.outfile;
+            String output = c.outdir +"/"+ c.outfile;
             List<Integer> diseases = (c.diseaseId != null && c.diseaseId.size() > 0) ? c.diseaseId : null;
             Datastore datastore = getDatastore(c.host, c.user, c.pass);
 
@@ -398,6 +398,7 @@ public class CSVSMain {
 
             for (VariantContext context : variantReader) {
                 String chr = context.getContig();
+                chr = removePrefix(chr);
                 int pos = context.getStart();
                 String ref = context.getReference().getBaseString();
 
@@ -435,11 +436,17 @@ public class CSVSMain {
 
     }
 
+    private static String removePrefix(String chr) {
+        String res = chr.replace("chrom","").replace("chrm","").replace("chr","").replace("ch","");
+        return res;
+    }
+
     private static void compressVariants(Path input, Path output) throws IOException {
 
         VariantSource source = new VariantSource("file", "file", "file", "file");
         VariantReader reader = new VariantVcfReader(source, input.toAbsolutePath().toString());
         VariantWriter writer = new CSVSVariantCountsCSVDataWriter(output.toAbsolutePath().toString());
+
 
         List<Task<org.opencb.biodata.models.variant.Variant>> taskList = new SortedList<>();
         List<VariantWriter> writers = new ArrayList<>();

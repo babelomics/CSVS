@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Properties;
 
 @Path("/")
-public class PVSWSServer {
+public class CSVWSServer {
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
     protected static Properties properties;
@@ -57,7 +57,7 @@ public class PVSWSServer {
 
     static {
 
-        InputStream is = PVSWSServer.class.getClassLoader().getResourceAsStream("csvs.properties");
+        InputStream is = CSVWSServer.class.getClassLoader().getResourceAsStream("csvs.properties");
         properties = new Properties();
 
         try {
@@ -95,7 +95,7 @@ public class PVSWSServer {
 
     }
 
-    public PVSWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest httpServletRequest) throws IOException {
+    public CSVWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest httpServletRequest) throws IOException {
 
         this.version = version;
         this.uriInfo = uriInfo;
@@ -107,6 +107,7 @@ public class PVSWSServer {
 
     protected Response createErrorResponse(Object o) {
         System.out.println("ERROR");
+        System.out.println("o.toString() = " + o.toString());
         QueryResult<ObjectMap> result = new QueryResult();
         result.setErrorMsg(o.toString());
 //        QueryResponse qr = createQueryResponse(result);

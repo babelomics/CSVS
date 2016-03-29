@@ -17,7 +17,7 @@ import java.io.IOException;
 
 @Path("/test")
 @Api(value = "test", description = "test web services")
-public class TestWSServer extends PVSWSServer {
+public class TestWSServer extends CSVWSServer {
 
     public TestWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest httpServletRequest) throws IOException {
         super(version, uriInfo, httpServletRequest);

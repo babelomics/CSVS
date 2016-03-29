@@ -4,6 +4,7 @@
 <link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-phenotype-grid.html">
 
 <link rel="import" href="../lib/jsorolla/src/lib/components/table/jso-table.html">
+<link rel="import" href="csvs-saturation-element.html">
 
 <dom-module id="csvs-search-element">
     <style>
@@ -196,6 +197,7 @@
                     <div on-click="handleMenuClick" data-option="frequency">Frequencies</div>
                     <div on-click="handleMenuClick" data-option="phenotype">Phenotype</div>
                     <div on-click="handleMenuClick" data-option="effect">Effect</div>
+                    <div on-click="handleMenuClick" data-option="saturation">Saturation</div>
                 </div>
 
                 <!--<paper-button raised on-click="{{ exportQueryToCSV }}" horizontal layout end-justified-->
@@ -208,6 +210,7 @@
                     <jso-variant-frequencies-grid id="frequency" hidden></jso-variant-frequencies-grid>
                     <jso-variant-phenotype-grid id="phenotype" hidden></jso-variant-phenotype-grid>
                     <jso-variant-effect-grid id="effect" hidden></jso-variant-effect-grid>
+                    <csvs-saturation-element id="saturation" diseases="{{diseases}}"></csvs-saturation-element>
                 </div>
             </div>
         </div>
@@ -735,6 +738,8 @@
 
                     var gene = splits.join(",").toUpperCase();
 
+                    var regionGene = {};
+
                     CellBaseManager.get({
                         species: 'hsapiens',
                         category: 'feature',
@@ -751,6 +756,7 @@
 
                                 if (queryResult.result.length > 0) {
                                     var region = new Region(queryResult.result[0]);
+                                    regionGene[region] = queryResult.id;
                                     regions.push(region.toString());
 
                                 } else {
@@ -784,7 +790,34 @@
                             url: true
                         }
                     });
-                    console.log(url);
+
+
+                    // Calculate Saturation
+                    CSVSManager.regions.saturation({
+                        id: regionQuery,
+                        request: {
+                            // host: "http://aaleman:8080/csvs/rest",
+                            success: function (response) {
+
+                                var data = response.result[0];
+
+                                for (var region in regionGene) {
+                                    if (region in data) {
+                                        var newKey = regionGene[region];
+                                        data[newKey] = data[region];
+                                        delete data[region];
+                                    }
+                                }
+                                try {
+                                    me.$.saturation.reloadChart(data);
+                                } catch (e) {
+                                    me.$.saturation.reloadChart({});
+                                }
+
+                            }
+                        }
+                    });
+
 
                     this.formURL = url;
                 }

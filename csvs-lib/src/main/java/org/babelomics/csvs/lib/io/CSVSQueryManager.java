@@ -2,10 +2,7 @@ package org.babelomics.csvs.lib.io;
 
 import com.mongodb.*;
 import org.apache.commons.lang3.mutable.MutableLong;
-import org.babelomics.csvs.lib.models.DiseaseCount;
-import org.babelomics.csvs.lib.models.DiseaseGroup;
-import org.babelomics.csvs.lib.models.IntervalFrequency;
-import org.babelomics.csvs.lib.models.Variant;
+import org.babelomics.csvs.lib.models.*;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 import org.mongodb.morphia.query.Criteria;
@@ -43,6 +40,11 @@ public class CSVSQueryManager {
 
     public List<DiseaseGroup> getAllDiseaseGroups() {
         List<DiseaseGroup> query = datastore.createQuery(DiseaseGroup.class).order("groupId").asList();
+        return query;
+    }
+
+    public List<DiseaseGroup> getAllDiseaseGroupsOrderedBySample() {
+        List<DiseaseGroup> query = datastore.createQuery(DiseaseGroup.class).order("-samples").asList();
         return query;
     }
 
@@ -120,6 +122,7 @@ public class CSVSQueryManager {
             DiseaseCount diseaseCount = calculateStats(res, diseaseIds, sampleCount);
 
             res.setStats(diseaseCount);
+            res.setDiseases(null);
 
         }
         return res;
@@ -285,10 +288,76 @@ public class CSVSQueryManager {
 
         for (Variant v : aux) {
             v.setStats(calculateStats(v, diseaseIds, sampleCount));
+            v.setDiseases(null);
             res.add(v);
         }
 
         return res;
+    }
+
+    public Map<Region, List<SaturationElement>> getSaturation(List<Region> regions) {
+
+
+        Map<Region, List<SaturationElement>> map = new LinkedHashMap<>();
+
+
+        List<DiseaseGroup> diseaseOrder = getAllDiseaseGroupsOrderedBySample();
+
+        System.out.println("regions = " + regions);
+
+        int i = 0;
+        for (Region r : regions) {
+            System.out.println("r = '" + r + "'");
+
+            List<String> chunkIds = getChunkIds(r);
+
+            List<SaturationElement> list = new ArrayList<>();
+            Map<Integer, Integer> diseaseCount = new HashMap<>();
+
+            Query<Variant> auxQuery = this.datastore.createQuery(Variant.class);
+
+            List<Criteria> and = new ArrayList<>();
+            and.add(auxQuery.criteria("_at.chIds").in(chunkIds));
+            and.add(auxQuery.criteria("chromosome").equal(r.getChromosome()));
+            and.add(auxQuery.criteria("position").greaterThanOrEq(r.getStart()));
+            and.add(auxQuery.criteria("position").lessThanOrEq(r.getEnd()));
+
+            Query<Variant> query = this.datastore.createQuery(Variant.class);
+            query.and(and.toArray(new Criteria[and.size()]));
+
+            Iterable<Variant> aux = query.fetch();
+
+            for (Variant v : aux) {
+               if (!v.getDiseases().isEmpty()) {
+
+                    DiseaseCount dc = null;
+
+                    Iterator<DiseaseGroup> dgIt = diseaseOrder.iterator();
+
+                    while (dgIt.hasNext() && dc == null) {
+                        DiseaseGroup dg = dgIt.next();
+                        dc = v.getDiseaseCount(dg);
+                    }
+
+                    int count = 0;
+                    if (diseaseCount.containsKey(dc.getDiseaseGroup().getGroupId())) {
+                        count = diseaseCount.get(dc.getDiseaseGroup().getGroupId());
+                    }
+                    count += 1;
+                    diseaseCount.put(dc.getDiseaseGroup().getGroupId(), count);
+                }
+            }
+
+            for (Map.Entry<Integer, Integer> entry : diseaseCount.entrySet()) {
+                list.add(new SaturationElement(
+                        entry.getKey(),
+                        entry.getValue()
+                ));
+            }
+            map.put(r, list);
+        }
+
+        return map;
     }
 
     public Iterable<Variant> getAllVariants(List<Integer> diseaseIds, Integer skip, Integer limit, MutableLong count) {
@@ -439,6 +508,7 @@ public class CSVSQueryManager {
             public Variant next() {
                 Variant v = this.it.next();
                 v.setStats(calculateStats(v, diseaseIds, sampleCount));
+                v.setDiseases(null);
                 return v;
             }
 

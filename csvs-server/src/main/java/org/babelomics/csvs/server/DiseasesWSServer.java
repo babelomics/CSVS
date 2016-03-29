@@ -21,7 +21,7 @@ import java.util.List;
 @Path("/diseases")
 @Api(value = "Diseases", description = "Diseases")
 @Produces(MediaType.APPLICATION_JSON)
-public class DiseasesWSServer extends PVSWSServer {
+public class DiseasesWSServer extends CSVWSServer {
     public DiseasesWSServer(@DefaultValue("") @PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws IOException {
         super(version, uriInfo, hsr);

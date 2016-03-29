@@ -34,7 +34,7 @@ public class Variant {
     @Property("_at")
     private Map<String, Object> attr;
 
-    @JsonIgnore
+//    @JsonIgnore
     @Embedded("d")
     private List<DiseaseCount> diseases;
 
