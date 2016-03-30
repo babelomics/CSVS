@@ -23,10 +23,19 @@ public class Technology {
     @Property("n")
     private String name;
 
+
+    @Property("s")
+    private int samples;
+    @Property("v")
+    private int variants;
+
     public Technology() {
+        this.samples = 0;
+        this.variants = 0;
     }
 
     public Technology(int technologyId, String name) {
+        this();
         this.technologyId = technologyId;
         this.name = name;
     }
@@ -53,6 +62,38 @@ public class Technology {
 
     public void setTechnologyId(int technologyId) {
         this.technologyId = technologyId;
+    }
+
+    public int getSamples() {
+        return samples;
+    }
+
+    public void setSamples(int samples) {
+        this.samples = samples;
+    }
+
+    public int getVariants() {
+        return variants;
+    }
+
+    public void setVariants(int variants) {
+        this.variants = variants;
+    }
+
+    public void incSamples(int samples) {
+        this.samples += samples;
+    }
+
+    public void incVariants(int variants) {
+        this.variants += variants;
+    }
+
+    public void decVariants(int variants) {
+        this.variants -= variants;
+    }
+
+    public void decSamples(int samples) {
+        this.samples -= samples;
     }
 
     @Override

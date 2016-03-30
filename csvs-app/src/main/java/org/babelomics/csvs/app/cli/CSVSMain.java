@@ -264,8 +264,7 @@ public class CSVSMain {
                     System.out.println(dg.getGroupId() + "\t" + dg.getName() + "\t" + dg.getSamples());
                 }
 
-            }
-            else if(c.technologies){
+            } else if (c.technologies) {
                 System.out.println("\n\nList of Technologies\n==========================\n");
 
                 List<Technology> query = qm.getAllTechnologies();
@@ -274,8 +273,7 @@ public class CSVSMain {
                     System.out.println(technology.getTechnologyId() + "\t" + technology.getName());
                 }
 
-            }
-            else if (c.regionLIst.size() > 0 || c.geneList.size() > 0) {
+            } else if (c.regionLIst.size() > 0 || c.geneList.size() > 0) {
 
                 List<Integer> diseaseId = c.diseaseId;
                 PrintWriter pw = null;
@@ -556,6 +554,7 @@ public class CSVSMain {
     private static void unloadVariants(Path variantsPath, int diseaseGroupId, int technologyId, Datastore datastore) throws IOException, NoSuchAlgorithmException {
 
         int samples = 0;
+        int variants = 0;
 
 
         String sha256 = calculateSHA256(variantsPath);
@@ -592,6 +591,7 @@ public class CSVSMain {
                         .get();
 
                 if (v != null) {
+                    variants++;
 
                     DiseaseCount vDc = v.getDiseaseCount(dg, t);
                     DiseaseCount elemDC = elem.getDiseaseCount(dg, t);
@@ -631,6 +631,10 @@ public class CSVSMain {
 
         datastore.delete(File.class, fDb.getId());
         dg.decSamples(samples);
+        dg.decVariants(variants);
+
+        t.decSamples(samples);
+        t.decVariants(variants);
         datastore.save(dg);
     }
 }

@@ -52,13 +52,15 @@ public class CSVSVariantCountsMongoWriter implements DataWriter<Variant> {
     @Override
     public boolean post() {
 
-        DiseaseGroup dg = this.diseaseGroup;
 //        DiseaseGroup dg = this.datastore.get(DiseaseGroup.class, diseaseGroup.getId());
 
-        dg.incSamples(this.samples);
-        dg.incVariants(this.variants);
+        this.diseaseGroup.incSamples(this.samples);
+        this.diseaseGroup.incVariants(this.variants);
 
-        this.datastore.save(dg);
+        this.technology.incSamples(this.samples);
+        this.technology.incVariants(this.variants);
+
+        this.datastore.save(this.diseaseGroup);
 
         return true;
     }
@@ -77,7 +79,6 @@ public class CSVSVariantCountsMongoWriter implements DataWriter<Variant> {
                 .get();
 
         if (v == null) {
-            System.out.println("elem = " + elem);
             this.datastore.save(elem);
             this.variants++;
         } else {

@@ -83,6 +83,10 @@ public class DiseaseGroup {
         this.variants += variants;
     }
 
+    public void decVariants(int variants) {
+        this.variants -= variants;
+    }
+
     public void decSamples(int samples) {
         this.samples -= samples;
     }
