@@ -17,10 +17,11 @@ public class DiseaseGroup {
     @Id
     private ObjectId id;
 
-    @Indexed(unique = true)
+    @Indexed(name = "index_diseasegroup_name", unique = true)
     @Property("n")
     private String name;
 
+    @Indexed(name = "index_diseasegroup_groupid", unique = true)
     @Property("gid")
     private int groupId;
 

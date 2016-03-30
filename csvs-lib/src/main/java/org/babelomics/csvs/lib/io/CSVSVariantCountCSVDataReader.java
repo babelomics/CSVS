@@ -1,6 +1,7 @@
 package org.babelomics.csvs.lib.io;
 
 import org.babelomics.csvs.lib.models.DiseaseGroup;
+import org.babelomics.csvs.lib.models.Technology;
 import org.babelomics.csvs.lib.models.Variant;
 import org.opencb.commons.io.DataReader;
 
@@ -21,10 +22,12 @@ public class CSVSVariantCountCSVDataReader implements DataReader<Variant> {
     private String filePath;
     private BufferedReader reader;
     private DiseaseGroup diseaseGroup;
+    private Technology technology;
 
-    public CSVSVariantCountCSVDataReader(String filePath, DiseaseGroup dg) {
+    public CSVSVariantCountCSVDataReader(String filePath, DiseaseGroup dg, Technology t) {
         this.filePath = filePath;
         this.diseaseGroup = dg;
+        this.technology = t;
     }
 
     @Override
@@ -91,7 +94,7 @@ public class CSVSVariantCountCSVDataReader implements DataReader<Variant> {
                         v.setIds(splits[4]);
                     }
 
-                    v.addGenotypesToDisease(this.diseaseGroup, Integer.parseInt(splits[5]), Integer.parseInt(splits[6]), Integer.parseInt(splits[7]), Integer.parseInt(splits[8]));
+                    v.addGenotypesToDiseaseAndTechnology(this.diseaseGroup,this.technology, Integer.parseInt(splits[5]), Integer.parseInt(splits[6]), Integer.parseInt(splits[7]), Integer.parseInt(splits[8]));
 
                     variants.add(v);
                     return variants;

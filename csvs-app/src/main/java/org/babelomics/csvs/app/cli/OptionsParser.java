@@ -47,6 +47,9 @@ public class OptionsParser {
         @Parameter(names = {"-d", "--diseaseId"}, description = "Disease group Id", required = true, arity = 1)
         int disease;
 
+        @Parameter(names = {"-t", "--technologyId"}, description = "Technology Id", required = true, arity = 1)
+        int technology;
+
         @Parameter(names = {"--host"}, description = "DB host", arity = 1)
         String host = "localhost";
 
@@ -54,6 +57,8 @@ public class OptionsParser {
         String user = "";
         @Parameter(names = {"--pass"}, description = "DB Pass", arity = 1)
         String pass = "";
+        @Parameter(names = {"--dbName"}, description = "DB Name", arity = 1)
+        String dbName = "csvs";
     }
 
     @Parameters(commandNames = {"unload"}, commandDescription = "Unloads variants from the DB")
@@ -65,6 +70,9 @@ public class OptionsParser {
         @Parameter(names = {"-d", "--diseaseId"}, description = "Disease group Id", required = true, arity = 1)
         int disease;
 
+        @Parameter(names = {"-t", "--technologyId"}, description = "Technology Id", required = true, arity = 1)
+        int technology;
+
         @Parameter(names = {"--host"}, description = "DB host", arity = 1)
         String host = "localhost";
 
@@ -72,6 +80,8 @@ public class OptionsParser {
         String user = "";
         @Parameter(names = {"--pass"}, description = "DB Pass", arity = 1)
         String pass = "";
+        @Parameter(names = {"--dbName"}, description = "DB Name", arity = 1)
+        String dbName = "csvs";
     }
 
     @Parameters(commandNames = {"count"}, commandDescription = "Calculate genotype counts")
@@ -123,6 +133,8 @@ public class OptionsParser {
         String user = "";
         @Parameter(names = {"--pass"}, description = "DB Pass", arity = 1)
         String pass = "";
+        @Parameter(names = {"--dbName"}, description = "DB Name", arity = 1)
+        String dbName = "csvs";
 
 
     }
@@ -133,8 +145,14 @@ public class OptionsParser {
         @Parameter(names = {"--populate-diseases"}, description = "Populate diseases", arity = 0)
         boolean populateDiseases;
 
-        @Parameter(names = {"--new-disease"}, description = "New Diseases", arity = 1)
+        @Parameter(names = {"--populate-technologies"}, description = "Populate technologies", arity = 0)
+        boolean populateTechnologies;
+
+        @Parameter(names = {"--new-disease"}, description = "New disease", arity = 1)
         String newDisease;
+
+        @Parameter(names = {"--new-technology"}, description = "New technology", arity = 1)
+        String newTechnology;
 
         @Parameter(names = {"--host"}, description = "DB host", arity = 1)
         String host = "localhost";
@@ -142,6 +160,8 @@ public class OptionsParser {
         String user = "";
         @Parameter(names = {"--pass"}, description = "DB Pass", arity = 1)
         String pass = "";
+        @Parameter(names = {"--dbName"}, description = "DB Name", arity = 1)
+        String dbName = "csvs";
 
 
     }
@@ -168,6 +188,8 @@ public class OptionsParser {
         String user = "";
         @Parameter(names = {"--pass"}, description = "DB Pass", arity = 1)
         String pass = "";
+        @Parameter(names = {"--dbName"}, description = "DB Name", arity = 1)
+        String dbName = "csvs";
 
     }
 
@@ -181,6 +203,8 @@ public class OptionsParser {
         String user = "";
         @Parameter(names = {"--pass"}, description = "DB Pass", arity = 1)
         String pass = "";
+        @Parameter(names = {"--dbName"}, description = "DB Name", arity = 1)
+        String dbName = "csvs";
 
         @Parameter(names = {"--diseaseId"}, description = "DiseaseId")
         List<Integer> diseaseId = new ArrayList<>();
