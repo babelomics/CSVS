@@ -264,7 +264,18 @@ public class CSVSMain {
                     System.out.println(dg.getGroupId() + "\t" + dg.getName() + "\t" + dg.getSamples());
                 }
 
-            } else if (c.regionLIst.size() > 0 || c.geneList.size() > 0) {
+            }
+            else if(c.technologies){
+                System.out.println("\n\nList of Technologies\n==========================\n");
+
+                List<Technology> query = qm.getAllTechnologies();
+
+                for (Technology technology : query) {
+                    System.out.println(technology.getTechnologyId() + "\t" + technology.getName());
+                }
+
+            }
+            else if (c.regionLIst.size() > 0 || c.geneList.size() > 0) {
 
                 List<Integer> diseaseId = c.diseaseId;
                 PrintWriter pw = null;
@@ -484,7 +495,7 @@ public class CSVSMain {
 
         File fDb = datastore.createQuery(File.class).field("sum").equal(sha256).get();
 
-        if (true || fDb == null) {
+        if (fDb == null) {
 
             Query<DiseaseGroup> queryDiseaseGroup = datastore.createQuery(DiseaseGroup.class).field("groupId").equal(diseaseGroupId);
             DiseaseGroup dg = queryDiseaseGroup.get();

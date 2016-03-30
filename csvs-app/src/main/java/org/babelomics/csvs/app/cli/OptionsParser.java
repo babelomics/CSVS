@@ -102,6 +102,9 @@ public class OptionsParser {
         @Parameter(names = {"--diseases"}, description = "List all disease groups", arity = 0)
         boolean diseases = false;
 
+        @Parameter(names = {"--technologies"}, description = "List all technologies", arity = 0)
+        boolean technologies = false;
+
         @Parameter(names = {"--all"}, description = "List all variants", arity = 0)
         boolean all = false;
 
