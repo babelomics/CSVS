@@ -12,7 +12,7 @@ import java.util.*;
  */
 
 @Entity(noClassnameStored = true)
-@Indexes(@Index(name = "index", value = "c,p,r,a", unique = true))
+@Indexes(@Index(name = "index_variant_chr_pos_ref_alt", value = "c,p,r,a", unique = true))
 public class Variant {
 
     @JsonIgnore
@@ -34,7 +34,7 @@ public class Variant {
     @Property("_at")
     private Map<String, Object> attr;
 
-//    @JsonIgnore
+    //    @JsonIgnore
     @Embedded("d")
     private List<DiseaseCount> diseases;
 
@@ -138,8 +138,8 @@ public class Variant {
         this.stats = stats;
     }
 
-    public void addGenotypesToDisease(DiseaseGroup diseaseId, int gt00, int gt01, int gt11, int gtmissing) {
-        DiseaseCount dc = new DiseaseCount(diseaseId, gt00, gt01, gt11, gtmissing);
+    public void addGenotypesToDiseaseAndTechnology(DiseaseGroup diseaseId, Technology technology, int gt00, int gt01, int gt11, int gtmissing) {
+        DiseaseCount dc = new DiseaseCount(diseaseId, technology, gt00, gt01, gt11, gtmissing);
         this.diseases.add(dc);
     }
 
@@ -151,9 +151,19 @@ public class Variant {
         this.diseases.remove(dc);
     }
 
+    @Deprecated
     public DiseaseCount getDiseaseCount(DiseaseGroup dg) {
         for (DiseaseCount dc : this.diseases) {
             if (dc.getDiseaseGroup().getGroupId() == dg.getGroupId()) {
+                return dc;
+            }
+        }
+        return null;
+    }
+
+    public DiseaseCount getDiseaseCount(DiseaseGroup dg, Technology t) {
+        for (DiseaseCount dc : this.diseases) {
+            if (dc.getDiseaseGroup().getGroupId() == dg.getGroupId() && dc.getTechnology().getTechnologyId() == t.getTechnologyId()) {
                 return dc;
             }
         }
@@ -174,9 +184,9 @@ public class Variant {
     @Override
     public String toString() {
 
-        List<Integer> disIds = new ArrayList<>();
+        List<String> disIds = new ArrayList<>();
         for (DiseaseCount dg : this.diseases) {
-            disIds.add(dg.getDiseaseGroup().getGroupId());
+            disIds.add(dg.getDiseaseGroup().getGroupId() + "_" + dg.getTechnology().getTechnologyId());
         }
 
         return "Variant{" +

@@ -1,6 +1,5 @@
 package org.babelomics.csvs.lib.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Id;
@@ -11,35 +10,33 @@ import org.mongodb.morphia.annotations.Property;
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
  */
 @Entity(noClassnameStored = true)
-public class DiseaseGroup {
-
-    @JsonIgnore
+//@Indexes(@Index(name = "index", value = "n", unique = true))
+public class Technology {
     @Id
     private ObjectId id;
 
-    @Indexed(name = "index_diseasegroup_name", unique = true)
+    @Indexed(name = "index_technology_id", unique = true)
+    @Property("tid")
+    private int technologyId;
+
+    @Indexed(name = "index_technology_name", unique = true)
     @Property("n")
     private String name;
 
-    @Indexed(name = "index_diseasegroup_groupid", unique = true)
-    @Property("gid")
-    private int groupId;
 
     @Property("s")
     private int samples;
-
     @Property("v")
-    private long variants;
+    private int variants;
 
-
-    public DiseaseGroup() {
+    public Technology() {
         this.samples = 0;
         this.variants = 0;
     }
 
-    public DiseaseGroup(int groupId, String name) {
+    public Technology(int technologyId, String name) {
         this();
-        this.groupId = groupId;
+        this.technologyId = technologyId;
         this.name = name;
     }
 
@@ -59,12 +56,12 @@ public class DiseaseGroup {
         this.name = name;
     }
 
-    public int getGroupId() {
-        return groupId;
+    public int getTechnologyId() {
+        return technologyId;
     }
 
-    public void setGroupId(int groupId) {
-        this.groupId = groupId;
+    public void setTechnologyId(int technologyId) {
+        this.technologyId = technologyId;
     }
 
     public int getSamples() {
@@ -73,6 +70,14 @@ public class DiseaseGroup {
 
     public void setSamples(int samples) {
         this.samples = samples;
+    }
+
+    public int getVariants() {
+        return variants;
+    }
+
+    public void setVariants(int variants) {
+        this.variants = variants;
     }
 
     public void incSamples(int samples) {
@@ -91,22 +96,12 @@ public class DiseaseGroup {
         this.samples -= samples;
     }
 
-    public long getVariants() {
-        return variants;
-    }
-
-    public void setVariants(long variants) {
-        this.variants = variants;
-    }
-
     @Override
     public String toString() {
-        return "DiseaseGroup{" +
+        return "Technology{" +
                 "id=" + id +
+                ", technologyId=" + technologyId +
                 ", name='" + name + '\'' +
-                ", groupId=" + groupId +
-                ", samples=" + samples +
-                ", variants=" + variants +
                 '}';
     }
 }

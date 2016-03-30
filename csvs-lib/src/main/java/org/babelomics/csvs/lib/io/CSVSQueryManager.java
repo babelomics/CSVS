@@ -43,6 +43,11 @@ public class CSVSQueryManager {
         return query;
     }
 
+    public List<Technology> getAllTechnologies() {
+        List<Technology> query = datastore.createQuery(Technology.class).order("technologyId").asList();
+        return query;
+    }
+
     public List<DiseaseGroup> getAllDiseaseGroupsOrderedBySample() {
         List<DiseaseGroup> query = datastore.createQuery(DiseaseGroup.class).order("-samples").asList();
         return query;
@@ -57,6 +62,17 @@ public class CSVSQueryManager {
             id = query.getGroupId();
         }
 
+        return id;
+    }
+
+    public int getMaxTechnologyId() {
+        int id = -1;
+
+        Technology query = datastore.createQuery(Technology.class).order("-technologyId").limit(1).get();
+
+        if (query != null) {
+            id = query.getTechnologyId();
+        }
         return id;
     }
 
@@ -328,7 +344,7 @@ public class CSVSQueryManager {
             Iterable<Variant> aux = query.fetch();
 
             for (Variant v : aux) {
-               if (!v.getDiseases().isEmpty()) {
+                if (!v.getDiseases().isEmpty()) {
 
                     DiseaseCount dc = null;
 

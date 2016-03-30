@@ -8,6 +8,7 @@ import org.mongodb.morphia.annotations.*;
  */
 
 @Entity(noClassnameStored = true)
+//@Indexes(@Index(name = "index_diseasecount_diseasegroupid_technologyid", value = "dgid,tid", unique = true))
 public class DiseaseCount {
 
     @Id
@@ -15,9 +16,14 @@ public class DiseaseCount {
 
     @Reference("dg")
     private DiseaseGroup diseaseGroup;
+    @Reference("t")
+    private Technology technology;
 
     @Property("dgid")
     private int diseaseGroupId;
+
+    @Property("tid")
+    private int technologyId;
 
     private int gt00;
     private int gt01;
@@ -35,8 +41,18 @@ public class DiseaseCount {
     public DiseaseCount() {
     }
 
+    @Deprecated
     public DiseaseCount(DiseaseGroup diseaseGroup, int gt00, int gt01, int gt11, int gtmissing) {
         this.diseaseGroup = diseaseGroup;
+        this.gt00 = gt00;
+        this.gt01 = gt01;
+        this.gt11 = gt11;
+        this.gtmissing = gtmissing;
+    }
+
+    public DiseaseCount(DiseaseGroup diseaseGroup, Technology technology, int gt00, int gt01, int gt11, int gtmissing) {
+        this.diseaseGroup = diseaseGroup;
+        this.technology = technology;
         this.gt00 = gt00;
         this.gt01 = gt01;
         this.gt11 = gt11;
@@ -151,9 +167,26 @@ public class DiseaseCount {
 
     }
 
+    public Technology getTechnology() {
+        return technology;
+    }
+
+    public void setTechnology(Technology technology) {
+        this.technology = technology;
+    }
+
+    public int getDiseaseGroupId() {
+        return diseaseGroupId;
+    }
+
+    public void setDiseaseGroupId(int diseaseGroupId) {
+        this.diseaseGroupId = diseaseGroupId;
+    }
+
     @PrePersist
     void prePersist() {
         this.diseaseGroupId = this.diseaseGroup.getGroupId();
+        this.technologyId = this.technology.getTechnologyId();
 
         int refCount = gt00 * 2 + gt01;
         int altCount = gt11 * 2 + gt01;
@@ -162,20 +195,22 @@ public class DiseaseCount {
         this.altFreq = (float) altCount / (refCount + altCount);
 
         this.maf = Math.min(this.refFreq, this.altFreq);
-
     }
+
 
     @Override
     public String toString() {
         return "DiseaseCount{" +
-                "altFreq=" + altFreq +
-                ", refFreq=" + refFreq +
-                ", maf=" + maf +
-                ", gtmissing=" + gtmissing +
-                ", gt11=" + gt11 +
-                ", gt01=" + gt01 +
-                ", gt00=" + gt00 +
+                "id=" + id +
                 ", diseaseGroupId=" + diseaseGroupId +
+                ", technologyId=" + technologyId +
+                ", gt00=" + gt00 +
+                ", gt01=" + gt01 +
+                ", gt11=" + gt11 +
+                ", gtmissing=" + gtmissing +
+                ", maf=" + maf +
+                ", refFreq=" + refFreq +
+                ", altFreq=" + altFreq +
                 '}';
     }
 }

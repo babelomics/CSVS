@@ -11,7 +11,7 @@ import org.mongodb.morphia.annotations.Indexes;
  */
 
 @Entity(noClassnameStored = true)
-@Indexes(@Index(name = "index", value = "sum", unique = true))
+@Indexes(@Index(name = "index_file_sum", value = "sum", unique = true))
 public class File {
 
     @Id

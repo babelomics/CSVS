@@ -15,10 +15,7 @@ import htsjdk.variant.vcf.*;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.babelomics.csvs.lib.annot.CellBaseAnnotator;
 import org.babelomics.csvs.lib.io.*;
-import org.babelomics.csvs.lib.models.DiseaseCount;
-import org.babelomics.csvs.lib.models.DiseaseGroup;
-import org.babelomics.csvs.lib.models.File;
-import org.babelomics.csvs.lib.models.Variant;
+import org.babelomics.csvs.lib.models.*;
 import org.babelomics.csvs.lib.stats.CSVSVariantStatsTask;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
@@ -60,22 +57,22 @@ import java.util.List;
 public class CSVSMain {
 
 
-    private static Datastore getDatastore(String host, String user, String pass) {
+    private static Datastore getDatastore(String host, String user, String pass, String dbName) {
 
         Datastore datastore;
 
         final Morphia morphia = new Morphia();
-        morphia.mapPackage("org.babelomics.pvs.lib.models");
+        morphia.mapPackage("org.babelomics.csvs.lib.models");
 
         MongoClient mongoClient;
         if (user == "" && pass == "") {
             mongoClient = new MongoClient(host);
         } else {
-            MongoCredential credential = MongoCredential.createCredential(user, "pvs", pass.toCharArray());
+            MongoCredential credential = MongoCredential.createCredential(user, dbName, pass.toCharArray());
             mongoClient = new MongoClient(new ServerAddress(host), Arrays.asList(credential));
         }
 
-        datastore = morphia.createDatastore(mongoClient, "pvs");
+        datastore = morphia.createDatastore(mongoClient, dbName);
         datastore.ensureIndexes();
         return datastore;
     }
@@ -130,7 +127,7 @@ public class CSVSMain {
         if (command instanceof OptionsParser.CommandSetup) {
             OptionsParser.CommandSetup c = (OptionsParser.CommandSetup) command;
 
-            Datastore datastore = getDatastore(c.host, c.user, c.pass);
+            Datastore datastore = getDatastore(c.host, c.user, c.pass, c.dbName);
 
 
             if (c.populateDiseases) {
@@ -159,10 +156,27 @@ public class CSVSMain {
                     try {
                         datastore.save(dg);
                     } catch (DuplicateKeyException e) {
-                        System.err.println("Duplicated Disase Group: " + dg);
+                        System.err.println("Duplicated Disease Group: " + dg);
                     }
                 }
             }
+
+            if (c.populateTechnologies) {
+                List<Technology> technologies = new ArrayList<>();
+
+                for (int i = 0; i < 10; i++) {
+                    technologies.add(new Technology(i + 1, "Technology_" + (i + 1)));
+                }
+
+                for (Technology t : technologies) {
+                    try {
+                        datastore.save(t);
+                    } catch (DuplicateKeyException e) {
+                        System.err.println("Duplicated Technology: " + t);
+                    }
+                }
+            }
+
 
             if (c.newDisease != null && c.newDisease.length() > 0) {
                 CSVSQueryManager qm = new CSVSQueryManager(datastore);
@@ -180,19 +194,21 @@ public class CSVSMain {
 
             Path inputFile = Paths.get(c.input);
             int diseaseGroupId = c.disease;
+            int technologyId = c.technology;
 
-            Datastore datastore = getDatastore(c.host, c.user, c.pass);
+            Datastore datastore = getDatastore(c.host, c.user, c.pass, c.dbName);
 
-            loadVariants(inputFile, diseaseGroupId, datastore);
+            loadVariants(inputFile, diseaseGroupId, technologyId, datastore);
         } else if (command instanceof OptionsParser.CommandUnload) {
             OptionsParser.CommandUnload c = (OptionsParser.CommandUnload) command;
 
             Path inputFile = Paths.get(c.input);
             int diseaseGroupId = c.disease;
+            int technologyId = c.technology;
 
-            Datastore datastore = getDatastore(c.host, c.user, c.pass);
+            Datastore datastore = getDatastore(c.host, c.user, c.pass, c.dbName);
 
-            unloadVariants(inputFile, diseaseGroupId, datastore);
+            unloadVariants(inputFile, diseaseGroupId, technologyId, datastore);
         } else if (command instanceof OptionsParser.CommandCount) {
             OptionsParser.CommandCount c = (OptionsParser.CommandCount) command;
 
@@ -204,7 +220,7 @@ public class CSVSMain {
 
             OptionsParser.CommandAnnot c = (OptionsParser.CommandAnnot) command;
 
-            Datastore datastore = getDatastore(c.host, c.user, c.pass);
+            Datastore datastore = getDatastore(c.host, c.user, c.pass, c.dbName);
 
             CellBaseAnnotator cba = new CellBaseAnnotator();
 
@@ -233,7 +249,7 @@ public class CSVSMain {
         } else if (command instanceof OptionsParser.CommandQuery) {
             OptionsParser.CommandQuery c = (OptionsParser.CommandQuery) command;
 
-            Datastore datastore = getDatastore(c.host, c.user, c.pass);
+            Datastore datastore = getDatastore(c.host, c.user, c.pass, c.dbName);
 
             CSVSQueryManager qm = new CSVSQueryManager(datastore);
 
@@ -246,6 +262,15 @@ public class CSVSMain {
 
                 for (DiseaseGroup dg : query) {
                     System.out.println(dg.getGroupId() + "\t" + dg.getName() + "\t" + dg.getSamples());
+                }
+
+            } else if (c.technologies) {
+                System.out.println("\n\nList of Technologies\n==========================\n");
+
+                List<Technology> query = qm.getAllTechnologies();
+
+                for (Technology technology : query) {
+                    System.out.println(technology.getTechnologyId() + "\t" + technology.getName());
                 }
 
             } else if (c.regionLIst.size() > 0 || c.geneList.size() > 0) {
@@ -373,9 +398,9 @@ public class CSVSMain {
         } else if (command instanceof OptionsParser.CommandAnnotFile) {
             OptionsParser.CommandAnnotFile c = (OptionsParser.CommandAnnotFile) command;
             String input = c.input;
-            String output = c.outdir +"/"+ c.outfile;
+            String output = c.outdir + "/" + c.outfile;
             List<Integer> diseases = (c.diseaseId != null && c.diseaseId.size() > 0) ? c.diseaseId : null;
-            Datastore datastore = getDatastore(c.host, c.user, c.pass);
+            Datastore datastore = getDatastore(c.host, c.user, c.pass, c.dbName);
 
             CSVSQueryManager qm = new CSVSQueryManager(datastore);
 
@@ -437,7 +462,7 @@ public class CSVSMain {
     }
 
     private static String removePrefix(String chr) {
-        String res = chr.replace("chrom","").replace("chrm","").replace("chr","").replace("ch","");
+        String res = chr.replace("chrom", "").replace("chrm", "").replace("chr", "").replace("ch", "");
         return res;
     }
 
@@ -462,7 +487,7 @@ public class CSVSMain {
 
     }
 
-    private static void loadVariants(Path variantsPath, int diseaseGroupId, Datastore datastore) throws IOException, NoSuchAlgorithmException {
+    private static void loadVariants(Path variantsPath, int diseaseGroupId, int technologyId, Datastore datastore) throws IOException, NoSuchAlgorithmException {
 
         String sha256 = calculateSHA256(variantsPath);
 
@@ -470,14 +495,20 @@ public class CSVSMain {
 
         if (fDb == null) {
 
-            Query<DiseaseGroup> query = datastore.createQuery(DiseaseGroup.class).field("groupId").equal(diseaseGroupId);
-            DiseaseGroup dg = query.get();
+            Query<DiseaseGroup> queryDiseaseGroup = datastore.createQuery(DiseaseGroup.class).field("groupId").equal(diseaseGroupId);
+            DiseaseGroup dg = queryDiseaseGroup.get();
 
-            DataReader<Variant> reader = new CSVSVariantCountCSVDataReader(variantsPath.toAbsolutePath().toString(), dg);
+            Query<Technology> queryTechnology = datastore.createQuery(Technology.class).field("technologyId").equal(technologyId);
+            Technology t = queryTechnology.get();
+
+            System.out.println("dg = " + dg);
+            System.out.println("t = " + t);
+
+            DataReader<Variant> reader = new CSVSVariantCountCSVDataReader(variantsPath.toAbsolutePath().toString(), dg, t);
 
             List<Task<Variant>> taskList = new SortedList<>();
             List<DataWriter<Variant>> writers = new ArrayList<>();
-            DataWriter<Variant> writer = new CSVSVariantCountsMongoWriter(dg, datastore);
+            DataWriter<Variant> writer = new CSVSVariantCountsMongoWriter(dg, t, datastore);
 
             writers.add(writer);
 
@@ -520,13 +551,27 @@ public class CSVSMain {
         return sb.toString();
     }
 
-    private static void unloadVariants(Path variantsPath, int diseaseGroupId, Datastore datastore) throws IOException, NoSuchAlgorithmException {
+    private static void unloadVariants(Path variantsPath, int diseaseGroupId, int technologyId, Datastore datastore) throws IOException, NoSuchAlgorithmException {
 
         int samples = 0;
-        Query<DiseaseGroup> queryDG = datastore.createQuery(DiseaseGroup.class).field("groupId").equal(diseaseGroupId);
-        DiseaseGroup dg = queryDG.get();
+        int variants = 0;
 
-        DataReader<Variant> reader = new CSVSVariantCountCSVDataReader(variantsPath.toAbsolutePath().toString(), dg);
+
+        String sha256 = calculateSHA256(variantsPath);
+        File fDb = datastore.createQuery(File.class).field("sum").equal(sha256).get();
+
+        if (fDb == null) {
+            System.out.println("File is not in the database");
+            System.exit(1);
+        }
+
+        Query<DiseaseGroup> queryDiseaseGroup = datastore.createQuery(DiseaseGroup.class).field("groupId").equal(diseaseGroupId);
+        DiseaseGroup dg = queryDiseaseGroup.get();
+
+        Query<Technology> queryTechnology = datastore.createQuery(Technology.class).field("technologyId").equal(technologyId);
+        Technology t = queryTechnology.get();
+
+        DataReader<Variant> reader = new CSVSVariantCountCSVDataReader(variantsPath.toAbsolutePath().toString(), dg, t);
 
         reader.open();
         reader.pre();
@@ -546,9 +591,10 @@ public class CSVSMain {
                         .get();
 
                 if (v != null) {
+                    variants++;
 
-                    DiseaseCount vDc = v.getDiseaseCount(dg);
-                    DiseaseCount elemDC = elem.getDiseaseCount(dg);
+                    DiseaseCount vDc = v.getDiseaseCount(dg, t);
+                    DiseaseCount elemDC = elem.getDiseaseCount(dg, t);
                     if (vDc != null) {
 
                         if (samples == 0) {
@@ -583,18 +629,12 @@ public class CSVSMain {
         reader.post();
         reader.close();
 
-
-        String sha256 = calculateSHA256(variantsPath);
-
-        File fDb = datastore.createQuery(File.class).field("sum").equal(sha256).get();
-
         datastore.delete(File.class, fDb.getId());
-
-        DiseaseGroup dgDB = datastore.get(DiseaseGroup.class, dg.getId());
-
         dg.decSamples(samples);
+        dg.decVariants(variants);
 
+        t.decSamples(samples);
+        t.decVariants(variants);
         datastore.save(dg);
-
     }
 }
