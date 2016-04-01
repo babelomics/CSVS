@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Properties;
 
 @Path("/")
-public class CSVWSServer {
+public class CSVSWSServer {
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
     protected static Properties properties;
@@ -57,7 +57,7 @@ public class CSVWSServer {
 
     static {
 
-        InputStream is = CSVWSServer.class.getClassLoader().getResourceAsStream("csvs.properties");
+        InputStream is = CSVSWSServer.class.getClassLoader().getResourceAsStream("csvs.properties");
         properties = new Properties();
 
         try {
@@ -73,12 +73,12 @@ public class CSVWSServer {
         jsonObjectWriter = jsonObjectMapper.writer();
 
         Morphia morphia = new Morphia();
-        morphia.mapPackage("org.babelomics.pvs.lib.models");
+        morphia.mapPackage("org.babelomics.csvs.lib.models");
 
         String user = properties.getProperty("CSVS.DB.USER", "");
         String pass = properties.getProperty("CSVS.DB.PASS", "");
         String host = properties.getProperty("CSVS.DB.HOST", "localhost");
-        String database = properties.getProperty("CSVS.DB.DATABASE", "pvs");
+        String database = properties.getProperty("CSVS.DB.DATABASE", "csvs");
         int port = Integer.parseInt(properties.getProperty("CSVS.DB.PORT", "27017"));
 
         MongoClient mongoClient;
@@ -89,13 +89,13 @@ public class CSVWSServer {
             mongoClient = new MongoClient(new ServerAddress(host, port), Arrays.asList(credential));
         }
 
-        datastore = morphia.createDatastore(mongoClient, "pvs");
+        datastore = morphia.createDatastore(mongoClient, database);
 
         qm = new CSVSQueryManager(datastore);
 
     }
 
-    public CSVWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest httpServletRequest) throws IOException {
+    public CSVSWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest httpServletRequest) throws IOException {
 
         this.version = version;
         this.uriInfo = uriInfo;

@@ -24,7 +24,7 @@ public class CSVSQueryManager {
 
     public CSVSQueryManager(String host, String dbName) {
         Morphia morphia = new Morphia();
-        morphia.mapPackage("org.babelomics.pvs.lib.models");
+        morphia.mapPackage("org.babelomics.csvs.lib.models");
         this.datastore = morphia.createDatastore(new MongoClient(host), dbName);
         this.datastore.ensureIndexes();
     }
@@ -44,8 +44,13 @@ public class CSVSQueryManager {
     }
 
     public List<Technology> getAllTechnologies() {
-        List<Technology> query = datastore.createQuery(Technology.class).order("technologyId").asList();
-        return query;
+        Query<Technology> query = datastore.createQuery(Technology.class).order("technologyId");
+        System.out.println("query = " + query.explain());
+        List<Technology> list = query.asList();
+        System.out.println("list = " + list);
+
+
+        return list;
     }
 
     public List<DiseaseGroup> getAllDiseaseGroupsOrderedBySample() {
@@ -441,7 +446,7 @@ public class CSVSQueryManager {
 
         float maf = Math.min(refFreq, altFreq);
 
-        dc = new DiseaseCount(null, gt00, gt01, gt11, gtmissing);
+        dc = new DiseaseCount(null, null, gt00, gt01, gt11, gtmissing);
 
         dc.setRefFreq(round(refFreq, DECIMAL_POSITIONS));
         dc.setAltFreq(round(altFreq, DECIMAL_POSITIONS));

@@ -23,7 +23,7 @@ import java.util.List;
 @Path("/variants")
 @Api(value = "variants", description = "Variants")
 @Produces(MediaType.APPLICATION_JSON)
-public class VariantsWSServer extends CSVWSServer {
+public class VariantsWSServer extends CSVSWSServer {
 
     public VariantsWSServer(@DefaultValue("") @PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws IOException {

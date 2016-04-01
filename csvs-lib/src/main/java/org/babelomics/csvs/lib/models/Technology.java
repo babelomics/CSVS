@@ -1,5 +1,6 @@
 package org.babelomics.csvs.lib.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Id;
@@ -12,6 +13,7 @@ import org.mongodb.morphia.annotations.Property;
 @Entity(noClassnameStored = true)
 //@Indexes(@Index(name = "index", value = "n", unique = true))
 public class Technology {
+    @JsonIgnore
     @Id
     private ObjectId id;
 
