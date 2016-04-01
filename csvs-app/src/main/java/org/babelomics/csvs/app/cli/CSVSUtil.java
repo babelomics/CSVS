@@ -129,7 +129,7 @@ public class CSVSUtil {
 
         File fDb = datastore.createQuery(File.class).field("sum").equal(sha256).get();
 
-        if (fDb == null) {
+        if (true || fDb == null) {
 
             Query<DiseaseGroup> queryDiseaseGroup = datastore.createQuery(DiseaseGroup.class).field("groupId").equal(diseaseGroupId);
             DiseaseGroup dg = queryDiseaseGroup.get();
@@ -154,7 +154,7 @@ public class CSVSUtil {
             pvsRunner.run();
             System.out.println("Variants loaded!");
 
-            File f = new File(sha256);
+            File f = new File(sha256, dg, t);
 
             try {
                 datastore.save(f);
@@ -379,7 +379,6 @@ public class CSVSUtil {
             batch.clear();
         }
     }
-
 
 
 }
