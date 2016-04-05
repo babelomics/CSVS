@@ -1,3 +1,4 @@
+<link rel="import" href="../lib/stevia-components/src/file/stv-file-preview.html">
 <dom-module id="csvs-annotation-result">
     <style>
         :host {
@@ -29,18 +30,18 @@
     <template>
         <div class="container vertical layout">
             <div class="header horizontal layout center-justified">
-                <div class="jso-btn jso-btn-shdw down" on-click="downloadFiles" title="Download File">
+                <div class="stv-btn stv-btn-shdw down" on-click="downloadFiles" title="Download File">
                     <i class="fa fa-cloud-download"></i> &nbsp; Download Annotated File (<span>{{fileName}}</span>)
                 </div>
             </div>
-            <jso-opencga-file-preview id="filePreview"></jso-opencga-file-preview>
+            <stv-file-preview id="filePreview"></stv-file-preview>
         </div>
     </template>
 
     <script>
         Polymer({
             is: 'csvs-annotation-result',
-            behaviors: [JsoOpencgaManagerBehavior],
+            // behaviors: [JsoOpencgaManagerBehavior],
             properties: {
                 file: {
                     type: Object,

@@ -1,4 +1,6 @@
-<link rel="import" href="../lib/jsorolla/src/lib/components/opencga/files/jso-opencga-file-origin.html">
+<!-- <link rel="import" href="../lib/jsorolla/src/lib/components/opencga/files/jso-opencga-file-origin.html"> -->
+<link rel="import" href="../lib/jsorolla/src/lib/components/jso-opencga-input-text.html">
+<link rel="import" href="../lib/stevia-components/src/form/stv-file-origin.html">
 <dom-module id="csvs-annotation-form">
     <style>
         :host {
@@ -38,11 +40,11 @@
             resize: none;
         }
 
-        .jso-btn {
+        .stv-btn {
             width: 200px;
         }
 
-        jso-select {
+        stv-select {
             width: 200px;
         }
 
@@ -70,29 +72,29 @@
                 <strong>Annotation form</strong>
             </p>
             <!-- <div class="horizontal layout center-justified">
-                <div class="jso-btn jso-btn-shdw"><i class="fa fa-rocket"></i> &nbsp; Run example</div>
+                <div class="stv-btn stv-btn-shdw"><i class="fa fa-rocket"></i> &nbsp; Run example</div>
             </div>
             <br> -->
 
             <div class="horizontal layout wrap">
-                <div class="jso-formbox flex vcf-file">
-                    <div class="jso-formtitle">
+                <div class="stv-formbox flex vcf-file">
+                    <div class="stv-formtitle">
                         Input data
                     </div>
-                    <div class="jso-formcontent">
+                    <div class="stv-formcontent">
                         <div>VCF file: &nbsp;
-                            <jso-opencga-file-origin id="vcf_file" selectedStudy="{{selectedStudy}}"
+                            <stv-file-origin id="vcf_file" selectedStudy="{{selectedStudy}}"
                                                      selection-mode="file"
                                                      bioformats="{{bioformats}}" projects="{{projects}}">
-                            </jso-opencga-file-origin>
+                            </stv-file-origin>
                             <span id="vcf_fileError" class="errmsg"></span>
                         </div>
                         <br>
                     </div>
                 </div>
 
-                <div class="jso-formbox diseases">
-                    <div class="jso-formtitle horizontal layout center">
+                <div class="stv-formbox diseases">
+                    <div class="stv-formtitle horizontal layout center">
                         <div>Subpopulations</div>
                         <div class="flex"></div>
                         <div class="check" on-click="selectAllDiseases">
@@ -102,9 +104,9 @@
                             <i class="fa fa-square-o"></i>
                         </div>
                     </div>
-                    <div id="diseases_div" class="jso-formcontent" style="padding: 8px 10px">
+                    <div id="diseases_div" class="stv-formcontent" style="padding: 8px 10px">
                         <template is="dom-repeat" items="{{diseases}}">
-                            <label class="jso-control">
+                            <label class="stv-control">
                                 <input type="checkbox" class="diseaseName" name="disease" id="disease"
                                        value="{{item.groupId}}" checked/>
                                 <span>{{item.name}}</span>
@@ -114,15 +116,15 @@
                 </div>
             </div>
 
-            <div class="jso-formbox">
-                <div class="jso-formtitle">
+            <div class="stv-formbox">
+                <div class="stv-formtitle">
                     Job information
                 </div>
-                <div class="jso-formcontent">
+                <div class="stv-formcontent">
                     <div>Output folder: &nbsp;
-                        <jso-opencga-file-origin id="output_folder" selection-mode="folder" bioformats="{{bioformats}}"
+                        <stv-file-origin id="output_folder" selection-mode="folder" bioformats="{{bioformats}}"
                                                  projects="{{projects}}">
-                        </jso-opencga-file-origin>
+                        </stv-file-origin>
                         <span id="output_folderError" class="errmsg"></span>
                     </div>
 
@@ -145,7 +147,7 @@
             <span class="errmsg">{{errorMessage}}</span>
 
             <div class="horizontal layout center-justified">
-                <div class="jso-btn jso-btn-shdw jso-btn-big" on-click="launchJob"><i class="fa fa-rocket"></i> &nbsp;
+                <div class="stv-btn stv-btn-shdw stv-btn-big" on-click="launchJob"><i class="fa fa-rocket"></i> &nbsp;
                     Launch Job
                 </div>
             </div>
@@ -158,7 +160,7 @@
     <script>
         Polymer({
             is: 'csvs-annotation-form',
-            behaviors: [JsoOpencgaManagerBehavior],
+            // behaviors: [JsoOpencgaManagerBehavior],
             properties: {
                 toolId: {
                     type: String,
