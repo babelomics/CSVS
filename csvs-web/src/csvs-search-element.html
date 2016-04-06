@@ -4,6 +4,7 @@
 <link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-phenotype-grid.html">
 
 <link rel="import" href="../lib/jsorolla/src/lib/components/filters/jso-filter-position.html">
+<link rel="import" href="../lib/jsorolla/src/lib/components/jso-tooltip.html">
 
 <link rel="import" href="csvs-saturation-element.html">
 
@@ -108,6 +109,50 @@
             border: 1px solid var(--divider-color)
         }
 
+        jso-tooltip::shadow #messageInfo::shadow {
+            height: 300px;
+            width: 500px;
+            background-color: #e2e9e9;
+            border: 1px solid #e2e9e9;
+            color: black;
+            font-style: normal;
+        }
+
+        jso-tooltip::shadow .closeInfo::shadow {
+            margin-left: 490px;
+        }
+
+        .tit {
+            margin-top: 10px;
+            border-bottom: 1px solid #445D76;
+            font-weight: bold;
+        }
+
+        .name {
+            width: 300px;
+        }
+
+        .num {
+            width: 100px;
+        }
+
+        .clear-but {
+            width: 100px;
+            background-color: #f0f4f4 !important;
+        }
+
+        #filterHistoryTable > div:hover {
+            background-color: #8ba7a7;
+            border: 1px solid #8ba7a7;
+        }
+
+        #filter-name {
+            text-overflow: ellipsis;
+            width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
         .check {
             cursor: pointer;
             color: var(--secondary-text-color);
@@ -123,6 +168,25 @@
                 <form id="filter_form" class="vertical layout">
                     <div vertical layout>
                         <div id="buttons_container" class="horizontal layout end-justified" style="margin:10px 5px;">
+                            <jso-tooltip id="filterHistoryTooltip" class="jso-btn jso-btn-shdw" title="Filters History" icon="filter" style="margin-right: 3px;">
+                                <div class="stv-btn stv-btn-shdw clear-but" title="Clear Filters History" on-click="clearFiltersHistory">
+                                    Clear
+                                </div>
+                                <div class="horizontal layout flex">
+                                    <span class="tit num"> Date </span>
+                                    <span class="name tit"> Name </span>
+                                    <span class="tit num"> Found</span>
+                                </div>
+                                <div id="filterHistoryTable">
+                                    <template is="dom-repeat" items="{{historyFilters}}">
+                                        <div class="horizontal layout flex" on-click="loadFilter" data-filter="{{item.filter}}" title="{{item.name}}">
+                                            <span class="num">{{item.date}} </span>
+                                            <span id="filter-name" class="name">{{item.name}} </span>
+                                            <span class="num">{{item.found}}</span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </jso-tooltip>
                             <div class="stv-btn stv-btn-shdw flex" on-click="clearForm" style="margin-right: 3px;">
                                 Clear
                             </div>
@@ -256,8 +320,116 @@
             },
             isLogged: {
                 type: Boolean
-            }
+            },
+            historyFilters: {
+                type: Array,
+                value: function() {
+                    return [];
+                },
+                notify: true,
+
+            },
+            // hash: {
+            //     type: Object,
+            //     value: function() {
+            //         return {};
+            //     },
+            // },
+            numTotalResults: {
+                type: Object,
+                observer: "resultsChanged"
+            },
+            query: {
+                type: Object,
+                notify: true,
+                value: function() {
+                    return {};
+                },
+            },
+            // request: {
+            //     type: Object
+            // },
         },
+
+        resultsChanged: function(neo, old) {
+            if (neo != -1) {
+                var query = this.query;
+                var numTotalResults = neo;
+                /* Filter History */
+
+                // var filterHistory = [];
+                // if (this.jobId in this.hash) {
+                // filterHistory = this.hash[this.jobId];
+                // }
+
+                // this.set("historyFilters", filterHistory);
+
+                var newFilter = JSON.stringify(query);
+                var _load = -1;
+                for (var i = 0; i < this.historyFilters.length && _load == -1; i++) { // Check if the fitler has been selected from the history
+                    var elem = this.historyFilters[i];
+                    if (elem != null) {
+                        var oldFilter = JSON.stringify(this.historyFilters[i].filter);
+                        if (newFilter == oldFilter) {
+                            _load = i;
+                        }
+                    }
+                }
+
+                if (_load == -1) { // This filter is new (has not been selected from the history)
+                    if (query.regions != null && query.diseases != null) {
+                        var dateAux = new Date();
+                        var minAux = dateAux.getMinutes();
+                        if (minAux < 10) {
+                            minAux = "0" + minAux;
+                        }
+                        var date = dateAux.getDate() + '/' + (dateAux.getMonth() + 1) + ' ' + dateAux.getHours() + ':' + minAux;
+                        name = this.loadForm(query);
+                        // var found = this.filterData.length;
+                        var found = numTotalResults;
+                        var hf = {};
+                        hf = {
+                            date: date,
+                            name: name,
+                            filter: query,
+                            found: found
+                        };
+
+                        // var filters = new FilterHistory(5, filterHistory);
+                        var filters = new FilterHistory(5, this.historyFilters);
+                        filters.unshift(hf);
+                        this.set("historyFilters", filters);
+                        // this.hash[this.jobId] = this.historyFilters;
+
+                        // localStorage.csvs_filter_history = JSON.stringify(this.hash);
+                        localStorage.csvs_filter_history = JSON.stringify(this.historyFilters);
+                    }
+                } else { // HistoryFilter contains this filter. We need to change the date and push to top
+                    var pos = _load;
+
+                    var filters = new FilterHistory(5, this.historyFilters);
+                    var filter = filters[pos];
+                    var dateAux = new Date();
+                    var minAux = dateAux.getMinutes();
+                    if (minAux < 10) {
+                        minAux = "0" + minAux;
+                    }
+                    var date = dateAux.getDate() + '/' + (dateAux.getMonth() + 1) + ' ' + dateAux.getHours() + ':' + minAux;
+
+                    filter.date = date;
+
+                    var aux = filters[pos];
+                    filters[pos] = filters[0];
+                    filters[0] = aux;
+
+                    this.set("historyFilters", filters);
+                    // this.hash[this.jobId] = this.historyFilters;
+                    localStorage.csvs_filter_history = JSON.stringify(this.historyFilters);
+                }
+            }
+
+        },
+
         geneChanged: function(e) {
             var target = e.currentTarget;
             var value = target.value;
@@ -276,6 +448,16 @@
             this.selectedSpecies = DEFAULT_SPECIES;
         },
         ready: function() {
+
+            if (localStorage.csvs_filter_history) {
+                // this.hash = JSON.parse(localStorage.csvs_filter_history);
+                this.historyFilters = JSON.parse(localStorage.csvs_filter_history);
+                // if (Array.isArray(this.hash)) {
+                //     localStorage.csvs_filter_history = "";
+                //     this.hash = {};
+                // }
+            }
+
             var me = this;
             this.species = 'Homo sapiens';
             var lastQuery = '';
@@ -820,6 +1002,9 @@
                 alert("Please add a region/gene and check any subpopulation");
             }
 
+            query.gene = geneValue;
+            this.set('query', query);
+
         },
         _formatText: function(text) {
             return Utils.formatText(text, "_").toLowerCase().replace(/(?:^|\s)\S/g, function(a) {
@@ -830,6 +1015,56 @@
 
             this.$.filter_form.reset();
             this.$.filterPosition.clear();
+
+        },
+        loadForm: function(hf) {
+            var filterName = [];
+            var hfAux = hf;
+            if (hf.regions != "" && hf.regions != null) {
+                hfAux.region = hf.regions;
+            }
+            var fP = this.$.filterPosition.load(hfAux);
+            if (fP.length > 0) {
+                for (var i = 0; i < fP.length; i++) {
+                    filterName.push(fP[i]);
+                }
+            }
+
+            if (hf.diseases != "" && hf.diseases != null) {
+                var disName = [];
+                var dis = hf.diseases.split(",");
+                var aux = this.$.diseases_div.querySelectorAll("input");
+                for (var i = 0; i < aux.length; i++) {
+                  aux[i].checked = false;
+                }
+                for (var i = 0; i < dis.length; i++) {
+                    for (var j = 0; j < aux.length; j++) {
+                        var id = aux[j].value;
+                        if (dis[i] == id) {
+                            aux[j].checked = true;
+                            for (var k = 0; k < this.diseases.length; k++) {
+                                if (id == this.diseases[k].groupId) {
+                                    disName.push(this.diseases[k].name);
+                                }
+                            }
+                        }
+                    }
+                }
+                filterName.push("Disease: " + disName.join(",") + " ");
+            }
+            return filterName.join(" AND ");
+        },
+        loadFilter: function(e) {
+            e.stopPropagation();
+            this.clearForm();
+            this.loadForm(e.currentTarget.dataFilter);
+            this.$.filterHistoryTooltip.handleClose(e);
+            this.submitForm();
+        },
+        clearFiltersHistory: function(e) {
+            e.stopPropagation();
+            this.historyFilters = [];
+            localStorage.csvc_filter_history = JSON.stringify(this.historyFilters);
 
         },
         exportQueryToCSV: function() {
@@ -919,15 +1154,44 @@
         },
         urlChanged: function(neo, old) {
             var me = this;
-            if (neo != '') {
-                this.request = {
-                    url: this.formURL,
-                    parse: this._parse,
-                    parseTotal: this._parseTotal,
-                    file: this.file
-                };
-
+            // if (neo != '') {
+            //     this.request = {
+            //         url: this.formURL,
+            //         parse: this._parse,
+            //         parseTotal: this._parseTotal,
+            //         file: this.file
+            //     };
+            // }
+            if (neo == null || neo == "") {
+                return;
             }
+            this.request = {
+                url: this.formURL,
+                auxTotalCount: -1,
+                parse: function(response) {
+                    return me._parse(response);
+                },
+                parseTotal: function(response) {
+                    var total = me._parseTotal(response);
+
+                    me.numTotalResults = total;
+
+                    if (this.auxTotalCount == -1) {
+                        this.auxTotalCount = total;
+
+                        this.url = this.url.replace("&skipCount=false", "");
+
+                    } else {
+                        me.numTotalResults = this.auxTotalCount;
+                        total = me.numTotalResults;
+                    }
+
+                    me.set('numTotalResults', -1);
+                    me.set('numTotalResults', total);
+                    return total;
+                },
+            };
+
         },
         _parse: function(response) {
 
@@ -1215,7 +1479,13 @@
             return data;
         },
         _parseTotal: function(response) {
-            return response.numTotalResults;
+            // return response.numTotalResults;
+            if (response != null) {
+                var total = response.numTotalResults;
+            } else {
+                total = 0;
+            }
+            return total;
         },
         handleRowClick: function(e) {
             var row = e.detail.row;
