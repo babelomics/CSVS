@@ -3,8 +3,8 @@
 <link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-frequencies-grid.html">
 <link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-phenotype-grid.html">
 
-<link rel="import" href="../lib/jsorolla/src/lib/components/filters/jso-filter-position.html">
-<link rel="import" href="../lib/jsorolla/src/lib/components/jso-tooltip.html">
+<link rel="import" href="../lib/stevia-components/src/filter/stv-filter-position.html">
+<link rel="import" href="../lib/stevia-components/src/stv-tooltip.html">
 
 <link rel="import" href="csvs-saturation-element.html">
 
@@ -109,7 +109,7 @@
             border: 1px solid var(--divider-color)
         }
 
-        jso-tooltip::shadow #messageInfo::shadow {
+        stv-tooltip::shadow #messageInfo::shadow {
             height: 300px;
             width: 500px;
             background-color: #e2e9e9;
@@ -118,7 +118,7 @@
             font-style: normal;
         }
 
-        jso-tooltip::shadow .closeInfo::shadow {
+        stv-tooltip::shadow .closeInfo::shadow {
             margin-left: 490px;
         }
 
@@ -168,7 +168,7 @@
                 <form id="filter_form" class="vertical layout">
                     <div vertical layout>
                         <div id="buttons_container" class="horizontal layout end-justified" style="margin:10px 5px;">
-                            <jso-tooltip id="filterHistoryTooltip" class="jso-btn jso-btn-shdw" title="Filters History" icon="filter" style="margin-right: 3px;">
+                            <stv-tooltip id="filterHistoryTooltip" class="stv-btn stv-btn-shdw" title="Filters History" icon="filter" style="margin-right: 3px;">
                                 <div class="stv-btn stv-btn-shdw clear-but" title="Clear Filters History" on-click="clearFiltersHistory">
                                     Clear
                                 </div>
@@ -186,7 +186,7 @@
                                         </div>
                                     </template>
                                 </div>
-                            </jso-tooltip>
+                            </stv-tooltip>
                             <div class="stv-btn stv-btn-shdw flex" on-click="clearForm" style="margin-right: 3px;">
                                 Clear
                             </div>
@@ -217,10 +217,32 @@
                                 </div>
                             </div>
                         </div> -->
-                        <jso-filter-position id="filterPosition"></jso-filter-position>
+                        <stv-filter-position id="filterPosition"></stv-filter-position>
 
+                        <stv-form-box>
+                            <div class="header horizontal layout flex">
+                                <div>Subpopulations</div>
+                                <div class="flex"></div>
+                                <div class="check" on-click="selectAllDiseases">
+                                    <i class="fa fa-check-square-o"></i>
+                                </div>
+                                <div class="check" on-click="deselectAllDiseases">
+                                    <i class="fa fa-square-o"></i>
+                                </div>
+                            </div>
+                            <div class="container">
+                                <div id="diseases_div" class="stv-formcontent" style="padding: 8px 10px">
+                                    <template is="dom-repeat" items="{{diseases}}">
+                                        <label class="stv-control">
+                                            <input type="checkbox" class="diseaseName" name="disease" id="disease" value="{{item.groupId}}" checked/>
+                                            <span>{{item.name}}</span>
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
+                        </stv-form-box> 
 
-                        <div class="stv-formbox">
+                        <!-- <div class="stv-formbox">
                             <div class="stv-formtitle horizontal layout center">
                                 <div>Subpopulations</div>
                                 <div class="flex"></div>
@@ -239,7 +261,7 @@
                                     </label>
                                 </template>
                             </div>
-                        </div>
+                        </div> -->
                     </div>
                 </form>
             </div>
@@ -267,7 +289,7 @@
                     <csvs-saturation-element id="saturation" diseases="{{diseases}}"></csvs-saturation-element>
                 </div>
             </div>
-        </div>
+        </div>s
     </template>
 </dom-module>
 <script>
@@ -1035,7 +1057,7 @@
                 var dis = hf.diseases.split(",");
                 var aux = this.$.diseases_div.querySelectorAll("input");
                 for (var i = 0; i < aux.length; i++) {
-                  aux[i].checked = false;
+                    aux[i].checked = false;
                 }
                 for (var i = 0; i < dis.length; i++) {
                     for (var j = 0; j < aux.length; j++) {

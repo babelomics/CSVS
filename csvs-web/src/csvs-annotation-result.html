@@ -6,7 +6,6 @@
             position: relative;
             box-sizing: border-box;
             background-color: var(--default-primary-color);
-
         }
 
         .container {
@@ -25,7 +24,6 @@
         .down {
             min-width: 300px;
         }
-
     </style>
     <template>
         <div class="container vertical layout">
@@ -45,20 +43,24 @@
             properties: {
                 file: {
                     type: Object,
-                    value: function () {
+                    value: function() {
                         return {};
                     },
                     observer: 'fileChanged'
+                },
+                name: {
+                    type: String,
+                    value: ""
                 }
             },
-            fileChanged: function (neo, old) {
-                if (neo && neo.id) {
-                    this.$.filePreview.file = neo;
+            fileChanged: function(neo, old) {
+                if (neo && neo._id) {
+                    this.$.filePreview.fileId = neo._id;
                     this.fileName = neo.name;
                 }
 
             },
-            downloadFiles: function (e) {
+            downloadFiles: function(e) {
                 this._downloadFile(this.file.id);
             }
         });

@@ -98,8 +98,7 @@
         csvs-search-element {
             height: calc(100vh - 60px);
         }
-
-        #stvBrowserPanel {
+        /*#stvBrowserPanel {
             position: absolute;
             right: 0;
             top: 0;
@@ -111,6 +110,26 @@
             left: 0;
             top: 0;
             width: 600px;
+        }*/
+
+        #jobBrowserPanel {
+            position: absolute;
+            top: 0px;
+            right: 0;
+            width: 600px;
+            height: 400px;
+            min-width: 600px;
+            min-height: 400px;
+        }
+
+        #fileBrowserPanel {
+            position: absolute;
+            top: 0px;
+            left: 0;
+            width: 600px;
+            height: 400px;
+            min-width: 600px;
+            min-height: 400px;
         }
     </style>
     <template>
@@ -128,7 +147,7 @@
         </div>
 
         <div class="content" menu-option="annot">
-            <csvs-annotation-form id="annotationForm" selectedOption="{{selectedOption}}" bioformats="{{bioformats}}" projects="{{projects}}" diseases="{{diseases}}" on-job-launched="handleJobLaunched"></csvs-annotation-form>
+            <csvs-annotation-form id="annotationForm" user-data="{{userData}}" selectedOption="{{selectedOption}}" bioformats="{{bioformats}}" diseases="{{diseases}}" on-job-launched="handleJobLaunched"></csvs-annotation-form>
         </div>
 
         <div class="content" menu-option="result">
@@ -137,20 +156,20 @@
 
 
         <div class="content" menu-option="home,search,stats,annot,result">
-            <stv-panel hidden collapsible closable movable id="browserPanel" on-hidden="handlePanelHidden">
+            <stv-panel hidden collapsible closable movable id="fileBrowserPanel" on-hidden="handlePanelHidden">
                 <div class="header">
                     <i class="fa fa-folder-open-o"></i> File Browser
                 </div>
-                <stv-file-browser class="container" id="browser" projects="{{projects}}" bioformats="{{bioformats}}" mode="file"></stv-file-browser>
+                <stv-file-browser class="container" id="browser" bioformats="{{bioformats}}" user-data="{{userData}}"></stv-file-browser>
             </stv-panel>
 
-            <stv-panel hidden collapsible movable closable id="stvBrowserPanel" on-hidden="handlePanelHidden">
+            <stv-panel hidden collapsible movable closable id="jobBrowserPanel" on-hidden="handlePanelHidden">
                 <div class="header">Job browser</div>
-                <stv-job-browser class="container" id="jobBrowser" on-jobselect="handleJobSelect" projects="{{projects}}" bioformats="{{bioformats}}" allowed-tools="{{allowedTools}}"></stv-job-browser>
+                <stv-job-browser class="container" id="jobBrowser" on-jobselect="handleJobSelect" bioformats="{{bioformats}}" allowed-tools="{{allowedTools}}" user-data="{{userData}}"></stv-job-browser>
             </stv-panel>
         </div>
 
-        <stv-header id="stvHeader" user-data="{{userData}}" on-login="handleLogin" on-logout="handleLogout" on-logout="{{handleLogout}}" selected-option="{{selectedOption}}" hide-signup hide-browse>
+        <stv-header id="stvHeader" user-data="{{userData}}" on-login="handleLogin" on-logout="handleLogout" selected-option="{{selectedOption}}" hide-browse>
             <div class="icon">
                 <img src="images/bier-text.svg" style="height: 50px;margin: 5px 0px 0 0;">
             </div>
@@ -172,11 +191,11 @@
                     <span class="option-text">Annotate VCF File</span>
                 </div>
                 <div class="flex"></div>
-                <div title="Browse my data" class="option" on-click="handleLoggedOnlyMenuPanel" show-on-login data-panel="browserPanel">
+                <div title="Browse my data" class="option" on-click="handleLoggedOnlyMenuPanel" show-on-login data-panel="fileBrowserPanel">
                     <i class="fa fa-folder-open-o"></i>
                     <span class="option-text">My data</span>
                 </div>
-                <div title="Show diagnoses" class="option" on-click="handleLoggedOnlyMenuPanel" show-on-login data-panel="stvBrowserPanel">
+                <div title="Show diagnoses" class="option" on-click="handleLoggedOnlyMenuPanel" show-on-login data-panel="jobBrowserPanel">
                     <i class="fa fa-pencil-square-o"></i>
                     <span class="option-text">My annotations</span>
                 </div>
@@ -297,55 +316,36 @@
             this.isLogged = this.$.stvHeader.isLogged;
             this.checkShowMenuOnLogin()
             this.setMenu("home");
-            this.$.browserPanel.hide();
-            this.$.stvBrowserPanel.hide();
+            this.$.fileBrowserPanel.hide();
+            this.$.jobBrowserPanel.hide();
         },
         handleJobSelect: function(e) {
             var me = this;
 
             var job = e.detail;
-            var fileName = job.params.outfile;
-            var dir = job.outDirId;
-            var file = null;
-
-            OpencgaManager.files.list({
-                id: dir,
-                query: {
-                    sid: Cookies('bioinfo_sid')
-                },
-                request: {
-                    success: function(response) {
-
-                        if (response.response[0].errorMsg === '' || response.response[0].errorMsg == null) {
-                            var files = response.response[0].result;
-
-                            for (var i = 0; i < files.length; i++) {
-                                var f = files[i];
-                                if (f.name === fileName) {
-                                    file = f;
-                                    break;
-                                }
-                            }
+            var fileId = job.folder._id;
+            var fileName = job.options.outfile.value;
+            // var dir = job.outDirId;
+            // var file = null;
 
 
-                            me.setMenu("result");
-                            me.$.annotationResult.file = file;
-
-                        } else {
-                            me.message = response.response[0].errorMsg;
-                        }
-                        //                        callback(files);
-                    },
-                    error: function() {
-                        me.message = 'Server error, try again later.';
-                    }
+            SteviaManager.getPlainFolderFiles(fileId, function(files) {
+                // debugger
+                for (var i = 0; i < files.length; i++) {
+                    if (files[i].name == fileName)
+                        me.$.annotationResult.file = files[i];
                 }
-            });
+                me.setMenu("result");
+                // me.$.annotationResult.file = job.options.input.value;
+            })
         },
         handleJobLaunched: function(e) {
-            debugger
-            this.$.stvBrowserPanel.show();
-
-        }
+            this.$.jobBrowserPanel.show();
+            this.handleUserNeedRefresh();
+        },
+        handleUserNeedRefresh: function() {
+            console.log("funsiona");
+            this.$.stvHeader.getUserInfo(true);
+        },
     });
 </script>
