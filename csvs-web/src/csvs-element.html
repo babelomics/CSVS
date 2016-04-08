@@ -165,7 +165,7 @@
 
             <stv-panel hidden collapsible movable closable id="jobBrowserPanel" on-hidden="handlePanelHidden">
                 <div class="header">Job browser</div>
-                <stv-job-browser class="container" id="jobBrowser" on-jobselect="handleJobSelect" bioformats="{{bioformats}}" allowed-tools="{{allowedTools}}" user-data="{{userData}}"></stv-job-browser>
+                <stv-job-browser class="container" id="jobBrowser" on-jobselect="handleJobSelect" bioformats="{{bioformats}}" allowed-tools="{{allowedTools}}" user-data="{{userData}}" on-job-launched="handleJobLaunched"></stv-job-browser>
             </stv-panel>
         </div>
 
@@ -344,7 +344,7 @@
             this.handleUserNeedRefresh();
         },
         handleUserNeedRefresh: function() {
-            console.log("funsiona");
+            // console.log("funsiona");
             this.$.stvHeader.getUserInfo(true);
         },
     });
