@@ -123,6 +123,9 @@ public class OptionsParser {
         @Parameter(names = {"--diseaseId"}, description = "DiseaseId")
         List<Integer> diseaseId = new ArrayList<>();
 
+        @Parameter(names = {"--technologyId"}, description = "TechnologyId")
+        List<Integer> technologyId = new ArrayList<>();
+
         @Parameter(names = {"--skip"}, description = "Skip")
         Integer skip = null;
 
@@ -211,6 +214,9 @@ public class OptionsParser {
 
         @Parameter(names = {"--diseaseId"}, description = "DiseaseId")
         List<Integer> diseaseId = new ArrayList<>();
+
+        @Parameter(names = {"--technologyId"}, description = "TechnologyId")
+        List<Integer> technologyId = new ArrayList<>();
 
         @Parameter(names = {"--input"}, description = "Input file", arity = 1)
         String input = "";

@@ -136,6 +136,8 @@ public class CSVSUtil {
 
             Query<Technology> queryTechnology = datastore.createQuery(Technology.class).field("technologyId").equal(technologyId);
             Technology t = queryTechnology.get();
+            File f = new File(sha256, dg, t);
+
 
             System.out.println("dg = " + dg);
             System.out.println("t = " + t);
@@ -144,7 +146,7 @@ public class CSVSUtil {
 
             List<Task<Variant>> taskList = new SortedList<>();
             List<DataWriter<Variant>> writers = new ArrayList<>();
-            DataWriter<Variant> writer = new CSVSVariantCountsMongoWriter(dg, t, datastore);
+            DataWriter<Variant> writer = new CSVSVariantCountsMongoWriter(dg, t, f, datastore);
 
             writers.add(writer);
 
@@ -154,7 +156,6 @@ public class CSVSUtil {
             pvsRunner.run();
             System.out.println("Variants loaded!");
 
-            File f = new File(sha256, dg, t);
 
             try {
                 datastore.save(f);
@@ -246,15 +247,10 @@ public class CSVSUtil {
         reader.close();
 
         datastore.delete(File.class, fDb.getId());
-        dg.decSamples(samples);
-        dg.decVariants(variants);
-
-        t.decSamples(samples);
-        t.decVariants(variants);
         datastore.save(dg);
     }
 
-    public static void annotFile(String input, String output, List<Integer> diseases, Datastore datastore) {
+    public static void annotFile(String input, String output, List<Integer> diseases, List<Integer> technologies, Datastore datastore) {
         CSVSQueryManager qm = new CSVSQueryManager(datastore);
 
         VCFFileReader variantReader = new VCFFileReader(new java.io.File(input), false);
@@ -286,7 +282,7 @@ public class CSVSUtil {
 
             for (Allele altAllele : context.getAlternateAlleles()) {
                 String alt = altAllele.getBaseString();
-                Variant dbVariant = qm.getVariant(chr, pos, ref, alt, diseases);
+                Variant dbVariant = qm.getVariant(chr, pos, ref, alt, diseases, technologies);
                 if (dbVariant != null) {
                     DiseaseCount dc = dbVariant.getStats();
                     mafs.add(String.valueOf(dc.getMaf()));
@@ -379,6 +375,5 @@ public class CSVSUtil {
             batch.clear();
         }
     }
-
 
 }

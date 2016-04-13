@@ -71,7 +71,7 @@ public class VariantsWSServer extends CSVSWSServer {
             limit = 200;
         }
 
-        Iterable<Variant> variants = qm.getVariantsByRegionList(regionList, diseaseList, skip, limit, count);
+        Iterable<Variant> variants = qm.getVariantsByRegionList(regionList, diseaseList, null,skip, limit, count);
 
         QueryResponse qr = createQueryResponse(variants);
         qr.setNumTotalResults(count.getValue());
@@ -120,7 +120,7 @@ public class VariantsWSServer extends CSVSWSServer {
             }
         }
 
-        List<Variant> variantRes = qm.getVariants(variantList, diseaseList);
+        List<Variant> variantRes = qm.getVariants(variantList, diseaseList,null);
 
         QueryResponse qr = createQueryResponse(variantRes);
         qr.setNumTotalResults(variantRes.size());

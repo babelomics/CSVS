@@ -2,9 +2,15 @@ package org.babelomics.csvs.lib.io;
 
 import com.mongodb.*;
 import org.apache.commons.lang3.mutable.MutableLong;
+import org.babelomics.csvs.lib.comparators.DiseaseGroupIdAscComparator;
+import org.babelomics.csvs.lib.comparators.DiseaseGroupSampleDescComparator;
+import org.babelomics.csvs.lib.comparators.TechnologyIdAscComparator;
 import org.babelomics.csvs.lib.models.*;
+import org.bson.types.ObjectId;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
+import org.mongodb.morphia.aggregation.Group;
+import org.mongodb.morphia.aggregation.Projection;
 import org.mongodb.morphia.query.Criteria;
 import org.mongodb.morphia.query.Query;
 import org.opencb.biodata.models.feature.Region;
@@ -37,44 +43,121 @@ public class CSVSQueryManager {
         this.datastore = datastore;
     }
 
-
     public List<DiseaseGroup> getAllDiseaseGroups() {
-        List<DiseaseGroup> query = datastore.createQuery(DiseaseGroup.class).order("groupId").asList();
-        return query;
+
+
+        List<DiseaseGroup> res = new ArrayList<>();
+        List<Integer> ids = new ArrayList<>();
+
+        Iterator<AggregationElem> aggregate = this.datastore.
+                createAggregation(File.class).
+                group("d", Group.grouping("samples", Group.sum("s"))).
+                project(Projection.projection("_id").suppress(),
+                        Projection.projection("samples", "samples")
+                        , Projection.projection("ref", "_id")).out(AggregationElem.class);
+
+        while (aggregate.hasNext()) {
+            AggregationElem elem = aggregate.next();
+
+            DBRef aux = elem.getRef();
+            ObjectId dgAux = (ObjectId) aux.getId();
+            DiseaseGroup dg = datastore.get(DiseaseGroup.class, dgAux);
+            dg.setSamples(elem.getSamples());
+            dg.setVariants(elem.getVariants());
+            res.add(dg);
+
+            ids.add(dg.getGroupId());
+        }
+
+        List<DiseaseGroup> restDiseaseGroups = datastore.createQuery(DiseaseGroup.class).
+                field("gid").notIn(ids).asList();
+
+        res.addAll(restDiseaseGroups);
+
+        Collections.sort(res, new DiseaseGroupIdAscComparator());
+        return res;
     }
 
     public List<Technology> getAllTechnologies() {
-        Query<Technology> query = datastore.createQuery(Technology.class).order("technologyId");
-        System.out.println("query = " + query.explain());
-        List<Technology> list = query.asList();
-        System.out.println("list = " + list);
 
+        List<Technology> res = new ArrayList<>();
+        List<Integer> ids = new ArrayList<>();
 
-        return list;
+        Iterator<AggregationElem> aggregate = this.datastore.
+                createAggregation(File.class).
+                group("t", Group.grouping("samples", Group.sum("s"))).
+                project(Projection.projection("_id").suppress(),
+                        Projection.projection("samples", "samples")
+                        , Projection.projection("ref", "_id")).out(AggregationElem.class);
+
+        while (aggregate.hasNext()) {
+            AggregationElem elem = aggregate.next();
+
+            DBRef aux = elem.getRef();
+            ObjectId dgAux = (ObjectId) aux.getId();
+            Technology dg = datastore.get(Technology.class, dgAux);
+            dg.setSamples(elem.getSamples());
+            dg.setVariants(elem.getVariants());
+            res.add(dg);
+
+            ids.add(dg.getTechnologyId());
+        }
+
+        List<Technology> restTechnologies = datastore.createQuery(Technology.class).
+                field("tid").notIn(ids).asList();
+
+        res.addAll(restTechnologies);
+
+        Collections.sort(res, new TechnologyIdAscComparator());
+        return res;
     }
 
+//    private void retrieveVariants(Technology t) {
+//        long variants = datastore.createQuery(Variant.class).field("diseases.diseaseGroupId").equal(t.getTechnologyId()).countAll();
+//        t.setVariants((int) variants);
+//    }
+//
+//    private void retrieveSamples(Technology t) {
+//        Query<File> files = datastore.createQuery(File.class).filter("diseaseGroupId", t.getTechnologyId());
+//        int samples = 0;
+//        for (File f : files) {
+//            samples += f.getSamples();
+//        }
+//        t.setSamples(samples);
+//    }
+//
+//    private void retrieveVariants(DiseaseGroup dg) {
+//        long variants = datastore.createQuery(Variant.class).field("diseases.diseaseGroupId").equal(dg.getGroupId()).countAll();
+//        dg.setVariants((int) variants);
+//    }
+//
+//    private void retrieveSamples(DiseaseGroup dg) {
+//        Query<File> files = datastore.createQuery(File.class).filter("diseaseGroupId", dg.getGroupId());
+//        int samples = 0;
+//        for (File f : files) {
+//            samples += f.getSamples();
+//        }
+//        dg.setSamples(samples);
+//    }
+
     public List<DiseaseGroup> getAllDiseaseGroupsOrderedBySample() {
-        List<DiseaseGroup> query = datastore.createQuery(DiseaseGroup.class).order("-samples").asList();
-        return query;
+        List<DiseaseGroup> list = this.getAllDiseaseGroups();
+        Collections.sort(list, new DiseaseGroupSampleDescComparator());
+        return list;
     }
 
     public int getMaxDiseaseId() {
         int id = -1;
-
         DiseaseGroup query = datastore.createQuery(DiseaseGroup.class).order("-groupId").limit(1).get();
-
         if (query != null) {
             id = query.getGroupId();
         }
-
         return id;
     }
 
     public int getMaxTechnologyId() {
         int id = -1;
-
         Technology query = datastore.createQuery(Technology.class).order("-technologyId").limit(1).get();
-
         if (query != null) {
             id = query.getTechnologyId();
         }
@@ -107,9 +190,7 @@ public class CSVSQueryManager {
         return res;
     }
 
-    public Variant getVariant(String chromosome, int position, String reference, String alternate, List<Integer> diseaseIds) {
-
-        int i = 0;
+    public Variant getVariant(String chromosome, int position, String reference, String alternate, List<Integer> diseaseIds, List<Integer> technologyIds) {
 
         Region r = new Region(chromosome, position, position);
 
@@ -139,8 +220,8 @@ public class CSVSQueryManager {
                 }
             }
 
-            int sampleCount = calculateSampleCount(diseaseIds);
-            DiseaseCount diseaseCount = calculateStats(res, diseaseIds, sampleCount);
+            int sampleCount = calculateSampleCount(diseaseIds, technologyIds);
+            DiseaseCount diseaseCount = calculateStats(res, diseaseIds, technologyIds, sampleCount);
 
             res.setStats(diseaseCount);
             res.setDiseases(null);
@@ -149,16 +230,16 @@ public class CSVSQueryManager {
         return res;
     }
 
-    public Variant getVariant(Variant variant, List<Integer> diseaseIds) {
+    public Variant getVariant(Variant variant, List<Integer> diseaseIds, List<Integer> technologyIds) {
 
-        return this.getVariant(variant.getChromosome(), variant.getPosition(), variant.getReference(), variant.getAlternate(), diseaseIds);
+        return this.getVariant(variant.getChromosome(), variant.getPosition(), variant.getReference(), variant.getAlternate(), diseaseIds, technologyIds);
     }
 
-    public List<Variant> getVariants(List<Variant> variants, List<Integer> diseaseIds) {
+    public List<Variant> getVariants(List<Variant> variants, List<Integer> diseaseIds, List<Integer> technologyIds) {
         List<Variant> res = new ArrayList<>();
 
         for (Variant v : variants) {
-            Variant resVariant = this.getVariant(v, diseaseIds);
+            Variant resVariant = this.getVariant(v, diseaseIds, technologyIds);
             res.add(resVariant);
         }
 
@@ -262,7 +343,7 @@ public class CSVSQueryManager {
         return res;
     }
 
-    public Iterable<Variant> getVariantsByRegionList(List<Region> regions, List<Integer> diseaseIds, Integer skip, Integer limit, MutableLong count) {
+    public Iterable<Variant> getVariantsByRegionList(List<Region> regions, List<Integer> diseaseIds, List<Integer> technologyIds, Integer skip, Integer limit, MutableLong count) {
 
         Criteria[] or = new Criteria[regions.size()];
 
@@ -284,9 +365,17 @@ public class CSVSQueryManager {
 
         query.or(or);
 
-        if (diseaseIds != null && diseaseIds.size() > 0) {
-            query.filter("diseases.diseaseGroupId in", diseaseIds);
+        List<Criteria> disTech = new ArrayList<>();
+
+        if (diseaseIds != null && !diseaseIds.isEmpty()) {
+            disTech.add(this.datastore.createQuery(Variant.class).criteria("diseases.diseaseGroupId").in(diseaseIds));
         }
+
+        if (technologyIds != null && !technologyIds.isEmpty()) {
+            disTech.add(this.datastore.createQuery(Variant.class).criteria("diseases.technologyId").in(technologyIds));
+        }
+
+        query.and(disTech.toArray(new Criteria[disTech.size()]));
 
         if (skip != null && limit != null) {
             query.offset(skip).limit(limit);
@@ -297,18 +386,27 @@ public class CSVSQueryManager {
 
         List<Variant> res = new ArrayList<>();
 
-        if (diseaseIds == null || diseaseIds.size() == 0) {
+        if (diseaseIds == null || diseaseIds.isEmpty()) {
             diseaseIds = new ArrayList<>();
             List<DiseaseGroup> dgList = this.getAllDiseaseGroups();
+            System.out.println("dgList = " + dgList);
             for (DiseaseGroup dg : dgList) {
                 diseaseIds.add(dg.getGroupId());
             }
         }
 
-        int sampleCount = calculateSampleCount(diseaseIds);
+        if (technologyIds == null || technologyIds.isEmpty()) {
+            technologyIds = new ArrayList<>();
+            List<Technology> technologyList = this.getAllTechnologies();
+            for (Technology t : technologyList) {
+                technologyIds.add(t.getTechnologyId());
+            }
+        }
+
+        int sampleCount = calculateSampleCount(diseaseIds, technologyIds);
 
         for (Variant v : aux) {
-            v.setStats(calculateStats(v, diseaseIds, sampleCount));
+            v.setStats(calculateStats(v, diseaseIds, technologyIds, sampleCount));
             v.setDiseases(null);
             res.add(v);
         }
@@ -318,17 +416,11 @@ public class CSVSQueryManager {
 
     public Map<Region, List<SaturationElement>> getSaturation(List<Region> regions) {
 
-
         Map<Region, List<SaturationElement>> map = new LinkedHashMap<>();
-
 
         List<DiseaseGroup> diseaseOrder = getAllDiseaseGroupsOrderedBySample();
 
-        System.out.println("regions = " + regions);
-
-        int i = 0;
         for (Region r : regions) {
-            System.out.println("r = '" + r + "'");
 
             List<String> chunkIds = getChunkIds(r);
 
@@ -381,7 +473,7 @@ public class CSVSQueryManager {
         return map;
     }
 
-    public Iterable<Variant> getAllVariants(List<Integer> diseaseIds, Integer skip, Integer limit, MutableLong count) {
+    public Iterable<Variant> getAllVariants(List<Integer> diseaseIds, List<Integer> technologyIds, Integer skip, Integer limit, MutableLong count) {
 
         Query<Variant> query = this.datastore.createQuery(Variant.class);
 
@@ -398,28 +490,39 @@ public class CSVSQueryManager {
 
         }
 
-        int sampleCount = calculateSampleCount(diseaseIds);
+        if (technologyIds == null || technologyIds.isEmpty()) {
+            technologyIds = new ArrayList<>();
+            List<Technology> technologyList = this.getAllTechnologies();
+            for (Technology t : technologyList) {
+                technologyIds.add(t.getTechnologyId());
+            }
+        }
+
+        int sampleCount = calculateSampleCount(diseaseIds, technologyIds);
 
         Iterable<Variant> aux = query.fetch();
-        Iterable<Variant> customIterable = new AllVariantsIterable(aux, diseaseIds, sampleCount);
+        Iterable<Variant> customIterable = new AllVariantsIterable(aux, diseaseIds, technologyIds, sampleCount);
 
         return customIterable;
     }
 
 
-    private int calculateSampleCount(List<Integer> diseaseId) {
+    private int calculateSampleCount(List<Integer> diseaseId, List<Integer> technologyId) {
         int res = 0;
 
-        Iterable<DiseaseGroup> groupId = this.datastore.createQuery(DiseaseGroup.class).field("groupId").in(diseaseId).fetch();
+//        Iterable<DiseaseGroup> groupId = this.datastore.createQuery(DiseaseGroup.class).field("groupId").in(diseaseId).fetch();
+        Iterable<File> files = this.datastore.createQuery(File.class).
+                field("diseaseGroupId").in(diseaseId).
+                field("technologyId").in(technologyId);
 
-        for (DiseaseGroup dg : groupId) {
-            res += dg.getSamples();
+        for (File f : files) {
+            res += f.getSamples();
         }
 
         return res;
     }
 
-    private DiseaseCount calculateStats(Variant v, List<Integer> diseaseId, int sampleCount) {
+    private DiseaseCount calculateStats(Variant v, List<Integer> diseaseId, List<Integer> technologyId, int sampleCount) {
         DiseaseCount dc;
 
         int gt00 = 0;
@@ -428,7 +531,7 @@ public class CSVSQueryManager {
         int gtmissing = 0;
 
         for (DiseaseCount auxDc : v.getDiseases()) {
-            if (diseaseId.contains(auxDc.getDiseaseGroup().getGroupId())) {
+            if (diseaseId.contains(auxDc.getDiseaseGroup().getGroupId()) && technologyId.contains(auxDc.getTechnology().getTechnologyId())) {
                 gt00 += auxDc.getGt00();
                 gt01 += auxDc.getGt01();
                 gt11 += auxDc.getGt11();
@@ -497,17 +600,19 @@ public class CSVSQueryManager {
 
         private Iterable iterable;
         private List<Integer> diseaseIds;
+        private List<Integer> technologyIds;
         private int sampleCount;
 
-        public AllVariantsIterable(Iterable iterable, List<Integer> diseaseIds, int sampleCount) {
+        public AllVariantsIterable(Iterable iterable, List<Integer> diseaseIds, List<Integer> technologyIds, int sampleCount) {
             this.iterable = iterable;
             this.diseaseIds = diseaseIds;
+            this.technologyIds = technologyIds;
             this.sampleCount = sampleCount;
+
         }
 
         @Override
         public Iterator<Variant> iterator() {
-
             Iterator<Variant> it = new AllVariantsIterator(this.iterable.iterator());
             return it;
         }
@@ -528,7 +633,7 @@ public class CSVSQueryManager {
             @Override
             public Variant next() {
                 Variant v = this.it.next();
-                v.setStats(calculateStats(v, diseaseIds, sampleCount));
+                v.setStats(calculateStats(v, diseaseIds, technologyIds, sampleCount));
                 v.setDiseases(null);
                 return v;
             }
@@ -540,5 +645,46 @@ public class CSVSQueryManager {
         }
     }
 
+    static class AggregationElem {
+        DBRef ref;
+        int samples;
+        int variants;
 
+        public AggregationElem() {
+        }
+
+        public DBRef getRef() {
+            return ref;
+        }
+
+        public void setRef(DBRef ref) {
+            this.ref = ref;
+        }
+
+
+        public int getSamples() {
+            return samples;
+        }
+
+        public void setSamples(int samples) {
+            this.samples = samples;
+        }
+
+        public int getVariants() {
+            return variants;
+        }
+
+        public void setVariants(int variants) {
+            this.variants = variants;
+        }
+
+        @Override
+        public String toString() {
+            return "DiseaseElem{" +
+                    ", ref=" + ref +
+                    ", samples=" + samples +
+                    ", variants=" + variants +
+                    '}';
+        }
+    }
 }

@@ -151,9 +151,9 @@ public class CSVSMain {
                 System.out.println("\n\nList of Groups of Diseases\n==========================\n");
 
                 List<DiseaseGroup> query = qm.getAllDiseaseGroups();
-
+                System.out.println("Id\tName\tSamples\tVariants");
                 for (DiseaseGroup dg : query) {
-                    System.out.println(dg.getGroupId() + "\t" + dg.getName() + "\t" + dg.getSamples());
+                    System.out.println(dg.getGroupId() + "\t" + dg.getName() + "\t" + dg.getSamples() + "\t" + dg.getVariants());
                 }
 
             } else if (c.technologies) {
@@ -162,12 +162,13 @@ public class CSVSMain {
                 List<Technology> query = qm.getAllTechnologies();
 
                 for (Technology technology : query) {
-                    System.out.println(technology.getTechnologyId() + "\t" + technology.getName());
+                    System.out.println(technology.getTechnologyId() + "\t" + technology.getName() + "\t" + technology.getSamples() + "\t" + technology.getVariants());
                 }
 
             } else if (c.regionLIst.size() > 0 || c.geneList.size() > 0) {
 
                 List<Integer> diseaseId = c.diseaseId;
+                List<Integer> technologyId = c.technologyId;
                 PrintWriter pw = null;
 
                 List<Region> regionList = new ArrayList<>();
@@ -195,7 +196,7 @@ public class CSVSMain {
 
                 MutableLong count = new MutableLong(-1);
 
-                Iterable<Variant> query = qm.getVariantsByRegionList(regionList, diseaseId, c.skip, c.limit, count);
+                Iterable<Variant> query = qm.getVariantsByRegionList(regionList, diseaseId, technologyId, c.skip, c.limit, count);
 
                 if (!c.csv) {
                     System.out.println("chr\tpos\tref\talt\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF");
@@ -239,9 +240,10 @@ public class CSVSMain {
 
                 PrintWriter pw = null;
                 List<Integer> diseaseId = c.diseaseId;
+                List<Integer> technologyId = c.technologyId;
 
                 MutableLong count = new MutableLong(-1);
-                Iterable<Variant> query = qm.getAllVariants(diseaseId, c.skip, c.limit, count);
+                Iterable<Variant> query = qm.getAllVariants(diseaseId, technologyId, c.skip, c.limit, count);
 
                 if (!c.csv) {
                     System.out.println("chr\tpos\tref\talt\tid\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF");
@@ -292,9 +294,10 @@ public class CSVSMain {
             String input = c.input;
             String output = c.outdir + "/" + c.outfile;
             List<Integer> diseases = (c.diseaseId != null && c.diseaseId.size() > 0) ? c.diseaseId : null;
+            List<Integer> technologies = (c.technologyId != null && c.technologyId.size() > 0) ? c.technologyId : null;
             Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName);
 
-            CSVSUtil.annotFile(input, output, diseases, datastore);
+            CSVSUtil.annotFile(input, output, diseases, technologies, datastore);
 
         } else {
             System.err.println("Comand not found");

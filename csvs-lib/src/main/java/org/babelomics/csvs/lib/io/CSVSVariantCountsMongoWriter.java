@@ -1,9 +1,6 @@
 package org.babelomics.csvs.lib.io;
 
-import org.babelomics.csvs.lib.models.DiseaseCount;
-import org.babelomics.csvs.lib.models.DiseaseGroup;
-import org.babelomics.csvs.lib.models.Technology;
-import org.babelomics.csvs.lib.models.Variant;
+import org.babelomics.csvs.lib.models.*;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.query.Query;
 import org.opencb.commons.io.DataWriter;
@@ -18,18 +15,19 @@ public class CSVSVariantCountsMongoWriter implements DataWriter<Variant> {
     private DiseaseGroup diseaseGroup;
     private Technology technology;
     private Datastore datastore;
+    private File file;
     private int samples;
-    private int variants;
 
     public static final int CHUNK_SIZE_SMALL = 1000;
     public static final int CHUNK_SIZE_BIG = 10000;
 
-    public CSVSVariantCountsMongoWriter(DiseaseGroup diseaseGroup, Technology t, Datastore datastore) {
+    public CSVSVariantCountsMongoWriter(DiseaseGroup diseaseGroup, Technology t, File f, Datastore datastore) {
         this.diseaseGroup = diseaseGroup;
         this.technology = t;
+        this.file = f;
         this.datastore = datastore;
         this.samples = 0;
-        this.variants = 0;
+
     }
 
     @Override
@@ -52,14 +50,7 @@ public class CSVSVariantCountsMongoWriter implements DataWriter<Variant> {
     @Override
     public boolean post() {
 
-//        DiseaseGroup dg = this.datastore.get(DiseaseGroup.class, diseaseGroup.getId());
-
-        this.diseaseGroup.incSamples(this.samples);
-        this.diseaseGroup.incVariants(this.variants);
-
-        this.technology.incSamples(this.samples);
-        this.technology.incVariants(this.variants);
-
+        this.file.setSamples(this.samples);
         this.datastore.save(this.diseaseGroup);
 
         return true;
@@ -80,7 +71,6 @@ public class CSVSVariantCountsMongoWriter implements DataWriter<Variant> {
 
         if (v == null) {
             this.datastore.save(elem);
-            this.variants++;
         } else {
 
             if (v.getIds() == null || v.getIds().isEmpty()) {
