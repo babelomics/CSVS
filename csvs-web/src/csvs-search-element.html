@@ -3,7 +3,9 @@
 <link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-frequencies-grid.html">
 <link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-phenotype-grid.html">
 
-<link rel="import" href="../lib/jsorolla/src/lib/components/table/jso-table.html">
+<link rel="import" href="../lib/stevia-components/src/filter/stv-filter-position.html">
+<link rel="import" href="../lib/stevia-components/src/stv-tooltip.html">
+
 <link rel="import" href="csvs-saturation-element.html">
 
 <dom-module id="csvs-search-element">
@@ -56,16 +58,16 @@
             font-size: 11px;
         }
 
-        jso-table {
+        stv-table {
             overflow-y: auto;
         }
 
-        jso-table::shadow #list {
+        stv-table::shadow #list {
             height: 300px;
             overflow-x: auto
         }
 
-        jso-table::shadow {
+        stv-table::shadow {
             font-size: 11px;
         }
 
@@ -91,14 +93,13 @@
         }
 
         #tools {
-
             margin-top: 10px;
         }
 
         jso-variant-effect-grid,
         jso-variant-grid,
         jso-genome-viewer-element,
-        .jso-formbox,
+        .stv-formbox,
         #dataTable {
             box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.2);
         }
@@ -106,6 +107,50 @@
         jso-variant-effect-grid,
         #dataTable {
             border: 1px solid var(--divider-color)
+        }
+
+        stv-tooltip::shadow #messageInfo::shadow {
+            height: 300px;
+            width: 500px;
+            background-color: #e2e9e9;
+            border: 1px solid #e2e9e9;
+            color: black;
+            font-style: normal;
+        }
+
+        stv-tooltip::shadow .closeInfo::shadow {
+            margin-left: 490px;
+        }
+
+        .tit {
+            margin-top: 10px;
+            border-bottom: 1px solid #445D76;
+            font-weight: bold;
+        }
+
+        .name {
+            width: 300px;
+        }
+
+        .num {
+            width: 100px;
+        }
+
+        .clear-but {
+            width: 100px;
+            background-color: #f0f4f4 !important;
+        }
+
+        #filterHistoryTable > div:hover {
+            background-color: #8ba7a7;
+            border: 1px solid #8ba7a7;
+        }
+
+        #filter-name {
+            text-overflow: ellipsis;
+            width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
         }
 
         .check {
@@ -116,8 +161,6 @@
         .check:hover {
             color: var(--accent-color);
         }
-
-
     </style>
     <template>
         <div class="horizontal layout">
@@ -125,33 +168,46 @@
                 <form id="filter_form" class="vertical layout">
                     <div vertical layout>
                         <div id="buttons_container" class="horizontal layout end-justified" style="margin:10px 5px;">
-                            <div class="jso-btn jso-btn-shdw flex" on-click="clearForm" style="margin-right: 3px;">
+                            <stv-tooltip id="filterHistoryTooltip" class="stv-btn stv-btn-shdw" title="Filters History" icon="filter" style="margin-right: 3px;">
+                                <div class="stv-btn stv-btn-shdw clear-but" title="Clear Filters History" on-click="clearFiltersHistory">
+                                    Clear
+                                </div>
+                                <div class="horizontal layout flex">
+                                    <span class="tit num"> Date </span>
+                                    <span class="name tit"> Name </span>
+                                    <span class="tit num"> Found</span>
+                                </div>
+                                <div id="filterHistoryTable">
+                                    <template is="dom-repeat" items="{{historyFilters}}">
+                                        <div class="horizontal layout flex" on-click="loadFilter" data-filter="{{item.filter}}" title="{{item.name}}">
+                                            <span class="num">{{item.date}} </span>
+                                            <span id="filter-name" class="name">{{item.name}} </span>
+                                            <span class="num">{{item.found}}</span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </stv-tooltip>
+                            <div class="stv-btn stv-btn-shdw flex" on-click="clearForm" style="margin-right: 3px;">
                                 Clear
                             </div>
-                            <div class="jso-btn jso-btn-shdw flex" on-click="submitForm">Search</div>
+                            <div class="stv-btn stv-btn-shdw flex" on-click="submitForm">Search</div>
                         </div>
-                        <div class="form_block positionBlock">
-
-                            <div class="jso-formbox">
-                                <div class="jso-formtitle">
+                        <!-- <div class="form_block positionBlock">
+                            <div class="stv-formbox">
+                                <div class="stv-formtitle">
                                     Position
                                 </div>
-                                <div class="jso-formcontent">
+                                <div class="stv-formcontent">
                                     <div class="input_container vertical layout">
-                                        <label class="jso">Chromosomal Location:</label>
-                                        <textarea id="region" name="region" placeholder="1:1-100000,2:1-100000"
-                                                  value="{{regionValue::change}}" rows="3"></textarea>
+                                        <label class="stv">Chromosomal Location:</label>
+                                        <textarea id="region" name="region" placeholder="1:1-100000,2:1-100000" value="{{regionValue::change}}" rows="3"></textarea>
                                     </div>
                                     <div class="input_container vertical layout">
-                                        <label class="jso">Gene:</label>
-                                        <textarea id="gene" name="gene" placeholder="BRCA2,PPL"
-                                                  on-keyup="geneChanged"
-                                                  value="{{geneValue::change}}" rows="3"></textarea>
+                                        <label class="stv">Gene:</label>
+                                        <textarea id="gene" name="gene" placeholder="BRCA2,PPL" on-keyup="geneChanged" value="{{geneValue::change}}" rows="3"></textarea>
 
-                                        <div class="searchGene horizontal layout end-justified" hidden>
-                                            <input id="searchField" list="searchDataList" placeholder="Search gene"
-                                                   type="text"
-                                                   style="width: 100px;">
+                                        <div class="searchGene horizontal layout end-justified">
+                                            <input id="searchField" list="searchDataList" placeholder="Search gene" type="text" style="width: 100px;">
                                             <datalist id="searchDataList"></datalist>
                                             <div id="quickSearchButton" class="button" style="border-left: none;">
                                                 <font-awesome icon="search"></font-awesome>
@@ -160,11 +216,11 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
+                        <stv-filter-position id="filterPosition"></stv-filter-position>
 
-
-                        <div class="jso-formbox">
-                            <div class="jso-formtitle horizontal layout center">
+                        <stv-form-box>
+                            <div class="header horizontal layout flex">
                                 <div>Subpopulations</div>
                                 <div class="flex"></div>
                                 <div class="check" on-click="selectAllDiseases">
@@ -174,23 +230,44 @@
                                     <i class="fa fa-square-o"></i>
                                 </div>
                             </div>
-                            <div id="diseases_div" class="jso-formcontent" style="padding: 8px 10px">
+                            <div class="container">
+                                <div id="diseases_div">
+                                    <template is="dom-repeat" items="{{diseases}}">
+                                        <label class="stv-control">
+                                            <input type="checkbox" class="diseaseName" name="disease" id="disease" value="{{item.groupId}}" checked/>
+                                            <span>{{item.name}}</span>
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
+                        </stv-form-box> 
+
+                        <!-- <div class="stv-formbox">
+                            <div class="stv-formtitle horizontal layout center">
+                                <div>Subpopulations</div>
+                                <div class="flex"></div>
+                                <div class="check" on-click="selectAllDiseases">
+                                    <i class="fa fa-check-square-o"></i>
+                                </div>
+                                <div class="check" on-click="deselectAllDiseases">
+                                    <i class="fa fa-square-o"></i>
+                                </div>
+                            </div>
+                            <div id="diseases_div" class="stv-formcontent" style="padding: 8px 10px">
                                 <template is="dom-repeat" items="{{diseases}}">
-                                    <label class="jso-control">
-                                        <input type="checkbox" class="diseaseName" name="disease" id="disease"
-                                               value="{{item.groupId}}" checked/>
+                                    <label class="stv-control">
+                                        <input type="checkbox" class="diseaseName" name="disease" id="disease" value="{{item.groupId}}" checked/>
                                         <span>{{item.name}}</span>
                                     </label>
                                 </template>
                             </div>
-                        </div>
+                        </div> -->
                     </div>
                 </form>
             </div>
             <div id="dataGridElement" class="vertical layout">
-                <jso-table id="dataTable" enable-paging enable-remote enable-select enable-resize request="{{request}}"
-                           columns="{{columns}}" on-rowclick="handleRowClick">
-                </jso-table>
+                <stv-table id="dataTable" enable-paging enable-remote enable-select enable-resize request="{{request}}" columns="{{columns}}" on-rowclick="handleRowClick">
+                </stv-table>
 
                 <div id="menu" class="color-2 color-hover-2 horizontal layout">
                     <div on-click="handleMenuClick" data-option="gv">Genomic context</div>
@@ -205,15 +282,14 @@
                 <!--</paper-button>-->
 
                 <div id="tools">
-                    <jso-genome-viewer-element id="gv"
-                                               on-created="handleGenomeViewerCreated"></jso-genome-viewer-element>
+                    <jso-genome-viewer-element id="gv" on-created="handleGenomeViewerCreated"></jso-genome-viewer-element>
                     <jso-variant-frequencies-grid id="frequency" hidden></jso-variant-frequencies-grid>
                     <jso-variant-phenotype-grid id="phenotype" hidden></jso-variant-phenotype-grid>
                     <jso-variant-effect-grid id="effect" hidden></jso-variant-effect-grid>
                     <csvs-saturation-element id="saturation" diseases="{{diseases}}"></csvs-saturation-element>
                 </div>
             </div>
-        </div>
+        </div>s
     </template>
 </dom-module>
 <script>
@@ -222,7 +298,7 @@
         properties: {
             diseases: {
                 type: Array,
-                value: function () {
+                value: function() {
                     return [];
                 }
             },
@@ -232,7 +308,7 @@
             },
             columns: {
                 type: Array,
-                value: function () {
+                value: function() {
                     return [];
                 }
             },
@@ -266,9 +342,117 @@
             },
             isLogged: {
                 type: Boolean
-            }
+            },
+            historyFilters: {
+                type: Array,
+                value: function() {
+                    return [];
+                },
+                notify: true,
+
+            },
+            // hash: {
+            //     type: Object,
+            //     value: function() {
+            //         return {};
+            //     },
+            // },
+            numTotalResults: {
+                type: Object,
+                observer: "resultsChanged"
+            },
+            query: {
+                type: Object,
+                notify: true,
+                value: function() {
+                    return {};
+                },
+            },
+            // request: {
+            //     type: Object
+            // },
         },
-        geneChanged: function (e) {
+
+        resultsChanged: function(neo, old) {
+            if (neo != -1) {
+                var query = this.query;
+                var numTotalResults = neo;
+                /* Filter History */
+
+                // var filterHistory = [];
+                // if (this.jobId in this.hash) {
+                // filterHistory = this.hash[this.jobId];
+                // }
+
+                // this.set("historyFilters", filterHistory);
+
+                var newFilter = JSON.stringify(query);
+                var _load = -1;
+                for (var i = 0; i < this.historyFilters.length && _load == -1; i++) { // Check if the fitler has been selected from the history
+                    var elem = this.historyFilters[i];
+                    if (elem != null) {
+                        var oldFilter = JSON.stringify(this.historyFilters[i].filter);
+                        if (newFilter == oldFilter) {
+                            _load = i;
+                        }
+                    }
+                }
+
+                if (_load == -1) { // This filter is new (has not been selected from the history)
+                    if (query.regions != null && query.diseases != null) {
+                        var dateAux = new Date();
+                        var minAux = dateAux.getMinutes();
+                        if (minAux < 10) {
+                            minAux = "0" + minAux;
+                        }
+                        var date = dateAux.getDate() + '/' + (dateAux.getMonth() + 1) + ' ' + dateAux.getHours() + ':' + minAux;
+                        name = this.loadForm(query);
+                        // var found = this.filterData.length;
+                        var found = numTotalResults;
+                        var hf = {};
+                        hf = {
+                            date: date,
+                            name: name,
+                            filter: query,
+                            found: found
+                        };
+
+                        // var filters = new FilterHistory(5, filterHistory);
+                        var filters = new FilterHistory(5, this.historyFilters);
+                        filters.unshift(hf);
+                        this.set("historyFilters", filters);
+                        // this.hash[this.jobId] = this.historyFilters;
+
+                        // localStorage.csvs_filter_history = JSON.stringify(this.hash);
+                        localStorage.csvs_filter_history = JSON.stringify(this.historyFilters);
+                    }
+                } else { // HistoryFilter contains this filter. We need to change the date and push to top
+                    var pos = _load;
+
+                    var filters = new FilterHistory(5, this.historyFilters);
+                    var filter = filters[pos];
+                    var dateAux = new Date();
+                    var minAux = dateAux.getMinutes();
+                    if (minAux < 10) {
+                        minAux = "0" + minAux;
+                    }
+                    var date = dateAux.getDate() + '/' + (dateAux.getMonth() + 1) + ' ' + dateAux.getHours() + ':' + minAux;
+
+                    filter.date = date;
+
+                    var aux = filters[pos];
+                    filters[pos] = filters[0];
+                    filters[0] = aux;
+
+                    this.set("historyFilters", filters);
+                    // this.hash[this.jobId] = this.historyFilters;
+                    localStorage.csvs_filter_history = JSON.stringify(this.historyFilters);
+                }
+            }
+
+        },
+
+        geneChanged: function(e) {
             var target = e.currentTarget;
             var value = target.value;
             var splits = value.split(",");
@@ -276,23 +460,31 @@
                 alert("The maximum number of genes is 3");
             }
         },
-        hiddenChanged: function (neo, old) {
+        hiddenChanged: function(neo, old) {
 
             if (!neo && this.selectedMenuTool) {
                 this.$.gv.removeAttribute("hidden");
             }
-        }
-        ,
-        created: function () {
+        },
+        created: function() {
             this.selectedSpecies = DEFAULT_SPECIES;
-        }
-        ,
-        ready: function () {
+        },
+        ready: function() {
+
+            if (localStorage.csvs_filter_history) {
+                // this.hash = JSON.parse(localStorage.csvs_filter_history);
+                this.historyFilters = JSON.parse(localStorage.csvs_filter_history);
+                // if (Array.isArray(this.hash)) {
+                //     localStorage.csvs_filter_history = "";
+                //     this.hash = {};
+                // }
+            }
+
             var me = this;
             this.species = 'Homo sapiens';
             var lastQuery = '';
 
-            this.async(function () { // DOM READY
+            this.async(function() { // DOM READY
                 me.selectedMenuTool = me.$.menu.querySelector('div');
                 me.$.gv.createGenomeViewer();
                 me.$.gv.genomeViewer.draw();
@@ -300,355 +492,356 @@
             }, 50);
 
 
-            this.$.searchField.addEventListener('keyup', function (event) {
-                this.classList.remove('error');
-                var query = this.value.toUpperCase();
-                if (query.length > 2 && lastQuery !== query && event.which !== 13) {
-                    me._setQuickSearchMenu(query);
-                    lastQuery = query;
+            // this.$.searchField.addEventListener('keyup', function(event) {
+            //     this.classList.remove('error');
+            //     var query = this.value.toUpperCase();
+            //     if (query.length > 2 && lastQuery !== query && event.which !== 13) {
+            //         me._setQuickSearchMenu(query);
+            //         lastQuery = query;
+            //     }
+            //
+            //     if (event.which === 13) {
+            //         var item = me.quickSearchDataset[query];
+            //         if (item) {
+            //             var values = me.$.gene.value.split(',').filter(function(el) {
+            //                 return el.length != 0
+            //             });
+            //
+            //             values.push(item.name);
+            //             values = values.filter(function(item, index, inputArray) {
+            //                 return inputArray.indexOf(item) == index;
+            //             });
+            //
+            //             me.$.gene.value = values.join(",");
+            //
+            //
+            //         } else {
+            //             this.classList.add('error');
+            //         }
+            //     }
+            // });
+
+            this.columns = [{
+                name: 'chromosome',
+                title: "Chr",
+                width: 40
+            }, {
+                name: 'position',
+                title: 'Position',
+                width: 70
+            }, {
+                name: 'alleles',
+                title: 'Alleles',
+                width: 50,
+                formula: function(row) {
+                    return row.reference + ">" + row.alternate;
                 }
-
-                if (event.which === 13) {
-                    var item = me.quickSearchDataset[query];
-                    if (item) {
-                        var values = me.$.gene.value.split(',').filter(function (el) {
-                            return el.length != 0
-                        });
-
-                        values.push(item.name);
-                        values = values.filter(function (item, index, inputArray) {
-                            return inputArray.indexOf(item) == index;
-                        });
-
-                        me.$.gene.value = values.join(",");
-
-
-                    } else {
-                        this.classList.add('error');
+            }, {
+                name: 'genes',
+                title: 'Gene',
+                width: 90,
+                defaultValue: "."
+            }, {
+                name: 'id',
+                title: 'Id',
+                width: 90,
+                defaultValue: "."
+            }, {
+                title: 'MAF',
+                name: 'maf',
+                width: 350,
+                columns: [{
+                    title: "Genotypes",
+                    name: 'genotypes',
+                    width: 200,
+                    columns: [{
+                        name: "gt00",
+                        width: 50,
+                        title: "0/0",
+                        formula: function(row) {
+                            if (row.stats != null && row.stats.gt00 != null)
+                                return row.stats.gt00;
+                            else
+                                return ".";
+                        }
+                    }, {
+                        name: "gt01",
+                        width: 50,
+                        title: "0/1",
+                        formula: function(row) {
+                            if (row.stats != null && row.stats.gt01 != null)
+                                return row.stats.gt01;
+                            else
+                                return ".";
+                        }
+                    }, {
+                        name: "gt11",
+                        width: 50,
+                        title: "1/1",
+                        formula: function(row) {
+                            if (row.stats != null && row.stats.gt11 != null)
+                                return row.stats.gt11;
+                            else
+                                return ".";
+                        }
+                    }, {
+                        name: "gtmissing",
+                        width: 50,
+                        title: "./.",
+                        formula: function(row) {
+                            if (row.stats != null && row.stats.gtmissing != null)
+                                return row.stats.gtmissing;
+                            else
+                                return ".";
+                        }
+                    }]
+                }, {
+                    title: "Freq.",
+                    name: "freq",
+                    width: 150,
+                    columns: [{
+                        name: "refFreq",
+                        width: 50,
+                        title: "0 Freq",
+                        formula: function(row) {
+                            if (row.stats != null && row.stats.refFreq != null)
+                                return row.stats.refFreq;
+                            else
+                                return ".";
+                        }
+                    }, {
+                        name: "altFreq",
+                        width: 50,
+                        title: "1 Freq",
+                        formula: function(row) {
+                            if (row.stats != null && row.stats.altFreq != null)
+                                return row.stats.altFreq;
+                            else
+                                return ".";
+                        }
+                    }, {
+                        name: "maf",
+                        width: 50,
+                        title: "MAF",
+                        formula: function(row) {
+                            if (row.stats != null && row.stats.maf != null)
+                                return row.stats.maf;
+                            else
+                                return ".";
+                        }
+                    }]
+                }]
+            }, {
+                title: "1000G MAF (phase 1)",
+                width: 250,
+                name: 'maf1000g',
+                columns: [{
+                        name: "maf1000G",
+                        title: "ALL",
+                        defaultValue: ".",
+                        formula: function(row) {
+                            if (row.maf1000G != null) {
+                                return row.maf1000G;
+                            } else {
+                                return ".";
+                            }
+                        }
+                    }, {
+                        name: "maf1000GAME",
+                        title: "AME",
+                        defaultValue: ".",
+                        formula: function(row) {
+                            if (row.maf1000GAME != null) {
+                                return row.maf1000GAME;
+                            } else {
+                                return ".";
+                            }
+                        }
+                    }, {
+                        name: "maf1000GASI",
+                        title: "ASI",
+                        defaultValue: ".",
+                        formula: function(row) {
+                            if (row.maf1000GASI != null) {
+                                return row.maf1000GASI;
+                            } else {
+                                return ".";
+                            }
+                        }
+                    }, {
+                        name: "maf1000GAFR",
+                        title: "AFR",
+                        defaultValue: ".",
+                        formula: function(row) {
+                            if (row.maf1000GAFR != null) {
+                                return row.maf1000GAFR;
+                            } else {
+                                return ".";
+                            }
+                        }
+                    }, {
+                        name: "maf1000GEUR",
+                        title: "EUR",
+                        defaultValue: ".",
+                        formula: function(row) {
+                            if (row.maf1000GEUR != null) {
+                                return row.maf1000GEUR;
+                            } else {
+                                return ".";
+                            }
+                        }
                     }
-                }
-            });
 
-            this.columns = [
-                {name: 'chromosome', title: "Chr", width: 40},
-                {name: 'position', title: 'Position', width: 70},
-                {
-                    name: 'alleles',
-                    title: 'Alleles',
-                    width: 50,
-                    formula: function (row) {
-                        return row.reference + ">" + row.alternate;
+                ]
+            }, {
+                title: "1000G MAF (phase 3)",
+                width: 300,
+                name: 'maf1000G3',
+                columns: [{
+                    name: "maf1000G_PHASE_3_ALL",
+                    title: "ALL",
+                    defaultValue: ".",
+                    formula: function(row) {
+                        if (row.maf1000G_PHASE_3_ALL != null) {
+                            return row.maf1000G_PHASE_3_ALL;
+                        } else {
+                            return ".";
+                        }
                     }
-                },
-                {name: 'genes', title: 'Gene', width: 90, defaultValue: "."},
-                {
-                    name: 'id', title: 'Id', width: 90, defaultValue: "."
-                },
-                {
-                    title: 'MAF',
-                    name: 'maf',
-                    width: 350,
-                    columns: [
-                        {
-                            title: "Genotypes",
-                            name: 'genotypes',
-                            width: 200,
-                            columns: [
-                                {
-                                    name: "gt00", width: 50, title: "0/0", formula: function (row) {
-                                    if (row.stats != null && row.stats.gt00 != null)
-                                        return row.stats.gt00;
-                                    else
-                                        return ".";
-                                }
-                                },
-                                {
-                                    name: "gt01", width: 50, title: "0/1", formula: function (row) {
-                                    if (row.stats != null && row.stats.gt01 != null)
-                                        return row.stats.gt01;
-                                    else
-                                        return ".";
-                                }
-                                },
-                                {
-                                    name: "gt11", width: 50, title: "1/1", formula: function (row) {
-                                    if (row.stats != null && row.stats.gt11 != null)
-                                        return row.stats.gt11;
-                                    else
-                                        return ".";
-                                }
-                                },
-                                {
-                                    name: "gtmissing", width: 50, title: "./.", formula: function (row) {
-                                    if (row.stats != null && row.stats.gtmissing != null)
-                                        return row.stats.gtmissing;
-                                    else
-                                        return ".";
-                                }
-                                }
-                            ]
-                        },
-                        {
-                            title: "Freq.",
-                            name: "freq",
-                            width: 150,
-                            columns: [
-                                {
-                                    name: "refFreq", width: 50, title: "0 Freq", formula: function (row) {
-                                    if (row.stats != null && row.stats.refFreq != null)
-                                        return row.stats.refFreq;
-                                    else
-                                        return ".";
-                                }
-                                },
-                                {
-                                    name: "altFreq", width: 50, title: "1 Freq", formula: function (row) {
-                                    if (row.stats != null && row.stats.altFreq != null)
-                                        return row.stats.altFreq;
-                                    else
-                                        return ".";
-                                }
-                                },
-                                {
-                                    name: "maf", width: 50, title: "MAF", formula: function (row) {
-                                    if (row.stats != null && row.stats.maf != null)
-                                        return row.stats.maf;
-                                    else
-                                        return ".";
-                                }
-                                }
-                            ]
+                }, {
+                    name: "maf1000G_PHASE_3_AMR",
+                    title: "AME",
+                    defaultValue: ".",
+                    formula: function(row) {
+                        if (row.maf1000G_PHASE_3_AMR != null) {
+                            return row.maf1000G_PHASE_3_AMR;
+                        } else {
+                            return ".";
                         }
-                    ]
-                },
-                {
-                    title: "1000G MAF (phase 1)", width: 250,
-                    name: 'maf1000g',
-                    columns: [
-                        {
-                            name: "maf1000G",
-                            title: "ALL",
-                            defaultValue: ".",
-                            formula: function (row) {
-                                if (row.maf1000G != null) {
-                                    return row.maf1000G;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        },
-                        {
-                            name: "maf1000GAME",
-                            title: "AME",
-                            defaultValue: ".",
-                            formula: function (row) {
-                                if (row.maf1000GAME != null) {
-                                    return row.maf1000GAME;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        },
-                        {
-                            name: "maf1000GASI",
-                            title: "ASI",
-                            defaultValue: ".",
-                            formula: function (row) {
-                                if (row.maf1000GASI != null) {
-                                    return row.maf1000GASI;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        },
-                        {
-                            name: "maf1000GAFR",
-                            title: "AFR",
-                            defaultValue: ".",
-                            formula: function (row) {
-                                if (row.maf1000GAFR != null) {
-                                    return row.maf1000GAFR;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        },
-                        {
-                            name: "maf1000GEUR",
-                            title: "EUR",
-                            defaultValue: ".",
-                            formula: function (row) {
-                                if (row.maf1000GEUR != null) {
-                                    return row.maf1000GEUR;
-                                } else {
-                                    return ".";
-                                }
-                            }
+                    }
+                }, {
+                    name: "maf1000G_PHASE_3_SAS",
+                    title: "South ASI",
+                    defaultValue: ".",
+                    formula: function(row) {
+                        if (row.maf1000G_PHASE_3_SAS != null) {
+                            return row.maf1000G_PHASE_3_SAS;
+                        } else {
+                            return ".";
                         }
+                    }
+                }, {
+                    name: "maf1000G_PHASE_3_EAS",
+                    title: "East ASI",
+                    defaultValue: ".",
+                    formula: function(row) {
+                        if (row.maf1000G_PHASE_3_EAS != null) {
+                            return row.maf1000G_PHASE_3_EAS;
+                        } else {
+                            return ".";
+                        }
+                    }
+                }, {
+                    name: "maf1000G_PHASE_3_AFR",
+                    title: "AFR",
+                    defaultValue: ".",
+                    formula: function(row) {
+                        if (row.maf1000G_PHASE_3_AFR != null) {
+                            return row.maf1000G_PHASE_3_AFR;
+                        } else {
+                            return ".";
+                        }
+                    }
+                }, {
+                    name: "maf1000G_PHASE_3_EUR",
+                    title: "EUR",
+                    defaultValue: ".",
+                    formula: function(row) {
+                        if (row.maf1000G_PHASE_3_EUR != null) {
+                            return row.maf1000G_PHASE_3_EUR;
+                        } else {
+                            return ".";
+                        }
+                    }
+                }, ]
 
-                    ]
-                },
-                {
-                    title: "1000G MAF (phase 3)", width: 300,
-                    name: 'maf1000G3',
-                    columns: [
-                        {
-                            name: "maf1000G_PHASE_3_ALL",
-                            title: "ALL",
-                            defaultValue: ".",
-                            formula: function (row) {
-                                if (row.maf1000G_PHASE_3_ALL != null) {
-                                    return row.maf1000G_PHASE_3_ALL;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        },
-                        {
-                            name: "maf1000G_PHASE_3_AMR",
-                            title: "AME",
-                            defaultValue: ".",
-                            formula: function (row) {
-                                if (row.maf1000G_PHASE_3_AMR != null) {
-                                    return row.maf1000G_PHASE_3_AMR;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        },
-                        {
-                            name: "maf1000G_PHASE_3_SAS",
-                            title: "South ASI",
-                            defaultValue: ".",
-                            formula: function (row) {
-                                if (row.maf1000G_PHASE_3_SAS != null) {
-                                    return row.maf1000G_PHASE_3_SAS;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        },
-                        {
-                            name: "maf1000G_PHASE_3_EAS",
-                            title: "East ASI",
-                            defaultValue: ".",
-                            formula: function (row) {
-                                if (row.maf1000G_PHASE_3_EAS != null) {
-                                    return row.maf1000G_PHASE_3_EAS;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        },
-                        {
-                            name: "maf1000G_PHASE_3_AFR",
-                            title: "AFR",
-                            defaultValue: ".",
-                            formula: function (row) {
-                                if (row.maf1000G_PHASE_3_AFR != null) {
-                                    return row.maf1000G_PHASE_3_AFR;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        },
-                        {
-                            name: "maf1000G_PHASE_3_EUR",
-                            title: "EUR",
-                            defaultValue: ".",
-                            formula: function (row) {
-                                if (row.maf1000G_PHASE_3_EUR != null) {
-                                    return row.maf1000G_PHASE_3_EUR;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        },
-                    ]
-
-                },
-                {
-                    title: "ESP 6500", width: 100,
-                    name: 'maf6500',
-                    columns: [
-                        {
-                            name: "mafESP_EA",
-                            title: "Eur. Ame.",
-                            defaultValue: ".",
-                            formula: function (row) {
-                                if (row.mafESP_EA != null) {
-                                    return row.mafESP_EA;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        },
-                        {
-                            name: "mafESP_AA",
-                            title: "Afr. Ame.",
-                            defaultValue: ".",
-                            formula: function (row) {
-                                if (row.mafESP_AA != null) {
-                                    return row.mafESP_AA;
-                                } else {
-                                    return ".";
-                                }
-                            }
+            }, {
+                title: "ESP 6500",
+                width: 100,
+                name: 'maf6500',
+                columns: [{
+                    name: "mafESP_EA",
+                    title: "Eur. Ame.",
+                    defaultValue: ".",
+                    formula: function(row) {
+                        if (row.mafESP_EA != null) {
+                            return row.mafESP_EA;
+                        } else {
+                            return ".";
                         }
-                    ]
-                },
-                {
-                    name: 'sift', title: 'SIFT', width: 50
-                },
-                {
-                    name: 'polyphen', title: 'POLYPHEN', width: 60
-                },
-                {
-                    name: 'phastcons', title: 'PhastCons', width: 60
-                },
-                {
-                    name: 'phylop', title: 'phyloP', width: 50
-                },
-                {
-                    name: 'phenotypes', title: 'Phenotypes', width: 450,
-                    columns: [
-                        {
-                            name: 'clinvar',
-                            title: 'Clinvar',
-                            width: 150,
-                            formula: function (row) {
-                                return row.phenotypes.clinvar;
-                            }
-                        },
-                        {
-                            name: 'cosmic',
-                            title: 'Cosmic',
-                            width: 150,
-                            formula: function (row) {
-                                return row.phenotypes.cosmic;
-                            }
-                        },
-                        {
-                            name: 'gwas',
-                            title: 'GWas',
-                            width: 150,
-                            formula: function (row) {
-                                return row.phenotypes.gwas;
-                            }
+                    }
+                }, {
+                    name: "mafESP_AA",
+                    title: "Afr. Ame.",
+                    defaultValue: ".",
+                    formula: function(row) {
+                        if (row.mafESP_AA != null) {
+                            return row.mafESP_AA;
+                        } else {
+                            return ".";
                         }
-                    ]
-                }
-            ];
+                    }
+                }]
+            }, {
+                name: 'sift',
+                title: 'SIFT',
+                width: 50
+            }, {
+                name: 'polyphen',
+                title: 'POLYPHEN',
+                width: 60
+            }, {
+                name: 'phastcons',
+                title: 'PhastCons',
+                width: 60
+            }, {
+                name: 'phylop',
+                title: 'phyloP',
+                width: 50
+            }, {
+                name: 'phenotypes',
+                title: 'Phenotypes',
+                width: 450,
+                columns: [{
+                    name: 'clinvar',
+                    title: 'Clinvar',
+                    width: 150,
+                    formula: function(row) {
+                        return row.phenotypes.clinvar;
+                    }
+                }, {
+                    name: 'cosmic',
+                    title: 'Cosmic',
+                    width: 150,
+                    formula: function(row) {
+                        return row.phenotypes.cosmic;
+                    }
+                }, {
+                    name: 'gwas',
+                    title: 'GWas',
+                    width: 150,
+                    formula: function(row) {
+                        return row.phenotypes.gwas;
+                    }
+                }]
+            }];
 
-        }
-        ,
-        _toFixed: function (value, precision) {
+        },
+        _toFixed: function(value, precision) {
             return Number(value).toFixed(precision);
-        }
-        ,
-        observe: {}
-        ,
-        _setQuickSearchMenu: function (query) {
+        },
+        observe: {},
+        _setQuickSearchMenu: function(query) {
 
             while (this.$.searchDataList.firstChild) {
                 this.$.searchDataList.removeChild(this.$.searchDataList.firstChild);
@@ -664,9 +857,8 @@
                 this.$.searchDataList.appendChild(menuEntry);
             }
 
-        }
-        ,
-        _quickSearchResultFn: function (query) {
+        },
+        _quickSearchResultFn: function(query) {
             var results = [];
             var speciesCode = Utils.getSpeciesCode(this.species);
 
@@ -682,164 +874,222 @@
                     limit: 10
                 },
                 async: false,
-                success: function (data, textStatus, jqXHR) {
+                success: function(data, textStatus, jqXHR) {
                     results = data.response[0].result;
                 }
             });
             return results;
-        }
-        ,
-        submitForm: function () {
+        },
+        submitForm: function() {
             var me = this;
             var query = {};
 
-            if (this.$.filter_form.checkValidity() && (this.regionValue != '' || this.geneValue != '')) {
+            var regionValue = this.$.filterPosition.checkRegion();
+            if (regionValue == -1) {
+                return;
+            }
 
-                var regions = [];
+            var geneValue = this.$.filterPosition.checkGene();
 
-                if (this.regionValue) {
-                    // check Regions)
-                    var aux = this.regionValue.split(",");
-                    var length = 0;
+            // if (this.$.filter_form.checkValidity() && (regions != null || genes != null)) {
+            // if (this.$.filter_form.checkValidity()) {
 
-                    for (var i = 0; i < aux.length; i++) {
-                        var region = aux[i].trim();
-                        var r = new Region(region);
+            var regions = [];
+            if (regionValue != null) {
+                //     // check Regions)
+                //     var aux = regionValue.split(",");
+                //     var length = 0;
+                //
+                //     for (var i = 0; i < aux.length; i++) {
+                //         var region = aux[i].trim();
+                //         var r = new Region(region);
+                //
+                //         if (r.chromosome == null || r.start == null || r.end == null) {
+                //             alert("Malformed region: " + region);
+                //             return;
+                //         } else if (r.start > r.end) {
+                //             alert("Start must be lower or equal than End: " + region);
+                //             return;
+                //         } else {
+                //             length += (r.end - r.start);
+                //             regions.push(r.toString());
+                //         }
+                //     }
 
-                        if (r.chromosome == null || r.start == null || r.end == null) {
-                            alert("Malformed region: " + region);
-                            return;
-                        } else if (r.start > r.end) {
-                            alert("Start must be lower or equal than End: " + region);
-                            return;
-                        } else {
-                            length += (r.end - r.start);
-                            regions.push(r.toString());
-                        }
-                    }
-                }
-
-                if (length > this.maxLength && !this.isLogged) {
+                regions = regionValue.split(",");
+                if (regions.length > this.maxLength && !this.isLogged) {
                     alert("The total size of all provided regions can't exceed " + this.maxLength + " positions");
                     return
                 }
+            }
 
-                if (this.geneValue) {
+            var genes = [];
+            if (geneValue != null) {
 
-                    var splits = this.geneValue.split(",");
-                    for (var i = 0; i < splits.length; i++) {
-                        splits[i] = splits[i].trim();
-                    }
+                genes = geneValue.split(",");
+                for (var i = 0; i < genes.length; i++) {
+                    genes[i] = genes[i].trim();
+                }
 
-                    if (splits.length > 3 && !this.isLogged) {
-                        alert("The maximum number of genes is 3");
-                        return;
-                    }
+                if (genes.length > 3 && !this.isLogged) {
+                    alert("The maximum number of genes is 3");
+                    return;
+                }
 
-                    var gene = splits.join(",").toUpperCase();
+                var gene = genes.join(",").toUpperCase();
 
-                    var regionGene = {};
+                var regionGene = {};
 
-                    CellBaseManager.get({
-                        species: 'hsapiens',
-                        category: 'feature',
-                        subCategory: 'gene',
-                        query: gene,
-                        resource: "info",
-                        async: false,
-                        params: {
-                            include: 'chromosome,start,end'
-                        },
-                        success: function (data) {
-                            for (var i = 0; i < data.response.length; i++) {
-                                var queryResult = data.response[i];
+                CellBaseManager.get({
+                    species: 'hsapiens',
+                    category: 'feature',
+                    subCategory: 'gene',
+                    query: gene,
+                    resource: "info",
+                    async: false,
+                    params: {
+                        include: 'chromosome,start,end'
+                    },
+                    success: function(data) {
+                        for (var i = 0; i < data.response.length; i++) {
+                            var queryResult = data.response[i];
 
-                                if (queryResult.result.length > 0) {
-                                    var region = new Region(queryResult.result[0]);
-                                    regionGene[region] = queryResult.id;
-                                    regions.push(region.toString());
+                            if (queryResult.result.length > 0) {
+                                var region = new Region(queryResult.result[0]);
+                                regionGene[region] = queryResult.id;
+                                regions.push(region.toString());
 
-                                } else {
-                                    debugger
-                                    alert("Wrong gene: " + gene);
-                                }
+                            } else {
+                                alert("Wrong gene: " + gene);
                             }
                         }
-                    });
-                }
-
-                var diseaseEls = this.$.diseases_div.querySelectorAll(".diseaseName");
-                var diseaseIds = [];
-
-
-                for (var i = 0; i < diseaseEls.length; i++) {
-                    var el = diseaseEls[i];
-                    if (el.checked) {
-                        diseaseIds.push(el.getAttribute("value"));
                     }
+                });
+            }
+
+            var diseaseEls = this.$.diseases_div.querySelectorAll(".diseaseName");
+            var diseaseIds = [];
+
+
+            for (var i = 0; i < diseaseEls.length; i++) {
+                var el = diseaseEls[i];
+                if (el.checked) {
+                    diseaseIds.push(el.getAttribute("value"));
                 }
+            }
 
-                if (regions.length > 0) {
-                    var regionQuery = regions.join(",");
-                    query.regions = regionQuery;
-                    query.diseases = diseaseIds.join(",");
+            if (regions.length > 0) {
+                var regionQuery = regions.join(",");
+                query.regions = regionQuery;
+                query.diseases = diseaseIds.join(",");
 
-                    var url = CSVSManager.variants.fetch({
-                        query: query,
-                        request: {
-                            url: true
-                        }
-                    });
+                var url = CSVSManager.variants.fetch({
+                    query: query,
+                    request: {
+                        url: true
+                    }
+                });
 
 
-                    // Calculate Saturation
-                    CSVSManager.regions.saturation({
-                        id: regionQuery,
-                        request: {
-                            // host: "http://aaleman:8080/csvs/rest",
-                            success: function (response) {
+                // Calculate Saturation
+                CSVSManager.regions.saturation({
+                    id: regionQuery,
+                    request: {
+                        // host: "http://aaleman:8080/csvs/rest",
+                        success: function(response) {
 
-                                var data = response.result[0];
+                            var data = response.result[0];
 
-                                for (var region in regionGene) {
-                                    if (region in data) {
-                                        var newKey = regionGene[region];
-                                        data[newKey] = data[region];
-                                        delete data[region];
-                                    }
+                            for (var region in regionGene) {
+                                if (region in data) {
+                                    var newKey = regionGene[region];
+                                    data[newKey] = data[region];
+                                    delete data[region];
                                 }
-                                try {
-                                    me.$.saturation.reloadChart(data);
-                                } catch (e) {
-                                    me.$.saturation.reloadChart({});
-                                }
-
                             }
+                            try {
+                                me.$.saturation.reloadChart(data);
+                            } catch (e) {
+                                me.$.saturation.reloadChart({});
+                            }
+
                         }
-                    });
+                    }
+                });
 
 
-                    this.formURL = url;
-                }
-            } else {
+                this.formURL = url;
+            }
+            if (regions.length == 0 && genes.length == 0) {
                 alert("Please add a region/gene and check any subpopulation");
             }
 
-        }
-        ,
-        _formatText: function (text) {
-            return Utils.formatText(text, "_").toLowerCase().replace(/(?:^|\s)\S/g, function (a) {
+            query.gene = geneValue;
+            this.set('query', query);
+
+        },
+        _formatText: function(text) {
+            return Utils.formatText(text, "_").toLowerCase().replace(/(?:^|\s)\S/g, function(a) {
                 return a.toUpperCase();
             });
-        }
-        ,
-        clearForm: function () {
+        },
+        clearForm: function() {
 
             this.$.filter_form.reset();
+            this.$.filterPosition.clear();
 
-        }
-        ,
-        exportQueryToCSV: function () {
+        },
+        loadForm: function(hf) {
+            var filterName = [];
+            var hfAux = hf;
+            if (hf.regions != "" && hf.regions != null) {
+                hfAux.region = hf.regions;
+            }
+            var fP = this.$.filterPosition.load(hfAux);
+            if (fP.length > 0) {
+                for (var i = 0; i < fP.length; i++) {
+                    filterName.push(fP[i]);
+                }
+            }
+
+            if (hf.diseases != "" && hf.diseases != null) {
+                var disName = [];
+                var dis = hf.diseases.split(",");
+                var aux = this.$.diseases_div.querySelectorAll("input");
+                for (var i = 0; i < aux.length; i++) {
+                    aux[i].checked = false;
+                }
+                for (var i = 0; i < dis.length; i++) {
+                    for (var j = 0; j < aux.length; j++) {
+                        var id = aux[j].value;
+                        if (dis[i] == id) {
+                            aux[j].checked = true;
+                            for (var k = 0; k < this.diseases.length; k++) {
+                                if (id == this.diseases[k].groupId) {
+                                    disName.push(this.diseases[k].name);
+                                }
+                            }
+                        }
+                    }
+                }
+                filterName.push("Disease: " + disName.join(",") + " ");
+            }
+            return filterName.join(" AND ");
+        },
+        loadFilter: function(e) {
+            e.stopPropagation();
+            this.clearForm();
+            this.loadForm(e.currentTarget.dataFilter);
+            this.$.filterHistoryTooltip.handleClose(e);
+            this.submitForm();
+        },
+        clearFiltersHistory: function(e) {
+            e.stopPropagation();
+            this.historyFilters = [];
+            localStorage.csvc_filter_history = JSON.stringify(this.historyFilters);
+
+        },
+        exportQueryToCSV: function() {
             var numVariants = this.$.dataGrid.dataSize;
 
             if (numVariants > 200) {
@@ -855,7 +1105,7 @@
                     url: url,
                     dataType: 'json',
                     async: false,
-                    success: function (response, textStatus, jqXHR) {
+                    success: function(response, textStatus, jqXHR) {
                         if (response != undefined && response.result.length > 0) {
 
                             var data = response.result; // TODO aaleman: Fix this!
@@ -864,7 +1114,9 @@
 
                             // Create CSV
 
-                            var csvData = [['chromosome', 'position', 'ref', 'alt', 'snpId', 'MAF', '1000G MAF', 'EVS MAF'].join(";")];
+                            var csvData = [
+                                ['chromosome', 'position', 'ref', 'alt', 'snpId', 'MAF', '1000G MAF', 'EVS MAF'].join(";")
+                            ];
 
                             for (var i = 0; i < finalData.length; i++) {
                                 var row = finalData[i];
@@ -901,43 +1153,69 @@
                         }
 
                     },
-                    error: function (jqXHR, textStatus, errorThrown) {
+                    error: function(jqXHR, textStatus, errorThrown) {
                         console.log('Error exporting to CSV');
                     }
                 });
             }
         },
-        selectAllDiseases: function (e, d, s) {
+        selectAllDiseases: function(e, d, s) {
             var checkboxes = this.$.filter_form.getElementsByClassName("diseaseName");
             for (var i = 0; i < checkboxes.length; i++) {
                 var elem = checkboxes[i];
                 elem.checked = true;
             }
 
-        }
-        ,
-        deselectAllDiseases: function (e, d, s) {
+        },
+        deselectAllDiseases: function(e, d, s) {
             var checkboxes = this.$.filter_form.getElementsByClassName("diseaseName");
             for (var i = 0; i < checkboxes.length; i++) {
                 var elem = checkboxes[i];
                 elem.checked = false;
             }
-        }
-        ,
-        urlChanged: function (neo, old) {
+        },
+        urlChanged: function(neo, old) {
             var me = this;
-            if (neo != '') {
-                this.request = {
-                    url: this.formURL,
-                    parse: this._parse,
-                    parseTotal: this._parseTotal,
-                    file: this.file
-                };
-
+            // if (neo != '') {
+            //     this.request = {
+            //         url: this.formURL,
+            //         parse: this._parse,
+            //         parseTotal: this._parseTotal,
+            //         file: this.file
+            //     };
+            // }
+            if (neo == null || neo == "") {
+                return;
             }
-        }
-        ,
-        _parse: function (response) {
+            this.request = {
+                url: this.formURL,
+                auxTotalCount: -1,
+                parse: function(response) {
+                    return me._parse(response);
+                },
+                parseTotal: function(response) {
+                    var total = me._parseTotal(response);
+
+                    me.numTotalResults = total;
+
+                    if (this.auxTotalCount == -1) {
+                        this.auxTotalCount = total;
+
+                        this.url = this.url.replace("&skipCount=false", "");
+
+                    } else {
+                        me.numTotalResults = this.auxTotalCount;
+                        total = me.numTotalResults;
+                    }
+
+                    me.set('numTotalResults', -1);
+                    me.set('numTotalResults', total);
+                    return total;
+                },
+            };
+
+        },
+        _parse: function(response) {
 
             var me = this;
 
@@ -965,7 +1243,7 @@
                     resource: 'full_annotation',
                     query: query,
                     async: false,
-                    success: function (response) {
+                    success: function(response) {
                         try {
                             var annotData = response.response;
                             for (var i = 0; i < annotData.length; i++) {
@@ -975,8 +1253,7 @@
                                     data[i].annots = annots;
                                 }
                             }
-                        } catch (e) {
-                        }
+                        } catch (e) {}
                     }
                 });
             }
@@ -1079,7 +1356,11 @@
                 }
 
                 // Clinical
-                variant.phenotypes = {cosmic: "", gwas: "", clinvar: ""};
+                variant.phenotypes = {
+                    cosmic: "",
+                    gwas: "",
+                    clinvar: ""
+                };
 
                 if (variant.annots.clinical != null) {
                     var clinical = variant.annots.clinical;
@@ -1120,13 +1401,13 @@
                         }
                     }
 
-                    var phenotypesCosmicFinal = phenotypesCosmic.filter(function (item, pos) {
+                    var phenotypesCosmicFinal = phenotypesCosmic.filter(function(item, pos) {
                         return phenotypesCosmic.indexOf(item) == pos;
                     });
-                    var phenotypesGwasFinal = phenotypesGwas.filter(function (item, pos) {
+                    var phenotypesGwasFinal = phenotypesGwas.filter(function(item, pos) {
                         return phenotypesGwas.indexOf(item) == pos;
                     })
-                    var phenotypesClinvarFinal = phenotypesClinvar.filter(function (item, pos) {
+                    var phenotypesClinvarFinal = phenotypesClinvar.filter(function(item, pos) {
                         return phenotypesClinvar.indexOf(item) == pos;
                     })
 
@@ -1171,8 +1452,7 @@
                                     variant.maf1000GEUR = Number(maf).toFixed(3)
                                     break;
                             }
-                        }
-                        else if (pfreq.study === "1000G_PHASE_3") {
+                        } else if (pfreq.study === "1000G_PHASE_3") {
                             switch (pfreq.pop) {
                                 case "1000G_PHASE_3_ALL":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
@@ -1200,8 +1480,7 @@
                                     break;
 
                             }
-                        }
-                        else if (pfreq.study === "ESP_6500") {
+                        } else if (pfreq.study === "ESP_6500") {
                             switch (pfreq.pop) {
                                 case "European_American":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
@@ -1220,13 +1499,17 @@
                 }
             }
             return data;
-        }
-        ,
-        _parseTotal: function (response) {
-            return response.numTotalResults;
-        }
-        ,
-        handleRowClick: function (e) {
+        },
+        _parseTotal: function(response) {
+            // return response.numTotalResults;
+            if (response != null) {
+                var total = response.numTotalResults;
+            } else {
+                total = 0;
+            }
+            return total;
+        },
+        handleRowClick: function(e) {
             var row = e.detail.row;
 
             this.$.gv.genomeViewer.setRegion(row);
@@ -1234,13 +1517,11 @@
             this.$.frequency.row = row;
             this.$.phenotype.row = row;
 
-        }
-        ,
-        handleMenuClick: function (e) {
+        },
+        handleMenuClick: function(e) {
             this.selectedMenuTool = e.currentTarget;
-        }
-        ,
-        selectedMenuChanged: function (neo, old) {
+        },
+        selectedMenuChanged: function(neo, old) {
             if (old) {
                 old.removeAttribute('selected');
                 this.$[old.dataset.option].setAttribute('hidden', '');
@@ -1249,33 +1530,32 @@
                 neo.setAttribute('selected', '');
                 this.$[neo.dataset.option].removeAttribute('hidden');
             }
-        }
-        ,
-        handleGenomeViewerCreated: function () {
+        },
+        handleGenomeViewerCreated: function() {
             var me = this;
 
             var adapter = new FeatureTemplateAdapter({
                 uriTemplate: CSVS_HOST + '/regions/{region}/fetch',
-//                templateVariables: {
-//                    customVar: 'info',
-//                },
+                //                templateVariables: {
+                //                    customVar: 'info',
+                //                },
                 species: this.$.gv.genomeViewer.species,
-//                getRegionsFromIntervals: function (response) {
-//
-//                    debugger
-//                    var regions = [];
-//                    for (var i = 0; i < response.result.length; i++) {
-//                        var r = response.result[i];
-//                        for (var j = 0; j < r.length; j++) {
-//                            var interval = r[j];
-//                            var region = new Region(interval);
-//                            regions.push(region);
-//                        }
-//                    }
-//                    return regions;
-//
-//                },
-                parse: function (response) {
+                //                getRegionsFromIntervals: function (response) {
+                //
+                //                    debugger
+                //                    var regions = [];
+                //                    for (var i = 0; i < response.result.length; i++) {
+                //                        var r = response.result[i];
+                //                        for (var j = 0; j < r.length; j++) {
+                //                            var interval = r[j];
+                //                            var region = new Region(interval);
+                //                            regions.push(region);
+                //                        }
+                //                    }
+                //                    return regions;
+                //
+                //                },
+                parse: function(response) {
                     var itemsArray = [];
 
                     for (var i = 0; i < response.result.length; i++) {
@@ -1290,8 +1570,8 @@
 
                     return itemsArray;
                 },
-                parseHistogram: function (response) {
-//                    debugger
+                parseHistogram: function(response) {
+                    //                    debugger
                     var itemsArray = [];
                     for (var i = 0; i < response.result.length; i++) {
                         var r = response.result[i]
@@ -1308,14 +1588,14 @@
 
             var args = FEATURE_TYPES.undefined;
             args.handlers = {
-                "feature:click": function (e) {
+                "feature:click": function(e) {
 
                     var elem = e.feature;
                     console.log(elem);
 
-                    me.$.dataTable.selectElem(elem, function (x, y) {
+                    me.$.dataTable.selectElem(elem, function(x, y) {
                         return x.chromosome == y.chromosome && x.position == y.position &&
-                                x.reference == y.reference && x.alternate == y.alternate;
+                            x.reference == y.reference && x.alternate == y.alternate;
                     });
                 }
             }
@@ -1332,6 +1612,5 @@
 
             this.$.gv.genomeViewer.addTrack(track);
         }
-    })
-    ;
+    });
 </script>
