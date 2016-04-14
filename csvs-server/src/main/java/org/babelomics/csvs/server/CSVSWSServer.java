@@ -81,6 +81,8 @@ public class CSVSWSServer {
         String database = properties.getProperty("CSVS.DB.DATABASE", "csvs");
         int port = Integer.parseInt(properties.getProperty("CSVS.DB.PORT", "27017"));
 
+        System.out.println(properties);
+
         MongoClient mongoClient;
         if (user.equals("") && pass.equals("")) {
             mongoClient = new MongoClient(host);

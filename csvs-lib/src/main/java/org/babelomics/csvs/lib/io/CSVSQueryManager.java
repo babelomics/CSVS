@@ -343,7 +343,7 @@ public class CSVSQueryManager {
         return res;
     }
 
-    public Iterable<Variant> getVariantsByRegionList(List<Region> regions, List<Integer> diseaseIds, List<Integer> technologyIds, Integer skip, Integer limit, MutableLong count) {
+    public Iterable<Variant> getVariantsByRegionList(List<Region> regions, List<Integer> diseaseIds, List<Integer> technologyIds, Integer skip, Integer limit, boolean skipCount, MutableLong count) {
 
         Criteria[] or = new Criteria[regions.size()];
 
@@ -382,7 +382,10 @@ public class CSVSQueryManager {
         }
 
         Iterable<Variant> aux = query.fetch();
-        count.setValue(query.countAll());
+
+        if (!skipCount) {
+            count.setValue(query.countAll());
+        }
 
         List<Variant> res = new ArrayList<>();
 

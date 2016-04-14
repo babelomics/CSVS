@@ -44,10 +44,15 @@
             margin-left: 10px;
         }
 
-        #diseases_div {
+        .stv-form-box {
+            width: 250px;;
+        }
+
+        #diseases_div, #technologies_div {
             height: 300px;
             max-height: 300px;
             overflow-y: auto;
+
         }
 
         #exportBtn {
@@ -99,9 +104,13 @@
         jso-variant-effect-grid,
         jso-variant-grid,
         jso-genome-viewer-element,
-        .stv-formbox,
+            /*stv-form-box,*/
         #dataTable {
             box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.2);
+        }
+
+        stv-form-box {
+            min-width: 250px;
         }
 
         jso-variant-effect-grid,
@@ -168,8 +177,10 @@
                 <form id="filter_form" class="vertical layout">
                     <div vertical layout>
                         <div id="buttons_container" class="horizontal layout end-justified" style="margin:10px 5px;">
-                            <stv-tooltip id="filterHistoryTooltip" class="stv-btn stv-btn-shdw" title="Filters History" icon="filter" style="margin-right: 3px;">
-                                <div class="stv-btn stv-btn-shdw clear-but" title="Clear Filters History" on-click="clearFiltersHistory">
+                            <stv-tooltip id="filterHistoryTooltip" class="stv-btn stv-btn-shdw" title="Filters History"
+                                         icon="filter" style="margin-right: 3px;">
+                                <div class="stv-btn stv-btn-shdw clear-but" title="Clear Filters History"
+                                     on-click="clearFiltersHistory">
                                     Clear
                                 </div>
                                 <div class="horizontal layout flex">
@@ -179,7 +190,8 @@
                                 </div>
                                 <div id="filterHistoryTable">
                                     <template is="dom-repeat" items="{{historyFilters}}">
-                                        <div class="horizontal layout flex" on-click="loadFilter" data-filter="{{item.filter}}" title="{{item.name}}">
+                                        <div class="horizontal layout flex" on-click="loadFilter"
+                                             data-filter="{{item.filter}}" title="{{item.name}}">
                                             <span class="num">{{item.date}} </span>
                                             <span id="filter-name" class="name">{{item.name}} </span>
                                             <span class="num">{{item.found}}</span>
@@ -234,14 +246,39 @@
                                 <div id="diseases_div">
                                     <template is="dom-repeat" items="{{diseases}}">
                                         <label class="stv-control">
-                                            <input type="checkbox" class="diseaseName" name="disease" id="disease" value="{{item.groupId}}" checked/>
+                                            <input type="checkbox" class="diseaseName" name="disease" id="disease"
+                                                   value="{{item.groupId}}" checked/>
                                             <span>{{item.name}}</span>
                                         </label>
                                     </template>
                                 </div>
                             </div>
-                        </stv-form-box> 
+                        </stv-form-box>
+                         
 
+                        <stv-form-box>
+                            <div class="header horizontal layout flex">
+                                <div>Technologies</div>
+                                <div class="flex"></div>
+                                <div class="check" on-click="sellectAllTechnologies">
+                                    <i class="fa fa-check-square-o"></i>
+                                </div>
+                                <div class="check" on-click="deselectAllTechnologies">
+                                    <i class="fa fa-square-o"></i>
+                                </div>
+                            </div>
+                            <div class="container">
+                                <div id="technologies_div">
+                                    <template is="dom-repeat" items="{{technologies}}">
+                                        <label class="stv-control">
+                                            <input type="checkbox" class="technologyName" name="technology"
+                                                   id="technology" value="{{item.technologyId}}" checked/>
+                                            <span>{{item.name}}</span>
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
+                        </stv-form-box>
                         <!-- <div class="stv-formbox">
                             <div class="stv-formtitle horizontal layout center">
                                 <div>Subpopulations</div>
@@ -266,7 +303,8 @@
                 </form>
             </div>
             <div id="dataGridElement" class="vertical layout">
-                <stv-table id="dataTable" enable-paging enable-remote enable-select enable-resize request="{{request}}" columns="{{columns}}" on-rowclick="handleRowClick">
+                <stv-table id="dataTable" enable-paging enable-remote enable-select enable-resize request="{{request}}"
+                           columns="{{columns}}" on-rowclick="handleRowClick">
                 </stv-table>
 
                 <div id="menu" class="color-2 color-hover-2 horizontal layout">
@@ -282,14 +320,16 @@
                 <!--</paper-button>-->
 
                 <div id="tools">
-                    <jso-genome-viewer-element id="gv" on-created="handleGenomeViewerCreated"></jso-genome-viewer-element>
+                    <jso-genome-viewer-element id="gv"
+                                               on-created="handleGenomeViewerCreated"></jso-genome-viewer-element>
                     <jso-variant-frequencies-grid id="frequency" hidden></jso-variant-frequencies-grid>
                     <jso-variant-phenotype-grid id="phenotype" hidden></jso-variant-phenotype-grid>
                     <jso-variant-effect-grid id="effect" hidden></jso-variant-effect-grid>
-                    <csvs-saturation-element id="saturation" diseases="{{diseases}}"></csvs-saturation-element>
+                    <csvs-saturation-element id="saturation" diseases="{{diseases}}" hidden></csvs-saturation-element>
                 </div>
             </div>
-        </div>s
+        </div>
+        s
     </template>
 </dom-module>
 <script>
@@ -298,7 +338,13 @@
         properties: {
             diseases: {
                 type: Array,
-                value: function() {
+                value: function () {
+                    return [];
+                }
+            },
+            technologies: {
+                type: Array,
+                value: function () {
                     return [];
                 }
             },
@@ -308,7 +354,7 @@
             },
             columns: {
                 type: Array,
-                value: function() {
+                value: function () {
                     return [];
                 }
             },
@@ -345,7 +391,7 @@
             },
             historyFilters: {
                 type: Array,
-                value: function() {
+                value: function () {
                     return [];
                 },
                 notify: true,
@@ -364,16 +410,16 @@
             query: {
                 type: Object,
                 notify: true,
-                value: function() {
+                value: function () {
                     return {};
-                },
-            },
+                }
+            }
             // request: {
             //     type: Object
             // },
         },
 
-        resultsChanged: function(neo, old) {
+        resultsChanged: function (neo, old) {
             if (neo != -1) {
                 var query = this.query;
                 var numTotalResults = neo;
@@ -452,7 +498,7 @@
 
         },
 
-        geneChanged: function(e) {
+        geneChanged: function (e) {
             var target = e.currentTarget;
             var value = target.value;
             var splits = value.split(",");
@@ -460,16 +506,16 @@
                 alert("The maximum number of genes is 3");
             }
         },
-        hiddenChanged: function(neo, old) {
+        hiddenChanged: function (neo, old) {
 
             if (!neo && this.selectedMenuTool) {
                 this.$.gv.removeAttribute("hidden");
             }
         },
-        created: function() {
+        created: function () {
             this.selectedSpecies = DEFAULT_SPECIES;
         },
-        ready: function() {
+        ready: function () {
 
             if (localStorage.csvs_filter_history) {
                 // this.hash = JSON.parse(localStorage.csvs_filter_history);
@@ -484,42 +530,12 @@
             this.species = 'Homo sapiens';
             var lastQuery = '';
 
-            this.async(function() { // DOM READY
+            this.async(function () { // DOM READY
                 me.selectedMenuTool = me.$.menu.querySelector('div');
                 me.$.gv.createGenomeViewer();
                 me.$.gv.genomeViewer.draw();
 
             }, 50);
-
-
-            // this.$.searchField.addEventListener('keyup', function(event) {
-            //     this.classList.remove('error');
-            //     var query = this.value.toUpperCase();
-            //     if (query.length > 2 && lastQuery !== query && event.which !== 13) {
-            //         me._setQuickSearchMenu(query);
-            //         lastQuery = query;
-            //     }
-            //
-            //     if (event.which === 13) {
-            //         var item = me.quickSearchDataset[query];
-            //         if (item) {
-            //             var values = me.$.gene.value.split(',').filter(function(el) {
-            //                 return el.length != 0
-            //             });
-            //
-            //             values.push(item.name);
-            //             values = values.filter(function(item, index, inputArray) {
-            //                 return inputArray.indexOf(item) == index;
-            //             });
-            //
-            //             me.$.gene.value = values.join(",");
-            //
-            //
-            //         } else {
-            //             this.classList.add('error');
-            //         }
-            //     }
-            // });
 
             this.columns = [{
                 name: 'chromosome',
@@ -533,7 +549,7 @@
                 name: 'alleles',
                 title: 'Alleles',
                 width: 50,
-                formula: function(row) {
+                formula: function (row) {
                     return row.reference + ">" + row.alternate;
                 }
             }, {
@@ -558,7 +574,7 @@
                         name: "gt00",
                         width: 50,
                         title: "0/0",
-                        formula: function(row) {
+                        formula: function (row) {
                             if (row.stats != null && row.stats.gt00 != null)
                                 return row.stats.gt00;
                             else
@@ -568,7 +584,7 @@
                         name: "gt01",
                         width: 50,
                         title: "0/1",
-                        formula: function(row) {
+                        formula: function (row) {
                             if (row.stats != null && row.stats.gt01 != null)
                                 return row.stats.gt01;
                             else
@@ -578,7 +594,7 @@
                         name: "gt11",
                         width: 50,
                         title: "1/1",
-                        formula: function(row) {
+                        formula: function (row) {
                             if (row.stats != null && row.stats.gt11 != null)
                                 return row.stats.gt11;
                             else
@@ -588,7 +604,7 @@
                         name: "gtmissing",
                         width: 50,
                         title: "./.",
-                        formula: function(row) {
+                        formula: function (row) {
                             if (row.stats != null && row.stats.gtmissing != null)
                                 return row.stats.gtmissing;
                             else
@@ -603,7 +619,7 @@
                         name: "refFreq",
                         width: 50,
                         title: "0 Freq",
-                        formula: function(row) {
+                        formula: function (row) {
                             if (row.stats != null && row.stats.refFreq != null)
                                 return row.stats.refFreq;
                             else
@@ -613,7 +629,7 @@
                         name: "altFreq",
                         width: 50,
                         title: "1 Freq",
-                        formula: function(row) {
+                        formula: function (row) {
                             if (row.stats != null && row.stats.altFreq != null)
                                 return row.stats.altFreq;
                             else
@@ -623,7 +639,7 @@
                         name: "maf",
                         width: 50,
                         title: "MAF",
-                        formula: function(row) {
+                        formula: function (row) {
                             if (row.stats != null && row.stats.maf != null)
                                 return row.stats.maf;
                             else
@@ -636,61 +652,61 @@
                 width: 250,
                 name: 'maf1000g',
                 columns: [{
-                        name: "maf1000G",
-                        title: "ALL",
-                        defaultValue: ".",
-                        formula: function(row) {
-                            if (row.maf1000G != null) {
-                                return row.maf1000G;
-                            } else {
-                                return ".";
-                            }
-                        }
-                    }, {
-                        name: "maf1000GAME",
-                        title: "AME",
-                        defaultValue: ".",
-                        formula: function(row) {
-                            if (row.maf1000GAME != null) {
-                                return row.maf1000GAME;
-                            } else {
-                                return ".";
-                            }
-                        }
-                    }, {
-                        name: "maf1000GASI",
-                        title: "ASI",
-                        defaultValue: ".",
-                        formula: function(row) {
-                            if (row.maf1000GASI != null) {
-                                return row.maf1000GASI;
-                            } else {
-                                return ".";
-                            }
-                        }
-                    }, {
-                        name: "maf1000GAFR",
-                        title: "AFR",
-                        defaultValue: ".",
-                        formula: function(row) {
-                            if (row.maf1000GAFR != null) {
-                                return row.maf1000GAFR;
-                            } else {
-                                return ".";
-                            }
-                        }
-                    }, {
-                        name: "maf1000GEUR",
-                        title: "EUR",
-                        defaultValue: ".",
-                        formula: function(row) {
-                            if (row.maf1000GEUR != null) {
-                                return row.maf1000GEUR;
-                            } else {
-                                return ".";
-                            }
+                    name: "maf1000G",
+                    title: "ALL",
+                    defaultValue: ".",
+                    formula: function (row) {
+                        if (row.maf1000G != null) {
+                            return row.maf1000G;
+                        } else {
+                            return ".";
                         }
                     }
+                }, {
+                    name: "maf1000GAME",
+                    title: "AME",
+                    defaultValue: ".",
+                    formula: function (row) {
+                        if (row.maf1000GAME != null) {
+                            return row.maf1000GAME;
+                        } else {
+                            return ".";
+                        }
+                    }
+                }, {
+                    name: "maf1000GASI",
+                    title: "ASI",
+                    defaultValue: ".",
+                    formula: function (row) {
+                        if (row.maf1000GASI != null) {
+                            return row.maf1000GASI;
+                        } else {
+                            return ".";
+                        }
+                    }
+                }, {
+                    name: "maf1000GAFR",
+                    title: "AFR",
+                    defaultValue: ".",
+                    formula: function (row) {
+                        if (row.maf1000GAFR != null) {
+                            return row.maf1000GAFR;
+                        } else {
+                            return ".";
+                        }
+                    }
+                }, {
+                    name: "maf1000GEUR",
+                    title: "EUR",
+                    defaultValue: ".",
+                    formula: function (row) {
+                        if (row.maf1000GEUR != null) {
+                            return row.maf1000GEUR;
+                        } else {
+                            return ".";
+                        }
+                    }
+                }
 
                 ]
             }, {
@@ -701,7 +717,7 @@
                     name: "maf1000G_PHASE_3_ALL",
                     title: "ALL",
                     defaultValue: ".",
-                    formula: function(row) {
+                    formula: function (row) {
                         if (row.maf1000G_PHASE_3_ALL != null) {
                             return row.maf1000G_PHASE_3_ALL;
                         } else {
@@ -712,7 +728,7 @@
                     name: "maf1000G_PHASE_3_AMR",
                     title: "AME",
                     defaultValue: ".",
-                    formula: function(row) {
+                    formula: function (row) {
                         if (row.maf1000G_PHASE_3_AMR != null) {
                             return row.maf1000G_PHASE_3_AMR;
                         } else {
@@ -723,7 +739,7 @@
                     name: "maf1000G_PHASE_3_SAS",
                     title: "South ASI",
                     defaultValue: ".",
-                    formula: function(row) {
+                    formula: function (row) {
                         if (row.maf1000G_PHASE_3_SAS != null) {
                             return row.maf1000G_PHASE_3_SAS;
                         } else {
@@ -734,7 +750,7 @@
                     name: "maf1000G_PHASE_3_EAS",
                     title: "East ASI",
                     defaultValue: ".",
-                    formula: function(row) {
+                    formula: function (row) {
                         if (row.maf1000G_PHASE_3_EAS != null) {
                             return row.maf1000G_PHASE_3_EAS;
                         } else {
@@ -745,7 +761,7 @@
                     name: "maf1000G_PHASE_3_AFR",
                     title: "AFR",
                     defaultValue: ".",
-                    formula: function(row) {
+                    formula: function (row) {
                         if (row.maf1000G_PHASE_3_AFR != null) {
                             return row.maf1000G_PHASE_3_AFR;
                         } else {
@@ -756,14 +772,14 @@
                     name: "maf1000G_PHASE_3_EUR",
                     title: "EUR",
                     defaultValue: ".",
-                    formula: function(row) {
+                    formula: function (row) {
                         if (row.maf1000G_PHASE_3_EUR != null) {
                             return row.maf1000G_PHASE_3_EUR;
                         } else {
                             return ".";
                         }
                     }
-                }, ]
+                },]
 
             }, {
                 title: "ESP 6500",
@@ -773,7 +789,7 @@
                     name: "mafESP_EA",
                     title: "Eur. Ame.",
                     defaultValue: ".",
-                    formula: function(row) {
+                    formula: function (row) {
                         if (row.mafESP_EA != null) {
                             return row.mafESP_EA;
                         } else {
@@ -784,7 +800,7 @@
                     name: "mafESP_AA",
                     title: "Afr. Ame.",
                     defaultValue: ".",
-                    formula: function(row) {
+                    formula: function (row) {
                         if (row.mafESP_AA != null) {
                             return row.mafESP_AA;
                         } else {
@@ -816,32 +832,31 @@
                     name: 'clinvar',
                     title: 'Clinvar',
                     width: 150,
-                    formula: function(row) {
+                    formula: function (row) {
                         return row.phenotypes.clinvar;
                     }
                 }, {
                     name: 'cosmic',
                     title: 'Cosmic',
                     width: 150,
-                    formula: function(row) {
+                    formula: function (row) {
                         return row.phenotypes.cosmic;
                     }
                 }, {
                     name: 'gwas',
                     title: 'GWas',
                     width: 150,
-                    formula: function(row) {
+                    formula: function (row) {
                         return row.phenotypes.gwas;
                     }
                 }]
             }];
 
         },
-        _toFixed: function(value, precision) {
+        _toFixed: function (value, precision) {
             return Number(value).toFixed(precision);
         },
-        observe: {},
-        _setQuickSearchMenu: function(query) {
+        _setQuickSearchMenu: function (query) {
 
             while (this.$.searchDataList.firstChild) {
                 this.$.searchDataList.removeChild(this.$.searchDataList.firstChild);
@@ -858,7 +873,7 @@
             }
 
         },
-        _quickSearchResultFn: function(query) {
+        _quickSearchResultFn: function (query) {
             var results = [];
             var speciesCode = Utils.getSpeciesCode(this.species);
 
@@ -874,15 +889,16 @@
                     limit: 10
                 },
                 async: false,
-                success: function(data, textStatus, jqXHR) {
+                success: function (data, textStatus, jqXHR) {
                     results = data.response[0].result;
                 }
             });
             return results;
         },
-        submitForm: function() {
+        submitForm: function () {
             var me = this;
             var query = {};
+
 
             var regionValue = this.$.filterPosition.checkRegion();
             if (regionValue == -1) {
@@ -950,7 +966,7 @@
                     params: {
                         include: 'chromosome,start,end'
                     },
-                    success: function(data) {
+                    success: function (data) {
                         for (var i = 0; i < data.response.length; i++) {
                             var queryResult = data.response[i];
 
@@ -978,10 +994,23 @@
                 }
             }
 
+
+            var technologyEls = this.$.technologies_div.querySelectorAll(".technologyName");
+            var technologyIds = [];
+
+            for (var i = 0; i < technologyEls.length; i++) {
+                var el = technologyEls[i];
+                if (el.checked) {
+                    technologyIds.push(el.getAttribute("value"));
+                }
+            }
+
             if (regions.length > 0) {
                 var regionQuery = regions.join(",");
                 query.regions = regionQuery;
                 query.diseases = diseaseIds.join(",");
+                query.technologies = technologyIds.join(",");
+                query.skipCount = false;
 
                 var url = CSVSManager.variants.fetch({
                     query: query,
@@ -996,7 +1025,7 @@
                     id: regionQuery,
                     request: {
                         // host: "http://aaleman:8080/csvs/rest",
-                        success: function(response) {
+                        success: function (response) {
 
                             var data = response.result[0];
 
@@ -1028,18 +1057,18 @@
             this.set('query', query);
 
         },
-        _formatText: function(text) {
-            return Utils.formatText(text, "_").toLowerCase().replace(/(?:^|\s)\S/g, function(a) {
+        _formatText: function (text) {
+            return Utils.formatText(text, "_").toLowerCase().replace(/(?:^|\s)\S/g, function (a) {
                 return a.toUpperCase();
             });
         },
-        clearForm: function() {
+        clearForm: function () {
 
             this.$.filter_form.reset();
             this.$.filterPosition.clear();
 
         },
-        loadForm: function(hf) {
+        loadForm: function (hf) {
             var filterName = [];
             var hfAux = hf;
             if (hf.regions != "" && hf.regions != null) {
@@ -1076,20 +1105,20 @@
             }
             return filterName.join(" AND ");
         },
-        loadFilter: function(e) {
+        loadFilter: function (e) {
             e.stopPropagation();
             this.clearForm();
             this.loadForm(e.currentTarget.dataFilter);
             this.$.filterHistoryTooltip.handleClose(e);
             this.submitForm();
         },
-        clearFiltersHistory: function(e) {
+        clearFiltersHistory: function (e) {
             e.stopPropagation();
             this.historyFilters = [];
             localStorage.csvc_filter_history = JSON.stringify(this.historyFilters);
 
         },
-        exportQueryToCSV: function() {
+        exportQueryToCSV: function () {
             var numVariants = this.$.dataGrid.dataSize;
 
             if (numVariants > 200) {
@@ -1105,7 +1134,7 @@
                     url: url,
                     dataType: 'json',
                     async: false,
-                    success: function(response, textStatus, jqXHR) {
+                    success: function (response, textStatus, jqXHR) {
                         if (response != undefined && response.result.length > 0) {
 
                             var data = response.result; // TODO aaleman: Fix this!
@@ -1153,13 +1182,13 @@
                         }
 
                     },
-                    error: function(jqXHR, textStatus, errorThrown) {
+                    error: function (jqXHR, textStatus, errorThrown) {
                         console.log('Error exporting to CSV');
                     }
                 });
             }
         },
-        selectAllDiseases: function(e, d, s) {
+        selectAllDiseases: function (e, d, s) {
             var checkboxes = this.$.filter_form.getElementsByClassName("diseaseName");
             for (var i = 0; i < checkboxes.length; i++) {
                 var elem = checkboxes[i];
@@ -1167,14 +1196,30 @@
             }
 
         },
-        deselectAllDiseases: function(e, d, s) {
+        selectAllTechnologies: function (e, d, s) {
+            var checkboxes = this.$.filter_form.getElementsByClassName("technologyName");
+            for (var i = 0; i < checkboxes.length; i++) {
+                var elem = checkboxes[i];
+                elem.checked = true;
+            }
+
+        },
+        deselectAllDiseases: function (e, d, s) {
             var checkboxes = this.$.filter_form.getElementsByClassName("diseaseName");
             for (var i = 0; i < checkboxes.length; i++) {
                 var elem = checkboxes[i];
                 elem.checked = false;
             }
         },
-        urlChanged: function(neo, old) {
+        deselectAllTechnologies: function (e, d, s) {
+            var checkboxes = this.$.filter_form.getElementsByClassName("technologyName");
+            for (var i = 0; i < checkboxes.length; i++) {
+                var elem = checkboxes[i];
+                elem.checked = false;
+            }
+        },
+        urlChanged: function (neo, old) {
+
             var me = this;
             // if (neo != '') {
             //     this.request = {
@@ -1190,18 +1235,19 @@
             this.request = {
                 url: this.formURL,
                 auxTotalCount: -1,
-                parse: function(response) {
+                parse: function (response) {
                     return me._parse(response);
                 },
-                parseTotal: function(response) {
+                parseTotal: function (response) {
                     var total = me._parseTotal(response);
 
                     me.numTotalResults = total;
 
                     if (this.auxTotalCount == -1) {
+
                         this.auxTotalCount = total;
 
-                        this.url = this.url.replace("&skipCount=false", "");
+                        this.url = this.url.replace("&skipCount=false", "&skipCount=true");
 
                     } else {
                         me.numTotalResults = this.auxTotalCount;
@@ -1215,7 +1261,7 @@
             };
 
         },
-        _parse: function(response) {
+        _parse: function (response) {
 
             var me = this;
 
@@ -1243,7 +1289,7 @@
                     resource: 'full_annotation',
                     query: query,
                     async: false,
-                    success: function(response) {
+                    success: function (response) {
                         try {
                             var annotData = response.response;
                             for (var i = 0; i < annotData.length; i++) {
@@ -1253,7 +1299,8 @@
                                     data[i].annots = annots;
                                 }
                             }
-                        } catch (e) {}
+                        } catch (e) {
+                        }
                     }
                 });
             }
@@ -1401,13 +1448,13 @@
                         }
                     }
 
-                    var phenotypesCosmicFinal = phenotypesCosmic.filter(function(item, pos) {
+                    var phenotypesCosmicFinal = phenotypesCosmic.filter(function (item, pos) {
                         return phenotypesCosmic.indexOf(item) == pos;
                     });
-                    var phenotypesGwasFinal = phenotypesGwas.filter(function(item, pos) {
+                    var phenotypesGwasFinal = phenotypesGwas.filter(function (item, pos) {
                         return phenotypesGwas.indexOf(item) == pos;
                     })
-                    var phenotypesClinvarFinal = phenotypesClinvar.filter(function(item, pos) {
+                    var phenotypesClinvarFinal = phenotypesClinvar.filter(function (item, pos) {
                         return phenotypesClinvar.indexOf(item) == pos;
                     })
 
@@ -1500,7 +1547,7 @@
             }
             return data;
         },
-        _parseTotal: function(response) {
+        _parseTotal: function (response) {
             // return response.numTotalResults;
             if (response != null) {
                 var total = response.numTotalResults;
@@ -1509,7 +1556,7 @@
             }
             return total;
         },
-        handleRowClick: function(e) {
+        handleRowClick: function (e) {
             var row = e.detail.row;
 
             this.$.gv.genomeViewer.setRegion(row);
@@ -1518,10 +1565,10 @@
             this.$.phenotype.row = row;
 
         },
-        handleMenuClick: function(e) {
+        handleMenuClick: function (e) {
             this.selectedMenuTool = e.currentTarget;
         },
-        selectedMenuChanged: function(neo, old) {
+        selectedMenuChanged: function (neo, old) {
             if (old) {
                 old.removeAttribute('selected');
                 this.$[old.dataset.option].setAttribute('hidden', '');
@@ -1531,7 +1578,7 @@
                 this.$[neo.dataset.option].removeAttribute('hidden');
             }
         },
-        handleGenomeViewerCreated: function() {
+        handleGenomeViewerCreated: function () {
             var me = this;
 
             var adapter = new FeatureTemplateAdapter({
@@ -1555,7 +1602,7 @@
                 //                    return regions;
                 //
                 //                },
-                parse: function(response) {
+                parse: function (response) {
                     var itemsArray = [];
 
                     for (var i = 0; i < response.result.length; i++) {
@@ -1570,7 +1617,7 @@
 
                     return itemsArray;
                 },
-                parseHistogram: function(response) {
+                parseHistogram: function (response) {
                     //                    debugger
                     var itemsArray = [];
                     for (var i = 0; i < response.result.length; i++) {
@@ -1588,14 +1635,14 @@
 
             var args = FEATURE_TYPES.undefined;
             args.handlers = {
-                "feature:click": function(e) {
+                "feature:click": function (e) {
 
                     var elem = e.feature;
                     console.log(elem);
 
-                    me.$.dataTable.selectElem(elem, function(x, y) {
+                    me.$.dataTable.selectElem(elem, function (x, y) {
                         return x.chromosome == y.chromosome && x.position == y.position &&
-                            x.reference == y.reference && x.alternate == y.alternate;
+                                x.reference == y.reference && x.alternate == y.alternate;
                     });
                 }
             }

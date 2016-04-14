@@ -37,13 +37,20 @@ public class VariantsWSServer extends CSVSWSServer {
     public Response getVariantsByRegion(@ApiParam(value = "regions") @QueryParam("regions") @DefaultValue("") String regions,
                                         @ApiParam(value = "limit") @QueryParam("limit") @DefaultValue("10") int limit,
                                         @ApiParam(value = "skip") @QueryParam("skip") @DefaultValue("0") int skip,
+                                        @ApiParam(value = "skipCount") @QueryParam("skipCount") @DefaultValue("false") boolean skipCount,
                                         @ApiParam(value = "diseases") @QueryParam("diseases") @DefaultValue("") String diseases,
+                                        @ApiParam(value = "technologies") @QueryParam("technologies") @DefaultValue("") String technologies,
                                         @ApiParam(value = "csv") @QueryParam("csv") @DefaultValue("false") boolean csv
     ) {
 
 
         List<Region> regionList = new ArrayList<>();
         List<Integer> diseaseList = new ArrayList<>();
+        List<Integer> technologyList = new ArrayList<>();
+
+        System.out.println("diseases = " + diseases);
+        System.out.println("technologies = " + technologies);
+
         int regionsSize = 0;
 
 
@@ -64,6 +71,17 @@ public class VariantsWSServer extends CSVSWSServer {
             }
         }
 
+
+        if (technologies.length() > 0) {
+            String[] techSplit = technologies.split(",");
+            for (String t : techSplit) {
+                technologyList.add(Integer.valueOf(t));
+            }
+        }
+
+        System.out.println("diseaseList = " + diseaseList);
+        System.out.println("technologyList = " + technologyList);
+
         MutableLong count = new MutableLong(-1);
 
         if (csv) {
@@ -71,7 +89,7 @@ public class VariantsWSServer extends CSVSWSServer {
             limit = 200;
         }
 
-        Iterable<Variant> variants = qm.getVariantsByRegionList(regionList, diseaseList, null,skip, limit, count);
+        Iterable<Variant> variants = qm.getVariantsByRegionList(regionList, diseaseList, technologyList, skip, limit, skipCount,count);
 
         QueryResponse qr = createQueryResponse(variants);
         qr.setNumTotalResults(count.getValue());
@@ -99,11 +117,15 @@ public class VariantsWSServer extends CSVSWSServer {
     public Response getVariants(@ApiParam(value = "variants") @PathParam("variants") @DefaultValue("") String variants,
                                 @ApiParam(value = "limit") @QueryParam("limit") @DefaultValue("10") int limit,
                                 @ApiParam(value = "skip") @QueryParam("skip") @DefaultValue("0") int skip,
-                                @ApiParam(value = "diseases") @QueryParam("diseases") @DefaultValue("") String diseases
+                                @ApiParam(value = "diseases") @QueryParam("diseases") @DefaultValue("") String diseases,
+                                @ApiParam(value = "technologies") @QueryParam("technologies") @DefaultValue("") String technologies
+
     ) {
 
         List<Variant> variantList = new ArrayList<>();
         List<Integer> diseaseList = new ArrayList<>();
+        List<Integer> technologyList = new ArrayList<>();
+
 
         if (variants.length() > 0) {
             String[] varSplit = variants.split(",");
@@ -120,7 +142,17 @@ public class VariantsWSServer extends CSVSWSServer {
             }
         }
 
-        List<Variant> variantRes = qm.getVariants(variantList, diseaseList,null);
+        if (technologies.length() > 0) {
+            String[] techSplit = technologies.split(",");
+            for (String t : techSplit) {
+                technologyList.add(Integer.valueOf(t));
+            }
+        }
+
+        System.out.println("diseaseList = " + diseaseList);
+        System.out.println("technologyList = " + technologyList);
+
+        List<Variant> variantRes = qm.getVariants(variantList, diseaseList, technologyList);
 
         QueryResponse qr = createQueryResponse(variantRes);
         qr.setNumTotalResults(variantRes.size());
@@ -135,7 +167,6 @@ public class VariantsWSServer extends CSVSWSServer {
 
         return createOkResponse(qr);
     }
-
 
 
 }

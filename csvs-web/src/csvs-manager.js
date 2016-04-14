@@ -7,6 +7,11 @@ var CSVSManager = {
             return CSVSManager._doRequest(args, 'diseases', 'list');
         }
     },
+    technologies: {
+        list: function (args) {
+            return CSVSManager._doRequest(args, 'technologies', 'list');
+        }
+    },
     variants: {
         fetch: function (args) {
             return CSVSManager._doRequest(args, 'variants', 'fetch');

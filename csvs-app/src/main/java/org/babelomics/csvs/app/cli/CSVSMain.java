@@ -196,7 +196,7 @@ public class CSVSMain {
 
                 MutableLong count = new MutableLong(-1);
 
-                Iterable<Variant> query = qm.getVariantsByRegionList(regionList, diseaseId, technologyId, c.skip, c.limit, count);
+                Iterable<Variant> query = qm.getVariantsByRegionList(regionList, diseaseId, technologyId, c.skip, c.limit,false, count);
 
                 if (!c.csv) {
                     System.out.println("chr\tpos\tref\talt\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF");
