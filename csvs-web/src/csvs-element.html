@@ -21,6 +21,7 @@
 <link rel="import" href="../lib/stevia-components/src/stv-footer.html">
 <link rel="import" href="../lib/stevia-components/src/stv-help-menu.html">
 <link rel="import" href="../lib/stevia-components/src/stv-select.html">
+<link rel="import" href="../lib/stevia-components/src/stv-feedback.html">
 
 <link rel="import" href="../lib/stevia-components/src/stv-panel.html">
 <link rel="import" href="../lib/stevia-components/src/table/stv-table.html">
@@ -96,7 +97,6 @@
         csvs-search-element {
             height: calc(100vh - 60px);
         }
-
         /*#stvBrowserPanel {
             position: absolute;
             right: 0;
@@ -138,10 +138,7 @@
         </div>
 
         <div class="content" menu-option="search">
-            <csvs-search-element diseases="{{diseases}}"
-                                 technologies="{{technologies}}"
-                                 id="csvsSearchElement"
-                                 is-logged="{{isLogged}}"></csvs-search-element>
+            <csvs-search-element diseases="{{diseases}}" technologies="{{technologies}}" id="csvsSearchElement" is-logged="{{isLogged}}"></csvs-search-element>
         </div>
 
         <div class="content" menu-option="stats">
@@ -149,9 +146,7 @@
         </div>
 
         <div class="content" menu-option="annot">
-            <csvs-annotation-form id="annotationForm" selectedOption="{{selectedOption}}" bioformats="{{bioformats}}"
-                                  user-data="{{userData}}" diseases="{{diseases}}"
-                                  on-job-launched="handleJobLaunched"></csvs-annotation-form>
+            <csvs-annotation-form id="annotationForm" selectedOption="{{selectedOption}}" bioformats="{{bioformats}}" user-data="{{userData}}" diseases="{{diseases}}" on-job-launched="handleJobLaunched"></csvs-annotation-form>
         </div>
 
         <div class="content" menu-option="result">
@@ -164,20 +159,17 @@
                 <div class="header">
                     <i class="fa fa-folder-open-o"></i> File Browser
                 </div>
-                <stv-file-browser class="container" id="browser" bioformats="{{bioformats}}"
-                                  user-data="{{userData}}"></stv-file-browser>
+                <stv-file-browser class="container" id="browser" bioformats="{{bioformats}}" user-data="{{userData}}"></stv-file-browser>
             </stv-panel>
 
             <stv-panel hidden collapsible movable closable id="jobBrowserPanel" on-hidden="handlePanelHidden">
                 <div class="header">Job browser</div>
-                <stv-job-browser class="container" id="jobBrowser" on-jobselect="handleJobSelect"
-                                 bioformats="{{bioformats}}" allowed-tools="{{allowedTools}}" user-data="{{userData}}"
-                                 on-job-launched="handleJobLaunched"></stv-job-browser>
+                <stv-job-browser class="container" id="jobBrowser" on-jobselect="handleJobSelect" bioformats="{{bioformats}}" allowed-tools="{{allowedTools}}" user-data="{{userData}}" on-job-launched="handleJobLaunched"></stv-job-browser>
             </stv-panel>
+            <stv-feedback id="feedback" hidden on-feedbackend="handleFeedback"></stv-feedback>
         </div>
 
-        <stv-header id="stvHeader" user-data="{{userData}}" on-login="handleLogin" on-logout="handleLogout"
-                    selected-option="{{selectedOption}}" hide-browse>
+        <stv-header id="stvHeader" user-data="{{userData}}" on-login="handleLogin" on-logout="handleLogout" selected-option="{{selectedOption}}" hide-browse>
             <div class="icon">
                 <img src="images/bier-text.svg" style="height: 50px;margin: 5px 0px 0 0;">
             </div>
@@ -194,19 +186,16 @@
                     <i class="fa fa-pie-chart"></i>
                     <span class="option-text">Stats</span>
                 </div>
-                <div title="Annotate VCF file" class="option" on-click="handleLoggedOnlyMenuOption" show-on-login
-                     data-option="annot">
+                <div title="Annotate VCF file" class="option" on-click="handleLoggedOnlyMenuOption" show-on-login data-option="annot">
                     <i class="fa fa-pencil-square-o"></i>
                     <span class="option-text">Annotate VCF File</span>
                 </div>
                 <div class="flex"></div>
-                <div title="Browse my data" class="option" on-click="handleLoggedOnlyMenuPanel" show-on-login
-                     data-panel="fileBrowserPanel">
+                <div title="Browse my data" class="option" on-click="handleLoggedOnlyMenuPanel" show-on-login data-panel="fileBrowserPanel">
                     <i class="fa fa-folder-open-o"></i>
                     <span class="option-text">My data</span>
                 </div>
-                <div title="Show diagnoses" class="option" on-click="handleLoggedOnlyMenuPanel" show-on-login
-                     data-panel="jobBrowserPanel">
+                <div title="Show diagnoses" class="option" on-click="handleLoggedOnlyMenuPanel" show-on-login data-panel="jobBrowserPanel">
                     <i class="fa fa-pencil-square-o"></i>
                     <span class="option-text">My annotations</span>
                 </div>
@@ -221,6 +210,12 @@
                 </a>
                 <a href="https://github.com/babelomics/csvs/" target="_blank">
                     <i class="fa fa-github"></i> &nbsp; Source code
+                </a>
+                <div on-mousedown="handleFeedback">
+                    <i class="fa fa-envelope-o" aria-hidden="true"></i> &nbsp; Send an email
+                </div>
+                <a href="http://gitlab.bioinfo.cipf.es/stevia/stevia-components/issues" target="_blank">
+                    <i class="fa fa-exclamation-circle" aria-hidden="true"></i> &nbsp; Go to git issue
                 </a>
             </stv-help-menu>
         </stv-header>
@@ -240,13 +235,13 @@
         properties: {
             diseases: {
                 type: Array,
-                value: function () {
+                value: function() {
                     return [];
                 }
             },
             technologies: {
                 type: Array,
-                value: function () {
+                value: function() {
                     return [];
                 }
             },
@@ -260,7 +255,7 @@
             },
             allowedTools: {
                 type: Array,
-                value: function () {
+                value: function() {
                     return ["csvs"];
                 }
             },
@@ -268,19 +263,19 @@
                 type: Boolean
             }
         },
-        ready: function () {
+        ready: function() {
             this.isLogged = this.$.stvHeader.isLogged;
             this.getDiseases();
             this.getTechnologies();
             this.checkShowMenuOnLogin();
             this.selectedOption = "search";
         },
-        getDiseases: function () {
+        getDiseases: function() {
             var me = this;
             CSVSManager.diseases.list({
                 request: {
                     async: false,
-                    success: function (response) {
+                    success: function(response) {
                         try {
                             var diseases = [];
 
@@ -309,7 +304,7 @@
                             me.diseases = [];
                         }
                     },
-                    error: function (response) {
+                    error: function(response) {
                         console.log("ERROR downloading diseases");
                         console.log(response);
                     }
@@ -317,12 +312,12 @@
             });
 
         },
-        getTechnologies: function () {
+        getTechnologies: function() {
             var me = this;
             CSVSManager.technologies.list({
                 request: {
                     async: false,
-                    success: function (response) {
+                    success: function(response) {
                         try {
                             var technologies = [];
 
@@ -338,7 +333,7 @@
                             me.technologies = [];
                         }
                     },
-                    error: function (response) {
+                    error: function(response) {
                         console.log("ERROR downloading technologies");
                         console.log(response);
                     }
@@ -346,28 +341,28 @@
             });
 
         },
-        _swap: function (array, x, y) {
+        _swap: function(array, x, y) {
             var b = array[y];
             array[y] = array[x];
             array[x] = b;
         },
-        handleTry: function () {
+        handleTry: function() {
             this.setMenu("search");
         },
-        handleLogin: function () {
+        handleLogin: function() {
             // this.selectedOption = "panels";
             // this.homeHidden =
             this.isLogged = this.$.stvHeader.isLogged;
             this.checkShowMenuOnLogin();
         },
-        handleLogout: function () {
+        handleLogout: function() {
             this.isLogged = this.$.stvHeader.isLogged;
             this.checkShowMenuOnLogin()
             this.setMenu("home");
             this.$.fileBrowserPanel.hide();
             this.$.jobBrowserPanel.hide();
         },
-        handleJobSelect: function (e) {
+        handleJobSelect: function(e) {
             var me = this;
 
             var job = e.detail;
@@ -377,7 +372,7 @@
             // var file = null;
 
 
-            SteviaManager.getPlainFolderFiles(fileId, function (files) {
+            SteviaManager.getPlainFolderFiles(fileId, function(files) {
                 // debugger
                 for (var i = 0; i < files.length; i++) {
                     if (files[i].name == fileName)
@@ -387,13 +382,16 @@
                 // me.$.annotationResult.file = job.options.input.value;
             })
         },
-        handleJobLaunched: function (e) {
+        handleJobLaunched: function(e) {
             this.$.jobBrowserPanel.show();
             this.handleUserNeedRefresh();
         },
-        handleUserNeedRefresh: function () {
+        handleUserNeedRefresh: function() {
             // console.log("funsiona");
             this.$.stvHeader.getUserInfo(true);
         },
+        handleFeedback: function() {
+            this.$.feedback.hidden = !this.$.feedback.hidden;
+        }
     });
 </script>
