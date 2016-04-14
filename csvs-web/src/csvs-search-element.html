@@ -1,15 +1,18 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
 <link rel="import" href="../lib/jsorolla/src/lib/components/jso-genome-viewer-element.html">
 <link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-effect-grid.html">
 <link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-frequencies-grid.html">
 <link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-phenotype-grid.html">
 
-<link rel="import" href="../lib/stevia-components/src/filter/stv-filter-position.html">
-<link rel="import" href="../lib/stevia-components/src/stv-tooltip.html">
+<link rel="import" href="../bower_components/stevia-components/src/filter/stv-filter-position.html">
+<link rel="import" href="../bower_components/stevia-components/src/stv-tooltip.html">
 
 <link rel="import" href="csvs-saturation-element.html">
 
 <dom-module id="csvs-search-element">
-    <style>
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
         :host {
             display: block;
             box-sizing: border-box;
