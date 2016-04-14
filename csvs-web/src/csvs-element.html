@@ -1,3 +1,6 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
 <script src="../bower_components/cookies-js/dist/cookies.min.js"></script>
 <script src="../bower_components/crypto-js-evanvosberg/core.js"></script>
 <script src="../bower_components/crypto-js-evanvosberg/sha1.js"></script>
@@ -16,17 +19,16 @@
 <link rel="stylesheet" href="../bower_components/qtip2/jquery.qtip.css">
 
 
-<link rel="import" href="../lib/stevia-components/src/stv-header.html">
-<link rel="import" href="../lib/stevia-components/src/stv-application-behavior.html">
-<link rel="import" href="../lib/stevia-components/src/stv-footer.html">
-<link rel="import" href="../lib/stevia-components/src/stv-help-menu.html">
-<link rel="import" href="../lib/stevia-components/src/stv-select.html">
-
-<link rel="import" href="../lib/stevia-components/src/stv-panel.html">
-<link rel="import" href="../lib/stevia-components/src/table/stv-table.html">
-<link rel="import" href="../lib/stevia-components/src/validator/stv-validator.html">
-<link rel="import" href="../lib/stevia-components/src/job/stv-job-browser.html">
-<link rel="import" href="../lib/stevia-components/src/file/stv-file-browser.html">
+<link rel="import" href="../bower_components/stevia-components/src/stv-header.html">
+<link rel="import" href="../bower_components/stevia-components/src/stv-application-behavior.html">
+<link rel="import" href="../bower_components/stevia-components/src/stv-footer.html">
+<link rel="import" href="../bower_components/stevia-components/src/stv-help-menu.html">
+<link rel="import" href="../bower_components/stevia-components/src/stv-select.html">
+<link rel="import" href="../bower_components/stevia-components/src/stv-panel.html">
+<link rel="import" href="../bower_components/stevia-components/src/table/stv-table.html">
+<link rel="import" href="../bower_components/stevia-components/src/validator/stv-validator.html">
+<link rel="import" href="../bower_components/stevia-components/src/job/stv-job-browser.html">
+<link rel="import" href="../bower_components/stevia-components/src/file/stv-file-browser.html">
 
 <script src="../lib/jsorolla/src/lib/validator/bed-validator.js"></script>
 <script src="FilterHistory.js"></script>
@@ -61,7 +63,8 @@
 
 
 <dom-module id="csvs-element">
-    <style>
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+
         :host {
             display: block;
             position: relative;

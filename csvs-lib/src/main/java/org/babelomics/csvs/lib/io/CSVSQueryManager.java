@@ -381,6 +381,8 @@ public class CSVSQueryManager {
             query.offset(skip).limit(limit);
         }
 
+        System.out.println("query = " + query);
+
         Iterable<Variant> aux = query.fetch();
 
         if (!skipCount) {

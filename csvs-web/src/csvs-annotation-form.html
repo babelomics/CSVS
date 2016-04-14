@@ -1,9 +1,11 @@
-<!-- <link rel="import" href="../lib/jsorolla/src/lib/components/opencga/files/jso-opencga-file-origin.html"> -->
-<!-- <link rel="import" href="../lib/jsorolla/src/lib/components/jso-opencga-input-text.html"> -->
-<link rel="import" href="../lib/stevia-components/src/stv-input-text.html">
-<link rel="import" href="../lib/stevia-components/src/form/stv-file-origin.html">
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../bower_components/stevia-components/src/stv-input-text.html">
+<link rel="import" href="../bower_components/stevia-components/src/form/stv-file-origin.html">
 <dom-module id="csvs-annotation-form">
-    <style>
+    <style is="custom-style"
+           include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
         :host {
             display: block;
             position: relative;
@@ -83,7 +85,8 @@
                     </div>
                     <div class="stv-formcontent">
                         <div>VCF file: &nbsp;
-                            <stv-file-origin id="vcf_file" selection-mode="file" bioformats="{{bioformats}}" user-data="{{userData}}">
+                            <stv-file-origin id="vcf_file" selection-mode="file" bioformats="{{bioformats}}"
+                                             user-data="{{userData}}">
                             </stv-file-origin>
                             <span id="vcf_fileError" class="errmsg"></span>
                         </div>
@@ -105,7 +108,8 @@
                     <div id="diseases_div" class="stv-formcontent" style="padding: 8px 10px">
                         <template is="dom-repeat" items="{{diseases}}">
                             <label class="stv-control">
-                                <input type="checkbox" class="diseaseName" name="disease" id="disease" value="{{item.groupId}}" checked/>
+                                <input type="checkbox" class="diseaseName" name="disease" id="disease"
+                                       value="{{item.groupId}}" checked/>
                                 <span>{{item.name}}</span>
                             </label>
                         </template>
@@ -119,16 +123,18 @@
                 </div>
                 <div class="stv-formcontent">
                     <div>Output folder: &nbsp;
-                        <stv-file-origin id="output_folder" selection-mode="folder" bioformats="{{bioformats}}"  user-data="{{userData}}">
+                        <stv-file-origin id="output_folder" selection-mode="folder" bioformats="{{bioformats}}"
+                                         user-data="{{userData}}">
                         </stv-file-origin>
                         <span id="output_folderError" class="errmsg"></span>
                     </div>
 
-                    <stv-input-text id="outputFile" label="Output file:" placeholder="output_file.vcf" tooltip="Output file"></stv-input-text>
+                    <stv-input-text id="outputFile" label="Output file:" placeholder="output_file.vcf"
+                                    tooltip="Output file"></stv-input-text>
                     <br>
 
                     <div class="coment">Job name</div>
-                    <input type="text" id="jobName" class="jso" style="width:200px;" value="CSVS Annotation job" />
+                    <input type="text" id="jobName" class="jso" style="width:200px;" value="CSVS Annotation job"/>
 
                     <div class="coment">Description</div>
                     <textarea id="jobDescription" class="jso" style="width:200px;"></textarea>
@@ -138,7 +144,8 @@
             <span class="errmsg">{{errorMessage}}</span>
 
             <div class="horizontal layout center-justified">
-                <div class="stv-btn stv-btn-shdw stv-btn-big" on-click="launchJob"><i class="fa fa-rocket"></i> &nbsp; Launch Job
+                <div class="stv-btn stv-btn-shdw stv-btn-big" on-click="launchJob"><i class="fa fa-rocket"></i> &nbsp;
+                    Launch Job
                 </div>
             </div>
             <br>
@@ -165,7 +172,7 @@
                 },
                 diseases: {
                     type: Array,
-                    value: function() {
+                    value: function () {
                         return [];
                     }
                 },
@@ -177,20 +184,20 @@
                 },
 
             },
-            _setError: function(id, msg) {
+            _setError: function (id, msg) {
                 this.$[id + 'Error'].innerHTML = msg;
                 this.errorMessage = "There are errors in the form. Correct them before launching the job.";
             },
-            _clearError: function(id) {
+            _clearError: function (id) {
                 this.$[id + 'Error'].innerHTML = '';
                 this.errorMessage = '';
             },
-            _clean: function() {
+            _clean: function () {
                 this.errorMessage = '';
                 this.$.vcf_file.reset();
                 this.$.output_folder.reset();
             },
-            launchJob: function(e) {
+            launchJob: function (e) {
                 var me = this;
 
                 // var query = {
@@ -205,7 +212,7 @@
                     sid: Cookies("bioinfo_sid"),
                     name: this.$.jobName.value,
                     description: this.$.jobDescription.value
-                        // outdirId: '56e6d0ed5d07cb333f39f6d0'
+                    // outdirId: '56e6d0ed5d07cb333f39f6d0'
                 };
 
                 var jobConfig = {
@@ -269,27 +276,27 @@
 
                 if (this.errorMessage === '' && this.$.form.checkValidity()) {
                     console.log(this.$.form.checkValidity())
-                        // OpencgaManager.jobs.create({
-                        //     query: query,
-                        //     request: {
-                        //         //method: 'POST',
-                        //         success: function(response) {
-                        //             if (response.response[0].errorMsg === '' || response.response[0].errorMsg == null) {
-                        //                 var job = response.response[0].result[0];
-                        //                 me.selectedOption = "jobLaunched"
-                        //                 console.log(job);
-                        //                 // me._clean();
-                        //                 me.fire('job-launched');
-                        //                 //                                    me.message = job.commandLine;
-                        //             } else {
-                        //                 me.message = response.response[0].errorMsg;
-                        //             }
-                        //         },
-                        //         error: function() {
-                        //             me.message = 'Server error, try again later.';
-                        //         }
-                        //     }
-                        // });
+                    // OpencgaManager.jobs.create({
+                    //     query: query,
+                    //     request: {
+                    //         //method: 'POST',
+                    //         success: function(response) {
+                    //             if (response.response[0].errorMsg === '' || response.response[0].errorMsg == null) {
+                    //                 var job = response.response[0].result[0];
+                    //                 me.selectedOption = "jobLaunched"
+                    //                 console.log(job);
+                    //                 // me._clean();
+                    //                 me.fire('job-launched');
+                    //                 //                                    me.message = job.commandLine;
+                    //             } else {
+                    //                 me.message = response.response[0].errorMsg;
+                    //             }
+                    //         },
+                    //         error: function() {
+                    //             me.message = 'Server error, try again later.';
+                    //         }
+                    //     }
+                    // });
                     SteviaManager.jobs.create({
                         query: query,
                         request: {
@@ -298,12 +305,12 @@
                                 "Content-Type": "application/json"
                             },
                             body: JSON.stringify(jobConfig),
-                            success: function(response) {
+                            success: function (response) {
                                 if (response.response[0].error == null) {
                                     // var job = response.response[0].result[0];
                                     me.selectedOption = "jobLaunched"
-                                        //                 console.log(job);
-                                        //                 // me._clean();
+                                    //                 console.log(job);
+                                    //                 // me._clean();
                                     me.fire('job-launched');
                                     //                 //
                                     console.log(response);
@@ -313,7 +320,7 @@
 
                                 }
                             },
-                            error: function() {
+                            error: function () {
                                 console.log('Server error, try again later.');
                                 me.message = 'Server error, try again later.';
 
@@ -323,7 +330,7 @@
                 }
 
             },
-            selectAllDiseases: function(e, d, s) {
+            selectAllDiseases: function (e, d, s) {
                 var checkboxes = this.$.diseases_div.getElementsByClassName("diseaseName");
                 for (var i = 0; i < checkboxes.length; i++) {
                     var elem = checkboxes[i];
@@ -331,7 +338,7 @@
                 }
 
             },
-            deselectAllDiseases: function(e, d, s) {
+            deselectAllDiseases: function (e, d, s) {
                 var checkboxes = this.$.diseases_div.getElementsByClassName("diseaseName");
                 for (var i = 0; i < checkboxes.length; i++) {
                     var elem = checkboxes[i];
