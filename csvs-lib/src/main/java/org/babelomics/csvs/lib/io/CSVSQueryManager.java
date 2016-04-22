@@ -2,15 +2,10 @@ package org.babelomics.csvs.lib.io;
 
 import com.mongodb.*;
 import org.apache.commons.lang3.mutable.MutableLong;
-import org.babelomics.csvs.lib.comparators.DiseaseGroupIdAscComparator;
 import org.babelomics.csvs.lib.comparators.DiseaseGroupSampleDescComparator;
-import org.babelomics.csvs.lib.comparators.TechnologyIdAscComparator;
 import org.babelomics.csvs.lib.models.*;
-import org.bson.types.ObjectId;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
-import org.mongodb.morphia.aggregation.Group;
-import org.mongodb.morphia.aggregation.Projection;
 import org.mongodb.morphia.query.Criteria;
 import org.mongodb.morphia.query.Query;
 import org.opencb.biodata.models.feature.Region;
@@ -43,107 +38,31 @@ public class CSVSQueryManager {
         this.datastore = datastore;
     }
 
+    public DiseaseGroup getDiseaseById(int id) {
+        DiseaseGroup dg = datastore.createQuery(DiseaseGroup.class).field("groupId").equal(id).get();
+        return dg;
+    }
+
+    public Technology getTechnologyById(int id) {
+        Technology dg = datastore.createQuery(Technology.class).field("technologyId").equal(id).get();
+        return dg;
+    }
+
     public List<DiseaseGroup> getAllDiseaseGroups() {
-
-
-        List<DiseaseGroup> res = new ArrayList<>();
-        List<Integer> ids = new ArrayList<>();
-
-        Iterator<AggregationElem> aggregate = this.datastore.
-                createAggregation(File.class).
-                group("d", Group.grouping("samples", Group.sum("s"))).
-                project(Projection.projection("_id").suppress(),
-                        Projection.projection("samples", "samples")
-                        , Projection.projection("ref", "_id")).out(AggregationElem.class);
-
-        while (aggregate.hasNext()) {
-            AggregationElem elem = aggregate.next();
-
-            DBRef aux = elem.getRef();
-            ObjectId dgAux = (ObjectId) aux.getId();
-            DiseaseGroup dg = datastore.get(DiseaseGroup.class, dgAux);
-            dg.setSamples(elem.getSamples());
-            dg.setVariants(elem.getVariants());
-            res.add(dg);
-
-            ids.add(dg.getGroupId());
-        }
-
-        List<DiseaseGroup> restDiseaseGroups = datastore.createQuery(DiseaseGroup.class).
-                field("gid").notIn(ids).asList();
-
-        res.addAll(restDiseaseGroups);
-
-        Collections.sort(res, new DiseaseGroupIdAscComparator());
+        List<DiseaseGroup> res = datastore.createQuery(DiseaseGroup.class).order("groupId").asList();
         return res;
     }
 
     public List<Technology> getAllTechnologies() {
-
-        List<Technology> res = new ArrayList<>();
-        List<Integer> ids = new ArrayList<>();
-
-        Iterator<AggregationElem> aggregate = this.datastore.
-                createAggregation(File.class).
-                group("t", Group.grouping("samples", Group.sum("s"))).
-                project(Projection.projection("_id").suppress(),
-                        Projection.projection("samples", "samples")
-                        , Projection.projection("ref", "_id")).out(AggregationElem.class);
-
-        while (aggregate.hasNext()) {
-            AggregationElem elem = aggregate.next();
-
-            DBRef aux = elem.getRef();
-            ObjectId dgAux = (ObjectId) aux.getId();
-            Technology dg = datastore.get(Technology.class, dgAux);
-            dg.setSamples(elem.getSamples());
-            dg.setVariants(elem.getVariants());
-            res.add(dg);
-
-            ids.add(dg.getTechnologyId());
-        }
-
-        List<Technology> restTechnologies = datastore.createQuery(Technology.class).
-                field("tid").notIn(ids).asList();
-
-        res.addAll(restTechnologies);
-
-        Collections.sort(res, new TechnologyIdAscComparator());
+        List<Technology> res = datastore.createQuery(Technology.class).order("technologyId").asList();
         return res;
     }
 
-//    private void retrieveVariants(Technology t) {
-//        long variants = datastore.createQuery(Variant.class).field("diseases.diseaseGroupId").equal(t.getTechnologyId()).countAll();
-//        t.setVariants((int) variants);
-//    }
-//
-//    private void retrieveSamples(Technology t) {
-//        Query<File> files = datastore.createQuery(File.class).filter("diseaseGroupId", t.getTechnologyId());
-//        int samples = 0;
-//        for (File f : files) {
-//            samples += f.getSamples();
-//        }
-//        t.setSamples(samples);
-//    }
-//
-//    private void retrieveVariants(DiseaseGroup dg) {
-//        long variants = datastore.createQuery(Variant.class).field("diseases.diseaseGroupId").equal(dg.getGroupId()).countAll();
-//        dg.setVariants((int) variants);
-//    }
-//
-//    private void retrieveSamples(DiseaseGroup dg) {
-//        Query<File> files = datastore.createQuery(File.class).filter("diseaseGroupId", dg.getGroupId());
-//        int samples = 0;
-//        for (File f : files) {
-//            samples += f.getSamples();
-//        }
-//        dg.setSamples(samples);
-//    }
+
 
     public List<DiseaseGroup> getAllDiseaseGroupsOrderedBySample() {
-        List<DiseaseGroup> list = this.getAllDiseaseGroups();
-        Collections.sort(list, new DiseaseGroupSampleDescComparator());
-        return list;
+        List<DiseaseGroup> res = datastore.createQuery(DiseaseGroup.class).order("-samples").asList();
+        return res;
     }
 
     public int getMaxDiseaseId() {

@@ -17,6 +17,8 @@ public class CSVSVariantCountsMongoWriter implements DataWriter<Variant> {
     private Datastore datastore;
     private File file;
     private int samples;
+    private int variantsT;
+    private int variantsD;
 
     public static final int CHUNK_SIZE_SMALL = 1000;
     public static final int CHUNK_SIZE_BIG = 10000;
@@ -27,6 +29,8 @@ public class CSVSVariantCountsMongoWriter implements DataWriter<Variant> {
         this.file = f;
         this.datastore = datastore;
         this.samples = 0;
+        this.variantsD = 0;
+        this.variantsT = 0;
 
     }
 
@@ -51,7 +55,17 @@ public class CSVSVariantCountsMongoWriter implements DataWriter<Variant> {
     public boolean post() {
 
         this.file.setSamples(this.samples);
+
+        this.diseaseGroup.incSamples(this.samples);
+        this.diseaseGroup.incVariants(this.variantsD);
+
+
+        System.out.println("variantsT = " + variantsT);
+        this.technology.incSamples(this.samples);
+        this.technology.incVariants(this.variantsT);
         this.datastore.save(this.diseaseGroup);
+        this.datastore.save(this.technology);
+
 
         return true;
     }
@@ -71,6 +85,8 @@ public class CSVSVariantCountsMongoWriter implements DataWriter<Variant> {
 
         if (v == null) {
             this.datastore.save(elem);
+            this.variantsD++;
+            this.variantsT++;
         } else {
 
             if (v.getIds() == null || v.getIds().isEmpty()) {
@@ -78,7 +94,15 @@ public class CSVSVariantCountsMongoWriter implements DataWriter<Variant> {
             }
 
             boolean b = false;
+            boolean d = false, t = false;
             for (DiseaseCount dc : v.getDiseases()) {
+                if (!d && dc.getDiseaseGroup().getGroupId() == this.diseaseGroup.getGroupId()) {
+                    d = true;
+                }
+                if (!t && dc.getTechnology().getTechnologyId() == this.technology.getTechnologyId()) {
+                    t = true;
+                }
+
                 if (dc.getDiseaseGroup().getGroupId() == this.diseaseGroup.getGroupId() && dc.getTechnology().getTechnologyId() == this.technology.getTechnologyId()) {
                     DiseaseCount aux = elem.getDiseaseCount(this.diseaseGroup, this.technology);
                     dc.incGt00(aux.getGt00());
@@ -89,6 +113,13 @@ public class CSVSVariantCountsMongoWriter implements DataWriter<Variant> {
                     this.datastore.save(v);
                     b = true;
                 }
+            }
+
+            if (!d) {
+                this.variantsD++;
+            }
+            if (!t) {
+                this.variantsT++;
             }
 
             if (!b) {

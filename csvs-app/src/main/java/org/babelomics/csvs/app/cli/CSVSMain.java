@@ -3,6 +3,7 @@ package org.babelomics.csvs.app.cli;
 import com.beust.jcommander.ParameterException;
 import com.google.common.base.Joiner;
 import org.apache.commons.lang3.mutable.MutableLong;
+import org.babelomics.csvs.lib.CSVSUtil;
 import org.babelomics.csvs.lib.io.CSVSQueryManager;
 import org.babelomics.csvs.lib.models.DiseaseCount;
 import org.babelomics.csvs.lib.models.DiseaseGroup;

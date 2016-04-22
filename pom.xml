@@ -187,6 +187,12 @@
                 <version>1.141</version>
             </dependency>
 
+            <dependency>
+                <groupId>de.flapdoodle.embed</groupId>
+                <artifactId>de.flapdoodle.embed.mongo</artifactId>
+                <version>1.50.2</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

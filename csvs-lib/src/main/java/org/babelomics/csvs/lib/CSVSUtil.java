@@ -1,4 +1,4 @@
-package org.babelomics.csvs.app.cli;
+package org.babelomics.csvs.lib;
 
 import com.google.common.base.Joiner;
 import com.mongodb.DuplicateKeyException;
@@ -129,7 +129,7 @@ public class CSVSUtil {
 
         File fDb = datastore.createQuery(File.class).field("sum").equal(sha256).get();
 
-        if (true || fDb == null) {
+        if (fDb == null) {
 
             Query<DiseaseGroup> queryDiseaseGroup = datastore.createQuery(DiseaseGroup.class).field("groupId").equal(diseaseGroupId);
             DiseaseGroup dg = queryDiseaseGroup.get();
@@ -137,10 +137,6 @@ public class CSVSUtil {
             Query<Technology> queryTechnology = datastore.createQuery(Technology.class).field("technologyId").equal(technologyId);
             Technology t = queryTechnology.get();
             File f = new File(sha256, dg, t);
-
-
-            System.out.println("dg = " + dg);
-            System.out.println("t = " + t);
 
             DataReader<Variant> reader = new CSVSVariantCountCSVDataReader(variantsPath.toAbsolutePath().toString(), dg, t);
 

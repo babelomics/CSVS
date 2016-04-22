@@ -22,9 +22,11 @@ public class DiseaseGroup {
     @Property("gid")
     private int groupId;
 
-    @Transient
+//    @Transient
+    @Property("s")
     private int samples;
-    @Transient
+//    @Transient
+    @Property("v")
     int variants;
 
     public DiseaseGroup() {
@@ -76,6 +78,14 @@ public class DiseaseGroup {
 
     public void setVariants(int variants) {
         this.variants = variants;
+    }
+
+    public void incVariants(int variants) {
+        this.variants += variants;
+    }
+
+    public void incSamples(int samples) {
+        this.samples += samples;
     }
 
     @Override

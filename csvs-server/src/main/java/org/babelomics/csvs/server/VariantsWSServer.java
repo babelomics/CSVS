@@ -79,9 +79,6 @@ public class VariantsWSServer extends CSVSWSServer {
             }
         }
 
-        System.out.println("diseaseList = " + diseaseList);
-        System.out.println("technologyList = " + technologyList);
-
         MutableLong count = new MutableLong(-1);
 
         if (csv) {
@@ -89,7 +86,9 @@ public class VariantsWSServer extends CSVSWSServer {
             limit = 200;
         }
 
-        Iterable<Variant> variants = qm.getVariantsByRegionList(regionList, diseaseList, technologyList, skip, limit, skipCount,count);
+        long start = System.currentTimeMillis();
+        Iterable<Variant> variants = qm.getVariantsByRegionList(regionList, diseaseList, technologyList, skip, limit, skipCount, count);
+        long end = System.currentTimeMillis();
 
         QueryResponse qr = createQueryResponse(variants);
         qr.setNumTotalResults(count.getValue());

@@ -12,7 +12,8 @@
 <link rel="import" href="csvs-saturation-element.html">
 
 <dom-module id="csvs-search-element">
-    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+    <style is="custom-style"
+           include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
         :host {
             display: block;
             box-sizing: border-box;
@@ -654,6 +655,7 @@
                 title: "1000G MAF (phase 1)",
                 width: 250,
                 name: 'maf1000g',
+                visible: false,
                 columns: [{
                     name: "maf1000G",
                     title: "ALL",
@@ -714,7 +716,7 @@
                 ]
             }, {
                 title: "1000G MAF (phase 3)",
-                width: 300,
+                width: 150,
                 name: 'maf1000G3',
                 columns: [{
                     name: "maf1000G_PHASE_3_ALL",
@@ -731,6 +733,7 @@
                     name: "maf1000G_PHASE_3_AMR",
                     title: "AME",
                     defaultValue: ".",
+                    visible: false,
                     formula: function (row) {
                         if (row.maf1000G_PHASE_3_AMR != null) {
                             return row.maf1000G_PHASE_3_AMR;
@@ -742,6 +745,7 @@
                     name: "maf1000G_PHASE_3_SAS",
                     title: "South ASI",
                     defaultValue: ".",
+                    visible: false,
                     formula: function (row) {
                         if (row.maf1000G_PHASE_3_SAS != null) {
                             return row.maf1000G_PHASE_3_SAS;
@@ -753,6 +757,7 @@
                     name: "maf1000G_PHASE_3_EAS",
                     title: "East ASI",
                     defaultValue: ".",
+                    visible: false,
                     formula: function (row) {
                         if (row.maf1000G_PHASE_3_EAS != null) {
                             return row.maf1000G_PHASE_3_EAS;
@@ -764,6 +769,7 @@
                     name: "maf1000G_PHASE_3_AFR",
                     title: "AFR",
                     defaultValue: ".",
+                    visible: false,
                     formula: function (row) {
                         if (row.maf1000G_PHASE_3_AFR != null) {
                             return row.maf1000G_PHASE_3_AFR;
@@ -817,7 +823,7 @@
                 width: 50
             }, {
                 name: 'polyphen',
-                title: 'POLYPHEN',
+                title: 'Polyphen',
                 width: 60
             }, {
                 name: 'phastcons',
@@ -1364,7 +1370,7 @@
                             for (var k = 0, l = ct.proteinSubstitutionScores.length; k < l; k++) {
 
                                 var pss = ct.proteinSubstitutionScores[k];
-                                switch (pss.source) {
+                                switch (pss.source.toLowerCase()) {
                                     case 'sift':
                                         auxSift = pss;
                                         break;
@@ -1387,17 +1393,17 @@
                     }
                     if (sif != -1 && poly != -1) {
 
-                        if (sifDesc) {
-                            variant.sift = sif + " (" + sifDesc + ")";
-                        } else {
+//                        if (sifDesc) {
+//                            variant.sift = sif + " (" + sifDesc + ")";
+//                        } else {
                             variant.sift = sif;
-                        }
+//                        }
 
-                        if (polyDesc) {
-                            variant.polyphen = poly + " (" + polyDesc + ")";
-                        } else {
+//                        if (polyDesc) {
+//                            variant.polyphen = poly + " (" + polyDesc + ")";
+//                        } else {
                             variant.polyphen = poly;
-                        }
+//                        }
                     }
 
                     if (genes.length > 0) {

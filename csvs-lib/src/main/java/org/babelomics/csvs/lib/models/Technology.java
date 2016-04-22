@@ -2,7 +2,10 @@ package org.babelomics.csvs.lib.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.bson.types.ObjectId;
-import org.mongodb.morphia.annotations.*;
+import org.mongodb.morphia.annotations.Entity;
+import org.mongodb.morphia.annotations.Id;
+import org.mongodb.morphia.annotations.Indexed;
+import org.mongodb.morphia.annotations.Property;
 
 /**
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
@@ -21,9 +24,9 @@ public class Technology {
     @Indexed(name = "index_technology_name", unique = true)
     @Property("n")
     private String name;
-    @Transient
+    @Property("s")
     private int samples;
-    @Transient
+    @Property("v")
     int variants;
 
 
@@ -76,6 +79,14 @@ public class Technology {
 
     public void setVariants(int variants) {
         this.variants = variants;
+    }
+
+    public void incVariants(int variants) {
+        this.variants += variants;
+    }
+
+    public void incSamples(int samples) {
+        this.samples += samples;
     }
 
     @Override
