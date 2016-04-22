@@ -1,3 +1,6 @@
 [submodule "population-variant-server-web/lib/jsorolla"]
 	path = csvs-web/lib/jsorolla
 	url = git@github.com:opencb/jsorolla.git
+[submodule "csvs-web/lib/stevia-components"]
+	path = csvs-web/lib/stevia-components
+	url = git@gitlab.bioinfo.cipf.es:stevia/stevia-components.git

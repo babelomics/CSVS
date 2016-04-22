@@ -1,12 +1,16 @@
-<link rel="import" href="../lib/jsorolla/src/lib/components/opencga/files/jso-opencga-file-origin.html">
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../bower_components/stevia-components/src/stv-input-text.html">
+<link rel="import" href="../bower_components/stevia-components/src/form/stv-file-origin.html">
 <dom-module id="csvs-annotation-form">
-    <style>
+    <style is="custom-style"
+           include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
         :host {
             display: block;
             position: relative;
             box-sizing: border-box;
             background-color: var(--default-primary-color);
-
         }
 
         #form {
@@ -38,11 +42,11 @@
             resize: none;
         }
 
-        .jso-btn {
+        .stv-btn {
             width: 200px;
         }
 
-        jso-select {
+        stv-select {
             width: 200px;
         }
 
@@ -70,29 +74,28 @@
                 <strong>Annotation form</strong>
             </p>
             <!-- <div class="horizontal layout center-justified">
-                <div class="jso-btn jso-btn-shdw"><i class="fa fa-rocket"></i> &nbsp; Run example</div>
+                <div class="stv-btn stv-btn-shdw"><i class="fa fa-rocket"></i> &nbsp; Run example</div>
             </div>
             <br> -->
 
             <div class="horizontal layout wrap">
-                <div class="jso-formbox flex vcf-file">
-                    <div class="jso-formtitle">
+                <div class="stv-formbox flex vcf-file">
+                    <div class="stv-formtitle">
                         Input data
                     </div>
-                    <div class="jso-formcontent">
+                    <div class="stv-formcontent">
                         <div>VCF file: &nbsp;
-                            <jso-opencga-file-origin id="vcf_file" selectedStudy="{{selectedStudy}}"
-                                                     selection-mode="file"
-                                                     bioformats="{{bioformats}}" projects="{{projects}}">
-                            </jso-opencga-file-origin>
+                            <stv-file-origin id="vcf_file" selection-mode="file" bioformats="{{bioformats}}"
+                                             user-data="{{userData}}">
+                            </stv-file-origin>
                             <span id="vcf_fileError" class="errmsg"></span>
                         </div>
                         <br>
                     </div>
                 </div>
 
-                <div class="jso-formbox diseases">
-                    <div class="jso-formtitle horizontal layout center">
+                <div class="stv-formbox diseases">
+                    <div class="stv-formtitle horizontal layout center">
                         <div>Subpopulations</div>
                         <div class="flex"></div>
                         <div class="check" on-click="selectAllDiseases">
@@ -102,9 +105,9 @@
                             <i class="fa fa-square-o"></i>
                         </div>
                     </div>
-                    <div id="diseases_div" class="jso-formcontent" style="padding: 8px 10px">
+                    <div id="diseases_div" class="stv-formcontent" style="padding: 8px 10px">
                         <template is="dom-repeat" items="{{diseases}}">
-                            <label class="jso-control">
+                            <label class="stv-control">
                                 <input type="checkbox" class="diseaseName" name="disease" id="disease"
                                        value="{{item.groupId}}" checked/>
                                 <span>{{item.name}}</span>
@@ -114,24 +117,20 @@
                 </div>
             </div>
 
-            <div class="jso-formbox">
-                <div class="jso-formtitle">
+            <div class="stv-formbox">
+                <div class="stv-formtitle">
                     Job information
                 </div>
-                <div class="jso-formcontent">
+                <div class="stv-formcontent">
                     <div>Output folder: &nbsp;
-                        <jso-opencga-file-origin id="output_folder" selection-mode="folder" bioformats="{{bioformats}}"
-                                                 projects="{{projects}}">
-                        </jso-opencga-file-origin>
+                        <stv-file-origin id="output_folder" selection-mode="folder" bioformats="{{bioformats}}"
+                                         user-data="{{userData}}">
+                        </stv-file-origin>
                         <span id="output_folderError" class="errmsg"></span>
                     </div>
 
-                    <jso-opencga-input-text
-                            id="outputFile"
-                            label="Output file:"
-                            placeholder="output_file.vcf"
-                            tooltip="Output file"
-                    ></jso-opencga-input-text>
+                    <stv-input-text id="outputFile" label="Output file:" placeholder="output_file.vcf"
+                                    tooltip="Output file"></stv-input-text>
                     <br>
 
                     <div class="coment">Job name</div>
@@ -145,7 +144,7 @@
             <span class="errmsg">{{errorMessage}}</span>
 
             <div class="horizontal layout center-justified">
-                <div class="jso-btn jso-btn-shdw jso-btn-big" on-click="launchJob"><i class="fa fa-rocket"></i> &nbsp;
+                <div class="stv-btn stv-btn-shdw stv-btn-big" on-click="launchJob"><i class="fa fa-rocket"></i> &nbsp;
                     Launch Job
                 </div>
             </div>
@@ -158,7 +157,7 @@
     <script>
         Polymer({
             is: 'csvs-annotation-form',
-            behaviors: [JsoOpencgaManagerBehavior],
+            // behaviors: [JsoOpencgaManagerBehavior],
             properties: {
                 toolId: {
                     type: String,
@@ -176,7 +175,13 @@
                     value: function () {
                         return [];
                     }
-                }
+                },
+                bioformats: {
+                    type: Array
+                },
+                userData: {
+                    type: Object
+                },
 
             },
             _setError: function (id, msg) {
@@ -195,34 +200,60 @@
             launchJob: function (e) {
                 var me = this;
 
+                // var query = {
+                //     sid: Cookies("bioinfo_sid"),
+                //     toolId: this.toolId,
+                //     execution: this.execution,
+                //     name: this.$.jobName.value,
+                //     description: this.$.jobDescription.value
+                // };
+
                 var query = {
                     sid: Cookies("bioinfo_sid"),
-                    toolId: this.toolId,
-                    execution: this.execution,
                     name: this.$.jobName.value,
                     description: this.$.jobDescription.value
+                    // outdirId: '56e6d0ed5d07cb333f39f6d0'
                 };
 
-                if (this.$.output_folder.selectedFile == null) {
-                    this._setError('output_folder', "No folder selected");
-                } else {
-                    this._clearError('output_folder');
-                    query['outdir'] = this.$.output_folder.selectedFile.id;
-                    query['studyId'] = this.$.output_folder.selectedStudy.id;
+                var jobConfig = {
+                    tool: 'csvs',
+                    // execution: 'differential-signaling',
+                    executable: 'csvs.sh',
+                    options: {
+                        "outdir": {
+                            out: true,
+                        }
+
+                    }
+                };
+
+                if (this.$.output_folder.selectedFile != null) {
+                    query.outdirId = this.$.output_folder.selectedFile._id
                 }
 
 
                 if (this.$.outputFile.getValue() != null && this.$.outputFile.getValue() != "") {
-                    query['outfile'] = this.$.outputFile.getValue();
+                    jobConfig.options.outfile = {
+                        type: 'text',
+                        value: this.$.outputFile.getValue()
+                    };
                 } else {
-                    query['outfile'] = "output_file.vcf";
+                    jobConfig.options.outfile = {
+                        type: 'text',
+                        value: "output_file.vcf"
+                    };
                 }
 
                 if (this.$.vcf_file.selectedFile == null) {
                     this._setError('vcf_file', 'No vcf file selected');
                 } else {
                     this._clearError('vcf_file');
-                    query['input'] = this.$.vcf_file.selectedFile.id;
+                    // query['input'] = this.$.vcf_file.selectedFile.id;
+                    jobConfig.options.input = {
+                        type: 'file',
+                        mode: 'id',
+                        value: this.$.vcf_file.selectedFile._id
+                    }
                 }
 
                 var subpopulations = [];
@@ -237,30 +268,62 @@
                 }
 
                 if (subpopulations.length > 0) {
-                    query['diseaseId'] = subpopulations.join(",");
+                    jobConfig.options.diseaseId = {
+                        type: "text",
+                        value: subpopulations.join(",")
+                    };
                 }
-
 
                 if (this.errorMessage === '' && this.$.form.checkValidity()) {
                     console.log(this.$.form.checkValidity())
-                    OpencgaManager.jobs.create({
+                    // OpencgaManager.jobs.create({
+                    //     query: query,
+                    //     request: {
+                    //         //method: 'POST',
+                    //         success: function(response) {
+                    //             if (response.response[0].errorMsg === '' || response.response[0].errorMsg == null) {
+                    //                 var job = response.response[0].result[0];
+                    //                 me.selectedOption = "jobLaunched"
+                    //                 console.log(job);
+                    //                 // me._clean();
+                    //                 me.fire('job-launched');
+                    //                 //                                    me.message = job.commandLine;
+                    //             } else {
+                    //                 me.message = response.response[0].errorMsg;
+                    //             }
+                    //         },
+                    //         error: function() {
+                    //             me.message = 'Server error, try again later.';
+                    //         }
+                    //     }
+                    // });
+                    SteviaManager.jobs.create({
                         query: query,
                         request: {
-                            //method: 'POST',
+                            method: 'POST',
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify(jobConfig),
                             success: function (response) {
-                                if (response.response[0].errorMsg === '' || response.response[0].errorMsg == null) {
-                                    var job = response.response[0].result[0];
+                                if (response.response[0].error == null) {
+                                    // var job = response.response[0].result[0];
                                     me.selectedOption = "jobLaunched"
-                                    console.log(job);
-                                    // me._clean();
+                                    //                 console.log(job);
+                                    //                 // me._clean();
                                     me.fire('job-launched');
-                                    //                                    me.message = job.commandLine;
+                                    //                 //
+                                    console.log(response);
                                 } else {
-                                    me.message = response.response[0].errorMsg;
+                                    console.log(response.response[0].error);
+                                    me.message = response.response[0].error;
+
                                 }
                             },
                             error: function () {
+                                console.log('Server error, try again later.');
                                 me.message = 'Server error, try again later.';
+
                             }
                         }
                     });
@@ -274,8 +337,7 @@
                     elem.checked = true;
                 }
 
-            }
-            ,
+            },
             deselectAllDiseases: function (e, d, s) {
                 var checkboxes = this.$.diseases_div.getElementsByClassName("diseaseName");
                 for (var i = 0; i < checkboxes.length; i++) {

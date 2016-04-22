@@ -1,5 +1,6 @@
 package org.babelomics.csvs.lib.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Id;
@@ -12,6 +13,7 @@ import org.mongodb.morphia.annotations.Property;
 @Entity(noClassnameStored = true)
 //@Indexes(@Index(name = "index", value = "n", unique = true))
 public class Technology {
+    @JsonIgnore
     @Id
     private ObjectId id;
 
@@ -22,12 +24,11 @@ public class Technology {
     @Indexed(name = "index_technology_name", unique = true)
     @Property("n")
     private String name;
-
-
     @Property("s")
     private int samples;
     @Property("v")
-    private int variants;
+    int variants;
+
 
     public Technology() {
         this.samples = 0;
@@ -80,28 +81,21 @@ public class Technology {
         this.variants = variants;
     }
 
-    public void incSamples(int samples) {
-        this.samples += samples;
-    }
-
     public void incVariants(int variants) {
         this.variants += variants;
     }
 
-    public void decVariants(int variants) {
-        this.variants -= variants;
-    }
-
-    public void decSamples(int samples) {
-        this.samples -= samples;
+    public void incSamples(int samples) {
+        this.samples += samples;
     }
 
     @Override
     public String toString() {
         return "Technology{" +
-                "id=" + id +
-                ", technologyId=" + technologyId +
+                "technologyId=" + technologyId +
                 ", name='" + name + '\'' +
+                ", samples=" + samples +
+                ", variants=" + variants +
                 '}';
     }
 }

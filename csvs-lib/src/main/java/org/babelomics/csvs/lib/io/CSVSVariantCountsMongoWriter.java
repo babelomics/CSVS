@@ -1,9 +1,6 @@
 package org.babelomics.csvs.lib.io;
 
-import org.babelomics.csvs.lib.models.DiseaseCount;
-import org.babelomics.csvs.lib.models.DiseaseGroup;
-import org.babelomics.csvs.lib.models.Technology;
-import org.babelomics.csvs.lib.models.Variant;
+import org.babelomics.csvs.lib.models.*;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.query.Query;
 import org.opencb.commons.io.DataWriter;
@@ -18,18 +15,23 @@ public class CSVSVariantCountsMongoWriter implements DataWriter<Variant> {
     private DiseaseGroup diseaseGroup;
     private Technology technology;
     private Datastore datastore;
+    private File file;
     private int samples;
-    private int variants;
+    private int variantsT;
+    private int variantsD;
 
     public static final int CHUNK_SIZE_SMALL = 1000;
     public static final int CHUNK_SIZE_BIG = 10000;
 
-    public CSVSVariantCountsMongoWriter(DiseaseGroup diseaseGroup, Technology t, Datastore datastore) {
+    public CSVSVariantCountsMongoWriter(DiseaseGroup diseaseGroup, Technology t, File f, Datastore datastore) {
         this.diseaseGroup = diseaseGroup;
         this.technology = t;
+        this.file = f;
         this.datastore = datastore;
         this.samples = 0;
-        this.variants = 0;
+        this.variantsD = 0;
+        this.variantsT = 0;
+
     }
 
     @Override
@@ -52,15 +54,18 @@ public class CSVSVariantCountsMongoWriter implements DataWriter<Variant> {
     @Override
     public boolean post() {
 
-//        DiseaseGroup dg = this.datastore.get(DiseaseGroup.class, diseaseGroup.getId());
+        this.file.setSamples(this.samples);
 
         this.diseaseGroup.incSamples(this.samples);
-        this.diseaseGroup.incVariants(this.variants);
+        this.diseaseGroup.incVariants(this.variantsD);
 
+
+        System.out.println("variantsT = " + variantsT);
         this.technology.incSamples(this.samples);
-        this.technology.incVariants(this.variants);
-
+        this.technology.incVariants(this.variantsT);
         this.datastore.save(this.diseaseGroup);
+        this.datastore.save(this.technology);
+
 
         return true;
     }
@@ -80,7 +85,8 @@ public class CSVSVariantCountsMongoWriter implements DataWriter<Variant> {
 
         if (v == null) {
             this.datastore.save(elem);
-            this.variants++;
+            this.variantsD++;
+            this.variantsT++;
         } else {
 
             if (v.getIds() == null || v.getIds().isEmpty()) {
@@ -88,7 +94,15 @@ public class CSVSVariantCountsMongoWriter implements DataWriter<Variant> {
             }
 
             boolean b = false;
+            boolean d = false, t = false;
             for (DiseaseCount dc : v.getDiseases()) {
+                if (!d && dc.getDiseaseGroup().getGroupId() == this.diseaseGroup.getGroupId()) {
+                    d = true;
+                }
+                if (!t && dc.getTechnology().getTechnologyId() == this.technology.getTechnologyId()) {
+                    t = true;
+                }
+
                 if (dc.getDiseaseGroup().getGroupId() == this.diseaseGroup.getGroupId() && dc.getTechnology().getTechnologyId() == this.technology.getTechnologyId()) {
                     DiseaseCount aux = elem.getDiseaseCount(this.diseaseGroup, this.technology);
                     dc.incGt00(aux.getGt00());
@@ -99,6 +113,13 @@ public class CSVSVariantCountsMongoWriter implements DataWriter<Variant> {
                     this.datastore.save(v);
                     b = true;
                 }
+            }
+
+            if (!d) {
+                this.variantsD++;
+            }
+            if (!t) {
+                this.variantsT++;
             }
 
             if (!b) {

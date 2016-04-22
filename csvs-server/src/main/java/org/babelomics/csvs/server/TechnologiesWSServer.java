@@ -2,7 +2,7 @@ package org.babelomics.csvs.server;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
-import org.babelomics.csvs.lib.models.DiseaseGroup;
+import org.babelomics.csvs.lib.models.Technology;
 import org.babelomics.csvs.lib.ws.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,12 +17,11 @@ import java.util.List;
 /**
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
  */
-
-@Path("/diseases")
-@Api(value = "Diseases", description = "Diseases")
+@Path("/technologies")
+@Api(value = "Technologies", description = "Technologies")
 @Produces(MediaType.APPLICATION_JSON)
-public class DiseasesWSServer extends CSVSWSServer {
-    public DiseasesWSServer(@DefaultValue("") @PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
+public class TechnologiesWSServer extends CSVSWSServer {
+    public TechnologiesWSServer(@DefaultValue("") @PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws IOException {
         super(version, uriInfo, hsr);
 
@@ -31,10 +30,12 @@ public class DiseasesWSServer extends CSVSWSServer {
     @GET
     @Path("/list")
     @Produces("application/json")
-    @ApiOperation(value = "List diseases")
+    @ApiOperation(value = "List technologies")
     public Response getAllDiseases() {
 
-        List<DiseaseGroup> res = qm.getAllDiseaseGroups();
+        List<Technology> res = qm.getAllTechnologies();
+
+        System.out.println("res = " + res);
 
         QueryResponse qr = createQueryResponse(res);
         qr.setNumResults(qr.getNumTotalResults());

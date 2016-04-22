@@ -26,7 +26,7 @@ import java.util.Map;
 @Path("/regions")
 @Api(value = "regions", description = "Regions")
 @Produces(MediaType.APPLICATION_JSON)
-public class RegionWSServer extends CSVWSServer {
+public class RegionWSServer extends CSVSWSServer {
     public RegionWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest httpServletRequest) throws IOException {
         super(version, uriInfo, httpServletRequest);
     }

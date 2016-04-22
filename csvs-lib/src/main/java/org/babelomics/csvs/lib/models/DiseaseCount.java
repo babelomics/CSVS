@@ -41,15 +41,6 @@ public class DiseaseCount {
     public DiseaseCount() {
     }
 
-    @Deprecated
-    public DiseaseCount(DiseaseGroup diseaseGroup, int gt00, int gt01, int gt11, int gtmissing) {
-        this.diseaseGroup = diseaseGroup;
-        this.gt00 = gt00;
-        this.gt01 = gt01;
-        this.gt11 = gt11;
-        this.gtmissing = gtmissing;
-    }
-
     public DiseaseCount(DiseaseGroup diseaseGroup, Technology technology, int gt00, int gt01, int gt11, int gtmissing) {
         this.diseaseGroup = diseaseGroup;
         this.technology = technology;

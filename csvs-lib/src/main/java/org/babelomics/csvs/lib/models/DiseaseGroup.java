@@ -2,10 +2,7 @@ package org.babelomics.csvs.lib.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.bson.types.ObjectId;
-import org.mongodb.morphia.annotations.Entity;
-import org.mongodb.morphia.annotations.Id;
-import org.mongodb.morphia.annotations.Indexed;
-import org.mongodb.morphia.annotations.Property;
+import org.mongodb.morphia.annotations.*;
 
 /**
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
@@ -25,12 +22,12 @@ public class DiseaseGroup {
     @Property("gid")
     private int groupId;
 
+//    @Transient
     @Property("s")
     private int samples;
-
+//    @Transient
     @Property("v")
-    private long variants;
-
+    int variants;
 
     public DiseaseGroup() {
         this.samples = 0;
@@ -75,28 +72,20 @@ public class DiseaseGroup {
         this.samples = samples;
     }
 
-    public void incSamples(int samples) {
-        this.samples += samples;
+    public int getVariants() {
+        return variants;
+    }
+
+    public void setVariants(int variants) {
+        this.variants = variants;
     }
 
     public void incVariants(int variants) {
         this.variants += variants;
     }
 
-    public void decVariants(int variants) {
-        this.variants -= variants;
-    }
-
-    public void decSamples(int samples) {
-        this.samples -= samples;
-    }
-
-    public long getVariants() {
-        return variants;
-    }
-
-    public void setVariants(long variants) {
-        this.variants = variants;
+    public void incSamples(int samples) {
+        this.samples += samples;
     }
 
     @Override

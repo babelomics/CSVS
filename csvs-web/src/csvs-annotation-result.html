@@ -1,11 +1,15 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../bower_components/stevia-components/src/file/stv-file-preview.html">
+<!-- <link rel="import" href="../lib/jsorolla/src/lib/components/opencga/jso-opencga-manager-behavior.html"> -->
 <dom-module id="csvs-annotation-result">
-    <style>
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
         :host {
             display: block;
             position: relative;
             box-sizing: border-box;
             background-color: var(--default-primary-color);
-
         }
 
         .container {
@@ -24,41 +28,44 @@
         .down {
             min-width: 300px;
         }
-
     </style>
     <template>
         <div class="container vertical layout">
             <div class="header horizontal layout center-justified">
-                <div class="jso-btn jso-btn-shdw down" on-click="downloadFiles" title="Download File">
+                <div class="stv-btn stv-btn-shdw down" on-click="downloadFiles" title="Download File">
                     <i class="fa fa-cloud-download"></i> &nbsp; Download Annotated File (<span>{{fileName}}</span>)
                 </div>
             </div>
-            <jso-opencga-file-preview id="filePreview"></jso-opencga-file-preview>
+            <stv-file-preview id="filePreview"></stv-file-preview>
         </div>
     </template>
 
     <script>
         Polymer({
             is: 'csvs-annotation-result',
-            behaviors: [JsoOpencgaManagerBehavior],
+            // behaviors: [JsoOpencgaManagerBehavior],
             properties: {
                 file: {
                     type: Object,
-                    value: function () {
+                    value: function() {
                         return {};
                     },
                     observer: 'fileChanged'
+                },
+                name: {
+                    type: String,
+                    value: ""
                 }
             },
-            fileChanged: function (neo, old) {
-                if (neo && neo.id) {
-                    this.$.filePreview.file = neo;
+            fileChanged: function(neo, old) {
+                if (neo && neo._id) {
+                    this.$.filePreview.fileId = neo._id;
                     this.fileName = neo.name;
                 }
 
             },
-            downloadFiles: function (e) {
-                this._downloadFile(this.file.id);
+            downloadFiles: function(e) {
+              SteviaManager.downloadFile(this.file._id);
             }
         });
     </script>
