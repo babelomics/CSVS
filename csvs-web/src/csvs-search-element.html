@@ -316,7 +316,7 @@
                     <div on-click="handleMenuClick" data-option="frequency">Frequencies</div>
                     <div on-click="handleMenuClick" data-option="phenotype">Phenotype</div>
                     <div on-click="handleMenuClick" data-option="effect">Effect</div>
-                    <div on-click="handleMenuClick" data-option="saturation">Saturation</div>
+                    <!--<div on-click="handleMenuClick" data-option="saturation">Saturation</div>-->
                 </div>
 
                 <!--<paper-button raised on-click="{{ exportQueryToCSV }}" horizontal layout end-justified-->
@@ -329,7 +329,7 @@
                     <stv-variant-frequencies id="frequency" hidden></stv-variant-frequencies>
                     <stv-variant-phenotype id="phenotype" hidden></stv-variant-phenotype>
                     <stv-variant-effect id="effect" hidden></stv-variant-effect>
-                    <csvs-saturation-element id="saturation" diseases="{{diseases}}" hidden></csvs-saturation-element>
+                    <!--<csvs-saturation-element id="saturation" diseases="{{diseases}}" hidden></csvs-saturation-element>-->
                 </div>
             </div>
         </div>
@@ -1083,31 +1083,31 @@
                 });
 
 
-                // Calculate Saturation
-                CSVSManager.regions.saturation({
-                    id: regionQuery,
-                    request: {
-                        // host: "http://aaleman:8080/csvs/rest",
-                        success: function (response) {
-
-                            var data = response.result[0];
-
-                            for (var region in regionGene) {
-                                if (region in data) {
-                                    var newKey = regionGene[region];
-                                    data[newKey] = data[region];
-                                    delete data[region];
-                                }
-                            }
-                            try {
-                                me.$.saturation.reloadChart(data);
-                            } catch (e) {
-                                me.$.saturation.reloadChart({});
-                            }
-
-                        }
-                    }
-                });
+//                // Calculate Saturation
+//                CSVSManager.regions.saturation({
+//                    id: regionQuery,
+//                    request: {
+//                        // host: "http://aaleman:8080/csvs/rest",
+//                        success: function (response) {
+//
+//                            var data = response.result[0];
+//
+//                            for (var region in regionGene) {
+//                                if (region in data) {
+//                                    var newKey = regionGene[region];
+//                                    data[newKey] = data[region];
+//                                    delete data[region];
+//                                }
+//                            }
+//                            try {
+//                                me.$.saturation.reloadChart(data);
+//                            } catch (e) {
+//                                me.$.saturation.reloadChart({});
+//                            }
+//
+//                        }
+//                    }
+//                });
 
 
                 this.formURL = url;
