@@ -2,7 +2,6 @@ package org.babelomics.csvs.lib.io;
 
 import com.mongodb.*;
 import org.apache.commons.lang3.mutable.MutableLong;
-import org.babelomics.csvs.lib.comparators.DiseaseGroupSampleDescComparator;
 import org.babelomics.csvs.lib.models.*;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
@@ -53,11 +52,26 @@ public class CSVSQueryManager {
         return res;
     }
 
+    public List<Integer> getAllDiseaseGroupIds() {
+        List<Integer> list = new ArrayList<>();
+        for (DiseaseGroup dg : this.getAllDiseaseGroups()) {
+            list.add(dg.getGroupId());
+        }
+        return list;
+    }
+
+    public List<Integer> getAllTechnologieIds() {
+        List<Integer> list = new ArrayList<>();
+        for (Technology t : this.getAllTechnologies()) {
+            list.add(t.getTechnologyId());
+        }
+        return list;
+    }
+
     public List<Technology> getAllTechnologies() {
         List<Technology> res = datastore.createQuery(Technology.class).order("technologyId").asList();
         return res;
     }
-
 
 
     public List<DiseaseGroup> getAllDiseaseGroupsOrderedBySample() {
@@ -125,6 +139,9 @@ public class CSVSQueryManager {
 
         if (diseaseIds != null && diseaseIds.size() > 0) {
             query.filter("diseases.diseaseGroupId in", diseaseIds);
+        }
+        if (technologyIds != null && technologyIds.size() > 0) {
+            query.filter("diseases.technologyId in", technologyIds);
         }
 
         Variant res = query.get();
@@ -434,12 +451,19 @@ public class CSVSQueryManager {
     private int calculateSampleCount(List<Integer> diseaseId, List<Integer> technologyId) {
         int res = 0;
 
-//        Iterable<DiseaseGroup> groupId = this.datastore.createQuery(DiseaseGroup.class).field("groupId").in(diseaseId).fetch();
-        Iterable<File> files = this.datastore.createQuery(File.class).
-                field("diseaseGroupId").in(diseaseId).
-                field("technologyId").in(technologyId);
 
-        for (File f : files) {
+        Query<File> query = this.datastore.createQuery(File.class);
+
+        if (diseaseId != null && diseaseId.size() > 0) {
+//            query.filter("diseases.diseaseGroupId in", diseaseId);
+            query.field("diseaseGroupId").in(diseaseId);
+
+        }
+        if (technologyId != null && technologyId.size() > 0) {
+            query.field("technologyId").in(technologyId);
+        }
+
+        for (File f : query) {
             res += f.getSamples();
         }
 

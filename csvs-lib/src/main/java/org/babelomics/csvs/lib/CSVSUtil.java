@@ -209,11 +209,9 @@ public class CSVSUtil {
                     DiseaseCount vDc = v.getDiseaseCount(dg, t);
                     DiseaseCount elemDC = elem.getDiseaseCount(dg, t);
                     if (vDc != null) {
-
                         if (samples == 0) {
                             samples = elemDC.getTotalGts();
                         }
-
                         vDc.decGt00(elemDC.getGt00());
                         vDc.decGt01(elemDC.getGt01());
                         vDc.decGt11(elemDC.getGt11());
@@ -249,6 +247,18 @@ public class CSVSUtil {
     public static void annotFile(String input, String output, List<Integer> diseases, List<Integer> technologies, Datastore datastore) {
         CSVSQueryManager qm = new CSVSQueryManager(datastore);
 
+        boolean all_dis = false;
+        boolean all_tech = false;
+
+        if (diseases == null || diseases.isEmpty()) {
+            diseases = qm.getAllDiseaseGroupIds();
+            all_dis = true;
+        }
+        if (technologies == null || technologies.isEmpty()) {
+            technologies = qm.getAllTechnologieIds();
+            all_tech = true;
+        }
+
         VCFFileReader variantReader = new VCFFileReader(new java.io.File(input), false);
         VCFHeader fileHeader = variantReader.getFileHeader();
 
@@ -258,9 +268,14 @@ public class CSVSUtil {
 
         VCFInfoHeaderLine csvs_maf = new VCFInfoHeaderLine("CSVS_MAF", VCFHeaderLineCount.A, VCFHeaderLineType.Float, "MAF from CSVS, for each ALT allele, in the same order as listed");
         VCFInfoHeaderLine csvs_dis = new VCFInfoHeaderLine("CSVS_DIS", VCFHeaderLineCount.UNBOUNDED, VCFHeaderLineType.Integer, "Selected diseases from CSVS");
+        VCFInfoHeaderLine csvs_tech = new VCFInfoHeaderLine("CSVS_TECH", VCFHeaderLineCount.UNBOUNDED, VCFHeaderLineType.Integer, "Selected technologies from CSVS");
+        VCFInfoHeaderLine csvs_gc = new VCFInfoHeaderLine("CSVS_GC", VCFHeaderLineCount.A, VCFHeaderLineType.Integer, "Genotype count(0/0,0/1,1/1,./.) for each alt Allele in the same order as listed");
 
         fileHeader.addMetaDataLine(csvs_maf);
         fileHeader.addMetaDataLine(csvs_dis);
+        fileHeader.addMetaDataLine(csvs_tech);
+        fileHeader.addMetaDataLine(csvs_gc);
+
 
         final VariantContextWriter vcfWriter = builder.setOutputFile(new java.io.File(output)).build();
         vcfWriter.writeHeader(fileHeader);
@@ -273,6 +288,7 @@ public class CSVSUtil {
             String ref = context.getReference().getBaseString();
 
             List<String> mafs = new ArrayList<>();
+            List<String> counts = new ArrayList<>();
             boolean maf = false;
 
 
@@ -282,14 +298,20 @@ public class CSVSUtil {
                 if (dbVariant != null) {
                     DiseaseCount dc = dbVariant.getStats();
                     mafs.add(String.valueOf(dc.getMaf()));
+                    counts.add("0/0:" + dc.getGt00() + ",0/1:" + dc.getGt01() + ",1/1:" + dc.getGt11() + ",./.:" + dc.getGtmissing());
                     maf = true;
                 } else {
                     mafs.add(".");
+                    counts.add(".");
                 }
             }
             if (maf && mafs.size() == context.getAlternateAlleles().size()) {
                 context.getCommonInfo().putAttribute("CSVS_MAF", Joiner.on(",").join(mafs));
-                context.getCommonInfo().putAttribute("CSVS_DIS", (diseases == null || diseases.size() == 0) ? "ALL" : Joiner.on(",").join(diseases));
+                context.getCommonInfo().putAttribute("CSVS_DIS", (all_dis) ? "ALL" : Joiner.on(",").join(diseases));
+                context.getCommonInfo().putAttribute("CSVS_TECH", (all_tech) ? "ALL" : Joiner.on(",").join(technologies));
+                context.getCommonInfo().putAttribute("CSVS_GC", Joiner.on(";").join(counts));
+
+
             }
 
 

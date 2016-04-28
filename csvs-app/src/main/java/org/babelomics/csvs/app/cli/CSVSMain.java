@@ -197,7 +197,7 @@ public class CSVSMain {
 
                 MutableLong count = new MutableLong(-1);
 
-                Iterable<Variant> query = qm.getVariantsByRegionList(regionList, diseaseId, technologyId, c.skip, c.limit,false, count);
+                Iterable<Variant> query = qm.getVariantsByRegionList(regionList, diseaseId, technologyId, c.skip, c.limit, false, count);
 
                 if (!c.csv) {
                     System.out.println("chr\tpos\tref\talt\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF");
@@ -294,11 +294,9 @@ public class CSVSMain {
             OptionsParser.CommandAnnotFile c = (OptionsParser.CommandAnnotFile) command;
             String input = c.input;
             String output = c.outdir + "/" + c.outfile;
-            List<Integer> diseases = (c.diseaseId != null && c.diseaseId.size() > 0) ? c.diseaseId : null;
-            List<Integer> technologies = (c.technologyId != null && c.technologyId.size() > 0) ? c.technologyId : null;
             Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName);
 
-            CSVSUtil.annotFile(input, output, diseases, technologies, datastore);
+            CSVSUtil.annotFile(input, output, c.diseaseId, c.technologyId, datastore);
 
         } else {
             System.err.println("Comand not found");
