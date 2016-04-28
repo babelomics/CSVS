@@ -2,12 +2,12 @@
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
 <link rel="import" href="../lib/jsorolla/src/lib/components/jso-genome-viewer-element.html">
-<link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-effect-grid.html">
-<link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-frequencies-grid.html">
-<link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-phenotype-grid.html">
 
 <link rel="import" href="../bower_components/stevia-components/src/filter/stv-filter-position.html">
 <link rel="import" href="../bower_components/stevia-components/src/stv-tooltip.html">
+<link rel="import" href="../bower_components/stevia-components/src/variant/stv-variant-frequencies.html">
+<link rel="import" href="../bower_components/stevia-components/src/variant/stv-variant-phenotype.html">
+<link rel="import" href="../bower_components/stevia-components/src/variant/stv-variant-effect.html">
 
 <link rel="import" href="csvs-saturation-element.html">
 
@@ -326,9 +326,9 @@
                 <div id="tools">
                     <jso-genome-viewer-element id="gv"
                                                on-created="handleGenomeViewerCreated"></jso-genome-viewer-element>
-                    <jso-variant-frequencies-grid id="frequency" hidden></jso-variant-frequencies-grid>
-                    <jso-variant-phenotype-grid id="phenotype" hidden></jso-variant-phenotype-grid>
-                    <jso-variant-effect-grid id="effect" hidden></jso-variant-effect-grid>
+                    <stv-variant-frequencies id="frequency" hidden></stv-variant-frequencies>
+                    <stv-variant-phenotype id="phenotype" hidden></stv-variant-phenotype>
+                    <stv-variant-effect id="effect" hidden></stv-variant-effect>
                     <csvs-saturation-element id="saturation" diseases="{{diseases}}" hidden></csvs-saturation-element>
                 </div>
             </div>
@@ -533,6 +533,7 @@
             var me = this;
             this.species = 'Homo sapiens';
             var lastQuery = '';
+            this.geneValue = "PPL";
 
             this.async(function () { // DOM READY
                 me.selectedMenuTool = me.$.menu.querySelector('div');
@@ -791,75 +792,128 @@
                 },]
 
             }, {
-                title: "ESP 6500",
-                width: 100,
-                name: 'maf6500',
+                title: "ExAC",
+                width: 50,
+                name: 'mafexac',
                 columns: [{
-                    name: "mafESP_EA",
-                    title: "Eur. Ame.",
+                    name: "mafexac_ALL",
+                    title: "ALL",
                     defaultValue: ".",
                     formula: function (row) {
-                        if (row.mafESP_EA != null) {
-                            return row.mafESP_EA;
+                        if (row.mafexac_ALL != null) {
+                            return row.mafexac_ALL;
                         } else {
                             return ".";
                         }
                     }
-                }, {
-                    name: "mafESP_AA",
-                    title: "Afr. Ame.",
-                    defaultValue: ".",
-                    formula: function (row) {
-                        if (row.mafESP_AA != null) {
-                            return row.mafESP_AA;
-                        } else {
-                            return ".";
+                }
+//                    , {
+//                    name: "mafexac_EUR",
+//                    title: "EUR",
+//                    defaultValue: ".",
+//                    formula: function (row) {
+//                        if (row.mafexac_EUR != null) {
+//                            return row.mafexac_EUR;
+//                        } else {
+//                            return ".";
+//                        }
+//                    }
+//                }
+                ]
+            },
+
+                {
+                    title: "ESP 6500",
+                    width: 100,
+                    name: 'maf6500',
+                    columns: [{
+                        name: "mafESP_ALL",
+                        title: "ALL",
+                        defaultValue: ".",
+                        formula: function (row) {
+                            if (row.mafESP_ALL != null) {
+                                return row.mafESP_ALL;
+                            } else {
+                                return ".";
+                            }
+                        }
+                    }, {
+                        name: "mafESP_EA",
+                        title: "Eur. Ame.",
+                        defaultValue: ".",
+                        formula: function (row) {
+                            if (row.mafESP_EA != null) {
+                                return row.mafESP_EA;
+                            } else {
+                                return ".";
+                            }
                         }
                     }
-                }]
-            }, {
-                name: 'sift',
-                title: 'SIFT',
-                width: 50
-            }, {
-                name: 'polyphen',
-                title: 'Polyphen',
-                width: 60
-            }, {
-                name: 'phastcons',
-                title: 'PhastCons',
-                width: 60
-            }, {
-                name: 'phylop',
-                title: 'phyloP',
-                width: 50
-            }, {
-                name: 'phenotypes',
-                title: 'Phenotypes',
-                width: 450,
-                columns: [{
-                    name: 'clinvar',
-                    title: 'Clinvar',
-                    width: 150,
-                    formula: function (row) {
-                        return row.phenotypes.clinvar;
-                    }
+//                        , {
+//                        name: "mafESP_AA",
+//                        title: "Afr. Ame.",
+//                        defaultValue: ".",
+//                        formula: function (row) {
+//                            if (row.mafESP_AA != null) {
+//                                return row.mafESP_AA;
+//                            } else {
+//                                return ".";
+//                            }
+//                        }
+//                    }
+                    ]
                 }, {
-                    name: 'cosmic',
-                    title: 'Cosmic',
-                    width: 150,
-                    formula: function (row) {
-                        return row.phenotypes.cosmic;
-                    }
+                    name: 'sift',
+                    title: 'SIFT',
+                    width: 50
                 }, {
-                    name: 'gwas',
-                    title: 'GWas',
-                    width: 150,
-                    formula: function (row) {
-                        return row.phenotypes.gwas;
-                    }
-                }]
-            }];
+                    name: 'polyphen',
+                    title: 'Polyphen',
+                    width: 60
+                }, {
+                    name: 'phastcons',
+                    title: 'PhastCons',
+                    width: 60
+                }, {
+                    name: 'phylop',
+                    title: 'phyloP',
+                    width: 50
+                }, {
+                    name: 'gerp',
+                    title: 'GERP',
+                    width: 50
+                }, {
+                    name: 'cadd',
+                    title: 'CADD',
+                    width: 50
+                },
+                {
+                    name: 'phenotypes',
+                    title: 'Phenotypes',
+                    width: 450,
+                    columns: [{
+                        name: 'clinvar',
+                        title: 'Clinvar',
+                        width: 150,
+                        formula: function (row) {
+                            return row.phenotypes.clinvar;
+                        }
+                    }, {
+                        name: 'cosmic',
+                        title: 'Cosmic',
+                        width: 150,
+                        formula: function (row) {
+                            return row.phenotypes.cosmic;
+                        }
+                    }, {
+                        name: 'gwas',
+                        title: 'GWas',
+                        width: 150,
+                        formula: function (row) {
+                            return row.phenotypes.gwas;
+                        }
+                    }]
+                }];
 
         },
         _toFixed: function (value, precision) {
@@ -1295,7 +1349,7 @@
                     species: 'hsapiens',
                     category: 'genomic',
                     subCategory: 'variant',
-                    resource: 'full_annotation',
+                    resource: 'annotation',
                     query: query,
                     async: false,
                     success: function (response) {
@@ -1329,18 +1383,21 @@
                 }
 
                 // Annotate Cons
-                if (variant.annots.conservationScores != null && variant.annots.conservationScores.length > 0) {
+                if (variant.annots.conservation != null && variant.annots.conservation.length > 0) {
 
-                    for (var j = 0, l = variant.annots.conservationScores.length; j < l; j++) {
-                        var crs = variant.annots.conservationScores[j];
+                    for (var j = 0, l = variant.annots.conservation.length; j < l; j++) {
+                        var crs = variant.annots.conservation[j];
                         if (crs) {
                             score = crs.score.toFixed(3)
-                            switch (crs.source) {
-                                case 'phastCons':
+                            switch (crs.source.toLowerCase()) {
+                                case 'phastcons':
                                     variant.phastcons = score;
                                     break;
                                 case 'phylop':
                                     variant.phylop = score;
+                                    break;
+                                case 'gerp':
+                                    variant.gerp = score;
                                     break;
                                 default:
                             }
@@ -1364,12 +1421,12 @@
                             genes.push(ct.geneName);
                         }
 
-                        if (ct.proteinSubstitutionScores != null && ct.proteinSubstitutionScores.length > 0) {
+                        if (ct.proteinVariantAnnotation != null && ct.proteinVariantAnnotation.substitutionScores != null && ct.proteinVariantAnnotation.substitutionScores.length > 0) {
                             var auxSift = null;
                             var auxPoly = null;
-                            for (var k = 0, l = ct.proteinSubstitutionScores.length; k < l; k++) {
+                            for (var k = 0, l = ct.proteinVariantAnnotation.substitutionScores.length; k < l; k++) {
 
-                                var pss = ct.proteinSubstitutionScores[k];
+                                var pss = ct.proteinVariantAnnotation.substitutionScores[k];
                                 switch (pss.source.toLowerCase()) {
                                     case 'sift':
                                         auxSift = pss;
@@ -1396,13 +1453,13 @@
 //                        if (sifDesc) {
 //                            variant.sift = sif + " (" + sifDesc + ")";
 //                        } else {
-                            variant.sift = sif;
+                        variant.sift = sif;
 //                        }
 
 //                        if (polyDesc) {
 //                            variant.polyphen = poly + " (" + polyDesc + ")";
 //                        } else {
-                            variant.polyphen = poly;
+                        variant.polyphen = poly;
 //                        }
                     }
 
@@ -1411,6 +1468,29 @@
                     }
                 }
 
+                // Functional Score
+
+                if (variant.annots.functionalScore != null && variant.annots.functionalScore.length > 0) {
+
+
+                    var cadd = null;
+                    for (var j = 0; j < variant.annots.functionalScore.length; j++) {
+                        var cadd_elem = variant.annots.functionalScore[j];
+                        switch (cadd_elem.source.toLowerCase()) {
+                            case 'cadd_raw':
+                                cadd = cadd_elem.score.toFixed(3);
+                                break;
+                            case 'cadd_scaled':
+                                break;
+                        }
+                    }
+                    if (cadd != null) {
+                        variant.cadd = cadd;
+                    }
+
+                }
+
+
                 // Clinical
                 variant.phenotypes = {
                     cosmic: "",
@@ -1418,8 +1498,8 @@
                     clinvar: ""
                 };
 
-                if (variant.annots.clinical != null) {
-                    var clinical = variant.annots.clinical;
+                if (variant.annots.variantTraitAssociation != null) {
+                    var clinical = variant.annots.variantTraitAssociation;
 
                     var phenotypesCosmic = [];
                     var phenotypesGwas = [];
@@ -1481,8 +1561,8 @@
 
                         var pfreq = variant.annots.populationFrequencies[j];
 
-                        if (pfreq.study === "1000GENOMES_phase_1") {
-                            switch (pfreq.pop) {
+                        if (pfreq.study.toLowerCase() === "1000genomes_phase_1") {
+                            switch (pfreq.population) {
                                 case "ALL":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
                                     variant.maf1000G = Number(maf).toFixed(3)
@@ -1508,47 +1588,61 @@
                                     variant.maf1000GEUR = Number(maf).toFixed(3)
                                     break;
                             }
-                        } else if (pfreq.study === "1000G_PHASE_3") {
-                            switch (pfreq.pop) {
-                                case "1000G_PHASE_3_ALL":
+                        } else if (pfreq.study.toLowerCase() === "1000genomes_phase_3") {
+                            switch (pfreq.population) {
+                                case "ALL":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
                                     variant.maf1000G_PHASE_3_ALL = Number(maf).toFixed(3)
                                     break;
-                                case "1000G_PHASE_3_SAS":
+                                case "SAS":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
                                     variant.maf1000G_PHASE_3_SAS = Number(maf).toFixed(3)
                                     break;
-                                case "1000G_PHASE_3_EAS":
+                                case "EAS":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
                                     variant.maf1000G_PHASE_3_EAS = Number(maf).toFixed(3)
                                     break;
-                                case "1000G_PHASE_3_AMR":
+                                case "AMR":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
                                     variant.maf1000G_PHASE_3_AMR = Number(maf).toFixed(3)
                                     break;
-                                case "1000G_PHASE_3_AFR":
+                                case "AFR":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
                                     variant.maf1000G_PHASE_3_AFR = Number(maf).toFixed(3)
                                     break;
-                                case "1000G_PHASE_3_EUR":
+                                case "EUR":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
                                     variant.maf1000G_PHASE_3_EUR = Number(maf).toFixed(3)
                                     break;
 
                             }
-                        } else if (pfreq.study === "ESP_6500") {
-                            switch (pfreq.pop) {
-                                case "European_American":
+                        } else if (pfreq.study.toLowerCase() === "esp_6500") {
+                            switch (pfreq.population) {
+                                case "EA":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
                                     variant.mafESP_EA = Number(maf).toFixed(3)
                                     break;
-
-                                case "African_American":
+                                case "AA":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
                                     variant.mafESP_AA = Number(maf).toFixed(3)
                                     break;
+                                case "ALL":
+                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    variant.mafESP_ALL = Number(maf).toFixed(3)
+                                    break;
 
 
+                            }
+                        } else if (pfreq.study.toLowerCase() === "exac") {
+                            switch (pfreq.population) {
+                                case "ALL":
+                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    variant.mafexac_ALL = Number(maf).toFixed(3)
+                                    break;
+                                case "EUR":
+                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    variant.mafexac_EUR = Number(maf).toFixed(3)
+                                    break;
                             }
                         }
                     }

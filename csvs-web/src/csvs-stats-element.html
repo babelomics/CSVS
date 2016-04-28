@@ -30,6 +30,7 @@
 
         <div class="vertical layout center-justified">
             <div id="chartContainer" class="vertical layout center"></div>
+            <div id="techChartContainer" class="vertical layout center"></div>
         </div>
 
     </template>
@@ -44,6 +45,13 @@
                     return [];
                 },
                 observer: 'diseasesChanged'
+            },
+            technologies: {
+                type: Array,
+                value: function () {
+                    return [];
+                },
+                observer: 'technologiesChanged'
             }
         },
         created: function () {
@@ -54,10 +62,8 @@
         diseasesChanged: function (oldValue, newValue) {
             this.statsPerDisease();
         },
-        _clearChartContainer: function () {
-            while (this.$.chartContainer.firstChild) {
-                this.$.chartContainer.removeChild(this.$.chartContainer.firstChild);
-            }
+        technologiesChanged: function (oldValue, newValue){
+            this.statsPerTechnology();
         },
         _createPieChart: function (container, text, data) {
             var vpp = new Highcharts.Chart({
@@ -121,7 +127,7 @@
                 ]
             });
         },
-        _createCharts: function (variants, variantsText, samples, samplesText) {
+        _createCharts: function (variants, variantsText, samples, samplesText, container) {
 
             var vppDiv = document.createElement("div");
             var sppDiv = document.createElement("div");
@@ -132,25 +138,24 @@
             this._createPieChart(vppDiv, variantsText, variants);
             this._createPieChart(sppDiv, samplesText, samples);
 
-            this.$.chartContainer.appendChild(vppDiv);
-            this.$.chartContainer.appendChild(sppDiv);
+            container.appendChild(vppDiv);
+            container.appendChild(sppDiv);
 
         },
         statsPerDisease: function () {
-            this._clearChartContainer();
+            while (this.$.chartContainer.firstChild) {
+                this.$.chartContainer.removeChild(this.$.chartContainer.firstChild);
+            }
 
             var auxVariants = {};
             var auxSamples = {};
             var variants = [];
             var samples = [];
-            var categories = [];
-            var categoriesData = [];
 
             for (var i = 0; i < this.diseases.length; i++) {
 
                 var disease = this.diseases[i];
                 var name = disease.name;
-
 
                 if (!(name in auxVariants)) {
                     auxVariants[name] = 0;
@@ -177,8 +182,50 @@
             });
 
 
-            this._createCharts(variants, "Variants per Disease", samples, "Samples per Disease");
+            this._createCharts(variants, "Variants per Disease", samples, "Samples per Disease", this.$.chartContainer);
         },
+        statsPerTechnology: function () {
+            while (this.$.techChartContainer.firstChild) {
+                this.$.techChartContainer.removeChild(this.$.techChartContainer.firstChild);
+            }
+
+            var auxVariants = {};
+            var auxSamples = {};
+            var variants = [];
+            var samples = [];
+
+            for (var i = 0; i < this.technologies.length; i++) {
+
+                var technology = this.technologies[i];
+                var name = technology.name;
+
+                if (!(name in auxVariants)) {
+                    auxVariants[name] = 0;
+                    auxSamples[name] = 0;
+                }
+
+                auxVariants[name] += technology.variants;
+                auxSamples[name] += technology.samples;
+
+            }
+
+            Object.keys(auxVariants).forEach(function (key) {
+                variants.push({
+                    name: key,
+                    y: auxVariants[key]
+                })
+            });
+
+            Object.keys(auxSamples).forEach(function (key) {
+                samples.push({
+                    name: key,
+                    y: auxSamples[key]
+                })
+            });
+
+            this._createCharts(variants, "Variants per Technology", samples, "Samples per Technology", this.$.techChartContainer);
+        },
+
         _formatText: function (text) {
             if (text) {
 

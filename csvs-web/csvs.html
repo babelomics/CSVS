@@ -61,7 +61,8 @@
     <script src="bower_components/stevia-components/src/manager/stevia-manager.js"></script>
     <link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
-    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning"></style>
+    <style is="custom-style"
+           include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning"></style>
 
 
     <!--Libraries-->
@@ -128,7 +129,8 @@
 
     function getSpecies(callback) {
         CellBaseManager.get({
-            host: CELLBASE_HOST,
+            host: "http://bioinfo.hpc.cam.ac.uk/cellbase",
+            version: "v3",
             category: "meta",
             subCategory: "species",
             success: function (r) {
