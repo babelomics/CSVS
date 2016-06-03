@@ -110,6 +110,12 @@ public class CSVSUtil {
     public static void populateTechnologies(Datastore datastore) {
         List<Technology> technologies = new ArrayList<>();
 
+        technologies.add(new Technology(1, "Illumina"));
+        technologies.add(new Technology(2, "Solid"));
+        technologies.add(new Technology(3, "Roche 454"));
+        technologies.add(new Technology(4, "IonTorrent"));
+        technologies.add(new Technology(5, "Nanopore"));
+
         for (int i = 0; i < 10; i++) {
             technologies.add(new Technology(i + 1, "Technology_" + (i + 1)));
         }
