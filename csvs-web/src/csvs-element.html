@@ -19,17 +19,18 @@
 <link rel="stylesheet" href="../bower_components/qtip2/jquery.qtip.css">
 
 
-<link rel="import" href="../bower_components/stevia-components/src/stv-header.html">
-<link rel="import" href="../bower_components/stevia-components/src/stv-application-behavior.html">
-<link rel="import" href="../bower_components/stevia-components/src/stv-footer.html">
-<link rel="import" href="../bower_components/stevia-components/src/stv-help-menu.html">
-<link rel="import" href="../bower_components/stevia-components/src/stv-select.html">
-<link rel="import" href="../bower_components/stevia-components/src/stv-feedback.html">
-<link rel="import" href="../bower_components/stevia-components/src/stv-panel.html">
-<link rel="import" href="../bower_components/stevia-components/src/table/stv-table.html">
-<link rel="import" href="../bower_components/stevia-components/src/validator/stv-validator.html">
-<link rel="import" href="../bower_components/stevia-components/src/job/stv-job-browser.html">
-<link rel="import" href="../bower_components/stevia-components/src/file/stv-file-browser.html">
+<link rel="import" href="../bower_components/stevia-elements/src/stv-header.html">
+<link rel="import" href="../bower_components/stevia-elements/src/stv-application-behavior.html">
+<link rel="import" href="../bower_components/stevia-elements/src/stv-footer.html">
+<!-- <link rel="import" href="../bower_components/stevia-elements/src/stv-help-menu.html"> -->
+<link rel="import" href="../bower_components/stevia-elements/src/dropdown/stv-dropdown.html">
+<link rel="import" href="../bower_components/stevia-elements/src/stv-select.html">
+<link rel="import" href="../bower_components/stevia-elements/src/stv-feedback.html">
+<link rel="import" href="../bower_components/stevia-elements/src/stv-panel.html">
+<link rel="import" href="../bower_components/stevia-elements/src/table/stv-table.html">
+<link rel="import" href="../bower_components/stevia-elements/src/validator/stv-validator.html">
+<link rel="import" href="../bower_components/stevia-elements/src/job/stv-job-browser.html">
+<link rel="import" href="../bower_components/stevia-elements/src/file/stv-file-browser.html">
 
 <script src="../lib/jsorolla/src/lib/validator/bed-validator.js"></script>
 <script src="FilterHistory.js"></script>
@@ -61,11 +62,12 @@
 <link rel="import" href="csvs-stats-element.html">
 <link rel="import" href="csvs-annotation-form.html">
 <link rel="import" href="csvs-annotation-result.html">
+<link rel="import" href="csvs-saturation-element.html">
+
 
 
 <dom-module id="csvs-element">
     <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
-
         :host {
             display: block;
             position: relative;
@@ -148,6 +150,10 @@
             <csvs-stats-element diseases="{{diseases}}" id="csvsStatsElement"></csvs-stats-element>
         </div>
 
+        <div class="content" menu-option="saturation">
+            <csvs-saturation-element diseases="{{diseases}}" id="csvsSaturationElement"></csvs-saturation-element>
+        </div>
+
         <div class="content" menu-option="annot">
             <csvs-annotation-form id="annotationForm" selectedOption="{{selectedOption}}" bioformats="{{bioformats}}" user-data="{{userData}}" diseases="{{diseases}}" on-job-launched="handleJobLaunched"></csvs-annotation-form>
         </div>
@@ -157,7 +163,7 @@
         </div>
 
 
-        <div class="content" menu-option="home,search,stats,annot,result">
+        <div class="content" menu-option="home,search,stats,annot,result,saturation">
             <stv-panel hidden collapsible closable movable id="fileBrowserPanel" on-hidden="handlePanelHidden">
                 <div class="header">
                     <i class="fa fa-folder-open-o"></i> File Browser
@@ -179,7 +185,7 @@
             <span class="title">CIBERER Spanish Variant Server</span>
             <span class="description"></span>
 
-            <div id="menu" class="menu horizontal layout flex">
+            <div id="menu" class="menu horizontal layout center flex">
                 <div title="Search" class="option" on-click="handleMenuOption" data-option="search">
                     <i class="fa fa-search"></i>
                     <span class="option-text">Search</span>
@@ -189,6 +195,12 @@
                     <i class="fa fa-pie-chart"></i>
                     <span class="option-text">Stats</span>
                 </div>
+
+                <div title="Stats" class="option" on-click="handleMenuOption" data-option="saturation">
+                    <i class="fa fa-line-chart"></i>
+                    <span class="option-text">Saturation</span>
+                </div>
+
                 <div title="Annotate VCF file" class="option" on-click="handleLoggedOnlyMenuOption" show-on-login data-option="annot">
                     <i class="fa fa-pencil-square-o"></i>
                     <span class="option-text">Annotate VCF File</span>
@@ -204,23 +216,27 @@
                 </div>
             </div>
 
-            <stv-help-menu class="helpmenu" selectedOption="{{selectedOption}}">
-                <a href="https://github.com/babelomics/csvs/wiki" target="_blank">
-                    <i class="fa fa-book"></i> &nbsp; Documentation
-                </a>
-                <a href="https://github.com/babelomics/csvs/wiki/tutorial" target="_blank">
-                    <i class="fa fa-compass"></i> &nbsp; Tutorial
-                </a>
-                <a href="https://github.com/babelomics/csvs/" target="_blank">
-                    <i class="fa fa-github"></i> &nbsp; Source code
-                </a>
-                <div on-mousedown="handleFeedback">
-                    <i class="fa fa-envelope-o" aria-hidden="true"></i> &nbsp; Send an email
-                </div>
-                <a href="https://github.com/babelomics/csvs/issues" target="_blank">
-                    <i class="fa fa-exclamation-circle" aria-hidden="true"></i> &nbsp; Go to git issue
-                </a>
-            </stv-help-menu>
+            <stv-dropdown dark class="helpmenu">
+                <div data-button><i class="fa fa-question-circle"></i></div>
+
+                <ul data-menu>
+                    <a href="https://github.com/babelomics/csvs/wiki" target="_blank">
+                        <li> <i class="fa fa-book"></i> &nbsp; Documentation</li>
+                    </a>
+                    <a href="https://github.com/babelomics/csvs/wiki/tutorial" target="_blank">
+                        <li><i class="fa fa-compass"></i> &nbsp; Tutorial</li>
+                    </a>
+                    <a href="https://github.com/babelomics/csvs/" target="_blank">
+                        <li><i class="fa fa-github"></i> &nbsp; Source code</li>
+                    </a>
+                    <div on-mousedown="handleFeedback">
+                        <li><i class="fa fa-envelope-o" aria-hidden="true"></i> &nbsp; Send an email</li>
+                    </div>
+                    <a href="https://github.com/babelomics/csvs/issues" target="_blank">
+                        <li><i class="fa fa-exclamation-circle" aria-hidden="true"></i> &nbsp; Go to git issue</li>
+                    </a>
+                </ul>
+            </stv-dropdown>
         </stv-header>
 
         <stv-footer menu-option="home,login,singup,profile,remember">
@@ -271,7 +287,7 @@
             this.getDiseases();
             this.getTechnologies();
             this.checkShowMenuOnLogin();
-            this.selectedOption = "search";
+            this.selectedOption = "home";
         },
         getDiseases: function() {
             var me = this;

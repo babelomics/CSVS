@@ -6,8 +6,8 @@
 <link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-frequencies-grid.html">
 <link rel="import" href="../lib/jsorolla/src/lib/components/variant/jso-variant-phenotype-grid.html">
 
-<link rel="import" href="../bower_components/stevia-components/src/filter/stv-filter-position.html">
-<link rel="import" href="../bower_components/stevia-components/src/stv-tooltip.html">
+<link rel="import" href="../bower_components/stevia-elements/src/filter/stv-filter-position.html">
+<link rel="import" href="../bower_components/stevia-elements/src/stv-tooltip.html">
 
 <link rel="import" href="csvs-saturation-element.html">
 
@@ -315,7 +315,7 @@
                     <div on-click="handleMenuClick" data-option="frequency">Frequencies</div>
                     <div on-click="handleMenuClick" data-option="phenotype">Phenotype</div>
                     <div on-click="handleMenuClick" data-option="effect">Effect</div>
-                    <div on-click="handleMenuClick" data-option="saturation">Saturation</div>
+                    <!-- <div on-click="handleMenuClick" data-option="saturation">Saturation</div> -->
                 </div>
 
                 <!--<paper-button raised on-click="{{ exportQueryToCSV }}" horizontal layout end-justified-->
@@ -328,7 +328,7 @@
                     <jso-variant-frequencies-grid id="frequency" hidden></jso-variant-frequencies-grid>
                     <jso-variant-phenotype-grid id="phenotype" hidden></jso-variant-phenotype-grid>
                     <jso-variant-effect-grid id="effect" hidden></jso-variant-effect-grid>
-                    <csvs-saturation-element id="saturation" diseases="{{diseases}}" hidden></csvs-saturation-element>
+                    <!-- <csvs-saturation-element id="saturation" diseases="{{diseases}}" hidden></csvs-saturation-element> -->
                 </div>
             </div>
         </div>
