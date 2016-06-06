@@ -24,7 +24,7 @@
     "qtip2": "~2.2.1",
     "pako": "~0.2.6",
     "uri.js": "~1.16.0",
-    "stevia-components": "git@gitlab.bioinfo.cipf.es:stevia/stevia-components.git",
-    "iron-list": "^1.3.1"
+    "iron-list": "^1.3.1",
+    "stevia-elements": "git@github.com:babelomics/stevia-elements.git#develop"
   }
 }

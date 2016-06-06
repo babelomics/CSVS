@@ -1,4 +1,3 @@
-
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 <dom-module id="csvs-saturation-element">
@@ -7,12 +6,71 @@
             display: block;
             position: relative;
             width: 100%;
+            background-color: var(--text-primary-color);
+            color: var(--primary-text-color);
         }
 
+        #filter-form-element {
+            background-color: #FFFFFF;
+            width: 250px;
+            margin: 20px;
+            min-height: 900px;
+        }
+
+        #chart {
+            border-radius: 0px !important;
+            margin: 20px 20px 20px 0px;
+            background-color: #FFFFFF;
+            width: calc(100% - 290px);
+        }
+
+        #stv-filter-position {
+            width: 250px;
+            ;
+        }
+
+        stv-tooltip::shadow .closeInfo::shadow {
+            margin-left: 490px;
+        }
     </style>
     <template>
 
-        <div id="chart"></div>
+        <div class="horizontal layout">
+            <div id="filter-form-element">
+                <form class="vertical layout" id="filter_form">
+                    <div id="buttons_container" class="horizontal layout end-justified" style="margin:10px 5px;">
+                        <stv-tooltip id="filterHistoryTooltip" class="stv-btn stv-btn-shdw" title="Filters History" icon="filter" style="margin-right: 3px;">
+                            <div class="stv-btn stv-btn-shdw clear-but" title="Clear Filters History" on-click="clearFiltersHistory">
+                                Clear
+                            </div>
+                            <div class="horizontal layout flex">
+                                <span class="tit num"> Date </span>
+                                <span class="name tit"> Name </span>
+                                <span class="tit num"> Found</span>
+                            </div>
+                            <div id="filterHistoryTable">
+                                <template is="dom-repeat" items="{{historyFilters}}">
+                                    <div class="horizontal layout flex" on-click="loadFilter" data-filter="{{item.filter}}" title="{{item.name}}">
+                                        <span class="num">{{item.date}} </span>
+                                        <span id="filter-name" class="name">{{item.name}} </span>
+                                        <span class="num">{{item.found}}</span>
+                                    </div>
+                                </template>
+                            </div>
+                        </stv-tooltip>
+                        <div class="stv-btn stv-btn-shdw flex" on-click="clearForm" style="margin-right: 3px;">
+                            Clear
+                        </div>
+                        <div class="stv-btn stv-btn-shdw flex" on-click="submitForm">Search</div>
+
+                    </div>
+
+                    <stv-filter-position id="filterPosition"></stv-filter-position>
+                </form>
+
+            </div>
+            <div id="chart" class="horizontal layout center-justified">CHART</div>
+        </div>
 
 
     </template>
@@ -23,22 +81,29 @@
         properties: {
             diseases: {
                 type: Array,
-                value: function () {
+                value: function() {
                     return [];
                 },
                 observer: 'diseasesChanged'
-            }
+            },
+            maxLength: {
+                type: Number,
+                value: 1000000
+            },
         },
-        diseasesChanged: function (neo, old) {
+        ready: function() {
+            this.reloadChart({});
+        },
+        diseasesChanged: function(neo, old) {
 
             if (neo && Array.isArray(neo)) {
-//                debugger
+                //                debugger
                 var diseasesSort = [];
                 for (var i = 0; i < neo.length; i++) {
                     diseasesSort.push(neo[i]);
                 }
 
-                diseasesSort.sort(function (a, b) {
+                diseasesSort.sort(function(a, b) {
                     return b.samples - a.samples;
                 });
                 this.diseasesSort = diseasesSort;
@@ -46,7 +111,7 @@
             }
 
         },
-        _getDiseaseCount: function (data, disease) {
+        _getDiseaseCount: function(data, disease) {
             var count = 0;
 
             for (var i = 0; i < data.length; i++) {
@@ -59,7 +124,7 @@
             return count;
 
         },
-        reloadChart: function (data) {
+        reloadChart: function(data) {
 
             var chartData = [];
 
@@ -101,7 +166,7 @@
                 chart: {
                     type: 'line',
                     plotBackgroundColor: null,
-                    plotBorderWidth: 1,//null,
+                    plotBorderWidth: 1, //null,
                     plotShadow: false,
                     renderTo: this.$.chart,
                     borderRadius: 10,
@@ -118,10 +183,10 @@
                 xAxis: {
                     categories: labels
                 },
-                yAxis:{
-                  title:{
-                      text:'Num. variants'
-                  }
+                yAxis: {
+                    title: {
+                        text: 'Num. variants'
+                    }
                 },
                 plotOptions: {
                     line: {
@@ -135,7 +200,99 @@
                 series: chartData
             });
 
+        },
+        submitForm: function() {
+
+            var me = this;
+
+            var regionValue = this.$.filterPosition.checkRegion();
+            if (regionValue == -1) {
+                return;
+            }
+
+            var geneValue = this.$.filterPosition.checkGene();
+
+            var regions = [];
+            if (regionValue != null) {
+                regions = regionValue.split(",");
+                // if (regions.length > this.maxLength && !this.isLogged) {
+                //     alert("The total size of all provided regions can't exceed " + this.maxLength + " positions");
+                //     return
+                // }
+
+            }
+
+            var genes = [];
+            if (geneValue != null) {
+
+                genes = geneValue.split(",");
+                for (var i = 0; i < genes.length; i++) {
+                    genes[i] = genes[i].trim();
+                }
+
+                if (genes.length > 3 && !this.isLogged) {
+                    alert("The maximum number of genes is 3");
+                    return;
+                }
+
+                var gene = genes.join(",").toUpperCase();
+
+                var regionGene = {};
+
+                CellBaseManager.get({
+                    species: 'hsapiens',
+                    category: 'feature',
+                    subCategory: 'gene',
+                    query: gene,
+                    resource: "info",
+                    async: false,
+                    params: {
+                        include: 'chromosome,start,end'
+                    },
+                    success: function(data) {
+                        for (var i = 0; i < data.response.length; i++) {
+                            var queryResult = data.response[i];
+
+                            if (queryResult.result.length > 0) {
+                                var region = new Region(queryResult.result[0]);
+                                regionGene[region] = queryResult.id;
+                                regions.push(region.toString());
+
+                            } else {
+                                alert("Wrong gene: " + gene);
+                            }
+                        }
+                    }
+                });
+
+
+                var regionQuery = regions.join(",");
+                // Calculate Saturation
+                CSVSManager.regions.saturation({
+                    id: regionQuery,
+                    request: {
+                        // host: "http://aaleman:8080/csvs/rest",
+                        success: function(response) {
+
+                            var data = response.result[0];
+
+                            for (var region in regionGene) {
+                                if (region in data) {
+                                    var newKey = regionGene[region];
+                                    data[newKey] = data[region];
+                                    delete data[region];
+                                }
+                            }
+                            try {
+                                me.reloadChart(data);
+                            } catch (e) {
+                                me.reloadChart({});
+                            }
+
+                        }
+                    }
+                });
+            }
         }
-    })
-    ;
+    });
 </script>
