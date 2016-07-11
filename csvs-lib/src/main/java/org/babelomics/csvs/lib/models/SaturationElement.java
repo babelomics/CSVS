@@ -8,13 +8,15 @@ public class SaturationElement {
 
     private int diseaseId;
     private int count;
+    private int samples;
 
     public SaturationElement() {
     }
 
-    public SaturationElement(int diseaseId, int count) {
+    public SaturationElement(int diseaseId, int count, int samples) {
         this.diseaseId = diseaseId;
         this.count = count;
+        this.samples = samples;
     }
 
     public int getDiseaseId() {
@@ -33,11 +35,20 @@ public class SaturationElement {
         this.count = count;
     }
 
+    public int getSamples() {
+        return samples;
+    }
+
+    public void setSamples(int samples) {
+        this.samples = samples;
+    }
+
     @Override
     public String toString() {
         return "SaturationElement{" +
                 "diseaseId=" + diseaseId +
                 ", count=" + count +
+                ", samples=" + samples +
                 '}';
     }
 }

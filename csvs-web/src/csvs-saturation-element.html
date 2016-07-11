@@ -39,25 +39,28 @@
             <div id="filter-form-element">
                 <form class="vertical layout" id="filter_form">
                     <div id="buttons_container" class="horizontal layout end-justified" style="margin:10px 5px;">
-                        <stv-tooltip id="filterHistoryTooltip" class="stv-btn stv-btn-shdw" title="Filters History" icon="filter" style="margin-right: 3px;">
-                            <div class="stv-btn stv-btn-shdw clear-but" title="Clear Filters History" on-click="clearFiltersHistory">
-                                Clear
-                            </div>
-                            <div class="horizontal layout flex">
-                                <span class="tit num"> Date </span>
-                                <span class="name tit"> Name </span>
-                                <span class="tit num"> Found</span>
-                            </div>
-                            <div id="filterHistoryTable">
-                                <template is="dom-repeat" items="{{historyFilters}}">
-                                    <div class="horizontal layout flex" on-click="loadFilter" data-filter="{{item.filter}}" title="{{item.name}}">
-                                        <span class="num">{{item.date}} </span>
-                                        <span id="filter-name" class="name">{{item.name}} </span>
-                                        <span class="num">{{item.found}}</span>
-                                    </div>
-                                </template>
-                            </div>
-                        </stv-tooltip>
+                        <!--<stv-tooltip id="filterHistoryTooltip" class="stv-btn stv-btn-shdw" title="Filters History"-->
+                        <!--icon="filter" style="margin-right: 3px;">-->
+                        <!--<div class="stv-btn stv-btn-shdw clear-but" title="Clear Filters History"-->
+                        <!--on-click="clearFiltersHistory">-->
+                        <!--Clear-->
+                        <!--</div>-->
+                        <!--<div class="horizontal layout flex">-->
+                        <!--<span class="tit num"> Date </span>-->
+                        <!--<span class="name tit"> Name </span>-->
+                        <!--<span class="tit num"> Found</span>-->
+                        <!--</div>-->
+                        <!--<div id="filterHistoryTable">-->
+                        <!--<template is="dom-repeat" items="{{historyFilters}}">-->
+                        <!--<div class="horizontal layout flex" on-click="loadFilter"-->
+                        <!--data-filter="{{item.filter}}" title="{{item.name}}">-->
+                        <!--<span class="num">{{item.date}} </span>-->
+                        <!--<span id="filter-name" class="name">{{item.name}} </span>-->
+                        <!--<span class="num">{{item.found}}</span>-->
+                        <!--</div>-->
+                        <!--</template>-->
+                        <!--</div>-->
+                        <!--</stv-tooltip>-->
                         <div class="stv-btn stv-btn-shdw flex" on-click="clearForm" style="margin-right: 3px;">
                             Clear
                         </div>
@@ -99,14 +102,21 @@
             if (neo && Array.isArray(neo)) {
                 //                debugger
                 var diseasesSort = [];
+                var diseaseMap = {};
+                var diseaseNameMap = {};
+
                 for (var i = 0; i < neo.length; i++) {
                     diseasesSort.push(neo[i]);
+                    diseaseMap[neo[i].groupId] = neo[i];
+                    diseaseNameMap[neo[i].name] = neo[i];
                 }
 
                 diseasesSort.sort(function(a, b) {
                     return b.samples - a.samples;
                 });
                 this.diseasesSort = diseasesSort;
+                this.diseaseMap = diseaseMap;
+                this.diseaseNameMap = diseaseNameMap;
 
             }
 
@@ -126,43 +136,74 @@
         },
         reloadChart: function(data) {
 
+            var me = this;
             var chartData = [];
+
+
+            var formatter = function() {
+                debugger
+            };
+
+            var diseaseBreaks = [];
+            var diseaseBreaksCheck = false;
+
 
             for (var key in data) {
                 var diseaseData = data[key];
-                var counts = Array(this.diseasesSort.length).fill(0);
+
+
+                if (!diseaseBreaksCheck) {
+                    diseaseBreaksCheck = true;
+                    diseaseBreaks = Array(diseaseData.length).fill(0);
+                    var totalSample = 0;
+                    for (var i = 0; i < diseaseData.length; i++) {
+                        var elem = diseaseData[i];
+                        totalSample += elem.samples;
+                        diseaseBreaks[i] = elem.samples;
+                    }
+                    for (var i = 0; i < diseaseBreaks.length; i++) {
+                        var value = Math.floor((diseaseBreaks[i] / totalSample) * 50);
+                        diseaseBreaks[i] = {
+                            from: i,
+                            to: i,
+                            breakSize: value
+                        }
+                    }
+                }
+                var counts = Array(diseaseData.length).fill(0);
 
                 var labels = [];
-                var order = [];
-                for (var i = 0; i < this.diseasesSort.length; i++) {
-                    labels[i] = this.diseasesSort[i].name;
-                    var dis = this.diseasesSort[i];
-                    var count = this._getDiseaseCount(diseaseData, dis);
-                    counts[dis.groupId - 1] = count;
-                    order[i] = dis.groupId - 1;
+                var total = 0;
+                for (var i = 0; i < diseaseData.length; i++) {
+                    var elem = diseaseData[i];
+                    var dis = this.diseaseMap[elem.diseaseId];
+                    labels[i] = dis.name;
+                    counts[i] = {
+                        y: elem.count,
+                        _count: elem.count,
+                        //                        color: "red",
+                        //                        radius: 1
+                    };
+
+                    total += elem.count;
+                    //                    counts[i] = elem.count;
                 }
 
-
-                var newCounts = Array(this.diseasesSort.length).fill(0);
-
-                for (var i = 0; i < this.diseasesSort.length; i++) {
-                    var dis = this.diseasesSort[i];
-                    var pos = dis.groupId - 1;
-
-                    newCounts[i] = counts[pos];
-                }
-
-                counts = newCounts;
                 for (var i = 1; i < counts.length; i++) {
-                    counts[i] += counts[i - 1];
+                    counts[i].y += counts[i - 1].y;
+                    counts[i].radius = (counts[i]._count / total) * 50
                 }
+
                 chartData.push({
                     name: key,
-                    data: counts
+                    data: counts,
+                    // connectNulls: true
                 });
+                console.log(chartData);
             }
 
             var chart = new Highcharts.Chart({
+                _me: me,
                 chart: {
                     type: 'line',
                     plotBackgroundColor: null,
@@ -171,32 +212,53 @@
                     renderTo: this.$.chart,
                     borderRadius: 10,
                     width: 1000,
-                    height: 500
+                    height: 700,
+                    pointStart: 0,
+                    _me: me
                 },
                 exporting: {},
                 title: {
                     text: "Saturation"
                 },
+                tooltip: {
+                    //                    shared: true,
+                    //                    backgroundColor: '#FCFFC5',
+                    //                    borderColor: 'black',
+                    //                    borderRadius: 10,
+                    //                    borderWidth: 3,
+                    useHTML: true,
+                    formatter: function() {
+                        //                        debugger
+
+                        var point = this.point;
+                        return ' Disease Group: <b>' + this.x + '</b><br> New Variants: <b>' + point._count + '</b> <br> Acum. Variants: <b>' + this.y + '</b>';
+
+                    }
+                },
                 credits: {
                     enabled: false
                 },
                 xAxis: {
-                    categories: labels
+                    categories: labels,
+                    tickInterval: 1,
+                    breaks: diseaseBreaks,
+                    // tickPositions: diseaseTick
                 },
                 yAxis: {
                     title: {
                         text: 'Num. variants'
-                    }
+                    },
+                    min:0,
+                    startOnTick: true
                 },
                 plotOptions: {
                     line: {
                         dataLabels: {
                             enabled: true
                         },
-                        enableMouseTracking: false
+                        //                        enableMouseTracking: false
                     }
                 },
-
                 series: chartData
             });
 
@@ -247,19 +309,21 @@
                     resource: "info",
                     async: false,
                     params: {
-                        include: 'chromosome,start,end'
+                        include: 'name,chromosome,start,end'
                     },
                     success: function(data) {
                         for (var i = 0; i < data.response.length; i++) {
+
                             var queryResult = data.response[i];
 
                             if (queryResult.result.length > 0) {
-                                var region = new Region(queryResult.result[0]);
-                                regionGene[region] = queryResult.id;
+                                var obj = queryResult.result[0];
+                                var region = new Region(obj);
+                                regionGene[region] = obj.name;
                                 regions.push(region.toString());
 
                             } else {
-                                alert("Wrong gene: " + gene);
+                                alert("Wrong gene: " + genes[i]);
                             }
                         }
                     }
@@ -293,6 +357,11 @@
                     }
                 });
             }
-        }
+        },
+        clearForm: function() {
+            this.$.filter_form.reset();
+            this.$.filterPosition.clear();
+
+        },
     });
 </script>

@@ -55,6 +55,9 @@
             overflow-y: auto;
 
         }
+        #technologies_div{
+            height: 150px;
+        }
 
         #exportBtn {
             height: 20px;
@@ -1348,6 +1351,8 @@
 
             }
 
+            console.time("a")
+
             // Annotate
             var query = positions.join(",");
             if (positions.length > 0) {
@@ -1376,8 +1381,6 @@
                     }
                 });
             }
-
-            console.log(data);
 
             for (var i = 0; i < data.length; i++) {
                 var variant = data[i];
@@ -1413,6 +1416,7 @@
                         }
                     }
                 }
+
 
                 // Annotate CT && Subs. Score
                 if (variant.annots.consequenceTypes != null && variant.annots.consequenceTypes.length > 0) {
@@ -1467,6 +1471,7 @@
                         variant.genes = genes.join(",");
                     }
                 }
+
 
                 // Functional Score
                 if (variant.annots.functionalScore != null && variant.annots.functionalScore.length > 0) {
@@ -1549,7 +1554,6 @@
                         clinvar: phenotypesClinvarFinal.join(",")
                     };
                 }
-
 
                 if (variant.annots.populationFrequencies != null) {
 
@@ -1644,7 +1648,10 @@
                     }
                 }
 
+
             }
+
+            console.timeEnd("a")
             return data;
         },
         _parseTotal: function (response) {

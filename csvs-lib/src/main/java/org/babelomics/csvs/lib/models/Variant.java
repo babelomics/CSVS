@@ -188,8 +188,11 @@ public class Variant {
     public String toString() {
 
         List<String> disIds = new ArrayList<>();
-        for (DiseaseCount dg : this.diseases) {
-            disIds.add(dg.getDiseaseGroup().getGroupId() + "_" + dg.getTechnology().getTechnologyId());
+
+        if (this.diseases != null) {
+            for (DiseaseCount dg : this.diseases) {
+                disIds.add(dg.getDiseaseGroup().getGroupId() + "_" + dg.getTechnology().getTechnologyId());
+            }
         }
 
         return "Variant{" +

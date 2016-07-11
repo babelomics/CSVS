@@ -116,10 +116,6 @@ public class CSVSUtil {
         technologies.add(new Technology(4, "IonTorrent"));
         technologies.add(new Technology(5, "Nanopore"));
 
-        for (int i = 0; i < 10; i++) {
-            technologies.add(new Technology(i + 1, "Technology_" + (i + 1)));
-        }
-
         for (Technology t : technologies) {
             try {
                 datastore.save(t);

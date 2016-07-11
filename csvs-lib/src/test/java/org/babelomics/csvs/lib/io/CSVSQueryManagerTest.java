@@ -1,5 +1,6 @@
 package org.babelomics.csvs.lib.io;
 
+import com.google.common.collect.Lists;
 import com.mongodb.MongoClient;
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodProcess;
@@ -9,21 +10,27 @@ import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
 import de.flapdoodle.embed.mongo.config.Net;
 import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.process.runtime.Network;
+import org.apache.commons.lang3.mutable.MutableLong;
 import org.babelomics.csvs.lib.CSVSUtil;
+import org.babelomics.csvs.lib.models.DiseaseCount;
 import org.babelomics.csvs.lib.models.DiseaseGroup;
 import org.babelomics.csvs.lib.models.Technology;
+import org.babelomics.csvs.lib.models.Variant;
 import org.junit.*;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
+import org.opencb.biodata.models.feature.Region;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
@@ -34,6 +41,7 @@ public class CSVSQueryManagerTest {
     static CSVSQueryManager qm;
     static int port = 12345;
     static MongodExecutable mongodExecutable;
+    static String dbName = "csvs-query-manager-test-db";
 
 
     @BeforeClass
@@ -51,9 +59,10 @@ public class CSVSQueryManagerTest {
 
         Morphia morphia = new Morphia();
         morphia.mapPackage("org.babelomics.csvs.lib.models");
-        mongoclient = new MongoClient("localhost", port);
-//        mongoclient.dropDatabase("csvs-query-manager-test-db");
-        datastore = morphia.createDatastore(mongoclient, "csvs-query-manager-test-db");
+        mongoclient = new MongoClient("localhost", 27017);
+        mongoclient.dropDatabase(dbName);
+
+        datastore = morphia.createDatastore(mongoclient, dbName);
         datastore.ensureIndexes();
 
         qm = new CSVSQueryManager(datastore);
@@ -75,9 +84,9 @@ public class CSVSQueryManagerTest {
 
     @AfterClass
     public static void closeDB() {
+
+//        mongoclient.dropDatabase(dbName);
         mongodExecutable.stop();
-
-
     }
 
 
@@ -113,38 +122,137 @@ public class CSVSQueryManagerTest {
 
         List<DiseaseGroup> list = qm.getAllDiseaseGroups();
 
+        assertEquals(list.size(), 18);
+
     }
 
     @Test
     public void testGetAllTechnologies() throws Exception {
 
         List<Technology> list = qm.getAllTechnologies();
+        assertEquals(list.size(), 5);
 
     }
 
     @Test
     public void testGetAllDiseaseGroupsOrderedBySample() throws Exception {
 
+        List<DiseaseGroup> list = qm.getAllDiseaseGroupsOrderedBySample();
 
+        DiseaseGroup dg = list.get(0);
+        for (int i = 1; i < list.size(); i++) {
+            assertTrue(dg.getSamples() >= list.get(i).getSamples());
+            dg = list.get(i);
+        }
     }
 
     @Test
     public void testGetMaxDiseaseId() throws Exception {
+
+        int maxId = qm.getMaxDiseaseId();
+
+        for (DiseaseGroup dg : qm.getAllDiseaseGroups()) {
+            assertTrue(maxId >= dg.getGroupId());
+        }
 
     }
 
     @Test
     public void testGetMaxTechnologyId() throws Exception {
 
+        int maxId = qm.getMaxTechnologyId();
+
+        for (Technology dg : qm.getAllTechnologies()) {
+            assertTrue(maxId >= dg.getTechnologyId());
+        }
+
     }
 
     @Test
     public void testGetVariantsByRegionList() throws Exception {
 
+        Region r = new Region("1", 1, 1);
+        List<Region> list = new ArrayList<>();
+        list.add(r);
+
+        List<Integer> d1 = Arrays.asList(1);
+        List<Integer> d2 = Arrays.asList(2);
+        List<Integer> t1 = Arrays.asList(1);
+        List<Integer> t2 = Arrays.asList(2);
+
+
+        List<Variant> variants = Lists.newArrayList(qm.getVariantsByRegionList(list, d1, t1, 0, 1, false, new MutableLong(-1)));
+
+        assertEquals(variants.size(), 1);
+
+        Variant v = variants.get(0);
+
+        DiseaseCount dc1 = v.getStats();
+        assertEquals(dc1.getGt00(), 2);
+        assertEquals(dc1.getGt01(), 2);
+        assertEquals(dc1.getGt11(), 0);
+        assertEquals(dc1.getGtmissing(), 0);
+
+
+        variants = Lists.newArrayList(qm.getVariantsByRegionList(list, new ArrayList<>(), t1, 0, 1, false, new MutableLong(-1)));
+
+        assertEquals(variants.size(), 1);
+
+        v = variants.get(0);
+
+        DiseaseCount dc2 = v.getStats();
+        assertEquals(dc2.getGt00(), 4);
+        assertEquals(dc2.getGt01(), 4);
+        assertEquals(dc2.getGt11(), 0);
+        assertEquals(dc2.getGtmissing(), 0);
+
     }
 
     @Test
     public void testGetVariant() throws Exception {
+        List<Integer> d1 = Arrays.asList(1);
+        List<Integer> d2 = Arrays.asList(2);
+        List<Integer> t1 = Arrays.asList(1);
+        List<Integer> t2 = Arrays.asList(2);
+
+        Variant v1 = qm.getVariant("1", 1, "A", "C", new ArrayList<>(), new ArrayList<>());
+
+        DiseaseCount dc1 = v1.getStats();
+        assertEquals(dc1.getGt00(), 7);
+        assertEquals(dc1.getGt01(), 4);
+        assertEquals(dc1.getGt11(), 0);
+        assertEquals(dc1.getGtmissing(), 0);
+
+
+        Variant v2 = qm.getVariant("1", 1, "A", "C", d1, new ArrayList<>());
+
+        DiseaseCount dc2 = v2.getStats();
+        assertEquals(dc2.getGt00(), 5);
+        assertEquals(dc2.getGt01(), 2);
+        assertEquals(dc2.getGt11(), 0);
+        assertEquals(dc2.getGtmissing(), 0);
+
+
+        Variant v3 = qm.getVariant("1", 1, "A", "C", d2, t1);
+        DiseaseCount dc3 = v3.getStats();
+        assertEquals(dc3.getGt00(), 2);
+        assertEquals(dc3.getGt01(), 2);
+        assertEquals(dc3.getGt11(), 0);
+        assertEquals(dc3.getGtmissing(), 0);
+
+        Variant v4 = qm.getVariant("1", 3, "A", "C", d1, t1);
+        assertNull(v4);
+
+        Variant v5 = qm.getVariant("1", 2, "A", "C", new ArrayList<>(), t1);
+        DiseaseCount dc5 = v5.getStats();
+        System.out.println("dc5 = " + dc5);
+        assertEquals(dc5.getGt00(), 1);
+        assertEquals(dc5.getGt01(), 4);
+        assertEquals(dc5.getGt11(), 2);
+        assertEquals(dc5.getGtmissing(), 1);
+
+        Variant v6 = qm.getVariant("1", 2, "A", "C", d2,t2);
+        assertNull(v6);
 
     }
 
@@ -171,6 +279,34 @@ public class CSVSQueryManagerTest {
     @Test
     public void testGetVariantsByRegionList1() throws Exception {
 
+        Region r = new Region("1", 1, 2);
+        List<Region> list = new ArrayList<>();
+        list.add(r);
+
+        List<List<Variant>> variants = qm.getVariantsByRegionList(list);
+
+        assertEquals(variants.size(), 1);
+
+        List<Variant> variantList = variants.get(0);
+
+        assertEquals(variantList.size(), 2);
+
+        Variant v1 = variantList.get(0);
+        Variant v2 = variantList.get(1);
+
+        assertEquals(v1.getPosition(), 1);
+        assertEquals(v1.getChromosome(), "1");
+        assertEquals(v1.getReference(), "A");
+        assertEquals(v1.getAlternate(), "C");
+
+        assertEquals(v2.getChromosome(), "1");
+        assertEquals(v2.getPosition(), 2);
+        assertEquals(v2.getReference(), "A");
+        assertEquals(v2.getAlternate(), "C");
+
+
+
+
     }
 
     @Test
@@ -180,6 +316,13 @@ public class CSVSQueryManagerTest {
 
     @Test
     public void testGetAllVariants() throws Exception {
+
+        MutableLong count = new MutableLong(-1);
+        List<Variant> list1 = Lists.newArrayList(qm.getAllVariants(new ArrayList<>(), new ArrayList<>(), 0, 100, count));
+        assertEquals(list1.size(), 7);
+
+        List<Variant> list2 = Lists.newArrayList(qm.getAllVariants(new ArrayList<>(), new ArrayList<>(), 0, 3, count));
+        assertEquals(list2.size(), 3);
 
     }
 

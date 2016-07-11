@@ -2,6 +2,7 @@ package org.babelomics.csvs.lib.io;
 
 import com.mongodb.*;
 import org.apache.commons.lang3.mutable.MutableLong;
+import org.babelomics.csvs.lib.comparators.SaturationElementSampleDescComparator;
 import org.babelomics.csvs.lib.models.*;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
@@ -128,6 +129,7 @@ public class CSVSQueryManager {
         Region r = new Region(chromosome, position, position);
 
         List<String> chunkIds = getChunkIds(r);
+
         Query<Variant> query = this.datastore.createQuery(Variant.class);
 
         query.filter("_at.chIds in", chunkIds);
@@ -136,13 +138,26 @@ public class CSVSQueryManager {
         query.filter("reference =", reference.toUpperCase());
         query.filter("alternate =", alternate.toUpperCase());
 
+        boolean disTechCheck = false;
 
-        if (diseaseIds != null && diseaseIds.size() > 0) {
-            query.filter("diseases.diseaseGroupId in", diseaseIds);
+        BasicDBList listDBObjects = new BasicDBList();
+
+        if (diseaseIds != null && !diseaseIds.isEmpty()) {
+            listDBObjects.add(new BasicDBObject("dgid", new BasicDBObject("$in", diseaseIds)));
+            disTechCheck = true;
+
         }
-        if (technologyIds != null && technologyIds.size() > 0) {
-            query.filter("diseases.technologyId in", technologyIds);
+
+        if (technologyIds != null && !technologyIds.isEmpty()) {
+            listDBObjects.add(new BasicDBObject("tid", new BasicDBObject("$in", technologyIds)));
+            disTechCheck = true;
         }
+
+        if (disTechCheck) {
+            query.filter("diseases elem", new BasicDBObject("$and", listDBObjects));
+        }
+
+        System.out.println("query = " + query);
 
         Variant res = query.get();
 
@@ -155,6 +170,13 @@ public class CSVSQueryManager {
                     diseaseIds.add(dg.getGroupId());
                 }
             }
+            if (technologyIds == null || technologyIds.size() == 0) {
+                technologyIds = new ArrayList<>();
+                List<Technology> techList = this.getAllTechnologies();
+                for (Technology t : techList) {
+                    technologyIds.add(t.getTechnologyId());
+                }
+            }
 
             int sampleCount = calculateSampleCount(diseaseIds, technologyIds);
             DiseaseCount diseaseCount = calculateStats(res, diseaseIds, technologyIds, sampleCount);
@@ -165,6 +187,7 @@ public class CSVSQueryManager {
         }
         return res;
     }
+
 
     public Variant getVariant(Variant variant, List<Integer> diseaseIds, List<Integer> technologyIds) {
 
@@ -301,21 +324,30 @@ public class CSVSQueryManager {
 
         query.or(or);
 
-        List<Criteria> disTech = new ArrayList<>();
+
+        boolean disTechCheck = false;
+
+        BasicDBList listDBObjects = new BasicDBList();
 
         if (diseaseIds != null && !diseaseIds.isEmpty()) {
-            disTech.add(this.datastore.createQuery(Variant.class).criteria("diseases.diseaseGroupId").in(diseaseIds));
+            listDBObjects.add(new BasicDBObject("dgid", new BasicDBObject("$in", diseaseIds)));
+            disTechCheck = true;
+
         }
 
         if (technologyIds != null && !technologyIds.isEmpty()) {
-            disTech.add(this.datastore.createQuery(Variant.class).criteria("diseases.technologyId").in(technologyIds));
+            listDBObjects.add(new BasicDBObject("tid", new BasicDBObject("$in", technologyIds)));
+            disTechCheck = true;
         }
 
-        query.and(disTech.toArray(new Criteria[disTech.size()]));
+        if (disTechCheck) {
+            query.filter("diseases elem", new BasicDBObject("$and", listDBObjects));
+        }
 
         if (skip != null && limit != null) {
             query.offset(skip).limit(limit);
         }
+
 
         System.out.println("query = " + query);
 
@@ -330,7 +362,6 @@ public class CSVSQueryManager {
         if (diseaseIds == null || diseaseIds.isEmpty()) {
             diseaseIds = new ArrayList<>();
             List<DiseaseGroup> dgList = this.getAllDiseaseGroups();
-            System.out.println("dgList = " + dgList);
             for (DiseaseGroup dg : dgList) {
                 diseaseIds.add(dg.getGroupId());
             }
@@ -368,6 +399,7 @@ public class CSVSQueryManager {
             List<SaturationElement> list = new ArrayList<>();
             Map<Integer, Integer> diseaseCount = new HashMap<>();
 
+
             Query<Variant> auxQuery = this.datastore.createQuery(Variant.class);
 
             List<Criteria> and = new ArrayList<>();
@@ -402,12 +434,37 @@ public class CSVSQueryManager {
                 }
             }
 
-            for (Map.Entry<Integer, Integer> entry : diseaseCount.entrySet()) {
-                list.add(new SaturationElement(
-                        entry.getKey(),
-                        entry.getValue()
-                ));
+
+            Iterator<DiseaseGroup> dgIt = diseaseOrder.iterator();
+
+            while (dgIt.hasNext()) {
+                DiseaseGroup dg = dgIt.next();
+                if (diseaseCount.containsKey(dg.getGroupId())) {
+                    list.add(new SaturationElement(
+                            dg.getGroupId(),
+                            diseaseCount.get(dg.getGroupId()),
+                            dg.getSamples()
+                    ));
+                } else {
+                    list.add(new SaturationElement(
+                            dg.getGroupId(),
+                            0,
+                            dg.getSamples()
+                    ));
+                }
+
             }
+
+//            for (Map.Entry<Integer, Integer> entry : diseaseCount.entrySet()) {
+//                DiseaseGroup diseaseGroup = this.getDiseaseById(entry.getKey());
+//                list.add(new SaturationElement(
+//                        entry.getKey(),
+//                        entry.getValue(),
+//                        diseaseGroup.getSamples()
+//                ));
+//            }
+
+//            Collections.sort(list, new SaturationElementSampleDescComparator());
             map.put(r, list);
         }
 
@@ -499,9 +556,15 @@ public class CSVSQueryManager {
 
         dc = new DiseaseCount(null, null, gt00, gt01, gt11, gtmissing);
 
-        dc.setRefFreq(round(refFreq, DECIMAL_POSITIONS));
-        dc.setAltFreq(round(altFreq, DECIMAL_POSITIONS));
-        dc.setMaf(round(maf, DECIMAL_POSITIONS));
+        if (!Float.isNaN(refFreq)) {
+            dc.setRefFreq(round(refFreq, DECIMAL_POSITIONS));
+        }
+        if (!Float.isNaN(altFreq)) {
+            dc.setAltFreq(round(altFreq, DECIMAL_POSITIONS));
+        }
+        if (!Float.isNaN(maf)) {
+            dc.setMaf(round(maf, DECIMAL_POSITIONS));
+        }
 
         return dc;
     }

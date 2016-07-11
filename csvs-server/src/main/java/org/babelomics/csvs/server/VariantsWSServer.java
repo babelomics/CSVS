@@ -90,6 +90,8 @@ public class VariantsWSServer extends CSVSWSServer {
         Iterable<Variant> variants = qm.getVariantsByRegionList(regionList, diseaseList, technologyList, skip, limit, skipCount, count);
         long end = System.currentTimeMillis();
 
+        System.out.println("(end-start) = " + (end - start));
+
         QueryResponse qr = createQueryResponse(variants);
         qr.setNumTotalResults(count.getValue());
 
