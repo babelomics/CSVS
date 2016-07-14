@@ -75,25 +75,39 @@ public class RegionWSServer extends CSVSWSServer {
     @ApiOperation(value = "Get Saturation per gene")
     public Response getVariantsByRegion(@ApiParam(value = "regions") @PathParam("regions") @DefaultValue("") String regions,
                                         @ApiParam(value = "limit") @QueryParam("limit") @DefaultValue("10") int limit,
-                                        @ApiParam(value = "skip") @QueryParam("skip") @DefaultValue("0") int skip
+                                        @ApiParam(value = "skip") @QueryParam("skip") @DefaultValue("0") int skip,
+                                        @ApiParam(value = "diseases") @QueryParam("diseases") @DefaultValue("") String diseases,
+                                        @ApiParam(value = "technologies") @QueryParam("technologies") @DefaultValue("") String technologies
     ) {
 
 
         List<Region> regionList = new ArrayList<>();
         List<Integer> diseaseList = new ArrayList<>();
-        int regionsSize = 0;
+        List<Integer> technologyList = new ArrayList<>();
 
         if (regions.length() > 0) {
             String[] regSplits = regions.split(",");
             for (String s : regSplits) {
                 Region r = Region.parseRegion(s);
                 regionList.add(r);
-                regionsSize += r.getEnd() - r.getStart();
             }
         }
 
+        if (diseases.length() > 0) {
+            String[] disSplits = diseases.split(",");
+            for (String d : disSplits) {
+                diseaseList.add(Integer.valueOf(d));
+            }
+        }
 
-        Map<Region, List<SaturationElement>> res = qm.getSaturation(regionList);
+        if (technologies.length() > 0) {
+            String[] techSplit = technologies.split(",");
+            for (String t : techSplit) {
+                technologyList.add(Integer.valueOf(t));
+            }
+        }
+
+        Map<Region, List<SaturationElement>> res = qm.getSaturation(regionList, diseaseList, technologyList);
 
         QueryResponse qr = createQueryResponse(res);
         qr.setNumTotalResults(res.size());

@@ -169,6 +169,7 @@
                             breakSize: value
                         }
                     }
+                  
                 }
                 var counts = Array(diseaseData.length).fill(0);
 
@@ -193,14 +194,14 @@
                     counts[i].y += counts[i - 1].y;
                     counts[i].radius = (counts[i]._count / total) * 50
                 }
-
                 chartData.push({
                     name: key,
                     data: counts,
                     // connectNulls: true
                 });
-                console.log(chartData);
             }
+
+
 
             var chart = new Highcharts.Chart({
                 _me: me,
@@ -248,7 +249,7 @@
                     title: {
                         text: 'Num. variants'
                     },
-                    min:0,
+                    min: 0,
                     startOnTick: true
                 },
                 plotOptions: {

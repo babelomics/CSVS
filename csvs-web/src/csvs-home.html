@@ -126,12 +126,13 @@
                 and Opera 24+.
             </div>
         </div>
-
     </template>
 </dom-module>
 <script>
     Polymer({
         is: "csvs-home",
+        ready: function(){
+        },
         tryItNow: function () {
             this.fire('try');
         }

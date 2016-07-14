@@ -2,7 +2,6 @@ package org.babelomics.csvs.lib.io;
 
 import com.mongodb.*;
 import org.apache.commons.lang3.mutable.MutableLong;
-import org.babelomics.csvs.lib.comparators.SaturationElementSampleDescComparator;
 import org.babelomics.csvs.lib.models.*;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
@@ -77,6 +76,11 @@ public class CSVSQueryManager {
 
     public List<DiseaseGroup> getAllDiseaseGroupsOrderedBySample() {
         List<DiseaseGroup> res = datastore.createQuery(DiseaseGroup.class).order("-samples").asList();
+        return res;
+    }
+
+    public List<Technology> getAllTechnologiesOrderedBySample() {
+        List<Technology> res = datastore.createQuery(Technology.class).order("-samples").asList();
         return res;
     }
 
@@ -386,11 +390,14 @@ public class CSVSQueryManager {
         return res;
     }
 
-    public Map<Region, List<SaturationElement>> getSaturation(List<Region> regions) {
+
+    public Map<Region, List<SaturationElement>> getSaturation(List<Region> regions, List<Integer> diseaseIds, List<Integer> technologyIds) {
 
         Map<Region, List<SaturationElement>> map = new LinkedHashMap<>();
 
         List<DiseaseGroup> diseaseOrder = getAllDiseaseGroupsOrderedBySample();
+        List<Technology> technologyOrder = getAllTechnologiesOrderedBySample();
+
 
         for (Region r : regions) {
 
@@ -411,6 +418,28 @@ public class CSVSQueryManager {
             Query<Variant> query = this.datastore.createQuery(Variant.class);
             query.and(and.toArray(new Criteria[and.size()]));
 
+            boolean disTechCheck = false;
+
+            BasicDBList listDBObjects = new BasicDBList();
+
+            if (diseaseIds != null && !diseaseIds.isEmpty()) {
+                listDBObjects.add(new BasicDBObject("dgid", new BasicDBObject("$in", diseaseIds)));
+                disTechCheck = true;
+
+            }
+
+            if (technologyIds != null && !technologyIds.isEmpty()) {
+                listDBObjects.add(new BasicDBObject("tid", new BasicDBObject("$in", technologyIds)));
+                disTechCheck = true;
+            }
+
+            if (disTechCheck) {
+                query.filter("diseases elem", new BasicDBObject("$and", listDBObjects));
+            }
+
+
+            System.out.println(query);
+
             Iterable<Variant> aux = query.fetch();
 
             for (Variant v : aux) {
@@ -422,9 +451,22 @@ public class CSVSQueryManager {
 
                     while (dgIt.hasNext() && dc == null) {
                         DiseaseGroup dg = dgIt.next();
-                        dc = v.getDiseaseCount(dg);
+                        if (!diseaseIds.contains(dg.getGroupId())) {
+                            continue;
+                        }
+                        Iterator<Technology> tIt = technologyOrder.iterator();
+                        while (dgIt.hasNext() && tIt.hasNext() && dc == null) {
+                            Technology t = tIt.next();
+                            if (!technologyIds.contains(t.getTechnologyId())) {
+                                continue;
+                            }
+                            dc = v.getDiseaseCount(dg, t);
+                        }
                     }
 
+                    if(dc == null){
+                        continue;
+                    }
                     int count = 0;
                     if (diseaseCount.containsKey(dc.getDiseaseGroup().getGroupId())) {
                         count = diseaseCount.get(dc.getDiseaseGroup().getGroupId());

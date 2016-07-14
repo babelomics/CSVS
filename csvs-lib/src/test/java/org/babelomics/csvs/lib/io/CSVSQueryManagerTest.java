@@ -12,10 +12,7 @@ import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.process.runtime.Network;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.babelomics.csvs.lib.CSVSUtil;
-import org.babelomics.csvs.lib.models.DiseaseCount;
-import org.babelomics.csvs.lib.models.DiseaseGroup;
-import org.babelomics.csvs.lib.models.Technology;
-import org.babelomics.csvs.lib.models.Variant;
+import org.babelomics.csvs.lib.models.*;
 import org.junit.*;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
@@ -29,6 +26,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -251,7 +249,7 @@ public class CSVSQueryManagerTest {
         assertEquals(dc5.getGt11(), 2);
         assertEquals(dc5.getGtmissing(), 1);
 
-        Variant v6 = qm.getVariant("1", 2, "A", "C", d2,t2);
+        Variant v6 = qm.getVariant("1", 2, "A", "C", d2, t2);
         assertNull(v6);
 
     }
@@ -305,12 +303,32 @@ public class CSVSQueryManagerTest {
         assertEquals(v2.getAlternate(), "C");
 
 
-
-
     }
 
     @Test
     public void testGetSaturation() throws Exception {
+
+        List<Region> regions = new ArrayList<>();
+        regions.add(new Region("1:1-50"));
+        List<Integer> diseases = new ArrayList<>();
+//        diseases.add(1);
+        diseases.add(2);
+
+        List<Integer> tech = new ArrayList<>();
+        tech.add(1);
+//        tech.add(2);
+//
+
+        Map<Region, List<SaturationElement>> res = qm.getSaturation(regions, diseases, tech);
+//        System.out.println(res);
+
+        for (Map.Entry<Region, List<SaturationElement>> entry : res.entrySet()) {
+            System.out.println(entry.getKey());
+            List<SaturationElement> value = entry.getValue();
+            for (SaturationElement se : value) {
+                System.out.println("\t" + se);
+            }
+        }
 
     }
 
