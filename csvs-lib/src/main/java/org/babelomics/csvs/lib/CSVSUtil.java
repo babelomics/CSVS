@@ -86,6 +86,10 @@ public class CSVSUtil {
         diseaseGroups.add(new DiseaseGroup(16, "XVI Certain conditions originating in the perinatal period"));
         diseaseGroups.add(new DiseaseGroup(17, "XVII Congenital malformations, deformations and chromosomal abnormalities"));
         diseaseGroups.add(new DiseaseGroup(18, "XVIII Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified"));
+        diseaseGroups.add(new DiseaseGroup(19, "XIX Injury, poisoning and certain other consequences of external causes"));
+        diseaseGroups.add(new DiseaseGroup(20, "XX External causes of morbidity and mortality"));
+        diseaseGroups.add(new DiseaseGroup(21, "XXI Factors influencing health status and contact with health services"));
+        diseaseGroups.add(new DiseaseGroup(22, "XXII Codes for special purposes"));
 
         for (DiseaseGroup dg : diseaseGroups) {
             try {

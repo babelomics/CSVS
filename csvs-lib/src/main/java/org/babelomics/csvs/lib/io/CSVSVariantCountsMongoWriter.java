@@ -59,8 +59,6 @@ public class CSVSVariantCountsMongoWriter implements DataWriter<Variant> {
         this.diseaseGroup.incSamples(this.samples);
         this.diseaseGroup.incVariants(this.variantsD);
 
-
-        System.out.println("variantsT = " + variantsT);
         this.technology.incSamples(this.samples);
         this.technology.incVariants(this.variantsT);
         this.datastore.save(this.diseaseGroup);
