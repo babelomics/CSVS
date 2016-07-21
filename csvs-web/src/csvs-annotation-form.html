@@ -4,8 +4,7 @@
 <link rel="import" href="../bower_components/stevia-elements/src/stv-input-text.html">
 <link rel="import" href="../bower_components/stevia-elements/src/form/stv-file-origin.html">
 <dom-module id="csvs-annotation-form">
-    <style is="custom-style"
-           include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
         :host {
             display: block;
             position: relative;
@@ -46,17 +45,9 @@
             width: 200px;
         }
 
-        stv-select {
-            width: 200px;
-        }
-
-        .diseases {
-            width: 350px;
-        }
-
-        #diseases_div {
-            height: 300px;
-            max-height: 300px;
+        #diseases_div,
+        #technologies_div {
+            height: 200px;
             overflow-y: auto;
         }
 
@@ -64,8 +55,23 @@
             min-width: 300px;
         }
 
-        #outputFile::shadow > input {
+        #outputFile::shadow> input {
             width: 400px !important;
+        }
+
+        .container {
+            width: 100%;
+        }
+
+        .check {
+            cursor: pointer;
+            color: var(--secondary-text-color);
+            padding-right: 2px;
+        }
+
+        .check:hover {
+            color: var(--accent-color);
+            font-weight: bold;
         }
     </style>
     <template>
@@ -73,47 +79,61 @@
             <p id="title">
                 <strong>Annotation form</strong>
             </p>
-            <!-- <div class="horizontal layout center-justified">
-                <div class="stv-btn stv-btn-shdw"><i class="fa fa-rocket"></i> &nbsp; Run example</div>
-            </div>
-            <br> -->
-
-            <div class="horizontal layout wrap">
+            <div class="vertical layout">
                 <div class="stv-formbox flex vcf-file">
                     <div class="stv-formtitle">
                         Input data
                     </div>
                     <div class="stv-formcontent">
                         <div>VCF file: &nbsp;
-                            <stv-file-origin id="vcf_file" selection-mode="file" bioformats="{{bioformats}}"
-                                             user-data="{{userData}}">
+                            <stv-file-origin id="vcf_file" selection-mode="file" bioformats="{{bioformats}}" user-data="{{userData}}">
                             </stv-file-origin>
                             <span id="vcf_fileError" class="errmsg"></span>
                         </div>
                         <br>
                     </div>
                 </div>
-
-                <div class="stv-formbox diseases">
-                    <div class="stv-formtitle horizontal layout center">
-                        <div>Subpopulations</div>
-                        <div class="flex"></div>
-                        <div class="check" on-click="selectAllDiseases">
-                            <i class="fa fa-check-square-o"></i>
+                <div class="horizontal layout">
+                    <stv-form-box clasS="flex">
+                        <div class="header horizontal layout flex">
+                            <div>Subpopulations</div>
+                            <div class="flex"></div>
+                            <div on-click="selectAllDiseases">
+                                <i class="fa fa-check-square-o check"></i>
+                            </div>
+                            <div on-click="deselectAllDiseases">
+                                <i class="fa fa-square-o check"></i>
+                            </div>
                         </div>
-                        <div class="check" on-click="deselectAllDiseases">
-                            <i class="fa fa-square-o"></i>
+                        <div id="diseases_div" class="container">
+                            <template is="dom-repeat" items="{{diseases}}">
+                                <label class="stv-control">
+                                    <input type="checkbox" class="diseaseName" name="disease" id="disease" value="{{item.groupId}}" checked/>
+                                    <span>{{item.name}}</span>
+                                </label>
+                            </template>
                         </div>
-                    </div>
-                    <div id="diseases_div" class="stv-formcontent" style="padding: 8px 10px">
-                        <template is="dom-repeat" items="{{diseases}}">
-                            <label class="stv-control">
-                                <input type="checkbox" class="diseaseName" name="disease" id="disease"
-                                       value="{{item.groupId}}" checked/>
-                                <span>{{item.name}}</span>
-                            </label>
-                        </template>
-                    </div>
+                    </stv-form-box>
+                    <stv-form-box class="flex">
+                        <div class="header horizontal layout flex">
+                            <div>Technologies</div>
+                            <div class="flex"></div>
+                            <div on-click="selectAllTechnologies">
+                                <i class="fa fa-check-square-o check"></i>
+                            </div>
+                            <div on-click="deselectAllTechnologies">
+                                <i class="fa fa-square-o check"></i>
+                            </div>
+                        </div>
+                        <div id="technologies_div" class="container">
+                            <template is="dom-repeat" items="{{technologies}}">
+                                <label class="stv-control">
+                                    <input type="checkbox" class="technologyName" name="technology" id="technology" value="{{item.technologyId}}" checked/>
+                                    <span>{{item.name}}</span>
+                                </label>
+                            </template>
+                        </div>
+                    </stv-form-box>
                 </div>
             </div>
 
@@ -123,41 +143,34 @@
                 </div>
                 <div class="stv-formcontent">
                     <div>Output folder: &nbsp;
-                        <stv-file-origin id="output_folder" selection-mode="folder" bioformats="{{bioformats}}"
-                                         user-data="{{userData}}">
+                        <stv-file-origin id="output_folder" selection-mode="folder" bioformats="{{bioformats}}" user-data="{{userData}}">
                         </stv-file-origin>
                         <span id="output_folderError" class="errmsg"></span>
                     </div>
 
-                    <stv-input-text id="outputFile" label="Output file:" placeholder="output_file.vcf"
-                                    tooltip="Output file"></stv-input-text>
+                    <stv-input-text id="outputFile" label="Output file:" placeholder="output_file.vcf" tooltip="Output file"></stv-input-text>
                     <br>
 
                     <div class="coment">Job name</div>
-                    <input type="text" id="jobName" class="jso" style="width:200px;" value="CSVS Annotation job"/>
+                    <input type="text" id="jobName" class="stv" style="width:200px;" value="CSVS Annotation job" />
 
                     <div class="coment">Description</div>
-                    <textarea id="jobDescription" class="jso" style="width:200px;"></textarea>
+                    <textarea id="jobDescription" class="stv" style="width:200px;"></textarea>
                 </div>
             </div>
 
             <span class="errmsg">{{errorMessage}}</span>
 
             <div class="horizontal layout center-justified">
-                <div class="stv-btn stv-btn-shdw stv-btn-big" on-click="launchJob"><i class="fa fa-rocket"></i> &nbsp;
-                    Launch Job
+                <div class="stv-btn stv-btn-shdw stv-btn-big" on-click="launchJob"><i class="fa fa-rocket"></i> &nbsp; Launch Job
                 </div>
             </div>
             <br>
         </form>
-
-
     </template>
-
     <script>
         Polymer({
             is: 'csvs-annotation-form',
-            // behaviors: [JsoOpencgaManagerBehavior],
             properties: {
                 toolId: {
                     type: String,
@@ -172,7 +185,13 @@
                 },
                 diseases: {
                     type: Array,
-                    value: function () {
+                    value: function() {
+                        return [];
+                    }
+                },
+                technologies: {
+                    type: Array,
+                    value: function() {
                         return [];
                     }
                 },
@@ -181,56 +200,43 @@
                 },
                 userData: {
                     type: Object
-                },
-
+                }
             },
-            _setError: function (id, msg) {
+            _setError: function(id, msg) {
                 this.$[id + 'Error'].innerHTML = msg;
                 this.errorMessage = "There are errors in the form. Correct them before launching the job.";
             },
-            _clearError: function (id) {
+            _clearError: function(id) {
                 this.$[id + 'Error'].innerHTML = '';
                 this.errorMessage = '';
             },
-            _clean: function () {
+            _clean: function() {
                 this.errorMessage = '';
                 this.$.vcf_file.reset();
                 this.$.output_folder.reset();
             },
-            launchJob: function (e) {
+            launchJob: function(e) {
                 var me = this;
-
-                // var query = {
-                //     sid: Cookies("bioinfo_sid"),
-                //     toolId: this.toolId,
-                //     execution: this.execution,
-                //     name: this.$.jobName.value,
-                //     description: this.$.jobDescription.value
-                // };
 
                 var query = {
                     sid: Cookies("bioinfo_sid"),
                     name: this.$.jobName.value,
                     description: this.$.jobDescription.value
-                    // outdirId: '56e6d0ed5d07cb333f39f6d0'
                 };
 
                 var jobConfig = {
                     tool: 'csvs',
-                    // execution: 'differential-signaling',
                     executable: 'csvs.sh',
                     options: {
                         "outdir": {
                             out: true,
                         }
-
                     }
                 };
 
                 if (this.$.output_folder.selectedFile != null) {
                     query.outdirId = this.$.output_folder.selectedFile._id
                 }
-
 
                 if (this.$.outputFile.getValue() != null && this.$.outputFile.getValue() != "") {
                     jobConfig.options.outfile = {
@@ -248,7 +254,6 @@
                     this._setError('vcf_file', 'No vcf file selected');
                 } else {
                     this._clearError('vcf_file');
-                    // query['input'] = this.$.vcf_file.selectedFile.id;
                     jobConfig.options.input = {
                         type: 'file',
                         mode: 'id',
@@ -257,6 +262,7 @@
                 }
 
                 var subpopulations = [];
+                var technologies = [];
 
                 var checkboxes = this.$.diseases_div.getElementsByClassName("diseaseName");
 
@@ -264,6 +270,14 @@
                     var elem = checkboxes[i];
                     if (elem.checked) {
                         subpopulations.push(elem.value);
+                    }
+                }
+                var checkboxes = this.$.technologies_div.getElementsByClassName("technologyName");
+
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    if (elem.checked) {
+                        technologies.push(elem.value);
                     }
                 }
 
@@ -274,29 +288,14 @@
                     };
                 }
 
+                if (technologies.length > 0) {
+                    jobConfig.options.technologyId = {
+                        type: "text",
+                        value: technologies.join(",")
+                    };
+                }
+
                 if (this.errorMessage === '' && this.$.form.checkValidity()) {
-                    console.log(this.$.form.checkValidity())
-                    // OpencgaManager.jobs.create({
-                    //     query: query,
-                    //     request: {
-                    //         //method: 'POST',
-                    //         success: function(response) {
-                    //             if (response.response[0].errorMsg === '' || response.response[0].errorMsg == null) {
-                    //                 var job = response.response[0].result[0];
-                    //                 me.selectedOption = "jobLaunched"
-                    //                 console.log(job);
-                    //                 // me._clean();
-                    //                 me.fire('job-launched');
-                    //                 //                                    me.message = job.commandLine;
-                    //             } else {
-                    //                 me.message = response.response[0].errorMsg;
-                    //             }
-                    //         },
-                    //         error: function() {
-                    //             me.message = 'Server error, try again later.';
-                    //         }
-                    //     }
-                    // });
                     SteviaManager.jobs.create({
                         query: query,
                         request: {
@@ -305,48 +304,52 @@
                                 "Content-Type": "application/json"
                             },
                             body: JSON.stringify(jobConfig),
-                            success: function (response) {
+                            success: function(response) {
                                 if (response.response[0].error == null) {
-                                    // var job = response.response[0].result[0];
                                     me.selectedOption = "jobLaunched"
-                                    //                 console.log(job);
-                                    //                 // me._clean();
                                     me.fire('job-launched');
-                                    //                 //
                                     console.log(response);
                                 } else {
                                     console.log(response.response[0].error);
                                     me.message = response.response[0].error;
-
                                 }
                             },
-                            error: function () {
+                            error: function() {
                                 console.log('Server error, try again later.');
                                 me.message = 'Server error, try again later.';
-
                             }
                         }
                     });
                 }
-
             },
-            selectAllDiseases: function (e, d, s) {
+            selectAllDiseases: function(e, d, s) {
                 var checkboxes = this.$.diseases_div.getElementsByClassName("diseaseName");
                 for (var i = 0; i < checkboxes.length; i++) {
                     var elem = checkboxes[i];
                     elem.checked = true;
                 }
-
             },
-            deselectAllDiseases: function (e, d, s) {
+            deselectAllDiseases: function(e, d, s) {
                 var checkboxes = this.$.diseases_div.getElementsByClassName("diseaseName");
                 for (var i = 0; i < checkboxes.length; i++) {
                     var elem = checkboxes[i];
                     elem.checked = false;
                 }
+            },
+            selectAllTechnologies: function(e, d, s) {
+                var checkboxes = this.$.technologies_div.getElementsByClassName("technologyName");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    elem.checked = true;
+                }
+            },
+            deselectAllTechnologies: function(e, d, s) {
+                var checkboxes = this.$.technologies_div.getElementsByClassName("technologyName");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    elem.checked = false;
+                }
             }
-
-
         });
     </script>
 </dom-module>

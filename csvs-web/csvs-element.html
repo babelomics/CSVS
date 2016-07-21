@@ -1,4 +1,3 @@
-
 <link rel="import" href="bower_components/polymer/polymer.html">
 <link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
@@ -122,12 +121,8 @@
             <csvs-stats-element diseases="{{diseases}}" technologies="{{technologies}}" id="csvsStatsElement"></csvs-stats-element>
         </div>
 
-        <!-- <div class="content" menu-option="saturation">
-            <csvs-saturation-element diseases="{{diseases}}" id="csvsSaturationElement"></csvs-saturation-element>
-        </div> -->
-
         <div class="content" menu-option="annot">
-            <csvs-annotation-form id="annotationForm" selectedOption="{{selectedOption}}" bioformats="{{bioformats}}" user-data="{{userData}}" diseases="{{diseases}}" on-job-launched="handleJobLaunched"></csvs-annotation-form>
+            <csvs-annotation-form id="annotationForm" selectedOption="{{selectedOption}}" bioformats="{{bioformats}}" user-data="{{userData}}" technologies="{{technologies}}" diseases="{{diseases}}" on-job-launched="handleJobLaunched"></csvs-annotation-form>
         </div>
 
         <div class="content" menu-option="result">
