@@ -1,7 +1,7 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
-<link rel="import" href="../lib/jsorolla/src/lib/components/jso-genome-viewer-element.html">
+<link rel="import" href="../bower_components/jsorolla/src/lib/components/jso-genome-viewer-element.html">
 
 <link rel="import" href="../bower_components/stevia-elements/src/filter/stv-filter-position.html">
 <link rel="import" href="../bower_components/stevia-elements/src/stv-tooltip.html">
@@ -941,7 +941,7 @@
         },
         _quickSearchResultFn: function(query) {
             var results = [];
-            var speciesCode = Utils.getSpeciesCode(this.species);
+            var speciesCode = stv.utils.getSpeciesCode(this.species);
 
             CellBaseManager.get({
                 host: CELLBASE_HOST,
@@ -1124,7 +1124,7 @@
 
         },
         _formatText: function(text) {
-            return Utils.formatText(text, "_").toLowerCase().replace(/(?:^|\s)\S/g, function(a) {
+            return stv.utils.formatText(text, "_").toLowerCase().replace(/(?:^|\s)\S/g, function(a) {
                 return a.toUpperCase();
             });
         },

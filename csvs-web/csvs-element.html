@@ -1,54 +1,39 @@
-<link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
-<script src="../bower_components/cookies-js/dist/cookies.min.js"></script>
-<script src="../bower_components/crypto-js-evanvosberg/core.js"></script>
-<script src="../bower_components/crypto-js-evanvosberg/sha1.js"></script>
-<script src="../bower_components/highcharts-release/adapters/standalone-framework.js"></script>
-<script src="../bower_components/highcharts-release/highcharts.js"></script>
-<script src="../bower_components/highcharts-release/highcharts-more.js"></script>
-<script src="../bower_components/highcharts-release/modules/exporting.js"></script>
-<script src="../bower_components/highcharts-release/modules/broken-axis.js"></script>
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
-<script src="../bower_components/jquery/dist/jquery.min.js"></script>
-<script src="../bower_components/underscore/underscore-min.js"></script>
-<script src="../bower_components/backbone/backbone.js"></script>
-<script src="../bower_components/qtip2/jquery.qtip.min.js"></script>
-<script src="../bower_components/pako/dist/pako.min.js"></script>
-<script src="../bower_components/uri.js/src/URI.min.js"></script>
-
-<link rel="stylesheet" href="../bower_components/qtip2/jquery.qtip.css">
+<script src="bower_components/stevia-elements/src/manager/stevia-manager.js"></script>
+<script src="bower_components/stevia-elements/src/utils/utils.js"></script>
 
 
-<link rel="import" href="../bower_components/stevia-elements/src/stv-header.html">
-<link rel="import" href="../bower_components/stevia-elements/src/stv-application-behavior.html">
-<link rel="import" href="../bower_components/stevia-elements/src/stv-footer.html">
-<!-- <link rel="import" href="../bower_components/stevia-elements/src/stv-help-menu.html"> -->
-<link rel="import" href="../bower_components/stevia-elements/src/dropdown/stv-dropdown.html">
-<link rel="import" href="../bower_components/stevia-elements/src/stv-select.html">
-<link rel="import" href="../bower_components/stevia-elements/src/stv-feedback.html">
-<link rel="import" href="../bower_components/stevia-elements/src/stv-panel.html">
-<link rel="import" href="../bower_components/stevia-elements/src/table/stv-table.html">
-<link rel="import" href="../bower_components/stevia-elements/src/validator/stv-validator.html">
-<link rel="import" href="../bower_components/stevia-elements/src/job/stv-job-browser.html">
-<link rel="import" href="../bower_components/stevia-elements/src/file/stv-file-browser.html">
-<link rel="import" href="../bower_components/stevia-elements/src/variant/stv-variant-frequencies.html">
-<link rel="import" href="../bower_components/stevia-elements/src/variant/stv-variant-phenotype.html">
-<link rel="import" href="../bower_components/stevia-elements/src/variant/stv-variant-effect.html">
 
-<!--<script src="../lib/jsorolla/src/lib/validator/bed-validator.js"></script>-->
-<script src="../bower_components/stevia-elements/src/validator/bed-validator.js"></script>
-<!--<link rel="import" href="../bower_components/stevia-components/src/">-->
-<script src="FilterHistory.js"></script>
+<link rel="import" href="bower_components/stevia-elements/src/stv-header.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-application-behavior.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-footer.html">
+<link rel="import" href="bower_components/stevia-elements/src/dropdown/stv-dropdown.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-select.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-feedback.html">
+<link rel="import" href="bower_components/stevia-elements/src/stv-panel.html">
+<link rel="import" href="bower_components/stevia-elements/src/table/stv-table.html">
+<link rel="import" href="bower_components/stevia-elements/src/validator/stv-validator.html">
+<link rel="import" href="bower_components/stevia-elements/src/job/stv-job-browser.html">
+<link rel="import" href="bower_components/stevia-elements/src/file/stv-file-browser.html">
+<link rel="import" href="bower_components/stevia-elements/src/variant/stv-variant-frequencies.html">
+<link rel="import" href="bower_components/stevia-elements/src/variant/stv-variant-phenotype.html">
+<link rel="import" href="bower_components/stevia-elements/src/variant/stv-variant-effect.html">
 
-<link rel="import" href="csvs-content.html">
-<link rel="import" href="csvs-menubar.html">
-<link rel="import" href="csvs-home.html">
-<link rel="import" href="csvs-search-element.html">
-<link rel="import" href="csvs-stats-element.html">
-<link rel="import" href="csvs-annotation-form.html">
-<link rel="import" href="csvs-annotation-result.html">
-<link rel="import" href="csvs-saturation-element.html">
+<script src="bower_components/stevia-elements/src/validator/bed-validator.js"></script>
+<script src="src/FilterHistory.js"></script>
+
+<script src="src/csvs-manager.js"></script>
+<link rel="import" href="src/csvs-content.html">
+<link rel="import" href="src/csvs-menubar.html">
+<link rel="import" href="src/csvs-home.html">
+<link rel="import" href="src/csvs-search-element.html">
+<link rel="import" href="src/csvs-stats-element.html">
+<link rel="import" href="src/csvs-annotation-form.html">
+<link rel="import" href="src/csvs-annotation-result.html">
+<link rel="import" href="src/csvs-saturation-element.html">
 
 
 <dom-module id="csvs-element">
@@ -165,7 +150,7 @@
             <stv-feedback id="feedback" hidden on-feedbackend="handleFeedback"></stv-feedback>
         </div>
 
-        <stv-header id="stvHeader" user-data="{{userData}}" on-login="handleLogin" on-logout="handleLogout" selected-option="{{selectedOption}}" hide-browse hide-signup hide-login>
+        <stv-header id="stvHeader" user-data="{{userData}}" on-login="handleLogin" on-logout="handleLogout" selected-option="{{selectedOption}}" hide-jbos hide-browse isLogged="{{isLogged}}">
             <div class="icon">
                 <img src="images/bier-text.svg" style="height: 50px;margin: 5px 0px 0 0;">
             </div>
@@ -237,7 +222,6 @@
 <script>
     Polymer({
         is: 'csvs-element',
-        // behaviors: [JsoApplicationBehavior, JsoOpencgaManagerBehavior],
         behaviors: [StvApplicationBehavior],
         properties: {
             diseases: {

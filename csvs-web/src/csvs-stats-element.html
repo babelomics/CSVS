@@ -229,7 +229,7 @@
         _formatText: function (text) {
             if (text) {
 
-                return Utils.formatText(text, "_").toLowerCase().replace(/(?:^|\s)\S/g, function (a) {
+                return stv.utils.formatText(text, "_").toLowerCase().replace(/(?:^|\s)\S/g, function (a) {
                     return a.toUpperCase();
                 });
             } else {

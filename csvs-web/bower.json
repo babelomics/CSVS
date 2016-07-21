@@ -25,6 +25,7 @@
         "qtip2": "~2.2.1",
         "pako": "~0.2.6",
         "uri.js": "~1.16.0",
-        "stevia-elements": "git@github.com:babelomics/stevia-elements.git#develop"
+        "stevia-elements": "git@github.com:babelomics/stevia-elements.git#develop",
+        "jsorolla": "https://github.com/opencb/jsorolla.git#develop"
     }
 }
