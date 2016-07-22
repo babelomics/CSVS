@@ -25,8 +25,6 @@
 <script src="src/FilterHistory.js"></script>
 
 <script src="src/csvs-manager.js"></script>
-<link rel="import" href="src/csvs-content.html">
-<link rel="import" href="src/csvs-menubar.html">
 <link rel="import" href="src/csvs-home.html">
 <link rel="import" href="src/csvs-search-element.html">
 <link rel="import" href="src/csvs-stats-element.html">
@@ -140,7 +138,7 @@
 
             <stv-panel hidden collapsible movable closable id="jobBrowserPanel" on-hidden="handlePanelHidden">
                 <div class="header">Job browser</div>
-                <stv-job-browser class="container" id="jobBrowser" on-jobselect="handleJobSelect" bioformats="{{bioformats}}" allowed-tools="{{allowedTools}}" user-data="{{userData}}" on-job-launched="handleJobLaunched"></stv-job-browser>
+                <stv-job-browser class="container" id="jobBrowser" on-jobselect="handleJobSelect" bioformats="{{bioformats}}" allowed-tools="{{allowedTools}}" user-data="{{userData}}" on-job-launched="handleJobLaunched" on-job-relaunched="handleJobRelaunched"></stv-job-browser>
             </stv-panel>
             <stv-feedback id="feedback" hidden on-feedbackend="handleFeedback"></stv-feedback>
         </div>
@@ -393,6 +391,14 @@
                 this.saturation = false;
             }
         },
+        handleJobRelaunched: function(e) {
+
+            var me = this;
+            var job = e.detail;
+
+            this.selectedOption = "annot";
+            this.$.annotationForm.relaunch(job);
+        }
 
     });
 </script>

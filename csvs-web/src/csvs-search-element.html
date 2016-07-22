@@ -505,7 +505,7 @@
         ready: function() {
             if (localStorage.csvs_filter_history) {
                 this.historyFilters = JSON.parse(localStorage.csvs_filter_history);
-                
+
             }
 
             var me = this;
@@ -1765,9 +1765,7 @@
                 this.diseasesSort = diseasesSort;
                 this.diseaseMap = diseaseMap;
                 this.diseaseNameMap = diseaseNameMap;
-
             }
-
         },
         _getDiseaseCount: function(data, disease) {
             var count = 0;
@@ -1778,9 +1776,7 @@
                     count = elem.count;
                 }
             }
-
             return count;
-
         },
         reloadChart: function(data) {
 
@@ -1793,7 +1789,6 @@
 
             for (var key in data) {
                 var diseaseData = data[key];
-
 
                 if (!diseaseBreaksCheck) {
                     diseaseBreaksCheck = true;
@@ -1818,7 +1813,6 @@
                         breakSize: 0
                     });
                 }
-                // var counts = Array(diseaseData.length).fill(0);
                 var counts = [];
 
                 var labels = [];
@@ -1839,7 +1833,6 @@
                     });
 
                     total += elem.count;
-                    //                    counts[i] = elem.count;
                 }
 
                 for (var i = 1; i < counts.length; i++) {
@@ -1849,16 +1842,12 @@
                     counts[i].radius = counts[i]._count / 5; //1/(counts[i]._count)
                 }
 
-
-
                 labels.unshift(
                     ""
                 );
                 counts.unshift({
                     y: 0
                 });
-
-
 
                 chartData.push({
                     name: key,
@@ -1920,13 +1909,11 @@
                     line: {
                         dataLabels: {
                             enabled: true
-                        },
-                        //                        enableMouseTracking: false
+                        }
                     }
                 },
                 series: chartData
             });
-
-        },
+        }
     });
 </script>

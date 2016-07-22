@@ -27,6 +27,10 @@
         .down {
             min-width: 300px;
         }
+
+        #filePreview {
+            height: 600px;
+        }
     </style>
     <template>
         <div class="container vertical layout">
@@ -35,14 +39,13 @@
                     <i class="fa fa-cloud-download"></i> &nbsp; Download Annotated File (<span>{{fileName}}</span>)
                 </div>
             </div>
-            <stv-file-preview id="filePreview"></stv-file-preview>
+            <stv-file-preview id="filePreview" hide-download></stv-file-preview>
         </div>
     </template>
 
     <script>
         Polymer({
             is: 'csvs-annotation-result',
-            // behaviors: [JsoOpencgaManagerBehavior],
             properties: {
                 file: {
                     type: Object,
@@ -64,7 +67,7 @@
 
             },
             downloadFiles: function(e) {
-              SteviaManager.downloadFile(this.file._id);
+                SteviaManager.downloadFile(this.file._id);
             }
         });
     </script>

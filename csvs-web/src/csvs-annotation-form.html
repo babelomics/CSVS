@@ -288,7 +288,7 @@
                     };
                 }
 
-                if (technologies.length > 0) {
+                if (false && technologies.length > 0) {
                     jobConfig.options.technologyId = {
                         type: "text",
                         value: technologies.join(",")
@@ -349,6 +349,30 @@
                     var elem = checkboxes[i];
                     elem.checked = false;
                 }
+            },
+            relaunch: function(job) {
+                var me = this;
+                console.log(job);
+
+                var fileId = job.options.input.value;
+                var diseases = job.options.diseaseId.value.split(",");
+
+                var checkboxes = this.$.diseases_div.getElementsByClassName("diseaseName");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    if (diseases.indexOf(elem.value) >= 0) {
+                        elem.checked = true;
+                    } else {
+                        elem.checked = false;
+                    }
+                }
+
+                this.$.jobDescription.value = job.description;
+                this.$.jobName.value = job.name;
+
+                this.$.vcf_file.setFileFromId(fileId, function() {
+
+                });
             }
         });
     </script>
