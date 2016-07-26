@@ -161,8 +161,6 @@ public class CSVSQueryManager {
             query.filter("diseases elem", new BasicDBObject("$and", listDBObjects));
         }
 
-        System.out.println("query = " + query);
-
         Variant res = query.get();
 
         if (res != null) {
