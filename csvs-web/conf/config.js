@@ -5,3 +5,5 @@ CELLBASE_HOST = "http://bioinfo.hpc.cam.ac.uk/cellbase";
 CELLBASE_HOST = "http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0";
 OPENCGA_HOST = "http://test.babelomics.org/opencga-0.7-dev";
 STEVIA_SERVER_HOST = "http://stvtest.babelomics.org";
+
+STV_APP="CSVS";
