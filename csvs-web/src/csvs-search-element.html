@@ -1778,6 +1778,41 @@
             }
             return count;
         },
+        removeZeroValues: function(data) {
+            var auxTable = [];
+
+            for (key in data) {
+                var row = data[key];
+                auxTable.push(row);
+            }
+
+            if (auxTable.length > 0) {
+                var len = auxTable[0].length;
+
+                for (var j = 0; j < len; j++) {
+                    var allZero = true;
+
+                    for (var i = 0; i < auxTable.length && allZero; i++) {
+                        if (auxTable[i][j].count != 0) {
+                            allZero = false;
+                        }
+
+                    }
+
+                    if (allZero) {
+                        for (var i = 0; i < auxTable.length; i++) {
+                            auxTable[i][j] = null;
+                        }
+                    }
+                }
+
+                for (key in data) {
+                    data[key] = data[key].filter(function(row) {
+                        return row != null;
+                    })
+                }
+            }
+        },
         reloadChart: function(data) {
 
             var me = this;
@@ -1786,6 +1821,7 @@
             var diseaseBreaks = [];
             var diseaseBreaksCheck = false;
 
+            this.removeZeroValues(data);
 
             for (var key in data) {
                 var diseaseData = data[key];
@@ -1896,6 +1932,10 @@
                     categories: labels,
                     tickInterval: 1,
                     breaks: diseaseBreaks,
+                    labels: {
+                        rotation: 335
+                            // y: 100,
+                    },
                     // tickPositions: diseaseTick
                 },
                 yAxis: {
