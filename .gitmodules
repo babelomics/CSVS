@@ -1,3 +1,0 @@
-[submodule "population-variant-server-web/lib/jsorolla"]
-	path = csvs-web/lib/jsorolla
-	url = git@github.com:opencb/jsorolla.git
