@@ -13,3 +13,15 @@ Roadmap is available at [GitHub milestones](https://github.com/babelomics/csvs/m
 
 ### Versioning
 CSVS is versioned following the rules from [Semantic versioning](http://semver.org/).
+
+### Maintainers
+
+The main developers and maintainers are:
+
+* Joaquin Dopazo (joaquin.dopazo@juntadeandalucia.es) (Founder and Project Leader)
+* Susi Gallego (agallego@cipf.es)
+* Javier P Florido (javier.perez.florido.ext@juntadeandalucia.es)
+
+Former contributors
+
+* Alejandro Aleman
