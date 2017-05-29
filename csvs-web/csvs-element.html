@@ -162,21 +162,21 @@
                     <span class="option-text">Stats</span>
                 </div>
 
-                <div title="Stats" class="option" on-click="handleMenuOption" data-option="saturation">
+                <div title="Saturation" class="option" on-click="handleMenuOption" data-option="saturation">
                     <i class="fa fa-line-chart"></i>
                     <span class="option-text">Saturation</span>
                 </div>
 
-                <div title="Annotate VCF file" class="option" on-click="handleLoggedOnlyMenuOption" show-on-login data-option="annot">
+                <div title="Annotate VCF file" class="option" on-click="handleLoggedOnlyMenuOption" login-required data-option="annot" hidden>
                     <i class="fa fa-pencil-square-o"></i>
                     <span class="option-text">Annotate VCF File</span>
                 </div>
                 <div class="flex"></div>
-                <div title="Browse my data" class="option" on-click="handleLoggedOnlyMenuPanel" show-on-login data-panel="fileBrowserPanel">
+                <div title="Browse my data" class="option" on-click="handleLoggedOnlyMenuPanel" login-required data-panel="fileBrowserPanel" hidden>
                     <i class="fa fa-folder-open-o"></i>
                     <span class="option-text">My data</span>
                 </div>
-                <div title="Show diagnoses" class="option" on-click="handleLoggedOnlyMenuPanel" show-on-login data-panel="jobBrowserPanel">
+                <div title="Show diagnoses" class="option" on-click="handleLoggedOnlyMenuPanel" login-required data-panel="jobBrowserPanel" hidden>
                     <i class="fa fa-pencil-square-o"></i>
                     <span class="option-text">My annotations</span>
                 </div>
