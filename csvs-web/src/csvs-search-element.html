@@ -292,6 +292,9 @@
             </div>
             <div id="dataGridElement" class="vertical layout" hidden$="{{saturation}}">
                 <stv-table id="dataTable" enable-loading enable-paging enable-remote enable-select enable-resize request="{{request}}" columns="{{columns}}" on-rowclick="handleRowClick">
+                    <div class="custom-buttons horizontal layout">
+                        <button hidden style="margin-right: 10px; color: #006699" id="saveTable" class="stv-btn down" on-click="downloadFiles" data-file="{{cnv}}"><i class="fa fa-cloud-download"></i> save</button>
+                    </div>
                 </stv-table>
 
                 <div id="menu" class="color-2 color-hover-2 horizontal layout">
@@ -907,6 +910,35 @@
                 }
             ];
             this.reloadChart({});
+        },
+        downloadFiles: function(e) {
+            this.query.limit = 0;
+            var me = this;
+            var url = CSVSManager.variants.fetch({
+                query: this.query,
+                request: {
+                    success: function(r) {
+                        var stringToSave = "";
+                        //me.parseJson(r.result);
+                        for( var i = 0; i < r.result.length; i++){
+                            stringToSave = stringToSave + me._csvToString(r.result[i]);
+                        }
+                        var blob = new Blob([stringToSave], {
+                            type: "text/plain;charset=utf-8"
+                        });
+                        saveAs(blob, "csvs.bed");
+                        //console.log(stringToSave);
+                    },
+                    error:function(r){
+                        console.log("error in save");
+                    }
+                },
+            });
+        },
+        _csvToString: function(o){
+            return  "chr" + o.chromosome + "\t" + o.position + "\t" + o.reference + ">" + o.alternate +
+                    "\t" + o.stats.gt00 + "\t" + o.stats.gt01 + "\t" + o.stats.gt11 +"\t" +
+                    o.stats.gtmissing + "\t" + o.stats.refFreq + "\t" + o.stats.altFreq + "\t"+ o.stats.maf +"\n";
         },
         _toFixed: function(value, precision) {
             return Number(value).toFixed(precision);

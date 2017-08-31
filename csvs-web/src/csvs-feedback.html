@@ -1,0 +1,160 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/stevia-elements/src/stv-dialog/stv-dialog.html">
+
+<dom-module id="csvs-feedback">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+         :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        #emailPanel {
+            width: 500px;
+            /*height: 500px;*/
+            min-width: 500px;
+            /*min-height: 500px;*/
+        }
+
+        #emailContent {
+            padding: 20px;
+        }
+
+        .send {
+            width: 100px;
+            margin-top: 20px;
+        }
+
+        textarea {
+            box-sizing: border-box;
+            width: 100%;
+            height: 300px;
+            resize: none;
+        }
+    </style>
+    <template>
+        <stv-panel id="emailPanel" modal fixed closable on-close="handleFeedback">
+
+            <div class="header">
+                <i class="fa fa-envelope-o"></i> Send an email
+            </div>
+            <div id="emailContent" class="container flex">
+                <form id="iron-form" action ="mailto:sgaort@gmail.com">
+                <div class="horizontal layout">
+                    <div class="flex">
+                        <label class="stv" for="">Subject:</label>
+                        <input class="stv" type="text" value="{{subject::input}}" />
+                    </div>
+                    <div style="margin-left:15px;">
+                        <label class="data" for="">Type:</label>
+                        <stv-select id="emailType" style="width:150px; margin-top:5px">
+                            <stv-option value="suggest">Suggest</stv-option>
+                            <stv-option value="question">Question</stv-option>
+                            <stv-option value="error">Error</stv-option>
+                        </stv-select>
+                    </div>
+                </div>
+                <br>
+                <label class="stv" for="">Text:</label>
+                <textarea class="stv flex" name="" id="" cols="30" rows="10" value="{{text::input}}" required></textarea>
+                <br>
+                <div class="horizontal layout center end-justified">
+                    <div id="Sending" hidden$="{{!sending}}">
+                        <i class="fa fa-circle-o-notch fa-spin"></i> Sending...
+                    </div>
+                    <!--<div class="stv-btn stv-btn-shdw stv-btn-big" on-click="handleSendEmail">&nbsp; Send</div>-->
+                    <div class="stv-btn stv-btn-shdw stv-btn-big" on-click="submitForm">&nbsp; Send</div>
+
+                </div>
+                </form>
+            </div>
+
+        </stv-panel>
+    </template>
+
+    <script>
+        Polymer({
+            is: "csvs-feedback",
+            properties: {
+                subject: {
+                    type: String,
+                    value: ""
+                },
+                text: {
+                    type: String,
+                    value: ""
+                },
+                sending: {
+                    type: Boolean,
+                    value: false
+                },
+                hidden: {
+                    type: Boolean,
+                    value: false,
+                    reflectToAttribute: true,
+                    observer: 'hiddenChanged'
+                }
+            },
+            submitForm:function () {
+                document.getElementById('iron-form').submit();
+            },
+            hiddenChanged: function() {
+                this.$.emailPanel._center();
+            },
+            handleSendEmail: function(e) {
+                e.stopPropagation();
+                var me = this;
+                var subject = this.subject;
+                var text = this.text.trim();
+                var type = this.$.emailType.selectedOption.value;
+//                var mail = require('./mail.js');
+//
+//                mail.send({
+//                    to: 'sgaort@gmail.com', // list of receivers
+//                    subject: 'Hello ✔', // Subject line
+//                    text: 'Hello world 🐴', // plaintext body
+//                    html: '<b>Hello world 🐴</b>' // html body
+//                }, function(error, info) {
+//                    if (error) {
+//                        return console.log(error);
+//                    }
+//                    console.log('Message sent: ' + info.response);
+//                });
+
+                if (text != null && text != "") {
+                    this.sending = true;
+                    SteviaManager.users.feedback({
+                        query: {
+//                            to:'sgaort@gmail.com',
+                            subject: subject,
+                            type: type,
+                            text: text
+                        },
+                        request: {
+                            success: function(response) {
+                                if (response.response[0].error == null) {
+                                    me.fire('feedbackend');
+                                    new StvDialog().alert(response.response[0].results[0]);
+                                    me.set('text', '');
+                                } else {
+                                    new StvDialog().alert('Sorry! There was a problem, try again later');
+                                }
+                                me.sending = false;
+                            },
+                            error: function() {
+                                new StvDialog().alert('Server error, try again later');
+                                me.sending = false;
+                            }
+                        }
+                    });
+                }
+            },
+            handleFeedback: function(e) {
+                this.fire('feedbackend');
+                this.$.emailPanel.hidden = false;
+                this.$.emailPanel.style = "top: 60px;left: 500px";
+            }
+        })
+    </script>
+</dom-module>

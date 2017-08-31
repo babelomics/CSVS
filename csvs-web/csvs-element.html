@@ -11,7 +11,7 @@
 <link rel="import" href="bower_components/stevia-elements/src/stv-footer.html">
 <link rel="import" href="bower_components/stevia-elements/src/dropdown/stv-dropdown.html">
 <link rel="import" href="bower_components/stevia-elements/src/stv-select.html">
-<link rel="import" href="bower_components/stevia-elements/src/stv-feedback.html">
+<!--<link rel="import" href="bower_components/stevia-elements/src/stv-feedback.html">-->
 <link rel="import" href="bower_components/stevia-elements/src/stv-panel.html">
 <link rel="import" href="bower_components/stevia-elements/src/table/stv-table.html">
 <link rel="import" href="bower_components/stevia-elements/src/validator/stv-validator.html">
@@ -27,6 +27,7 @@
 <script src="src/csvs-manager.js"></script>
 <link rel="import" href="src/csvs-home.html">
 <link rel="import" href="src/csvs-search-element.html">
+<link rel="import" href="src/csvs-feedback.html">
 <link rel="import" href="src/csvs-stats-element.html">
 <link rel="import" href="src/csvs-annotation-form.html">
 <link rel="import" href="src/csvs-annotation-result.html">
@@ -140,7 +141,7 @@
                 <div class="header">Job browser</div>
                 <stv-job-browser class="container" id="jobBrowser" on-jobselect="handleJobSelect" bioformats="{{bioformats}}" allowed-tools="{{allowedTools}}" user-data="{{userData}}" on-job-launched="handleJobLaunched" on-job-relaunched="handleJobRelaunched"></stv-job-browser>
             </stv-panel>
-            <stv-feedback id="feedback" hidden on-feedbackend="handleFeedback"></stv-feedback>
+            <csvs-feedback id="feedback" hidden on-feedbackend="handleFeedback"></csvs-feedback>
         </div>
 
         <stv-header id="stvHeader" user-data="{{userData}}" on-login="handleLogin" on-logout="handleLogout" selected-option="{{selectedOption}}" hide-jbos hide-browse isLogged="{{isLogged}}" hide-login hide

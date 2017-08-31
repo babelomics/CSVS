@@ -3,7 +3,8 @@
     "version": "1.1.1",
     "homepage": "https://github.com/babelomics/csvs",
     "authors": [
-        "aaleman <alejandro.aleman.ramos@gmail.com>"
+        "aaleman <alejandro.aleman.ramos@gmail.com>",
+        "agallego <sgaort@gmail.com>"
     ],
     "license": "GPLv2",
     "ignore": [
