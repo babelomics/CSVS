@@ -293,7 +293,7 @@
             <div id="dataGridElement" class="vertical layout" hidden$="{{saturation}}">
                 <stv-table id="dataTable" enable-loading enable-paging enable-remote enable-select enable-resize request="{{request}}" columns="{{columns}}" on-rowclick="handleRowClick">
                     <div class="custom-buttons horizontal layout">
-                        <button hidden style="margin-right: 10px; color: #006699" id="saveTable" class="stv-btn down" on-click="downloadFiles" data-file="{{cnv}}"><i class="fa fa-cloud-download"></i> save</button>
+                        <button style="margin-right: 10px; color: #006699" id="saveTable" class="stv-btn down" on-click="downloadFiles" data-file="{{cnv}}"><i class="fa fa-cloud-download"></i> save</button>
                     </div>
                 </stv-table>
 
@@ -1441,35 +1441,36 @@
 
                     for (var j = 0, l = variant.annots.consequenceTypes.length; j < l; j++) {
                         var ct = variant.annots.consequenceTypes[j];
-
-                        if (ct.geneName != null && ct.geneName.length > 0 && genes.indexOf(ct.geneName) < 0) {
-                            genes.push(ct.geneName);
-                        }
-
-                        if (ct.proteinVariantAnnotation != null && ct.proteinVariantAnnotation.substitutionScores != null && ct.proteinVariantAnnotation.substitutionScores.length > 0) {
-                            var auxSift = null;
-                            var auxPoly = null;
-                            for (var k = 0, l = ct.proteinVariantAnnotation.substitutionScores.length; k < l; k++) {
-
-                                var pss = ct.proteinVariantAnnotation.substitutionScores[k];
-                                switch (pss.source.toLowerCase()) {
-                                    case 'sift':
-                                        auxSift = pss;
-                                        break;
-                                    case 'polyphen':
-                                        auxPoly = pss;
-                                        break;
-                                }
+                        if (ct != null && ct != "undefined") {
+                            if (ct.geneName != null && ct.geneName.length > 0 && genes.indexOf(ct.geneName) < 0) {
+                                genes.push(ct.geneName);
                             }
 
-                            if (auxPoly != null && auxSift != null) {
-                                if (auxPoly.score > poly) {
-                                    sif = auxSift.score;
-                                    poly = auxPoly.score;
+                            if (ct.proteinVariantAnnotation != null && ct.proteinVariantAnnotation.substitutionScores != null && ct.proteinVariantAnnotation.substitutionScores.length > 0) {
+                                var auxSift = null;
+                                var auxPoly = null;
+                                for (var k = 0, l = ct.proteinVariantAnnotation.substitutionScores.length; k < l; k++) {
 
-                                    sifDesc = auxSift.description;
-                                    polyDesc = auxPoly.description;
+                                    var pss = ct.proteinVariantAnnotation.substitutionScores[k];
+                                    switch (pss.source.toLowerCase()) {
+                                        case 'sift':
+                                            auxSift = pss;
+                                            break;
+                                        case 'polyphen':
+                                            auxPoly = pss;
+                                            break;
+                                    }
+                                }
 
+                                if (auxPoly != null && auxSift != null) {
+                                    if (auxPoly.score > poly) {
+                                        sif = auxSift.score;
+                                        poly = auxPoly.score;
+
+                                        sifDesc = auxSift.description;
+                                        polyDesc = auxPoly.description;
+
+                                    }
                                 }
                             }
                         }
