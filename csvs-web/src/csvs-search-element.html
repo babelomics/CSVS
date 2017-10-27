@@ -918,7 +918,8 @@
                 query: this.query,
                 request: {
                     success: function(r) {
-                        var stringToSave = "";
+                        var stringToSave = "Chr"+ "\t"+"Position"+ "\t"+"alleles"+ "\t"+"0/0"+ "\t"+"0/1"+ "\t"+"1/1"
+                                + "\t"+"./,"+ "\t"+"0Freq"+ "\t"+ "1Freq"+ "\t"+ "MAF"+"\n";
                         //me.parseJson(r.result);
                         for( var i = 0; i < r.result.length; i++){
                             stringToSave = stringToSave + me._csvToString(r.result[i]);
@@ -926,7 +927,7 @@
                         var blob = new Blob([stringToSave], {
                             type: "text/plain;charset=utf-8"
                         });
-                        saveAs(blob, "csvs.bed");
+                        saveAs(blob, "csvs.txt");
                         //console.log(stringToSave);
                     },
                     error:function(r){
