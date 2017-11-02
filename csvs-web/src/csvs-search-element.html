@@ -1602,7 +1602,7 @@
                                     variant.maf1000GEUR = Number(maf).toFixed(3)
                                     break;
                             }
-                        } else if (pfreq.study.toLowerCase() === "1000genomes_phase_3") {
+                        } else if (pfreq.study.toLowerCase() === "1KG_phase_3") {
                             switch (pfreq.population) {
                                 case "ALL":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
@@ -1630,7 +1630,7 @@
                                     break;
 
                             }
-                        } else if (pfreq.study.toLowerCase() === "esp_6500") {
+                        } else if (pfreq.study.toLowerCase() === "esp6500") {
                             switch (pfreq.population) {
                                 case "EA":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
