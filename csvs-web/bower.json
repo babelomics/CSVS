@@ -1,5 +1,5 @@
 {
-    "name": "CIBERER Spanish Variant Server",
+    "name": "Collaborative Spanish Variant Server",
     "version": "1.1.1",
     "homepage": "https://github.com/babelomics/csvs",
     "authors": [
@@ -26,7 +26,7 @@
         "qtip2": "~2.2.1",
         "pako": "~0.2.6",
         "uri.js": "~1.16.0",
-        "stevia-elements": "git@github.com:babelomics/stevia-elements.git#develop",
-        "jsorolla": "https://github.com/opencb/jsorolla.git#develop"
+        "stevia-elements": "https://github.com/babelomics/stevia-elements.git#steviaCSVS",
+        "jsorolla": "https://github.com/opencb/jsorolla.git#release-1.1.x"
     }
 }
