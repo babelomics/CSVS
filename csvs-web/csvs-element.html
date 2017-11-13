@@ -72,19 +72,6 @@
             height: calc(100vh - 60px);
             overflow-y: scroll;
         }
-        /*#stvBrowserPanel {
-            position: absolute;
-            right: 0;
-            top: 0;
-            width: 600px;
-        }
-
-        #browserPanel {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 600px;
-        }*/
 
         #jobBrowserPanel {
             position: absolute;
@@ -343,8 +330,6 @@
             this.setMenu("search");
         },
         handleLogin: function() {
-            // this.selectedOption = "panels";
-            // this.homeHidden =
             this.isLogged = this.$.stvHeader.isLogged;
             this.checkShowMenuOnLogin();
         },
@@ -361,18 +346,13 @@
             var job = e.detail;
             var fileId = job.folder._id;
             var fileName = job.options.outfile.value;
-            // var dir = job.outDirId;
-            // var file = null;
-
 
             SteviaManager.getPlainFolderFiles(fileId, function(files) {
-                // debugger
                 for (var i = 0; i < files.length; i++) {
                     if (files[i].name == fileName)
                         me.$.annotationResult.file = files[i];
                 }
                 me.setMenu("result");
-                // me.$.annotationResult.file = job.options.input.value;
             })
         },
         handleJobLaunched: function(e) {
@@ -380,7 +360,6 @@
             this.handleUserNeedRefresh();
         },
         handleUserNeedRefresh: function() {
-            // console.log("funsiona");
             this.$.stvHeader.getUserInfo(true);
         },
         handleFeedback: function() {

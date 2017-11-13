@@ -1,5 +1,4 @@
 var CSVSManager = {
-    //host: (typeof CSVS_HOST === 'undefined') ? 'http://ws2.babelomics.org/csvs/rest' : CSVS_HOST,
     host: (typeof CSVS_HOST === 'undefined') ? 'http://csvs-dev.clinbioinfosspa.es:8080/csvs/rest' : CSVS_HOST,
     version: 'v3',
 

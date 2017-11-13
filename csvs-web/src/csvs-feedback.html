@@ -63,7 +63,6 @@
                     <div id="Sending" hidden$="{{!sending}}">
                         <i class="fa fa-circle-o-notch fa-spin"></i> Sending...
                     </div>
-                    <!--<div class="stv-btn stv-btn-shdw stv-btn-big" on-click="handleSendEmail">&nbsp; Send</div>-->
                     <div class="stv-btn stv-btn-shdw stv-btn-big" on-click="submitForm">&nbsp; Send</div>
 
                 </div>
@@ -108,25 +107,11 @@
                 var subject = this.subject;
                 var text = this.text.trim();
                 var type = this.$.emailType.selectedOption.value;
-//                var mail = require('./mail.js');
-//
-//                mail.send({
-//                    to: 'sgaort@gmail.com', // list of receivers
-//                    subject: 'Hello ✔', // Subject line
-//                    text: 'Hello world 🐴', // plaintext body
-//                    html: '<b>Hello world 🐴</b>' // html body
-//                }, function(error, info) {
-//                    if (error) {
-//                        return console.log(error);
-//                    }
-//                    console.log('Message sent: ' + info.response);
-//                });
 
                 if (text != null && text != "") {
                     this.sending = true;
                     SteviaManager.users.feedback({
                         query: {
-//                            to:'sgaort@gmail.com',
                             subject: subject,
                             type: type,
                             text: text

@@ -39,28 +39,6 @@
             <div id="filter-form-element">
                 <form class="vertical layout" id="filter_form">
                     <div id="buttons_container" class="horizontal layout end-justified" style="margin:10px 5px;">
-                        <!--<stv-tooltip id="filterHistoryTooltip" class="stv-btn stv-btn-shdw" title="Filters History"-->
-                        <!--icon="filter" style="margin-right: 3px;">-->
-                        <!--<div class="stv-btn stv-btn-shdw clear-but" title="Clear Filters History"-->
-                        <!--on-click="clearFiltersHistory">-->
-                        <!--Clear-->
-                        <!--</div>-->
-                        <!--<div class="horizontal layout flex">-->
-                        <!--<span class="tit num"> Date </span>-->
-                        <!--<span class="name tit"> Name </span>-->
-                        <!--<span class="tit num"> Found</span>-->
-                        <!--</div>-->
-                        <!--<div id="filterHistoryTable">-->
-                        <!--<template is="dom-repeat" items="{{historyFilters}}">-->
-                        <!--<div class="horizontal layout flex" on-click="loadFilter"-->
-                        <!--data-filter="{{item.filter}}" title="{{item.name}}">-->
-                        <!--<span class="num">{{item.date}} </span>-->
-                        <!--<span id="filter-name" class="name">{{item.name}} </span>-->
-                        <!--<span class="num">{{item.found}}</span>-->
-                        <!--</div>-->
-                        <!--</template>-->
-                        <!--</div>-->
-                        <!--</stv-tooltip>-->
                         <div class="stv-btn stv-btn-shdw flex" on-click="clearForm" style="margin-right: 3px;">
                             Clear
                         </div>
@@ -100,7 +78,6 @@
         diseasesChanged: function(neo, old) {
 
             if (neo && Array.isArray(neo)) {
-                //                debugger
                 var diseasesSort = [];
                 var diseaseMap = {};
                 var diseaseNameMap = {};
@@ -181,9 +158,7 @@
                     labels[i] = dis.name;
                     counts[i] = {
                         y: elem.count,
-                        _count: elem.count,
-                        //                        color: "red",
-                        //                        radius: 1
+                        _count: elem.count
                     };
 
                     total += elem.count;
@@ -196,8 +171,7 @@
                 }
                 chartData.push({
                     name: key,
-                    data: counts,
-                    // connectNulls: true
+                    data: counts
                 });
             }
 
@@ -222,15 +196,8 @@
                     text: "Saturation"
                 },
                 tooltip: {
-                    //                    shared: true,
-                    //                    backgroundColor: '#FCFFC5',
-                    //                    borderColor: 'black',
-                    //                    borderRadius: 10,
-                    //                    borderWidth: 3,
                     useHTML: true,
                     formatter: function() {
-                        //                        debugger
-
                         var point = this.point;
                         return ' Disease Group: <b>' + this.x + '</b><br> New Variants: <b>' + point._count + '</b> <br> Acum. Variants: <b>' + this.y + '</b>';
 
@@ -242,8 +209,7 @@
                 xAxis: {
                     categories: labels,
                     tickInterval: 1,
-                    breaks: diseaseBreaks,
-                    // tickPositions: diseaseTick
+                    breaks: diseaseBreaks
                 },
                 yAxis: {
                     title: {
@@ -256,8 +222,7 @@
                     line: {
                         dataLabels: {
                             enabled: true
-                        },
-                        //                        enableMouseTracking: false
+                        }
                     }
                 },
                 series: chartData
@@ -278,11 +243,6 @@
             var regions = [];
             if (regionValue != null) {
                 regions = regionValue.split(",");
-                // if (regions.length > this.maxLength && !this.isLogged) {
-                //     alert("The total size of all provided regions can't exceed " + this.maxLength + " positions");
-                //     return
-                // }
-
             }
 
             var genes = [];
@@ -336,7 +296,6 @@
                 CSVSManager.regions.saturation({
                     id: regionQuery,
                     request: {
-                        // host: "http://aaleman:8080/csvs/rest",
                         success: function(response) {
 
                             var data = response.result[0];

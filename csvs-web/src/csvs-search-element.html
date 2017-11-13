@@ -384,12 +384,6 @@
                 notify: true,
 
             },
-            // hash: {
-            //     type: Object,
-            //     value: function() {
-            //         return {};
-            //     },
-            // },
             numTotalResults: {
                 type: Object,
                 observer: "resultsChanged"
@@ -405,9 +399,6 @@
                 type: Boolean,
                 value: false
             }
-            // request: {
-            //     type: Object
-            // },
         },
 
         resultsChanged: function(neo, old) {
@@ -416,13 +407,6 @@
                 var query = this.query;
                 var numTotalResults = neo;
                 /* Filter History */
-
-                // var filterHistory = [];
-                // if (this.jobId in this.hash) {
-                // filterHistory = this.hash[this.jobId];
-                // }
-
-                // this.set("historyFilters", filterHistory);
 
                 var newFilter = JSON.stringify(query);
                 var _load = -1;
@@ -445,7 +429,6 @@
                         }
                         var date = dateAux.getDate() + '/' + (dateAux.getMonth() + 1) + ' ' + dateAux.getHours() + ':' + minAux;
                         name = this.loadForm(query);
-                        // var found = this.filterData.length;
                         var found = numTotalResults;
                         var hf = {};
                         hf = {
@@ -455,7 +438,6 @@
                             found: found
                         };
 
-                        // var filters = new FilterHistory(5, filterHistory);
                         var filters = new FilterHistory(5, this.historyFilters);
                         filters.unshift(hf);
                         this.set("historyFilters", filters);
@@ -481,7 +463,6 @@
                     filters[0] = aux;
 
                     this.set("historyFilters", filters);
-                    // this.hash[this.jobId] = this.historyFilters;
                     localStorage.csvs_filter_history = JSON.stringify(this.historyFilters);
                 }
             }
@@ -788,18 +769,6 @@
                                 }
                             }
                         }
-                        //                    , {
-                        //                    name: "mafexac_EUR",
-                        //                    title: "EUR",
-                        //                    defaultValue: ".",
-                        //                    formula: function (row) {
-                        //                        if (row.mafexac_EUR != null) {
-                        //                            return row.mafexac_EUR;
-                        //                        } else {
-                        //                            return ".";
-                        //                        }
-                        //                    }
-                        //                }
                     ]
                 },
 
@@ -830,18 +799,6 @@
                                 }
                             }
                         }
-                        //                        , {
-                        //                        name: "mafESP_AA",
-                        //                        title: "Afr. Ame.",
-                        //                        defaultValue: ".",
-                        //                        formula: function (row) {
-                        //                            if (row.mafESP_AA != null) {
-                        //                                return row.mafESP_AA;
-                        //                            } else {
-                        //                                return ".";
-                        //                            }
-                        //                        }
-                        //                    }
                     ]
                 }, {
                     name: 'sift',
@@ -920,7 +877,7 @@
                     success: function(r) {
                         var stringToSave = "Chr"+ "\t"+"Position"+ "\t"+"alleles"+ "\t"+"0/0"+ "\t"+"0/1"+ "\t"+"1/1"
                                 + "\t"+"./,"+ "\t"+"0Freq"+ "\t"+ "1Freq"+ "\t"+ "MAF"+"\n";
-                        //me.parseJson(r.result);
+
                         for( var i = 0; i < r.result.length; i++){
                             stringToSave = stringToSave + me._csvToString(r.result[i]);
                         }
@@ -928,7 +885,6 @@
                             type: "text/plain;charset=utf-8"
                         });
                         saveAs(blob, "csvs.txt");
-                        //console.log(stringToSave);
                     },
                     error:function(r){
                         console.log("error in save");
@@ -996,30 +952,9 @@
 
             var geneValue = this.$.filterPosition.checkGene();
 
-            // if (this.$.filter_form.checkValidity() && (regions != null || genes != null)) {
-            // if (this.$.filter_form.checkValidity()) {
 
             var regions = [];
             if (regionValue != null) {
-                //     // check Regions)
-                //     var aux = regionValue.split(",");
-                //     var length = 0;
-                //
-                //     for (var i = 0; i < aux.length; i++) {
-                //         var region = aux[i].trim();
-                //         var r = new Region(region);
-                //
-                //         if (r.chromosome == null || r.start == null || r.end == null) {
-                //             alert("Malformed region: " + region);
-                //             return;
-                //         } else if (r.start > r.end) {
-                //             alert("Start must be lower or equal than End: " + region);
-                //             return;
-                //         } else {
-                //             length += (r.end - r.start);
-                //             regions.push(r.toString());
-                //         }
-                //     }
 
                 regions = regionValue.split(",");
                 if (regions.length > this.maxLength && !this.isLogged) {
@@ -1105,7 +1040,6 @@
                     id: regionQuery,
                     query: query,
                     request: {
-                        // host: "http://aaleman:8080/csvs/rest",
                         success: function(response) {
 
                             var data = response.result[0];
@@ -1206,76 +1140,7 @@
             localStorage.csvc_filter_history = JSON.stringify(this.historyFilters);
 
         },
-        exportQueryToCSV: function() {
-            var numVariants = this.$.dataGrid.dataSize;
 
-            if (numVariants > 200) {
-                alert("Sorry, you are trying to export a CSV with more than 200 Variants. Please restrict your query, the maximum allowed variants are 200.");
-                return;
-            }
-
-            var me = this;
-            if (this.formUrl != "") {
-                var url = this.formURL + "&csv=true";
-
-                $.ajax({
-                    url: url,
-                    dataType: 'json',
-                    async: false,
-                    success: function(response, textStatus, jqXHR) {
-                        if (response != undefined && response.result.length > 0) {
-
-                            var data = response.result; // TODO aaleman: Fix this!
-
-                            // var finalData = me.parseFunction(data);
-
-                            // Create CSV
-
-                            var csvData = [
-                                ['chromosome', 'position', 'ref', 'alt', 'snpId', 'MAF', '1000G MAF', 'EVS MAF'].join(";")
-                            ];
-
-                            for (var i = 0; i < finalData.length; i++) {
-                                var row = finalData[i];
-                                var maf1000G = '.';
-                                var mafEVS = '.';
-                                if (row.maf1000G) {
-                                    maf1000G = row.maf1000G;
-                                }
-                                if (row.mafEVS) {
-                                    mafEVS = row.mafEVS;
-                                }
-
-                                csvData.push([
-                                    row.chromosome,
-                                    row.position,
-                                    row.reference,
-                                    row.alternate,
-                                    row.id,
-                                    row.stats.maf,
-                                    maf1000G,
-                                    mafEVS
-
-                                ].join(";"))
-                            }
-
-                            var csvString = csvData.join("%0A");
-
-                            var a = document.createElement('a');
-                            a.href = 'data:text/csv,' + csvString;
-                            a.target = '_blank';
-                            a.download = 'variants.csv';
-
-                            a.click();
-                        }
-
-                    },
-                    error: function(jqXHR, textStatus, errorThrown) {
-                        console.log('Error exporting to CSV');
-                    }
-                });
-            }
-        },
         selectAllDiseases: function(e, d, s) {
             var checkboxes = this.$.filter_form.getElementsByClassName("diseaseName");
             for (var i = 0; i < checkboxes.length; i++) {
@@ -1308,16 +1173,8 @@
         },
         urlChanged: function(neo, old) {
 
-            // debugger
             var me = this;
-            // if (neo != '') {
-            //     this.request = {
-            //         url: this.formURL,
-            //         parse: this._parse,
-            //         parseTotal: this._parseTotal,
-            //         file: this.file
-            //     };
-            // }
+
             if (neo == null || neo == "") {
                 return;
             }
@@ -1668,7 +1525,6 @@
             return data;
         },
         _parseTotal: function(response) {
-            // return response.numTotalResults;
             if (response != null) {
                 var total = response.numTotalResults;
             } else {
@@ -1703,25 +1559,8 @@
 
             var adapter = new FeatureTemplateAdapter({
                 uriTemplate: CSVS_HOST + '/regions/{region}/fetch',
-                //                templateVariables: {
-                //                    customVar: 'info',
-                //                },
+
                 species: this.$.gv.genomeViewer.species,
-                //                getRegionsFromIntervals: function (response) {
-                //
-                //                    debugger
-                //                    var regions = [];
-                //                    for (var i = 0; i < response.result.length; i++) {
-                //                        var r = response.result[i];
-                //                        for (var j = 0; j < r.length; j++) {
-                //                            var interval = r[j];
-                //                            var region = new Region(interval);
-                //                            regions.push(region);
-                //                        }
-                //                    }
-                //                    return regions;
-                //
-                //                },
                 parse: function(response) {
                     var itemsArray = [];
 
@@ -1738,7 +1577,6 @@
                     return itemsArray;
                 },
                 parseHistogram: function(response) {
-                    //                    debugger
                     var itemsArray = [];
                     for (var i = 0; i < response.result.length; i++) {
                         var r = response.result[i]
@@ -1782,7 +1620,6 @@
         diseasesChanged: function(neo, old) {
 
             if (neo && Array.isArray(neo)) {
-                //                debugger
                 var diseasesSort = [];
                 var diseaseMap = {};
                 var diseaseNameMap = {};
@@ -1921,8 +1758,7 @@
 
                 chartData.push({
                     name: key,
-                    data: counts,
-                    // connectNulls: true
+                    data: counts
                 });
                 console.log(chartData);
             }
@@ -1932,7 +1768,7 @@
                 chart: {
                     type: 'line',
                     plotBackgroundColor: null,
-                    plotBorderWidth: 1, //null,
+                    plotBorderWidth: 1,
                     plotShadow: false,
                     renderTo: this.$.chart,
                     borderRadius: 10,
@@ -1946,11 +1782,6 @@
                     text: "Saturation"
                 },
                 tooltip: {
-                    //                    shared: true,
-                    //                    backgroundColor: '#FCFFC5',
-                    //                    borderColor: 'black',
-                    //                    borderRadius: 10,
-                    //                    borderWidth: 3,
                     useHTML: true,
                     formatter: function() {
                         //                        debugger
@@ -1968,9 +1799,7 @@
                     breaks: diseaseBreaks,
                     labels: {
                         rotation: 335
-                            // y: 100,
                     },
-                    // tickPositions: diseaseTick
                 },
                 yAxis: {
                     title: {
