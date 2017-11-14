@@ -217,31 +217,7 @@
                             </div>
                             <div class="stv-btn stv-btn-shdw flex" on-click="submitForm">Search</div>
                         </div>
-                        <!-- <div class="form_block positionBlock">
-                            <div class="stv-formbox">
-                                <div class="stv-formtitle">
-                                    Position
-                                </div>
-                                <div class="stv-formcontent">
-                                    <div class="input_container vertical layout">
-                                        <label class="stv">Chromosomal Location:</label>
-                                        <textarea id="region" name="region" placeholder="1:1-100000,2:1-100000" value="{{regionValue::change}}" rows="3"></textarea>
-                                    </div>
-                                    <div class="input_container vertical layout">
-                                        <label class="stv">Gene:</label>
-                                        <textarea id="gene" name="gene" placeholder="BRCA2,PPL" on-keyup="geneChanged" value="{{geneValue::change}}" rows="3"></textarea>
 
-                                        <div class="searchGene horizontal layout end-justified">
-                                            <input id="searchField" list="searchDataList" placeholder="Search gene" type="text" style="width: 100px;">
-                                            <datalist id="searchDataList"></datalist>
-                                            <div id="quickSearchButton" class="button" style="border-left: none;">
-                                                <font-awesome icon="search"></font-awesome>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> -->
                         <stv-filter-position id="filterPosition"></stv-filter-position>
                         <stv-form-box>
                             <div class="header horizontal layout flex">
@@ -1212,8 +1188,31 @@
             var me = this;
             var data = response.result;
             var positions = [];
+            var positionsDoubleVariant = [];
+            var doubleVariant = [];
+            var referencePosition = [];
+            //Cellbase use - never * o nothing, we need change, annotate and change
             for (var i = 0; i < data.length; i++) {
                 var row = data[i];
+                if(row.alternate == "" || row.alternate =="*"){
+                    positionsDoubleVariant.push(i);
+                    doubleVariant.push(row.alternate);
+                    row.alternate = "-";
+                }
+
+                if((row.alternate).indexOf(",") != -1){
+                    positionsDoubleVariant.push(i);
+                    doubleVariant.push(row.alternate);
+                    row.alternate = row.alternate.split(",")[0];
+                    if(row.alternate == "" || row.alternate =="*"){
+                        row.alternate = "-";
+                    }
+                }
+
+                if(row.reference == "" || row.reference =="*"){
+                    referencePosition.push(i);
+                    row.reference = "-";
+                }
 
                 var variant = row.chromosome + ":" + row.position + ":" + row.reference + ":" + row.alternate;
                 positions.push(variant);
@@ -1249,6 +1248,13 @@
                         // debugger
                     }
                 });
+            }
+
+            for (var z = 0; z < positionsDoubleVariant.length; z++) {
+                data[positionsDoubleVariant[z]].alternate = doubleVariant[z];
+            }
+            for (var z = 0; z < referencePosition.length; z++) {
+                data[referencePosition[z]].reference =  "*";
             }
 
             for (var i = 0; i < data.length; i++) {
