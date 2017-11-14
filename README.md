@@ -1,7 +1,8 @@
 # Overview
 CSVS is a crowdsourcing effort of the [CIBERER](http://www.ciberer.es) to provide information about the variability of the Spanish population to the scientific/medical community.  
+
 ### Documentation
-CSVS can be accessed at http://csvs.babelomics.org
+You can find CSVS documentation and tutorials at: https://github.com/babelomics/CSVS/wiki
 
 ### Issue Tracking
 You can report bugs or request new features at [GitHub issue tracking](https://github.com/babelomics/csvs/issues).
