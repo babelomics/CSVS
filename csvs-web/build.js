@@ -62,6 +62,7 @@ async.waterfall([
         shell.cp('-r', path.join(__dirname, 'bower_components', 'crypto-js-evanvosberg'), bp);
         shell.cp('-r', path.join(__dirname, 'bower_components', 'pako'), bp);
         shell.cp('-r', path.join(__dirname, 'bower_components', 'pdfmake'), bp);
+        shell.cp('-r', path.join(__dirname, 'bower_components', 'uri.js'), bp);
 
         shell.mkdir('-p', path.join(bp, "bower_components","jsorolla"));
         shell.cp('-r', path.join(__dirname, 'bower_components', 'jsorolla','styles'), path.join(bp, "bower_components","jsorolla"));
