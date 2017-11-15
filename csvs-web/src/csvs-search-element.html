@@ -779,11 +779,25 @@
                 }, {
                     name: 'sift',
                     title: 'SIFT',
-                    width: 50
+                    width: 50,
+                    formula: function(row) {
+                        if (row.sift !== null && typeof row.sift !== 'undefined') {
+                            return row.sift;
+                        } else {
+                            return ".";
+                        }
+                    }
                 }, {
                     name: 'polyphen',
                     title: 'Polyphen',
-                    width: 60
+                    width: 60,
+                    formula: function(row) {
+                        if (row.polyphen !== null  && typeof row.polyphen !== 'undefined') {
+                            return row.polyphen;
+                        } else {
+                            return ".";
+                        }
+                    }
                 }, {
                     name: 'phastcons',
                     title: 'PhastCons',
@@ -1336,6 +1350,7 @@
 
                                     }
                                 }
+
                             }
                         }
                     }
@@ -1524,10 +1539,7 @@
                         }
                     }
                 }
-
-
             }
-
             return data;
         },
         _parseTotal: function(response) {
