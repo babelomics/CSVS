@@ -505,7 +505,7 @@
                     title: 'Id',
                     width: 90,
                     defaultValue: "."
-                }, {
+                },{
                     title: 'MAF',
                     name: 'maf',
                     width: 350,
@@ -727,7 +727,7 @@
                                 return ".";
                             }
                         }
-                    }, ]
+                    } ]
 
                 }, {
                     title: "ExAC",
@@ -841,6 +841,13 @@
                         } else {
                             return ".";
                         }
+                    }
+                }, {
+                    name: 'ct',
+                    title: 'Consequence type',
+                    width: 150,
+                    formula: function (row) {
+                        return row.annots.displayConsequenceType;
                     }
                 }, {
                     name: 'phenotypes',
