@@ -801,19 +801,47 @@
                 }, {
                     name: 'phastcons',
                     title: 'PhastCons',
-                    width: 60
+                    width: 60,
+                    formula: function(row) {
+                        if (row.phastcons !== null  && typeof row.phastcons !== 'undefined') {
+                            return row.phastcons;
+                        } else {
+                            return ".";
+                        }
+                    }
                 }, {
                     name: 'phylop',
                     title: 'phyloP',
-                    width: 50
+                    width: 50,
+                    formula: function(row) {
+                        if (row.phylop !== null  && typeof row.phylop !== 'undefined') {
+                            return row.phylop;
+                        } else {
+                            return ".";
+                        }
+                    }
                 }, {
                     name: 'gerp',
                     title: 'GERP',
-                    width: 50
+                    width: 50,
+                    formula: function(row) {
+                        if (row.gerp !== null  && typeof row.gerp !== 'undefined') {
+                            return row.gerp;
+                        } else {
+                            return ".";
+                        }
+                    }
                 }, {
                     name: 'cadd',
                     title: 'CADD',
-                    width: 50
+                    width: 50,
+                    formula: function(row) {
+                        if (row.cadd !== null  && typeof row.cadd !== 'undefined') {
+                            return row.cadd;
+                        } else {
+                            return ".";
+                        }
+                    }
                 }, {
                     name: 'phenotypes',
                     title: 'Phenotypes',
