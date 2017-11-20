@@ -29,6 +29,7 @@
 <link rel="import" href="src/csvs-search-element.html">
 <link rel="import" href="src/csvs-feedback.html">
 <link rel="import" href="src/csvs-stats-element.html">
+<link rel="import" href="src/csvs-downloads-element.html">
 <link rel="import" href="src/csvs-annotation-form.html">
 <link rel="import" href="src/csvs-annotation-result.html">
 <link rel="import" href="src/csvs-saturation-element.html">
@@ -107,6 +108,10 @@
             <csvs-stats-element diseases="{{diseases}}" technologies="{{technologies}}" id="csvsStatsElement"></csvs-stats-element>
         </div>
 
+        <div class="content" menu-option="downloads">
+            <csvs-downloads-element  id="csvsDownloadsElement"></csvs-downloads-element>
+        </div>
+
         <div class="content" menu-option="annot">
             <csvs-annotation-form id="annotationForm" selectedOption="{{selectedOption}}" bioformats="{{bioformats}}" user-data="{{userData}}" technologies="{{technologies}}" diseases="{{diseases}}" on-job-launched="handleJobLaunched"></csvs-annotation-form>
         </div>
@@ -116,7 +121,7 @@
         </div>
 
 
-        <div class="content" menu-option="home,search,stats,annot,result,saturation">
+        <div class="content" menu-option="home,search,stats,downloads,annot,result,saturation">
             <stv-panel hidden collapsible closable movable id="fileBrowserPanel" on-hidden="handlePanelHidden">
                 <div class="header">
                     <i class="fa fa-folder-open-o"></i> File Browser
@@ -153,6 +158,11 @@
                 <div title="Saturation" class="option" on-click="handleMenuOption" data-option="saturation">
                     <i class="fa fa-line-chart"></i>
                     <span class="option-text">Saturation</span>
+                </div>
+
+                <div title="Saturation" class="option" on-click="handleMenuOption" data-option="downloads">
+                    <i class="fa fa-download"></i>
+                    <span class="option-text">Downloads</span>
                 </div>
 
                 <div title="Annotate VCF file" class="option" on-click="handleLoggedOnlyMenuOption" login-required data-option="annot" hidden>

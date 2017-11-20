@@ -1,0 +1,304 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<dom-module name="csvs-downloads-element">
+    <style is="custom-style"
+           include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            box-sizing: border-box;
+            position: relative;
+            width: 100%;
+        }
+
+        .selector_list {
+            height: 200px;
+        }
+
+        .buttons_container {
+            margin-top: 20px;
+            margin-bottom: 50px;
+        }
+        .proba{
+            background-color: white;
+            margin:auto;
+            border-radius: 5px;
+            padding: 1.5em;
+            width: 80%;
+            max-width: 780px;
+        }
+        .paragraph {
+            font-size: 14px;
+        }
+        a{
+            text-decoration: underline;
+        }
+
+
+    </style>
+    <template>
+        <div class="vertical layout center-justified">
+            <div  class="vertical proba">
+                <div class="paragraph">
+                    Here you can download aggregated data corresponding to phenotypically healthy controls
+                    of MGP and the IBS population of 1000 genomes phase 3 as well as the pseudo-controls for each ICD10 category made with
+                    all the samples except each specific ICD10 disease category.
+                    Datasets are downloaded as tab-delimited text files.
+                    Select dataset to download:
+                </div>
+                <br/>
+                <label class="stv-control">
+                    <input type="radio" id="MGPcontrols" name="fileDownload" on-change="changeRadio">
+                     <span>MGP controls</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="MGP_IBS" name="fileDownload" on-change="changeRadio">
+                    <span>MGP + IBS controls</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="group1_ICD10" name="fileDownload" on-change="changeRadio">
+                    <span>All individual expect ICD10 group1: Certain infectious and parasitic diseases</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="group2_ICD10" name="fileDownload" on-change="changeRadio">
+                    <span>All individual expect ICD10 group2: Neoplasms</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="group3_ICD10" name="fileDownload" on-change="changeRadio">
+                    <span>All individual expect ICD10 group3: Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="group4_ICD10" name="fileDownload" on-change="changeRadio">
+                    <span>All individual expect ICD10 group4: Endocrine, nutritional and metabolic diseases</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="group5_ICD10" name="fileDownload" on-change="changeRadio">
+                    <span>All individual expect ICD10 group5: Mental and behavioural disorders</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="group6_ICD10" name="fileDownload" on-change="changeRadio">
+                    <span>All individual expect ICD10 group6: Diseases of the nervous system</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="group7_ICD10" name="fileDownload" on-change="changeRadio">
+                    <span>All individual expect ICD10 group7: Diseases of the eye and adnexa</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="group8_ICD10" name="fileDownload" on-change="changeRadio">
+                    <span>All individual expect ICD10 group8: Diseases of the ear and mastoid process</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="group9_ICD10" name="fileDownload" on-change="changeRadio">
+                    <span>All individual expect ICD10 group9: Diseases of the circulatory system</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="group10_ICD10" name="fileDownload" on-change="changeRadio">
+                    <span>All individual expect ICD10 group10: Diseases of the respiratory system</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="group11_ICD10" name="fileDownload" on-change="changeRadio">
+                    <span>All individual expect ICD10 group11: Diseases of the digestive system</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="group12_ICD10" name="fileDownload" on-change="changeRadio">
+                    <span>All individual expect ICD10 group12: Diseases of the skin and subcutaneous tissue</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="group13_ICD10" name="fileDownload" on-change="changeRadio">
+                    <span>All individual expect ICD10 group13: Diseases of the musculoskeletal system and connective tissue</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="group14_ICD10" name="fileDownload" on-change="changeRadio">
+                    <span>All individual expect ICD10 group14: Diseases of the genitourinary system</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="group15_ICD10" name="fileDownload" on-change="changeRadio">
+                    <span>All individual expect ICD10 group15: Pregnancy, childbirth and the puerperium</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="group16_ICD10" name="fileDownload" on-change="changeRadio">
+                    <span>All individual expect ICD10 group16: Certain conditions originating in the perinatal period</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="group17_ICD10" name="fileDownload" on-change="changeRadio">
+                    <span>All individual expect ICD10 group17: Congenital malformations, deformations and chromosomal abnormalities</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="group18_ICD10" name="fileDownload" on-change="changeRadio">
+                    <span>All individual expect ICD10 group18: Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="group19_ICD10" name="fileDownload" on-change="changeRadio">
+                    <span>All individual expect ICD10 group19: Injury, poisoning and certain other consequences of external causes</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="group20_ICD10" name="fileDownload" on-change="changeRadio">
+                    <span>All individual expect ICD10 group20: External causes of morbidity and mortality</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="group21_ICD10" name="fileDownload" on-change="changeRadio">
+                    <span>All individual expect ICD10 group21: Factors influencing health status and contact with health services</span>
+                </label>
+                <label class="stv-control">
+                    <input type="radio" id="group22_ICD10" name="fileDownload" on-change="changeRadio">
+                    <span>All individual expect ICD10 group22: Codes for special purposes</span>
+                </label>
+                <br/>
+                <div class="vertical layout">
+                    <div class="flex">
+                        <label class="stv" >Name:
+                            <input class="stv" type="text" id="name_downloads" value="{{name_downloads::input}}" required/>
+                        </label>
+                    </div>
+                    <div class="flex">
+                        <label class="stv">Affiliation:
+                            <input class="stv" type="text" id="affiliation_downloads" value="{{affiliation_downloads::input}}" required/>
+                        </label>
+                    </div>
+                    <div class="flex">
+                        <label class="stv">Email:
+                            <input class="stv" type="text" id="email_downloads" value="{{email_downloads::input}}" placeholder="example@example.com" required/>
+                        </label>
+                    </div>
+                </div>
+                <br/>
+                <label class="stv-control">
+                    <input type="checkbox" id="conditions">
+                    <span>Check here to indicate that you have read agree with the terms and conditions of use of this data described <a href="../CSVSTermsAndConditions.pdf" target="_blank">here</a>.</span>
+                </label>
+                <div class="horizontal layout center end-justified">
+                    <div id="Sending_disease" hidden$="{{!sending}}">
+                        <i class="fa fa-circle-o-notch fa-spin"></i> Sending...
+                    </div>
+                    <div id="message_donwload">{{message}}&nbsp;</div>
+                    <div class="stv-btn stv-btn-shdw stv-btn-big" on-click="email_disease_file">&nbsp; Download</div>
+
+                </div>
+            </div>
+        </div>
+
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is: 'csvs-downloads-element',
+        properties: {
+            sending: {
+                type: Boolean,
+                value: false
+            },
+            name_downloads:{
+                type: String,
+                value: ""
+            },
+            affiliation_downloads:{
+                type: String,
+                value: ""
+            },
+            email_downloads: {
+                type: String,
+                value: ""
+            }
+        },
+        email_disease_file: function (){
+            var me = this;
+            var msj = "";
+
+            // Check empty
+            if(!this.$.fileDownload.checked){
+                msj = 'Please, selected a dataset to download. ';
+            }
+            if (!_.isEmpty(me.name_downloads)){
+                msj = msj + 'Please, add your name. ';
+            }
+            if (!_.isEmpty(me.affiliation_downloads)){
+                msj = msj + 'Please, add your affiliation. ';
+            }
+
+           // Check email
+            if(!_.isEmpty(me.email_downloads)) {
+                if (!/^(?:[^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*|"[^\n"]+")@(?:[^<>()[\].,;:\s@"]+\.)+[^<>()[\]\.,;:\s@"]{2,63}$/i.test(email)) {
+                    msj = msj + 'Invalid email format. ';
+                }
+            } else{
+                msj = msj + 'Please, add your email. '
+            }
+
+
+            if (msj != ""){
+                new StvDialog().alert(msj);
+            } else{
+              // Downloads
+
+                var text =  ' Data: \n' +
+                            ' Name: ' + me.name_downloads + ' \n' +
+                            ' Affiliation: '+ me.affiliation_downloads + ' \n' +
+                            ' Email: '+ me.email_downloads;
+
+                $.ajax({
+                    url: window.URL_MAIL,
+                    data: {
+                        subject: 'Download file: ' + me.fileDownload.value,
+                        text: text,
+                        html: '<pre>'+text+'</pre>',
+                        from: window.FROM_EMAIL || '',
+                        to: window.TO_EMAIL || '',
+                        host: window.HOST || '',
+                        port: window.PORT || '',
+                        secure: window.SECURE,
+                        debug: window.DEBUG,
+                        ignoreTLS: window.IGNORE_TLS,
+                        user: window.USER,
+                        pass: window.PASS
+                    },
+                    dataType: "json",
+                    contentType: 'application/json',
+                    crossDomain: true,
+                    success: function (data) {
+                        if (data && data.data === "sent") {
+                            //me.message = 'Sent message';
+                            //document.getElementById("messagemail").style = "color:green";
+
+                            me.download_disease_file(me.fileDownload.value);
+
+
+                        } else {
+                            me.sending = false;
+                            new StvDialog().alert('There has been a problem with the server, try again later');
+                        }
+                    },
+                    error: function () {
+                        me.sending = false;
+                        new StvDialog().alert('There has been a problem with the server, try again later');
+                    },
+                    type: "POST"
+                }); // End ajax
+
+            }
+
+        },
+        download_disease_file: function(disease){
+            var url= '';
+            $.ajax({
+                url: url,
+                data: {
+                    disease: disease
+                },
+                dataType: "json",
+                contentType: 'application/json',
+                success: function (data) {
+                    me.message_donwload = 'Download done!';
+                    document.getElementById("message_donwload").style = "color:green";
+                },
+                error: function () {
+                    me.sending = false;
+                    new StvDialog().alert('There has been a problem with the server, try again later');
+                },
+                type: "POST"
+            }); // End ajax
+        },
+        changeRadio: function (){
+            this.message_donwload = "";
+        }
+    });
+</script>
