@@ -11,3 +11,15 @@ OPENCGA_HOST = "http://test.babelomics.org/opencga-0.7-dev";
 STEVIA_SERVER_HOST = "http://ws.babelomics.org/teststv02";
 
 STV_APP="CSVS";
+
+// CONFIG MAIL
+URL_MAIL = "http://localhost:8001/babemailer";
+FROM_EMAIL = 'csvs@clinbioinfosspa.es';
+TO_EMAIL = 'csvs';
+HOST = 'localhost';
+PORT = 25;
+SECURE = null;
+DEBUG = null;
+IGNORE_TLS = null;
+USER = '';
+PASS = '';

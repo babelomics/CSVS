@@ -55,7 +55,10 @@
                         </stv-select>
                     </div>
                 </div>
-                <br>
+                 <br>
+                 <label class="stv" for="">From:</label>
+                 <input class="stv" type="email" id="email" value="{{email::input}}" placeholder="name@example.com">
+                 <br>
                 <label class="stv" for="">Text:</label>
                 <textarea class="stv flex" name="" id="" cols="30" rows="10" value="{{text::input}}" required></textarea>
                 <br>
@@ -63,8 +66,8 @@
                     <div id="Sending" hidden$="{{!sending}}">
                         <i class="fa fa-circle-o-notch fa-spin"></i> Sending...
                     </div>
-                    <div class="stv-btn stv-btn-shdw stv-btn-big" on-click="submitForm">&nbsp; Send</div>
-
+                    <div id="messagemail">{{message}}&nbsp;</div>
+                    <div class="stv-btn stv-btn-shdw stv-btn-big" on-click="validateForm">&nbsp; Send</div>
                 </div>
                 </form>
             </div>
@@ -79,6 +82,10 @@
                 subject: {
                     type: String,
                     value: ""
+                },
+                email: {
+                    type: String,
+                    value: ''
                 },
                 text: {
                     type: String,
@@ -95,50 +102,99 @@
                     observer: 'hiddenChanged'
                 }
             },
-            submitForm:function () {
-                document.getElementById('iron-form').submit();
+            validateForm: function(){
+                var me = this;
+                var email = this.email;
+                var text = this.text.trim();
+                var msj = "";
+
+                // Check mail
+                if (!_.isEmpty(email))
+                    if (!/^(?:[^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*|"[^\n"]+")@(?:[^<>()[\].,;:\s@"]+\.)+[^<>()[\]\.,;:\s@"]{2,63}$/i.test(email))
+                        msj = msj + 'Invalid email format. ';
+
+                // check text
+                if (_.isEmpty(text))
+                    msj = msj + 'Please, add a text to the message. ';
+
+                if (!_.isEmpty(msj)) {
+                    new StvDialog().alert(msj);
+                } else {
+                    if (_.isEmpty(email))
+                        new StvDialog().confirm("The field 'From' is not filled in!.  Click 'Cancel' and fill out your email if you want to receive a reply or press 'Ok' if you want to leave this field empty.", function(answer) {
+                            console.log(answer);
+                            if (answer == true)
+                                me.submitForm(me);
+                        });
+                    else
+                        me.submitForm(me);
+                }
+            },
+            submitForm: function (me) {
+                var subject = me.subject;
+                var emailType = me.$.emailType.selectedOptionText;
+                var email = me.email;
+                var text = me.text.trim();
+
+                me.sending = true;
+                me.message = "";
+
+                $.ajax({
+                    url: window.URL_MAIL,
+                    data: {
+                        subject: emailType + ':' + subject,
+                        text: text,
+                        html: '<pre>'+text+'</pre>',
+                        from: email || window.FROM_EMAIL || '',
+                        to: window.TO_EMAIL || '',
+                        host: window.HOST || '',
+                        port: window.PORT || '',
+                        secure: window.SECURE,
+                        debug: window.DEBUG,
+                        ignoreTLS: window.IGNORE_TLS,
+                        user: window.USER,
+                        pass: window.PASS
+                    },
+                    dataType: "json",
+                    contentType: 'application/json',
+                    crossDomain: true,
+                    success: function (data) {
+                        if (data && data.data === "sent") {
+                            me.sending = false;
+                            me.message = 'Sent message';
+                            document.getElementById("messagemail").style = "color:green";
+                        } else {
+                            me.sending = false;
+                            me.message = 'There has been a problem with the SMTP server';
+                            document.getElementById("messagemail").style = "color: #bf4747";
+                            new StvDialog().alert('There has been a problem with the SMTP server, try again later');
+                        }
+                    },
+                    error: function () {
+                        me.sending = false;
+                        me.message = 'There was an error sending an email';
+                        document.getElementById("messagemail").style = "color: #bf4747";
+                        new StvDialog().alert("There was an error sending an email, try again later");
+                    },
+                    type: "POST"
+                }); // End ajax
+
             },
             hiddenChanged: function() {
                 this.$.emailPanel._center();
             },
-            handleSendEmail: function(e) {
-                e.stopPropagation();
-                var me = this;
-                var subject = this.subject;
-                var text = this.text.trim();
-                var type = this.$.emailType.selectedOption.value;
-
-                if (text != null && text != "") {
-                    this.sending = true;
-                    SteviaManager.users.feedback({
-                        query: {
-                            subject: subject,
-                            type: type,
-                            text: text
-                        },
-                        request: {
-                            success: function(response) {
-                                if (response.response[0].error == null) {
-                                    me.fire('feedbackend');
-                                    new StvDialog().alert(response.response[0].results[0]);
-                                    me.set('text', '');
-                                } else {
-                                    new StvDialog().alert('Sorry! There was a problem, try again later');
-                                }
-                                me.sending = false;
-                            },
-                            error: function() {
-                                new StvDialog().alert('Server error, try again later');
-                                me.sending = false;
-                            }
-                        }
-                    });
-                }
+            clean: function () {
+                this.subject = '';
+                this.email = '';
+                this.text = '';
+                this.$.emailType.value = "suggest";
+                this.message = "";
             },
-            handleFeedback: function(e) {
+            handleFeedback: function (e) {
                 this.fire('feedbackend');
                 this.$.emailPanel.hidden = false;
                 this.$.emailPanel.style = "top: 60px;left: 500px";
+                this.clean();
             }
         })
     </script>
