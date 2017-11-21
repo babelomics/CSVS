@@ -204,24 +204,26 @@
             var me = this;
             var msj = "";
 
-            // Check empty
-            if(!this.$.fileDownload.checked){
+            // Check empty and format
+            if($('[name="fileDownload"]:checked').length == 0  ){
                 msj = 'Please, selected a dataset to download. ';
             }
-            if (!_.isEmpty(me.name_downloads)){
+            if (_.isEmpty(me.$.name_downloads.value)){
                 msj = msj + 'Please, add your name. ';
             }
-            if (!_.isEmpty(me.affiliation_downloads)){
+
+            if (_.isEmpty(me.$.affiliation_downloads.value)){
                 msj = msj + 'Please, add your affiliation. ';
             }
-
-           // Check email
-            if(!_.isEmpty(me.email_downloads)) {
-                if (!/^(?:[^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*|"[^\n"]+")@(?:[^<>()[\].,;:\s@"]+\.)+[^<>()[\]\.,;:\s@"]{2,63}$/i.test(email)) {
+            if(!_.isEmpty(me.$.email_downloads.value)) {
+                if (!/^(?:[^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*|"[^\n"]+")@(?:[^<>()[\].,;:\s@"]+\.)+[^<>()[\]\.,;:\s@"]{2,63}$/i.test(me.$.email_downloads.value )) {
                     msj = msj + 'Invalid email format. ';
                 }
-            } else{
+            } else {
                 msj = msj + 'Please, add your email. '
+            }
+            if (!$('#conditions').is(':checked')){
+                msj = msj + 'Please, check to indicate that you have read your agree with the terms and conditions. ';
             }
 
 
@@ -231,14 +233,16 @@
               // Downloads
 
                 var text =  ' Data: \n' +
-                            ' Name: ' + me.name_downloads + ' \n' +
-                            ' Affiliation: '+ me.affiliation_downloads + ' \n' +
-                            ' Email: '+ me.email_downloads;
+                            ' Name: ' + me.$.name_downloads.value + ' \n' +
+                            ' Affiliation: '+ me.$.affiliation_downloads.value + ' \n' +
+                            ' Email: '+ me.$.email_downloads.value;
+
+                console.log( $('[name="fileDownload"]:checked').value);
 
                 $.ajax({
                     url: window.URL_MAIL,
                     data: {
-                        subject: 'Download file: ' + me.fileDownload.value,
+                        subject: 'Download file: ' + $('[name="fileDownload"]:checked').value,
                         text: text,
                         html: '<pre>'+text+'</pre>',
                         from: window.FROM_EMAIL || '',
