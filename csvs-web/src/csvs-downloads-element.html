@@ -3,30 +3,26 @@
 <dom-module name="csvs-downloads-element">
     <style is="custom-style"
            include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+
         :host {
             display: block;
             box-sizing: border-box;
             position: relative;
             width: 100%;
         }
-
-        .selector_list {
-            height: 200px;
-        }
-
-        .buttons_container {
-            margin-top: 20px;
-            margin-bottom: 50px;
-        }
         .main{
             background-color: white;
             margin-right:auto;
             margin-left:auto;
+            border: 1px groove gray;
             border-radius: 5px;
             padding: 1.5em;
             width: 80%;
             max-width: 780px;
             margin-top:15px;
+            height: 100%;
+            overflow-y:auto;
+            overflow-x:auto;
         }
         .paragraph {
             font-size: 14px;
@@ -41,7 +37,6 @@
         a{
             text-decoration: underline;
         }
-
 
     </style>
     <template>
