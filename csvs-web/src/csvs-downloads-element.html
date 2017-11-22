@@ -182,7 +182,6 @@
                     </div>
                     <div id="message_donwload" class="ok">{{message_donwload}}&nbsp;</div>
                     <div class="stv-btn stv-btn-shdw stv-btn-big" on-click="email_disease_file">&nbsp; Download</div>
-
                 </div>
             </div>
         </div>
@@ -293,24 +292,57 @@
 
         },
         download_disease_file: function(me, disease){
-            var url= '';
+            var url = window.CSVS_DOWNLOAD + disease;
             $.ajax({
                 url: url,
                 data: {
                     disease: disease
                 },
-                dataType: "json",
-                contentType: 'application/json',
+               // dataType: "json",
+                // contentType: 'application/json',
+                crossDomain: true,
                 success: function (data) {
-                    me.sending = false;
-                    me.message_donwload = 'Download done!';
-                    document.getElementById("message_donwload").style = "color:green";
+                        if(data){
+                            if (data["error"] == undefined){
+                                // Download data
+                                var blob = new Blob([data], {type: 'application/csv'});
+                                var link = document.createElement('a');
+                                link.href = window.URL.createObjectURL(blob);
+                                link.download = $('[name="fileDownload"]:checked').val() +".csv";
+                                link.click();
+
+                                // Show message
+                                me.sending = false;
+                                me.message_donwload = 'Download done!';
+                                document.getElementById("message_donwload").style = "color:green";
+                            } else{
+                                new StvDialog().alert('There has been a problem with the server, try again later');
+                                console.log("CSVS: (File Download)  " +  data.error);
+                            }
+                        }
                 },
-                error: function () {
+                error: function (jqXHR, exception) {
+                    var msg = '';
+                    if (jqXHR.status === 0) {
+                        msg = 'Not connect.\n Verify Network.';
+                    } else if (jqXHR.status == 404) {
+                        msg = 'Requested page not found. [404]';
+                    } else if (jqXHR.status == 500) {
+                        msg = 'Internal Server Error [500].';
+                    } else if (exception === 'parsererror') {
+                        msg = 'Requested JSON parse failed.';
+                    } else if (exception === 'timeout') {
+                        msg = 'Time out error.';
+                    } else if (exception === 'abort') {
+                        msg = 'Ajax request aborted.';
+                    } else {
+                        msg = 'Uncaught Error.\n' + jqXHR.responseText;
+                    }
                     me.sending = false;
                     new StvDialog().alert('There has been a problem with the server, try again later');
-                    console.log('CSVS: Fail download ' + disease + ' from ' + url);
+                    console.log('CSVS: Fail download ' + disease + ' from ' + url + '   ' + msg);
                 },
+
                 type: "POST"
             }); // End ajax
         },

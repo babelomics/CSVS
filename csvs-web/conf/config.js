@@ -12,6 +12,9 @@ STEVIA_SERVER_HOST = "http://ws.babelomics.org/teststv02";
 
 STV_APP="CSVS";
 
+// Donwload
+CSVS_DOWNLOAD = "http://localhost:8080/csvs/download/";
+
 // Mail
 URL_MAIL='http://localhost:8081/babemailer';
 FROM_EMAIL='csvs@csvs.clinbioinfosspa.es';

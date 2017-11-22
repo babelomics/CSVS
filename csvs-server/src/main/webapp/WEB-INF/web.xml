@@ -28,6 +28,16 @@
         <url-pattern>/rest/*</url-pattern>
     </servlet-mapping>
 
+
+    <servlet>
+        <servlet-name>download</servlet-name>
+        <servlet-class>org.babelomics.csvs.server.DownloadReports</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>download</servlet-name>
+        <url-pattern>/download/*</url-pattern>
+    </servlet-mapping>
+
     <!-- General configuration -->
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
