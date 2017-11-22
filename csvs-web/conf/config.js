@@ -13,7 +13,7 @@ STEVIA_SERVER_HOST = "http://ws.babelomics.org/teststv02";
 STV_APP="CSVS";
 
 // CONFIG MAIL
-URL_MAIL = "http://localhost:8001/babemailer";
+URL_MAIL = "http://localhost:8081/babemailer";
 FROM_EMAIL = 'csvs@clinbioinfosspa.es';
 TO_EMAIL = 'csvs';
 HOST = 'localhost';

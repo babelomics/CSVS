@@ -32,6 +32,12 @@
             height: 300px;
             resize: none;
         }
+        .ok {
+            color: green;
+        }
+        .ko {
+            color: #bf4747;
+        }
     </style>
     <template>
         <stv-panel id="emailPanel" modal fixed closable on-close="handleFeedback">
@@ -66,7 +72,7 @@
                     <div id="Sending" hidden$="{{!sending}}">
                         <i class="fa fa-circle-o-notch fa-spin"></i> Sending...
                     </div>
-                    <div id="messagemail">{{message}}&nbsp;</div>
+                    <div id="messagemail" class$="{{state}}">{{message}}&nbsp;</div>
                     <div class="stv-btn stv-btn-shdw stv-btn-big" on-click="validateForm">&nbsp; Send</div>
                 </div>
                 </form>
@@ -100,6 +106,11 @@
                     value: false,
                     reflectToAttribute: true,
                     observer: 'hiddenChanged'
+                },
+                state: {
+                    type: String,
+                    value: "ok",
+                    reflectToAttribute: true
                 }
             },
             validateForm: function(){
@@ -122,7 +133,6 @@
                 } else {
                     if (_.isEmpty(email))
                         new StvDialog().confirm("The field 'From' is not filled in!.  Click 'Cancel' and fill out your email if you want to receive a reply or press 'Ok' if you want to leave this field empty.", function(answer) {
-                            console.log(answer);
                             if (answer == true)
                                 me.submitForm(me);
                         });
@@ -162,19 +172,21 @@
                         if (data && data.data === "sent") {
                             me.sending = false;
                             me.message = 'Sent message';
-                            document.getElementById("messagemail").style = "color:green";
+                            me.state="ok";
                         } else {
                             me.sending = false;
                             me.message = 'There has been a problem with the SMTP server';
-                            document.getElementById("messagemail").style = "color: #bf4747";
+                            me.state="ko";
                             new StvDialog().alert('There has been a problem with the SMTP server, try again later');
+                            console.log(data.data );
                         }
                     },
                     error: function () {
                         me.sending = false;
                         me.message = 'There was an error sending an email';
-                        document.getElementById("messagemail").style = "color: #bf4747";
+                        me.state="ko";
                         new StvDialog().alert("There was an error sending an email, try again later");
+                        console.log(data.data );
                     },
                     type: "POST"
                 }); // End ajax
