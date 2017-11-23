@@ -118,6 +118,7 @@
                 var email = this.email;
                 var text = this.text.trim();
                 var msj = "";
+                me.message = "";
 
                 // Check mail
                 if (!_.isEmpty(email))
@@ -187,7 +188,6 @@
                         me.message = 'There was an error sending an email';
                         me.state="ko";
                         new StvDialog().alert("There was an error sending an email, try again later");
-                        console.log(data);
                     },
                     type: "POST"
                 }); // End ajax
