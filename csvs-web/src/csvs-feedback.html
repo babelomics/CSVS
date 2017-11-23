@@ -178,15 +178,16 @@
                             me.message = 'There has been a problem with the SMTP server';
                             me.state="ko";
                             new StvDialog().alert('There has been a problem with the SMTP server, try again later');
-                            console.log(data.data );
+                            if (data.data)
+                                console.log(data.data);
                         }
                     },
-                    error: function () {
+                    error: function (data) {
                         me.sending = false;
                         me.message = 'There was an error sending an email';
                         me.state="ko";
                         new StvDialog().alert("There was an error sending an email, try again later");
-                        console.log(data.data );
+                        console.log(data);
                     },
                     type: "POST"
                 }); // End ajax
