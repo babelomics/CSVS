@@ -14,7 +14,7 @@ STV_APP="CSVS";
 
 // CONFIG MAIL
 URL_MAIL = "http://localhost:8081/babemailer";
-FROM_EMAIL = 'csvs@clinbioinfosspa.es';
+FROM_EMAIL = '';
 TO_EMAIL = 'csvs';
 HOST = 'localhost';
 PORT = 25;
