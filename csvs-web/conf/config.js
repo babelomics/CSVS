@@ -17,7 +17,7 @@ CSVS_DOWNLOAD = "http://localhost:8080/csvs/download/";
 
 // Mail
 URL_MAIL='http://localhost:8081/babemailer';
-FROM_EMAIL='csvs@csvs.clinbioinfosspa.es';
+FROM_EMAIL='';
 TO_EMAIL='csvs';
 HOST='localhost';
 PORT=25;
