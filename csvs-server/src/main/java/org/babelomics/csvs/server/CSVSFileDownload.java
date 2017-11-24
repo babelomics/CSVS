@@ -9,11 +9,17 @@ import java.io.*;
 import java.util.Properties;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-
+/**
+ * Class to download a file
+ *
+ * @author grg
+ */
+@WebServlet(name="download", urlPatterns = "/download/*")
 public class CSVSFileDownload extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
@@ -24,11 +30,12 @@ public class CSVSFileDownload extends HttpServlet {
     protected static ObjectMapper jsonObjectMapper;
 
     static String downloadPath;
-    static String type = ".csv";
+    static String EXTENSION_DEFAULT = ".csv";
+    static String PROPERTIES = "csvs.properties";
 
     static {
 
-        InputStream is = CSVSWSServer.class.getClassLoader().getResourceAsStream("csvs.properties");
+        InputStream is = CSVSWSServer.class.getClassLoader().getResourceAsStream(PROPERTIES);
         properties = new Properties();
 
         try {
@@ -45,27 +52,41 @@ public class CSVSFileDownload extends HttpServlet {
         downloadPath = properties.getProperty("CSVS.DOWNLOAD_PATH", "");
     }
 
-
-    protected void doOptions(HttpServletRequest request,
-                          HttpServletResponse response) throws ServletException, IOException {
-    }
-
-
+    /**
+     * Method download file from POST
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
     protected void doPost(HttpServletRequest request,
                          HttpServletResponse response) throws ServletException, IOException {
         downloadReport(request,response);
     }
 
-
+    /**
+     * Method download file from GET
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
     protected void doGet(HttpServletRequest request,
                          HttpServletResponse response) throws ServletException, IOException {
         downloadReport(request,response);
     }
 
-
-    private void downloadReport(HttpServletRequest request,
+    /**
+     * Methon download File
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
+     private void downloadReport(HttpServletRequest request,
                          HttpServletResponse response) throws ServletException, IOException {
         String filename = null;
+        String extension = EXTENSION_DEFAULT;
 
         // Get option download
         String p = request.getPathInfo();
@@ -74,15 +95,15 @@ public class CSVSFileDownload extends HttpServlet {
             logger.debug("CSVS: getPathInfo() " + filename);
         }
 
-        System.out.println(downloadPath + filename + type);
-        File data = new File(downloadPath + filename + type);
-        logger.debug("CSVS: File " + downloadPath + filename + type);
+        System.out.println(downloadPath + filename + extension);
+        File data = new File(downloadPath + filename + extension);
+        logger.debug("CSVS: File " + downloadPath + filename + extension);
         PrintWriter out = response.getWriter();
         // Check exist file
         if (!data.exists())
         {
             // System.out.println("File doesn't exist");
-            logger.info("CSVS: File doesn't exist (" + filename + type + ")");
+            logger.info("CSVS: File doesn't exist (" + filename + extension + ")");
             response.setHeader("Content-type", "application/json;");
             response.setHeader("Access-Control-Allow-Origin", "*");
             response.setHeader("Access-Control-Allow-Headers", "x-requested-with, content-type");
@@ -95,12 +116,12 @@ public class CSVSFileDownload extends HttpServlet {
             response.setHeader("Content-Transfer-Encoding","binary");
             response.setHeader("Content-Type","binary/octet-stream");
 
-            response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + type + "\"");
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + extension + "\"");
             response.setHeader("Content-Description", "File Transfer");
             response.setHeader("Access-Control-Allow-Origin", "*");
             response.setHeader("Access-Control-Allow-Headers", "x-requested-with, content-type");
 
-            FileInputStream fl = new FileInputStream(downloadPath + filename + type);
+            FileInputStream fl = new FileInputStream(downloadPath + filename + extension);
 
             int i;
             while ((i = fl.read()) != -1) {
@@ -113,67 +134,3 @@ public class CSVSFileDownload extends HttpServlet {
         }
     }
 }
-
-
-/*
-
-    static byte[] buffer = new byte[1024];
-
-
-    public static void download(final URL url) {
-        FileOutputStream fileOutputStream = null;
-        String filepath = "/var/www/latest/download/";
-        InputStream inputStream = null;
-        int len = 0;
-        int off = 0;
-        //this.url = url;
-        try {
-            // Establish connection
-            URLConnection urlConnection = url.openConnection();
-
-            //System.out.println('CSVS: Type file: ' + urlConnection.getContentType());
-
-            // Get file
-            String p = url.getFile();
-            String filename = p.substring(p.lastIndexOf("/") + 1, p.length());
-            System.out.println("CSVS: Name file: " + filename);
-            fileOutputStream = new FileOutputStream(filename);
-            inputStream = new FileInputStream(filepath + filename);
-            System.out.println("CSVS: InputStream " + inputStream.toString());
-
-
-            System.out.println("CSVS: Download...");
-            // Read file server and write local file
-            while ((len = inputStream.read(buffer)) >= 0) { // buffer temporal read
-                fileOutputStream.write(buffer, off, len);
-                fileOutputStream.flush();
-            }
-            System.out.println("CSVS: Download done: "); //+location+this);
-
-
-            /*
-            // Lectura de la foto de la web y escritura en fichero local
-            byte[] array = new byte[1000]; // buffer temporal de lectura.
-            int leido = is.read(array);
-            while (leido > 0) {
-                fos.write(array, 0, leido);
-                leido = is.read(array);
-            }
-
-            // cierre de conexion y fichero.
-            is.close();
-            fos.close();
-
-
-        } catch (IOException ioException) {
-            ioException.printStackTrace();
-        } finally {
-            try {
-                fileOutputStream.close();
-            } catch (IOException ioException2) {
-                ioException2.printStackTrace();
-            }
-        }
-    }
-}
-*/

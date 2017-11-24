@@ -217,6 +217,7 @@
         email_disease_file: function (){
             var me = this;
             var msj = "";
+            me.message_donwload  = "";
 
             // Check empty and format
             if($('[name="fileDownload"]:checked').length == 0  ){
@@ -316,6 +317,7 @@
                                 me.message_donwload = 'Download done!';
                                 document.getElementById("message_donwload").style = "color:green";
                             } else{
+                                me.sending = false;
                                 new StvDialog().alert('There has been a problem with the server, try again later');
                                 console.log("CSVS: (File Download)  " +  data.error);
                             }
