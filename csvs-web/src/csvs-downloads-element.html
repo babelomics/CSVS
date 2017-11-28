@@ -37,7 +37,7 @@
         a{
             text-decoration: underline;
         }
-        .ok{
+        .ok {
             color: green;
         }
 
@@ -180,7 +180,7 @@
                     <div id="Sending_disease" hidden$="{{!sending}}">
                         <i class="fa fa-circle-o-notch fa-spin"></i> Sending...
                     </div>
-                    <div id="message_donwload" class="ok">{{message_donwload}}&nbsp;</div>
+                    <div id="message_donwload" class="ok">{{message_donwload}} &nbsp;</div>
                     <div class="stv-btn stv-btn-shdw stv-btn-big" on-click="email_disease_file">&nbsp; Download</div>
                 </div>
             </div>
@@ -214,51 +214,54 @@
                 value: ""
             }
         },
-        email_disease_file: function (){
+        email_disease_file: function () {
             var me = this;
             var msj = "";
-            me.message_donwload  = "";
+            me.message_donwload = "";
 
             // Check empty and format
-            if($('[name="fileDownload"]:checked').length == 0  ){
+            if ($('[name="fileDownload"]:checked').length == 0) {
                 msj = 'Please, selected a dataset to download. ';
             }
-            if (_.isEmpty(me.$.name_downloads.value)){
+            if (_.isEmpty(me.$.name_downloads.value)) {
                 msj = msj + 'Please, add your name. ';
             }
 
-            if (_.isEmpty(me.$.affiliation_downloads.value)){
+            if (_.isEmpty(me.$.affiliation_downloads.value)) {
                 msj = msj + 'Please, add your affiliation. ';
             }
-            if(!_.isEmpty(me.$.email_downloads.value)) {
-                if (!/^(?:[^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*|"[^\n"]+")@(?:[^<>()[\].,;:\s@"]+\.)+[^<>()[\]\.,;:\s@"]{2,63}$/i.test(me.$.email_downloads.value )) {
+            if (!_.isEmpty(me.$.email_downloads.value)) {
+                if (!/^(?:[^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*|"[^\n"]+")@(?:[^<>()[\].,;:\s@"]+\.)+[^<>()[\]\.,;:\s@"]{2,63}$/i.test(me.$.email_downloads.value)) {
                     msj = msj + 'Invalid email format. ';
                 }
             } else {
                 msj = msj + 'Please, add your email. '
             }
-            if (!$('#conditions').is(':checked')){
+            if (!$('#conditions').is(':checked')) {
                 msj = msj + 'Please, check to indicate that you have read your agree with the terms and conditions. ';
             }
 
 
-            if (msj != ""){
+            if (msj != "") {
                 new StvDialog().alert(msj);
-            } else{
-              // Downloads
+            } else {
+                // Downloads
                 me.sending = true;
+                var disease = $('[name="fileDownload"]:checked').val();
+                var url = window.CSVS_DOWNLOAD + disease || ""; // window.CSVS_DOWNLOAD + disease;
 
-                var text =  ' Name: ' + me.$.name_downloads.value + '<br/>' +
-                            ' Affiliation: '+ me.$.affiliation_downloads.value + '<br/>' +
-                            ' Email: '+ me.$.email_downloads.value  + '<br/>' +
-                            ' File Download: '+ $.trim($('[name="fileDownload"]:checked').parent().text());
+                var text = ' Name: ' + me.$.name_downloads.value + '<br/>' +
+                    ' Affiliation: ' + me.$.affiliation_downloads.value + '<br/>' +
+                    ' Email: ' + me.$.email_downloads.value + '<br/>' +
+                    ' File Download: ' + $.trim($('[name="fileDownload"]:checked').parent().text());
 
                 $.ajax({
-                    url: window.URL_MAIL,
+                    url: url,
                     data: {
+                        disease: disease,
                         subject: 'Download file: ' + $('[name="fileDownload"]:checked').val(),
                         text: text,
-                        html: '<pre>'+text+'</pre>',
+                        html: '<pre>' + text + '</pre>',
                         from: window.FROM_EMAIL || '',
                         to: window.TO_EMAIL || '',
                         host: window.HOST || '',
@@ -269,83 +272,58 @@
                         user: window.USER,
                         pass: window.PASS
                     },
-                    dataType: "json",
-                    contentType: 'application/json',
                     crossDomain: true,
                     success: function (data) {
-                        if (data && data.data === "sent") {
-                            me.download_disease_file(me, $('[name="fileDownload"]:checked').val());
-                        } else {
-                            me.sending = false;
-                            new StvDialog().alert('There has been a problem with the server, try again later');
-                            console.log ('CSVS: Problems with the server when send info');
-                        }
-                    },
-                    error: function () {
-                        me.sending = false;
-                        new StvDialog().alert('There has been a problem with the server, try again later');
-                        console.log ('CSVS: Problems with the server');
-                    },
-                    type: "POST"
-                }); // End ajax
-
-            }
-
-        },
-        download_disease_file: function(me, disease){
-            var url = window.CSVS_DOWNLOAD + disease;
-            $.ajax({
-                url: url,
-                data: {
-                    disease: disease
-                },
-               // dataType: "json",
-                // contentType: 'application/json',
-                crossDomain: true,
-                success: function (data) {
-                        if(data){
-                            if (data["error"] == undefined){
+                        if (data) {
+                            if (data["error"] == undefined) {
                                 // Download data
                                 var blob = new Blob([data], {type: 'application/csv'});
                                 var link = document.createElement('a');
                                 link.href = window.URL.createObjectURL(blob);
-                                link.download = $('[name="fileDownload"]:checked').val() +".csv";
+                                link.download = $('[name="fileDownload"]:checked').val() + ".csv";
                                 link.click();
 
                                 // Show message
                                 me.sending = false;
                                 me.message_donwload = 'Download done!';
                                 document.getElementById("message_donwload").style = "color:green";
-                            } else{
+                            } else {
                                 me.sending = false;
                                 new StvDialog().alert('There has been a problem with the server, try again later');
-                                console.log("CSVS: (File Download)  " +  data.error);
+                                console.log("CSVS: (File Download)  " + data.error);
                             }
+                        } else {
+                            me.sending = false;
+                            new StvDialog().alert('There has been a problem with the server, try again later');
+                            console.log('CSVS: Problems with the server when send info');
                         }
-                },
-                error: function (jqXHR, exception) {
-                    var msg = '';
-                    if (jqXHR.status === 0) {
-                        msg = 'Not connect.\n Verify Network.';
-                    } else if (jqXHR.status == 404) {
-                        msg = 'Requested page not found. [404]';
-                    } else if (jqXHR.status == 500) {
-                        msg = 'Internal Server Error [500].';
-                    } else if (exception === 'parsererror') {
-                        msg = 'Requested JSON parse failed.';
-                    } else if (exception === 'timeout') {
-                        msg = 'Time out error.';
-                    } else if (exception === 'abort') {
-                        msg = 'Ajax request aborted.';
-                    } else {
-                        msg = 'Uncaught Error.\n' + jqXHR.responseText;
-                    }
-                    me.sending = false;
-                    new StvDialog().alert('There has been a problem with the server, try again later');
-                    console.log('CSVS: Fail download ' + disease + ' from ' + url + '   ' + msg);
-                },
-                type: "POST"
-            }); // End ajax
+                    },
+                    error: function (jqXHR, exception) {
+
+                        var msg = '';
+                        if (jqXHR.status === 0) {
+                            msg = 'Not connect.\n Verify Network.';
+                        } else if (jqXHR.status == 404) {
+                            msg = 'Requested page not found. [404]';
+                        } else if (jqXHR.status == 500) {
+                            msg = 'Internal Server Error [500].';
+                        } else if (exception === 'parsererror') {
+                            msg = 'Requested JSON parse failed.';
+                        } else if (exception === 'timeout') {
+                            msg = 'Time out error.';
+                        } else if (exception === 'abort') {
+                            msg = 'Ajax request aborted.';
+                        } else {
+                            msg = 'Uncaught Error.\n' + jqXHR.responseText;
+                        }
+                        me.sending = false;
+                        new StvDialog().alert('There has been a problem with the server, try again later');
+                        console.log('CSVS: Fail download ' + disease + ' from ' + url + '   ' + msg);
+                    },
+                    type: "POST"
+                }); // End ajax
+
+            }
         },
         changeRadio: function (){
             this.message_donwload = "";
