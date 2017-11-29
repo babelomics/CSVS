@@ -14,11 +14,10 @@
             background-color: white;
             margin-right:auto;
             margin-left:auto;
-            border: 1px groove gray;
             border-radius: 5px;
             padding: 1.5em;
             width: 80%;
-            max-width: 780px;
+            max-width: 850px;
             margin-top:15px;
             height: 100%;
             overflow-y:auto;
@@ -30,6 +29,15 @@
         .label_downloads{
             width: 20%;
             padding-left:2.5em;
+        }
+        .version_file{
+            float:left;
+        }
+        .block_label{
+            margin-top: 15px;
+        }
+        .block_email{
+            margin-left: 5%;
         }
         .input_downloads{
             width: 60%;
@@ -48,9 +56,8 @@
                 <div class="paragraph">
                     Here you can download aggregated data corresponding to phenotypically healthy controls
                     of MGP and the IBS population of 1000 genomes phase 3 as well as the pseudo-controls for each ICD10 category made with
-                    all the samples except each specific ICD10 disease category.
-                    Datasets are downloaded as tab-delimited text files.
-                    Select dataset to download:
+                    all the samples except each specific ICD10 disease category.<br/>
+                    Datasets are downloaded as tab-delimited text files. Select dataset to download:
                 </div>
                 <br/>
                 <label class="stv-control">
@@ -153,19 +160,16 @@
                     <input type="radio" id="all_less_group22" name="fileDownload" on-change="changeRadio" value="all_less_group22">
                     <span>All individual except ICD10 group XXII: Codes for special purposes</span>
                 </label>
-                <br/>
-                <div class="vertical layout" style="margin-top: 15px;">
-                    <div class="flex">
+                <div class="vertical layout block_email"  >
+                    <div class="flex block_label" >
                         <label class="stv label_downloads">Name:*</label>
                         <input class="input_downloads" type="text" id="name_downloads" value="{{name_downloads::input}}" required/>
                     </div>
-                    <br/>
-                    <div class="flex">
+                    <div class="flex block_label">
                         <label class="stv label_downloads">Affiliation:*</label>
                         <input class="input_downloads" type="text" id="affiliation_downloads" value="{{affiliation_downloads::input}}" required/>
                     </div>
-                    <br/>
-                    <div class="flex">
+                    <div class="flex block_label">
                         <label class="stv label_downloads">Email:*</label>
                         <input  class="input_downloads" type="text" id="email_downloads" value="{{email_downloads::input}}" placeholder="example@example.com" required/>
                     </div>
@@ -176,12 +180,15 @@
                     <span>Check here to indicate that you have read agree with the terms and conditions of use of this data described <a href="../CSVSTermsAndConditions.pdf" target="_blank">here</a>.</span>
                 </label>
                 <br/>
-                <div class="horizontal layout center end-justified">
-                    <div id="Sending_disease" hidden$="{{!sending}}">
-                        <i class="fa fa-circle-o-notch fa-spin"></i> Sending...
+                <div>
+                    <div class="version_file"> <label class="stv">Version: {{version_file}}</label></div>
+                    <div class="horizontal layout center end-justified " >
+                        <div id="Sending_disease" hidden$="{{!sending}}">
+                            <i class="fa fa-circle-o-notch fa-spin"></i> Sending...
+                        </div>
+                        <div id="message_donwload" class="ok">{{message_donwload}} &nbsp;</div>
+                        <div class="stv-btn stv-btn-shdw stv-btn-big" on-click="email_disease_file">&nbsp; Download</div>
                     </div>
-                    <div id="message_donwload" class="ok">{{message_donwload}} &nbsp;</div>
-                    <div class="stv-btn stv-btn-shdw stv-btn-big" on-click="email_disease_file">&nbsp; Download</div>
                 </div>
             </div>
         </div>
@@ -212,7 +219,14 @@
             message_donwload:{
                 type: String,
                 value: ""
+            },
+            version_file:{
+                type: String,
+                value: ""
             }
+        },
+        ready:function(){
+          this.version_file = window.VERSION_FILE;
         },
         email_disease_file: function () {
             var me = this;
@@ -248,7 +262,7 @@
                 // Downloads
                 me.sending = true;
                 var disease = $('[name="fileDownload"]:checked').val();
-                var url = window.CSVS_DOWNLOAD + disease || ""; // window.CSVS_DOWNLOAD + disease;
+                var url = window.CSVS_HOST + "/download/" +  disease || "";
 
                 var text = ' Name: ' + me.$.name_downloads.value + '<br/>' +
                     ' Affiliation: ' + me.$.affiliation_downloads.value + '<br/>' +
