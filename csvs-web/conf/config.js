@@ -1,8 +1,7 @@
 //CSVS_HOST = "http://test.babelomics.org/csvs_1.1.1/rest";
 //CSVS_HOST = "http://ws2.babelomics.org/csvs/rest";
 //CSVS_HOST = "http://csvs-dev.clinbioinfosspa.es:8080/csvs/rest";
-//CSVS_HOST = "http://csvs.clinbioinfosspa.es:8080/csvs/rest";
-CSVS_HOST = "http://localhost:8080/csvs/rest";
+CSVS_HOST = "http://csvs.clinbioinfosspa.es:8080/csvs/rest";
 CELLBASE_VERSION = "v4";
 //CELLBASE_HOST = "http://bioinfo.hpc.cam.ac.uk/cellbase";
 //CELLBASE_HOST = "http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0";
@@ -17,7 +16,7 @@ STV_APP="CSVS";
 VERSION_FILE = "28/11/2017";
 
 // Mail
-URL_MAIL='http://localhost:8081/babemailer';
+URL_MAIL='http://babemailer.clinbioinfosspa.es:8081/babemailer';
 FROM_EMAIL='';
 TO_EMAIL='csvs';
 HOST='localhost';
