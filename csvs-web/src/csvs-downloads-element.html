@@ -177,14 +177,14 @@
                 <br/>
                 <label class="stv-control">
                     <input type="checkbox" id="conditions">
-                    <span>Check here to indicate that you have read agree with the terms and conditions of use of this data described <a href="downloads/CSVSTermsAndConditions.pdf" target="_blank">here</a>.</span>
+                    <span>Check here to indicate that you have read agree with the terms and conditions of use of this data described <a href="/downloads/CSVSTermsAndConditions.pdf" target="_blank">here</a>.</span>
                 </label>
                 <br/>
                 <div>
                     <div class="version_file"> <label class="stv">Version: {{version_file}}</label></div>
                     <div class="horizontal layout center end-justified " >
                         <div id="Sending_disease" hidden$="{{!sending}}">
-                            <i class="fa fa-circle-o-notch fa-spin"></i> Sending...
+                            <i class="fa fa-circle-o-notch fa-spin"></i> Downloading ...
                         </div>
                         <div id="message_donwload" class="ok">{{message_donwload}} &nbsp;</div>
                         <div class="stv-btn stv-btn-shdw stv-btn-big" on-click="email_disease_file">&nbsp; Download</div>
@@ -289,22 +289,41 @@
                     crossDomain: true,
                     success: function (data) {
                         if (data) {
-                            if (data["error"] == undefined) {
-                                // Download data
-                                var blob = new Blob([data], {type: 'application/csv'});
+                            var dataJSON;
+                            if (/^{"data":{/.test(data)) {
+                                dataJSON = JSON.parse(data);
+                            }
+
+                            // Download datas from file
+                            if (dataJSON == undefined) {
                                 var link = document.createElement('a');
+                                var blob = new Blob([data], {type: 'application/csv'});
                                 link.href = window.URL.createObjectURL(blob);
                                 link.download = $('[name="fileDownload"]:checked').val() + ".csv";
                                 link.click();
 
-                                // Show message
                                 me.sending = false;
                                 me.message_donwload = 'Download done!';
                                 document.getElementById("message_donwload").style = "color:green";
                             } else {
-                                me.sending = false;
-                                new StvDialog().alert('There has been a problem with the server, try again later');
-                                console.log("CSVS: (File Download)  " + data.error);
+                                // Donwload  url
+                                if (dataJSON['data']['url'] != undefined) {
+                                  //  window.open('/downloads/' + dataJSON["data"]["url"], "_blank");
+
+                                    var link = document.createElement('a');
+                                    link.href = '/downloads/' + dataJSON["data"]["url"];
+                                    link.target = "_blank";
+                                    link.click();
+
+                                    me.sending = false;
+                                    me.message_donwload = 'Download done!';
+                                    document.getElementById("message_donwload").style = "color:green";
+                                } else {
+                                    // Error to download
+                                    me.sending = false;
+                                    new StvDialog().alert('There has been a problem with the server, try again later');
+                                    console.log("CSVS: Problems with file download");
+                                }
                             }
                         } else {
                             me.sending = false;
@@ -313,23 +332,6 @@
                         }
                     },
                     error: function (jqXHR, exception) {
-
-                        var msg = '';
-                        if (jqXHR.status === 0) {
-                            msg = 'Not connect.\n Verify Network.';
-                        } else if (jqXHR.status == 404) {
-                            msg = 'Requested page not found. [404]';
-                        } else if (jqXHR.status == 500) {
-                            msg = 'Internal Server Error [500].';
-                        } else if (exception === 'parsererror') {
-                            msg = 'Requested JSON parse failed.';
-                        } else if (exception === 'timeout') {
-                            msg = 'Time out error.';
-                        } else if (exception === 'abort') {
-                            msg = 'Ajax request aborted.';
-                        } else {
-                            msg = 'Uncaught Error.\n' + jqXHR.responseText;
-                        }
                         me.sending = false;
                         new StvDialog().alert('There has been a problem with the server, try again later');
                         console.log('CSVS: Fail download ' + disease + ' from ' + url + '   ');

@@ -96,31 +96,45 @@ public class CSVSDownloadRestService {
 
                     logger.info("CSVS: Download file: " + DOWNLOAD_PATH + disease + EXTENSION_DEFAULT);
 
-                    File file = new File(DOWNLOAD_PATH + disease + EXTENSION_DEFAULT);
-                    if (file.exists()) {
-                        return Response.ok(file, MediaType.APPLICATION_OCTET_STREAM)
-                                .status(200)
+                    // Send url
+                    if ("".equals(DOWNLOAD_PATH)) {
+                        return Response.ok()
+                                .status(200).entity("{\"data\":{\"url\":\"" + disease + EXTENSION_DEFAULT + "\"}}")
                                 .header("Access-Control-Allow-Origin", "*")
-                                .header("Access-Control-Allow-Credentials", false)
-                                .header("Access-Control-Max-Age", "86400") // 24 hours
-                                .header("Access-Control-Allow-Headers", "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept,  Authorization, Access-Control-Allow-Origin")
-                                .header("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"")
                                 .build();
                     } else {
-                        return Response.status(200).entity("data:{error:File not exist}").build();
-
+                        // Send file
+                        File file = new File(DOWNLOAD_PATH + disease + EXTENSION_DEFAULT);
+                        if (file.exists()) {
+                            return Response.ok(file, MediaType.APPLICATION_OCTET_STREAM)
+                                    .status(200)
+                                    .header("Access-Control-Allow-Origin", "*")
+                                    .header("Access-Control-Allow-Credentials", false)
+                                    .header("Access-Control-Max-Age", "86400") // 24 hours
+                                    .header("Access-Control-Allow-Headers", "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept,  Authorization, Access-Control-Allow-Origin")
+                                    .header("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"")
+                                    .build();
+                        } else {
+                            return Response.status(200).entity("{\"data\":{\"error\":\"File not exist}\"}")
+                                    .header("Access-Control-Allow-Origin", "*")
+                                    .build();
+                        }
                     }
                 } else {
-                    return Response.status(200).entity("data:{error: Problem with download}").build();
+                    return Response.status(200)
+                            .header("Access-Control-Allow-Origin", "*")
+                            .entity("{\"data\":{\"error\": \"Problem with download\"}}").build();
                 }
             } else {
-                return Response.status(200).entity("data:{error:Disease not exist}").build();
+                return Response.status(200)
+                        .header("Access-Control-Allow-Origin", "*")
+                        .entity("{\"data\":{\"error\":'Disease not exist\"}}").build();
             }
         } // end try
         catch (Exception e) {
             System.err.println("Error: " + e);
             logger.error("CSVS: " + e);
-            return Response.status(200).entity("data:{error: Problem with download}").build();
+            return Response.status(200).entity("{\"data\":{\"error\": \"Problem with download\"}}").build();
         }
     }
 
@@ -134,20 +148,31 @@ public class CSVSDownloadRestService {
 
             if (sendMail(params)) {
 
-                File file = new File(DOWNLOAD_PATH + disease + EXTENSION_DEFAULT);
+                logger.info("CSVS: Download file: " + DOWNLOAD_PATH + disease + EXTENSION_DEFAULT);
 
-                if (file.exists()) {
-                    logger.info("File" + file.getName());
-
-                    return Response.ok(file, MediaType.APPLICATION_OCTET_STREAM)
-                            .header("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"")
+                // Send url
+                if ("".equals(DOWNLOAD_PATH)) {
+                    return Response.ok()
+                            .status(200).entity("{\"data\":{\"url\":\"" + disease + EXTENSION_DEFAULT + "\"}}")
                             .header("Access-Control-Allow-Origin", "*")
-                            .header("Access-Control-Allow-Headers", "x-requested-with, content-type")
-                            .header("Access-Control-Allow-Credentials", false)
                             .build();
                 } else {
-                    return Response.status(200).entity("{\"data\":{\"error\":\"File not exist\"}}").build();
+                    File file = new File(DOWNLOAD_PATH + disease + EXTENSION_DEFAULT);
+
+                    if (file.exists()) {
+                        logger.info("File" + file.getName());
+
+                        return Response.ok(file, MediaType.APPLICATION_OCTET_STREAM)
+                                .header("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"")
+                                .header("Access-Control-Allow-Origin", "*")
+                                .header("Access-Control-Allow-Headers", "x-requested-with, content-type")
+                                .header("Access-Control-Allow-Credentials", false)
+                                .build();
+                    } else {
+                        return Response.status(200).entity("{\"data\":{\"error\":\"File not exist\"}}").build();
+                    }
                 }
+
             } else {
                 return Response.status(200).entity("{\"data\":{\"error\":\"Problem with download\"}}").build();
             }
@@ -167,7 +192,7 @@ public class CSVSDownloadRestService {
     private boolean sendMail(String urlParameters) {
 
         try {
-            System.out.print("CSVS: "+ URL_MAIL_DEFAULT);
+            System.out.print("CSVS: " + URL_MAIL_DEFAULT);
 
             URL myURL = new URL(URL_MAIL_DEFAULT);
             logger.info("CSVS: URL " + myURL);
