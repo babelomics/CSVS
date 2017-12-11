@@ -66,7 +66,7 @@
                 </label>
                 <label class="stv-control">
                     <input type="radio" id="MGP" name="fileDownload" on-change="changeRadio" value="MGP">
-                     <span>MGP controls</span>
+                    <span>MGP controls (VCF available at EGA under request <a href="https://www.ebi.ac.uk/ega/dacs/EGAC00001000222" target="_blank">https://www.ebi.ac.uk/ega/dacs/EGAC00001000222</a>)</span>
                 </label>
                 <label class="stv-control">
                     <input type="radio" id="MGPandIBS" name="fileDownload" on-change="changeRadio" value="MGPandIBS">
@@ -89,7 +89,7 @@
                     <span>All individual except ICD10 group IV: Endocrine, nutritional and metabolic diseases</span>
                 </label>
                 <label class="stv-control">
-                    <input type="radio" id="all_less_group5" name="fileDownload" on-change="changeRadio" value="all_less_group5">
+                    <input type="radio" id="all_less_group5and25" name="fileDownload" on-change="changeRadio" value="all_less_group5and25">
                     <span>All individual except ICD10 group V: Mental and behavioural disorders</span>
                 </label>
                 <label class="stv-control">
@@ -297,10 +297,13 @@
                             // Download datas from file
                             if (dataJSON == undefined) {
                                 var link = document.createElement('a');
+                                link.name="tmpDownload";
+                                document.body.appendChild(link);
                                 var blob = new Blob([data], {type: 'application/csv'});
                                 link.href = window.URL.createObjectURL(blob);
                                 link.download = $('[name="fileDownload"]:checked').val() + ".csv";
                                 link.click();
+                                document.body.removeChild(link);
 
                                 me.sending = false;
                                 me.message_donwload = 'Download done!';
@@ -308,12 +311,7 @@
                             } else {
                                 // Donwload  url
                                 if (dataJSON['data']['url'] != undefined) {
-                                  //  window.open('/downloads/' + dataJSON["data"]["url"], "_blank");
-
-                                    var link = document.createElement('a');
-                                    link.href = '/downloads/' + dataJSON["data"]["url"];
-                                    link.target = "_blank";
-                                    link.click();
+                                    window.open('/downloads/' + dataJSON["data"]["url"], "_blank");
 
                                     me.sending = false;
                                     me.message_donwload = 'Download done!';

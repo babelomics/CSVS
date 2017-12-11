@@ -52,7 +52,7 @@ public class CSVSDownloadRestService {
         jsonObjectWriter = jsonObjectMapper.writer();
 
         DOWNLOAD_PATH = properties.getProperty("CSVS.DOWNLOAD_PATH", "");
-        URL_MAIL_DEFAULT = properties.getProperty("CSVS.URL_MAIL_DEFAULT", "http://localhost:8081/babemailer");
+        URL_MAIL_DEFAULT = properties.getProperty("CSVS.URL_MAIL_DEFAULT", "http://localhost:8081");
     }
 
 
@@ -115,7 +115,7 @@ public class CSVSDownloadRestService {
                                     .header("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"")
                                     .build();
                         } else {
-                            return Response.status(200).entity("{\"data\":{\"error\":\"File not exist}\"}")
+                            return Response.status(200).entity("{\"data\":{\"error\":\"File not exist\"}}")
                                     .header("Access-Control-Allow-Origin", "*")
                                     .build();
                         }

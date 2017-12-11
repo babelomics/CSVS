@@ -33,7 +33,7 @@
 <link rel="import" href="src/csvs-annotation-form.html">
 <link rel="import" href="src/csvs-annotation-result.html">
 <link rel="import" href="src/csvs-saturation-element.html">
-
+<link rel="import" href="src/csvs-how-to-cite.html">
 
 <dom-module id="csvs-element">
     <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
@@ -139,6 +139,8 @@
                 <stv-job-browser class="container" id="jobBrowser" on-jobselect="handleJobSelect" bioformats="{{bioformats}}" allowed-tools="{{allowedTools}}" user-data="{{userData}}" on-job-launched="handleJobLaunched" on-job-relaunched="handleJobRelaunched"></stv-job-browser>
             </stv-panel>
             <csvs-feedback id="feedback" hidden on-feedbackend="handleFeedback"></csvs-feedback>
+
+            <csvs-how-to-cite id="howToCite" hidden on-how-to-cite-end="handleHowToCite"></csvs-how-to-cite>
         </div>
 
         <stv-header id="stvHeader" user-data="{{userData}}" on-login="handleLogin" on-logout="handleLogout" selected-option="{{selectedOption}}" hide-jbos hide-browse isLogged="{{isLogged}}" hide-login hide
@@ -202,9 +204,9 @@
                     <div on-mousedown="handleFeedback">
                         <li><i class="fa fa-envelope-o" aria-hidden="true"></i> &nbsp; Send an email</li>
                     </div>
-                    <a href="https://github.com/babelomics/csvs/issues" target="_blank">
-                        <li><i class="fa fa-exclamation-circle" aria-hidden="true"></i> &nbsp; Go to git issue</li>
-                    </a>
+                    <div on-mousedown="handleHowToCite">
+                        <li><i class="fa fa-quote-right" aria-hidden="true"></i> &nbsp; How to Cite</li>
+                    </div>
                 </ul>
             </stv-dropdown>
         </stv-header>
@@ -256,7 +258,11 @@
             saturation: {
                 type: Boolean,
                 value: false
-            }
+            },
+            howToCite:{
+                type:Boolean,
+                value: false
+            },
         },
         ready: function() {
             this.isLogged = this.$.stvHeader.isLogged;
@@ -379,6 +385,9 @@
         },
         handleFeedback: function() {
             this.$.feedback.hidden = !this.$.feedback.hidden;
+        },
+        handleHowToCite: function() {
+            this.$.howToCite.hidden = !this.$.howToCite.hidden;
         },
         selectedOptionChanged: function() {
             if (this.selectedOption == "saturation") {

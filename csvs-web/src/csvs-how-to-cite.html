@@ -1,0 +1,77 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/stevia-elements/src/stv-dialog/stv-dialog.html">
+
+<dom-module id="csvs-how-to-cite">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+         :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+        }
+         #howToCitePanel {
+             width: 500px;
+             height: 460px;
+             min-width: 500px;
+             min-height: 460px;
+         }
+
+         #howToCiteContent {
+             padding: 20px;
+             overflow-y: auto;
+             text-align: justify;
+             font-size: 14px;
+         }
+         .ahowToCiteContent{
+            text-decoration: underline;
+        }
+    </style>
+    <template>
+        <stv-panel id="howToCitePanel" modal fixed closable on-close="handleHowToCite">
+            <div class="header">
+                <i class="fa fa-quote-right"></i> How to Cite
+            </div>
+            <div id="howToCiteContent" class="container flex">
+                <h1>How to cite:</h1>
+                <p>By downloading data from the CSVS database you accept the obligation of
+                    acknowledge its use in any publication, presentation, conference, poster or
+                    any public event in which you present results obtained in any way using the
+                    data downloaded.</p>
+                <p>To acknowledge the use of CSVS data use a sentence similar to this one:
+                    “These results were obtained using CSVS data (<a href="http://csvs.babelomics.org/" class="ahowToCiteContent" target="_blank">http://csvs.babelomics.org/</a>)
+                      and in any publication you must cite the reference:</p>
+                    <p>Dopazo J, Amadoz A, Bleda M, Garcia-Alonso L, Alemán A, García-García F,
+                    Rodriguez JA, Daub JT, Muntané G, Rueda A, Vela-Boza A, López-Domingo FJ,
+                    Florido JP, Arce P, Ruiz-Ferrer M, Méndez-Vidal C, Arnold TE, Spleiss O,
+                    Alvarez-Tejado M, Navarro A, Bhattacharya SS, Borrego S, Santoyo-López J,
+                    Antiñolo G. 267 Spanish Exomes Reveal Population-Specific Differences in
+                        Disease-Related Genetic Variation. Mol Biol Evol. 2016 May;33(5):1205-18.</p>
+                <br/>
+            </div>
+        </stv-panel>
+    </template>
+
+    <script>
+        Polymer({
+            is: "csvs-how-to-cite",
+            properties: {
+                hidden: {
+                    type: Boolean,
+                    value: false,
+                    reflectToAttribute: true,
+                    observer: 'hiddenChanged'
+                }
+            },
+
+            hiddenChanged: function() {
+                this.$.howToCitePanel._center();
+            },
+
+            handleHowToCite: function (e) {
+                this.fire('how-to-cite-end');
+                this.$.howToCitePanel.hidden = false;
+                this.$.howToCitePanel.style = "top: 60px;left: 500px";
+            }
+        })
+    </script>
+</dom-module>
