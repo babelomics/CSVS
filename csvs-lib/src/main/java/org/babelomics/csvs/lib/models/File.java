@@ -5,13 +5,19 @@ import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Id;
 import org.mongodb.morphia.annotations.Property;
 import org.mongodb.morphia.annotations.Reference;
+import org.mongodb.morphia.annotations.Index;
+import org.mongodb.morphia.annotations.Indexes;
+import org.mongodb.morphia.annotations.Embedded;
 
+import java.util.Date;
 /**
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
  */
 
 @Entity(noClassnameStored = true)
-//@Indexes(@Index(name = "index_file_sum", value = "sum", unique = true))
+@Indexes({
+        @Index(name = "index_file_d_t", value = "d,t")
+})
 public class File {
 
     @Id
@@ -27,11 +33,24 @@ public class File {
 
     @Property("dgid")
     private int diseaseGroupId;
+
     @Property("tid")
     private int technologyId;
 
     @Property("s")
     private int samples;
+
+    @Property("n")
+    private String nameFile;
+
+    @Property("pr")
+    private String personReference;
+
+    @Property("da")
+    private Date date;
+
+    @Embedded("p")
+    private Panel panel;
 
     public File() {
         this.samples = 0;
@@ -50,6 +69,18 @@ public class File {
 
         this.diseaseGroupId = this.disease.getGroupId();
         this.technologyId = this.technology.getTechnologyId();
+    }
+
+    public File(String sum, DiseaseGroup disease, Technology technology,  Panel panel ) {
+        this();
+        this.sum = sum;
+        this.disease = disease;
+        this.technology = technology;
+
+        this.diseaseGroupId = this.disease.getGroupId();
+        this.technologyId = this.technology.getTechnologyId();
+
+        this.panel =  panel;
     }
 
     public String getSum() {
@@ -88,4 +119,35 @@ public class File {
         this.samples = samples;
     }
 
+    public String getNameFile() {
+        return nameFile;
+    }
+
+    public void setNameFile(String nameFile) {
+        this.nameFile = nameFile;
+    }
+
+    public String getPersonReference() {
+        return personReference;
+    }
+
+    public void setPersonReference(String personReference) {
+        this.personReference = personReference;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public Panel getPanel() {
+        return panel;
+    }
+
+    public void setPanel(Panel panel) {
+        this.panel = panel;
+    }
 }

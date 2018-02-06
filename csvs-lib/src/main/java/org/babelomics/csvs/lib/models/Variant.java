@@ -6,6 +6,7 @@ import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
@@ -41,11 +42,18 @@ public class Variant {
     @Embedded("d")
     private List<DiseaseCount> diseases;
 
+    //    @JsonIgnore
+    @Embedded("nd")
+    private List<DiseaseSum> noDiseases;
+
     @Transient
     private DiseaseCount stats;
 
     @Property("an")
     private Map<String, Object> annots;
+
+    @Reference("f")
+    private List<File> files;
 
     public Variant() {
         this.attr = new HashMap<>();
@@ -152,6 +160,119 @@ public class Variant {
 
     public void deleteDiseaseCount(DiseaseCount dc) {
         this.diseases.remove(dc);
+    }
+
+    public List<DiseaseSum> getNoDiseases() {
+        return noDiseases;
+    }
+
+
+    public void addFile(File f) {
+        if(this.files == null)
+            this.files = new ArrayList<>();
+        this.files.add(f);
+    }
+
+    public void deleteFile(File searchFile){
+        if (this.files != null){
+            this.files.removeIf(f -> f.getId().equals(searchFile.getId()));
+        }
+    }
+
+    private DiseaseCount searchDC(DiseaseCount diseaseCountSearch){
+        if (this.diseases != null) {
+
+        List<DiseaseCount> filtered = this.diseases.stream()
+                .filter(dc -> dc.getDiseaseGroupId() == diseaseCountSearch.getDiseaseGroupId() && dc.getTechnologyId() == diseaseCountSearch.getTechnologyId()).collect(Collectors.toList());
+
+        if( filtered.size() > 0)
+            return filtered.get(0);
+        }
+         return null;
+    }
+
+    private DiseaseSum searchDS(DiseaseSum diseaseSumSearch){
+        if (this.noDiseases != null) {
+
+            List<DiseaseSum> filtered = this.noDiseases.stream()
+                    .filter(ds -> ds.getDiseaseGroupId() == diseaseSumSearch.getDiseaseGroupId() && ds.getTechnologyId() == diseaseSumSearch.getTechnologyId()).collect(Collectors.toList());
+
+            if( filtered.size() > 0)
+                return filtered.get(0);
+        }
+         return null;
+    }
+
+
+    private void addNoDiseases(DiseaseSum ds){
+        if (this.noDiseases == null)
+            this.noDiseases = new ArrayList<>();
+
+        if (ds.getSumSampleRegions() == 0)
+            this.noDiseases.remove(ds);
+        else
+            this.noDiseases.add(ds);
+
+    }
+
+    /**
+     * Add a disease sum. If samples != 0 , add in disease info.
+     * @param ds
+     */
+    public void setSumSampleRegion(DiseaseSum ds) {
+        DiseaseCount diseaseCount = searchDC(new DiseaseCount(ds.getDiseaseGroupId(), ds.getTechnologyId()));
+        DiseaseSum diseaseSum;
+
+        if (diseaseCount == null) {
+            diseaseSum = searchDS(ds);
+            if (diseaseSum != null)
+                this.noDiseases.remove(diseaseSum);
+            this.addNoDiseases(ds);
+
+        } else {
+            diseaseCount.setSumSampleRegions(ds.getSumSampleRegions());
+
+            // Delete
+            if (this.noDiseases != null) {
+                diseaseSum = searchDS(ds);
+                if (diseaseSum != null) {
+                    System.out.println("Delete " + diseaseSum.getDiseaseGroupId() + "  " + diseaseSum.getTechnologyId());
+
+                    this.noDiseases.remove(diseaseSum);
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Decrease samples.
+     * @param samples Num samples to delete
+     * @param dg Disease
+     * @param t Thechnology
+     * @param inFileWithRegions Boolean check if this variant exists in other file with regions
+     */
+    public void decSumSampleRegion(int samples , DiseaseGroup dg, Technology t, boolean inFileWithRegions) {
+        DiseaseCount diseaseCount = searchDC(new DiseaseCount(dg.getGroupId(), t.getTechnologyId()));
+        DiseaseSum diseaseSum = searchDS(new DiseaseSum(dg.getGroupId(), t.getTechnologyId()));
+       
+        if (diseaseCount != null) {
+            if(diseaseCount.getSumSampleRegions() - samples == 0 || !inFileWithRegions)
+                this.diseases.remove(diseaseCount);
+            else {
+                diseaseCount.setSumSampleRegions(diseaseCount.getSumSampleRegions() - samples);
+                java.util.function.UnaryOperator<DiseaseCount> unaryOpt = dc -> diseaseCount;
+                this.diseases.replaceAll(unaryOpt);
+            }
+        } else if(diseaseSum != null){
+            if(diseaseSum.getSumSampleRegions() - samples == 0 || !inFileWithRegions)
+                this.noDiseases.remove(diseaseSum);
+            else {
+                diseaseSum.setSumSampleRegions(diseaseSum.getSumSampleRegions() - samples);
+                java.util.function.UnaryOperator<DiseaseSum> unaryOpt = dc -> diseaseSum;
+                this.noDiseases.replaceAll(unaryOpt);
+            }
+        }
     }
 
     @Deprecated

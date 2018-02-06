@@ -38,7 +38,18 @@ public class DiseaseCount {
     @Property("am")
     private float altFreq;
 
+    /**
+     * Sum all sample file for the disease and technology if exist in a region.
+     */
+    @Property("sr")
+    private int sumSampleRegions;
+
     public DiseaseCount() {
+    }
+
+    public DiseaseCount(int diseaseGroupId, int technologyId) {
+        this.diseaseGroupId = diseaseGroupId;
+        this.technologyId = technologyId;
     }
 
     public DiseaseCount(DiseaseGroup diseaseGroup, Technology technology, int gt00, int gt01, int gt11, int gtmissing) {
@@ -166,12 +177,24 @@ public class DiseaseCount {
         this.technology = technology;
     }
 
+    public int getTechnologyId() {
+        return technologyId;
+    }
+
     public int getDiseaseGroupId() {
         return diseaseGroupId;
     }
 
     public void setDiseaseGroupId(int diseaseGroupId) {
         this.diseaseGroupId = diseaseGroupId;
+    }
+
+    public int getSumSampleRegions() {
+        return sumSampleRegions;
+    }
+
+    public void setSumSampleRegions(int sumSampleRegions) {
+        this.sumSampleRegions = sumSampleRegions;
     }
 
     @PrePersist
@@ -190,6 +213,17 @@ public class DiseaseCount {
 
 
     @Override
+    public boolean equals(Object object) {
+        if (object != null && object instanceof DiseaseCount) {
+            DiseaseCount dc = (DiseaseCount) object;
+             if (this.getDiseaseGroupId() == dc.getDiseaseGroupId() && this.getTechnologyId() == dc.getTechnologyId())
+                 return true;
+        }
+        return false;
+    }
+
+
+    @Override
     public String toString() {
         return "DiseaseCount{" +
                 "id=" + id +
@@ -202,6 +236,7 @@ public class DiseaseCount {
                 ", maf=" + maf +
                 ", refFreq=" + refFreq +
                 ", altFreq=" + altFreq +
+                ", sumSampleRegions=" + sumSampleRegions +
                 '}';
     }
 }

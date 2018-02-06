@@ -82,10 +82,14 @@ public class CSVSVariantCountsMongoWriter implements DataWriter<Variant> {
                 .get();
 
         if (v == null) {
+            // Add file
+            elem.addFile(this.file);
             this.datastore.save(elem);
             this.variantsD++;
             this.variantsT++;
         } else {
+            // Add file
+            v.addFile(this.file);
 
             if (v.getIds() == null || v.getIds().isEmpty()) {
                 v.setIds(elem.getIds());

@@ -68,6 +68,9 @@ public class CSVSMain {
                 case "annot-file":
                     command = parser.getAnnotFileCommand();
                     break;
+                case "recalculate":
+                    command = parser.getRecalculateCommand();
+                    break;
 
                 default:
                     System.out.println("Command not implemented!!");
@@ -108,7 +111,23 @@ public class CSVSMain {
 
             Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName);
 
-            CSVSUtil.loadVariants(inputFile, diseaseGroupId, technologyId, datastore);
+            Path panelFile = null;
+            if (!c.panelFile.isEmpty())
+                panelFile = Paths.get(c.panelFile);
+
+            String personReference = c.personReference;
+
+            CSVSUtil.loadVariants(inputFile, diseaseGroupId, technologyId, datastore, panelFile, personReference);
+
+            if(panelFile != null && c.recalculate) {
+                List<Integer>  diseases = new ArrayList<>();
+                diseases.add(diseaseGroupId);
+                List<Integer> technologies = new ArrayList<>();
+                technologies.add(technologyId);
+		
+                CSVSUtil.recalculate(diseases, technologies, c.panelFile ,datastore);
+            }
+
         } else if (command instanceof OptionsParser.CommandUnload) {
             OptionsParser.CommandUnload c = (OptionsParser.CommandUnload) command;
 
@@ -297,6 +316,13 @@ public class CSVSMain {
             Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName);
 
             CSVSUtil.annotFile(input, output, c.diseaseId, c.technologyId, datastore);
+
+        } else if (command instanceof OptionsParser.CommandRecalculate) {
+            OptionsParser.CommandRecalculate c = (OptionsParser.CommandRecalculate) command;
+
+            Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName);
+
+            CSVSUtil.recalculate( c.diseaseId, c.technologyId, c.panelName, datastore);
 
         } else {
             System.err.println("Comand not found");

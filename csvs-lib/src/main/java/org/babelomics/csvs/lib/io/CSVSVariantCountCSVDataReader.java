@@ -3,6 +3,7 @@ package org.babelomics.csvs.lib.io;
 import org.babelomics.csvs.lib.models.DiseaseGroup;
 import org.babelomics.csvs.lib.models.Technology;
 import org.babelomics.csvs.lib.models.Variant;
+import org.babelomics.csvs.lib.models.Panel;
 import org.opencb.commons.io.DataReader;
 
 import java.io.BufferedReader;
@@ -23,11 +24,19 @@ public class CSVSVariantCountCSVDataReader implements DataReader<Variant> {
     private BufferedReader reader;
     private DiseaseGroup diseaseGroup;
     private Technology technology;
+    private Panel panel;
 
     public CSVSVariantCountCSVDataReader(String filePath, DiseaseGroup dg, Technology t) {
         this.filePath = filePath;
         this.diseaseGroup = dg;
         this.technology = t;
+    }
+
+    public CSVSVariantCountCSVDataReader(String filePath, DiseaseGroup dg, Technology t, Panel p) {
+        this.filePath = filePath;
+        this.diseaseGroup = dg;
+        this.technology = t;
+        this.panel = p;
     }
 
     @Override
@@ -88,14 +97,22 @@ public class CSVSVariantCountCSVDataReader implements DataReader<Variant> {
                 if (!line.trim().equals("")) {
 
                     String[] splits = line.split("\t");
+		   
+                    // Replace CHR
+                    String c = splits[0].toUpperCase().replace("CHR","");
 
-                    Variant v = new Variant(splits[0], Integer.parseInt(splits[1]), splits[2], splits[3]);
+                    Variant v = new Variant(c, Integer.parseInt(splits[1]), splits[2], splits[3]);
                     if (!splits[4].isEmpty() && !splits[4].equals(".")) {
                         v.setIds(splits[4]);
                     }
 
-                    v.addGenotypesToDiseaseAndTechnology(this.diseaseGroup,this.technology, Integer.parseInt(splits[5]), Integer.parseInt(splits[6]), Integer.parseInt(splits[7]), Integer.parseInt(splits[8]));
+                    // Add variants if it is in list de regions of file
+                    if (panel != null  &&  !panel.contains(v)) {
+                        System.out.println("Variant not in list regions: " + line);
+                        continue;
+                    }
 
+                    v.addGenotypesToDiseaseAndTechnology(this.diseaseGroup, this.technology, Integer.parseInt(splits[5]), Integer.parseInt(splits[6]), Integer.parseInt(splits[7]), Integer.parseInt(splits[8]));
                     variants.add(v);
                     return variants;
                 }

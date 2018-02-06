@@ -20,6 +20,7 @@ import org.opencb.biodata.models.feature.Region;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
@@ -69,15 +70,30 @@ public class CSVSQueryManagerTest {
 
         URL url_d1_t1 = CSVSQueryManagerTest.class.getClassLoader().getResource("d1_t1.csv");
         File file_d1_t1 = new File(url_d1_t1.toURI());
-        CSVSUtil.loadVariants(file_d1_t1.toPath(), 1, 1, datastore);
+        CSVSUtil.loadVariants(file_d1_t1.toPath(), 1, 1, datastore, null,"");
 
         URL url_d1_t2 = CSVSQueryManagerTest.class.getClassLoader().getResource("d1_t2.csv");
         File file_d1_t2 = new File(url_d1_t2.toURI());
-        CSVSUtil.loadVariants(file_d1_t2.toPath(), 1, 2, datastore);
+        CSVSUtil.loadVariants(file_d1_t2.toPath(), 1, 2, datastore, null,"");
 
         URL url_d2_t1 = CSVSQueryManagerTest.class.getClassLoader().getResource("d2_t1.csv");
         File file_d2_t1 = new File(url_d2_t1.toURI());
-        CSVSUtil.loadVariants(file_d2_t1.toPath(), 2, 1, datastore);
+        CSVSUtil.loadVariants(file_d2_t1.toPath(), 2, 1, datastore, null,"");
+
+        URL url_d2_t2 = CSVSQueryManagerTest.class.getClassLoader().getResource("d2_t2.csv");
+        File file_d2_t2 = new File(url_d2_t2.toURI());
+
+        URL url_fileRegions = CSVSQueryManagerTest.class.getClassLoader().getResource("TruSight_One_v1.1.bed");
+        File file_regions = new File(url_fileRegions.toURI());
+        //CSVSUtil.loadVariants(file_d2_t2.toPath(), 2, 2, datastore, null, "Nombre Apellido1 Apellido2");
+        CSVSUtil.loadVariants(file_d2_t2.toPath(), 2, 2, datastore, file_regions.toPath(), "Nombre Apellido1 Apellido2");
+
+        List<Integer>  diseases = new ArrayList<>();
+        diseases.add(2);
+        List<Integer> technologies = new ArrayList<>();
+        diseases.add(2);
+        CSVSUtil.recalculate(diseases, technologies, "TruSight_One_v1.1.bed", datastore);
+
     }
 
     @AfterClass
@@ -106,7 +122,7 @@ public class CSVSQueryManagerTest {
         assertEquals(d1.getVariants(), 3);
 
         DiseaseGroup d2 = qm.getDiseaseById(2);
-        assertEquals(d2.getSamples(), 4);
+        assertEquals(d2.getSamples(), 14);
         assertEquals(d2.getVariants(), 6);
 
         Technology t1 = qm.getTechnologyById(1);
@@ -120,7 +136,7 @@ public class CSVSQueryManagerTest {
 
         List<DiseaseGroup> list = qm.getAllDiseaseGroups();
 
-        assertEquals(list.size(), 18);
+        assertEquals(list.size(), 22);
 
     }
 
@@ -186,6 +202,7 @@ public class CSVSQueryManagerTest {
         Variant v = variants.get(0);
 
         DiseaseCount dc1 = v.getStats();
+        System.out.println("CSVS (testGetVariantsByRegionList): dc1 = " + dc1);
         assertEquals(dc1.getGt00(), 2);
         assertEquals(dc1.getGt01(), 2);
         assertEquals(dc1.getGt11(), 0);
@@ -199,6 +216,7 @@ public class CSVSQueryManagerTest {
         v = variants.get(0);
 
         DiseaseCount dc2 = v.getStats();
+        System.out.println("\"CSVS (testGetVariantsByRegionList): dc2 =" + dc2);
         assertEquals(dc2.getGt00(), 4);
         assertEquals(dc2.getGt01(), 4);
         assertEquals(dc2.getGt11(), 0);
@@ -216,6 +234,7 @@ public class CSVSQueryManagerTest {
         Variant v1 = qm.getVariant("1", 1, "A", "C", new ArrayList<>(), new ArrayList<>());
 
         DiseaseCount dc1 = v1.getStats();
+        System.out.println("CSVS (testGetVariant): dc1 = " + dc1);
         assertEquals(dc1.getGt00(), 7);
         assertEquals(dc1.getGt01(), 4);
         assertEquals(dc1.getGt11(), 0);
@@ -225,6 +244,7 @@ public class CSVSQueryManagerTest {
         Variant v2 = qm.getVariant("1", 1, "A", "C", d1, new ArrayList<>());
 
         DiseaseCount dc2 = v2.getStats();
+        System.out.println("CSVS (testGetVariant): dc2 = " + dc2);
         assertEquals(dc2.getGt00(), 5);
         assertEquals(dc2.getGt01(), 2);
         assertEquals(dc2.getGt11(), 0);
@@ -233,6 +253,7 @@ public class CSVSQueryManagerTest {
 
         Variant v3 = qm.getVariant("1", 1, "A", "C", d2, t1);
         DiseaseCount dc3 = v3.getStats();
+        System.out.println("CSVS (testGetVariant): dc3 = " + dc3);
         assertEquals(dc3.getGt00(), 2);
         assertEquals(dc3.getGt01(), 2);
         assertEquals(dc3.getGt11(), 0);
@@ -243,7 +264,7 @@ public class CSVSQueryManagerTest {
 
         Variant v5 = qm.getVariant("1", 2, "A", "C", new ArrayList<>(), t1);
         DiseaseCount dc5 = v5.getStats();
-        System.out.println("dc5 = " + dc5);
+        System.out.println("CSVS (testGetVariant): dc5 = " + dc5);
         assertEquals(dc5.getGt00(), 1);
         assertEquals(dc5.getGt01(), 4);
         assertEquals(dc5.getGt11(), 2);
