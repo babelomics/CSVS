@@ -52,9 +52,6 @@ public class Variant {
     @Property("an")
     private Map<String, Object> annots;
 
-    @Reference("f")
-    private List<File> files;
-
     public Variant() {
         this.attr = new HashMap<>();
         this.annots = new HashMap<>();
@@ -167,18 +164,6 @@ public class Variant {
     }
 
 
-    public void addFile(File f) {
-        if(this.files == null)
-            this.files = new ArrayList<>();
-        this.files.add(f);
-    }
-
-    public void deleteFile(File searchFile){
-        if (this.files != null){
-            this.files.removeIf(f -> f.getId().equals(searchFile.getId()));
-        }
-    }
-
     private DiseaseCount searchDC(DiseaseCount diseaseCountSearch){
         if (this.diseases != null) {
 
@@ -225,14 +210,18 @@ public class Variant {
 
         if (diseaseCount == null) {
             diseaseSum = searchDS(ds);
-            if (diseaseSum != null)
-                this.noDiseases.remove(diseaseSum);
-            this.addNoDiseases(ds);
-
+            if (diseaseSum != null) {
+                // Update
+                diseaseSum.setSumSampleRegions(ds.getSumSampleRegions());
+            } else {
+                // Add new
+                this.addNoDiseases(ds);
+            }
         } else {
+            // Add new
             diseaseCount.setSumSampleRegions(ds.getSumSampleRegions());
 
-            // Delete
+            // Delete NO disease
             if (this.noDiseases != null) {
                 diseaseSum = searchDS(ds);
                 if (diseaseSum != null) {
@@ -244,33 +233,40 @@ public class Variant {
         }
     }
 
+    public DiseaseCount setAndReturn (DiseaseCount dc, int sum){
+        dc.setSumSampleRegions(sum);
+        return dc;
+    }
+
+    public DiseaseSum setAndReturn (DiseaseSum ds, int sum){
+        ds.setSumSampleRegions(sum);
+        return ds;
+    }
 
     /**
      * Decrease samples.
      * @param samples Num samples to delete
      * @param dg Disease
      * @param t Thechnology
-     * @param inFileWithRegions Boolean check if this variant exists in other file with regions
+     * @param withRegions Boolean check if this variant exists in other file with regions
      */
-    public void decSumSampleRegion(int samples , DiseaseGroup dg, Technology t, boolean inFileWithRegions) {
+    public void decSumSampleRegion(int samples , DiseaseGroup dg, Technology t, boolean withRegions) {
         DiseaseCount diseaseCount = searchDC(new DiseaseCount(dg.getGroupId(), t.getTechnologyId()));
         DiseaseSum diseaseSum = searchDS(new DiseaseSum(dg.getGroupId(), t.getTechnologyId()));
        
         if (diseaseCount != null) {
-            if(diseaseCount.getSumSampleRegions() - samples == 0 || !inFileWithRegions)
+            if(diseaseCount.getSumSampleRegions() - samples == 0 || !withRegions)
                 this.diseases.remove(diseaseCount);
             else {
-                diseaseCount.setSumSampleRegions(diseaseCount.getSumSampleRegions() - samples);
-                java.util.function.UnaryOperator<DiseaseCount> unaryOpt = dc -> diseaseCount;
-                this.diseases.replaceAll(unaryOpt);
+                int sum = diseaseCount.getSumSampleRegions() - samples;
+                this.diseases.replaceAll(dc -> (dc.getDiseaseGroup().getGroupId() == dg.getGroupId() && dc.getTechnology().getTechnologyId()  == t.getTechnologyId()) ? setAndReturn(dc, sum) : dc);
             }
         } else if(diseaseSum != null){
-            if(diseaseSum.getSumSampleRegions() - samples == 0 || !inFileWithRegions)
+            if(diseaseSum.getSumSampleRegions() - samples == 0 || !withRegions)
                 this.noDiseases.remove(diseaseSum);
             else {
-                diseaseSum.setSumSampleRegions(diseaseSum.getSumSampleRegions() - samples);
-                java.util.function.UnaryOperator<DiseaseSum> unaryOpt = dc -> diseaseSum;
-                this.noDiseases.replaceAll(unaryOpt);
+                int sum = diseaseSum.getSumSampleRegions() - samples;
+                this.noDiseases.replaceAll(ds -> ds.getDiseaseGroupId() == dg.getGroupId() && ds.getTechnologyId() == t.getTechnologyId() ? setAndReturn(ds, sum) : ds);
             }
         }
     }
@@ -326,4 +322,5 @@ public class Variant {
 //                ", annots=" + annots +
                 '}';
     }
+
 }

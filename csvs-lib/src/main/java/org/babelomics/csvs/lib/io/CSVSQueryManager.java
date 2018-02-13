@@ -560,7 +560,7 @@ public class CSVSQueryManager {
     }
 
     /**
-     * Return map samples by diseased and technology
+     * Return map samples by diseased and technology (without regions)
      * @param diseaseId
      * @param technologyId
      * @return
@@ -570,7 +570,9 @@ public class CSVSQueryManager {
 
         listDBObjects.add(new BasicDBObject("dgid", new BasicDBObject("$in", diseaseId)));
         listDBObjects.add(new BasicDBObject("tid", new BasicDBObject("$in", technologyId)));
-        listDBObjects.add(new BasicDBObject("p", new BasicDBObject("$eq", null)));
+
+
+        listDBObjects.add(new BasicDBObject("pid", new BasicDBObject("$eq", null)));
         BasicDBObject match = new BasicDBObject("$match", new BasicDBObject("$and", listDBObjects));
 
         BasicDBList listDBObjectsGroupSub = new BasicDBList();
@@ -599,7 +601,7 @@ public class CSVSQueryManager {
         aggList.add(match);
         aggList.add(group);
 
-        System.out.println("QUERY: " + aggList);
+        // System.out.println("QUERY: " + aggList);
         AggregationOutput aggregation = collection.aggregate(aggList);
         //  System.out.println("RESULT: " + aggregation.results());
         Map<String, Integer> res = new HashMap<>();
@@ -625,37 +627,44 @@ public class CSVSQueryManager {
 
         BasicDBList listDBObjects = new BasicDBList();
 
-        listDBObjects.add(new BasicDBObject("dgid", diseaseId));
-        listDBObjects.add(new BasicDBObject("tid", technologyId));
-
         BasicDBList listDBObjectsExists = new BasicDBList();
-        listDBObjectsExists.add(new BasicDBObject("p", new BasicDBObject("$exists",true)));
-        listDBObjectsExists.add(new BasicDBObject("p.reg.chromosome", v.getChromosome()));
-        listDBObjectsExists.add(new BasicDBObject("p.reg.start", new BasicDBObject("$lte",v.getPosition())));
-        listDBObjectsExists.add(new BasicDBObject("p.reg.end", new BasicDBObject("$gte",v.getPosition())));
+        listDBObjectsExists.add(new BasicDBObject("reg.chromosome", v.getChromosome()));
+        listDBObjectsExists.add(new BasicDBObject("reg.start", new BasicDBObject("$lte",v.getPosition())));
+        listDBObjectsExists.add(new BasicDBObject("reg.end", new BasicDBObject("$gte",v.getPosition())));
 
         listDBObjects.addAll(listDBObjectsExists);
 
         BasicDBObject match = new BasicDBObject("$match", new BasicDBObject("$and", listDBObjects));
 
-        DBObject totalCount = new BasicDBObject("$sum", "$s");
-        BasicDBObject g = new BasicDBObject("_id", null);
-        g.append("Sum", totalCount);
-        BasicDBObject group = new BasicDBObject("$group", g);
 
-        DBCollection collection = datastore.getCollection(File.class);
+        BasicDBObject unwind = new BasicDBObject("$unwind", new BasicDBObject("path","$reg"));
+        DBCollection collection = datastore.getCollection(Panel.class);
 
         List<BasicDBObject> aggList = new ArrayList<>();
+        aggList.add(unwind);
         aggList.add(match);
-        aggList.add(group);
 
+        //System.out.println(aggList);
         AggregationOutput aggregation = collection.aggregate(aggList);
-        for (DBObject fileObj : aggregation.results()) {
-            res = (int) fileObj.get("Sum");
+
+        List objtid = new ArrayList<>();
+        for (DBObject oObj : aggregation.results()) {
+            objtid.add(oObj.get("_id"));
+        }
+
+        Query<File> queryFile = datastore.createQuery(File.class);
+        queryFile.field("dgid").equal(diseaseId);
+        queryFile.field("tid").equal(technologyId);
+        queryFile.field("pid").in(objtid);
+        Iterable<File> auxFile = queryFile.fetch();
+
+        for (File file : auxFile) {
+            res = res + (int) file.getSamples();
         }
 
         return res;
     }
+
 
     private DiseaseCount calculateStats(Variant v, List<Integer> diseaseId, List<Integer> technologyId, int sampleCount, Map<String, Integer> sampleCountMap) {
         DiseaseCount dc;

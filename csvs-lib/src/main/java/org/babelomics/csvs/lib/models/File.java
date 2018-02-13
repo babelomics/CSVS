@@ -1,13 +1,7 @@
 package org.babelomics.csvs.lib.models;
 
 import org.bson.types.ObjectId;
-import org.mongodb.morphia.annotations.Entity;
-import org.mongodb.morphia.annotations.Id;
-import org.mongodb.morphia.annotations.Property;
-import org.mongodb.morphia.annotations.Reference;
-import org.mongodb.morphia.annotations.Index;
-import org.mongodb.morphia.annotations.Indexes;
-import org.mongodb.morphia.annotations.Embedded;
+import org.mongodb.morphia.annotations.*;
 
 import java.util.Date;
 /**
@@ -16,7 +10,9 @@ import java.util.Date;
 
 @Entity(noClassnameStored = true)
 @Indexes({
-        @Index(name = "index_file_d_t", value = "d,t")
+        @Index(name = "index_file_d_t", fields = {@Field("d"), @Field("t")}),
+        @Index(name = "index_file_pid", fields = {@Field("pid")})
+
 })
 public class File {
 
@@ -49,8 +45,8 @@ public class File {
     @Property("da")
     private Date date;
 
-    @Embedded("p")
-    private Panel panel;
+    @Property("pid")
+    private ObjectId idPanel;
 
     public File() {
         this.samples = 0;
@@ -80,7 +76,9 @@ public class File {
         this.diseaseGroupId = this.disease.getGroupId();
         this.technologyId = this.technology.getTechnologyId();
 
-        this.panel =  panel;
+        if (panel != null) {
+            this.idPanel = (ObjectId) panel.getId();
+        }
     }
 
     public String getSum() {
@@ -143,11 +141,12 @@ public class File {
         this.date = date;
     }
 
-    public Panel getPanel() {
-        return panel;
+
+    public ObjectId getIdPanel() {
+        return this.idPanel;
     }
 
-    public void setPanel(Panel panel) {
-        this.panel = panel;
+    public void setIdPanel(ObjectId idPanel) {
+        this.idPanel =    idPanel;
     }
 }

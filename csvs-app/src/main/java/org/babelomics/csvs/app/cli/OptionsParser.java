@@ -56,10 +56,16 @@ public class OptionsParser {
         String panelFile="";
 
         @Parameter(names = {"-r", "--recalculate"}, description = "If panel recalculate all variants", arity = 1)
-        boolean recalculate=false;
+        boolean recalculate=true;
 
         @Parameter(names = {"-pr", "--personReference"}, description = "Name person reference", arity = 1)
         String personReference="";
+
+        @Parameter(names = {"--filter"}, description = "Filter file: remove variants when not in the panel", arity = 0)
+        boolean filter=false;
+
+        @Parameter(names = {"-c", "--checkPanel"}, description = "Check  variants in the panel and format file", arity = 1)
+        boolean checkPanel=true;
 
         @Parameter(names = {"--host"}, description = "DB host", arity = 1)
         String host = "localhost";

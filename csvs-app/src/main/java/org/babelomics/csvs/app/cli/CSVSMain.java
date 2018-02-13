@@ -117,16 +117,28 @@ public class CSVSMain {
 
             String personReference = c.personReference;
 
-            CSVSUtil.loadVariants(inputFile, diseaseGroupId, technologyId, datastore, panelFile, personReference);
+            if(c.filter){
+                if(c.panelFile == null) {
+                    System.out.println("Add param --panelFile");
+                    System.exit(0);
+                }
+                CSVSUtil.filterFile(inputFile, panelFile, datastore);
+            } else {
 
-            if(panelFile != null && c.recalculate) {
-                List<Integer>  diseases = new ArrayList<>();
-                diseases.add(diseaseGroupId);
-                List<Integer> technologies = new ArrayList<>();
-                technologies.add(technologyId);
-		
-                CSVSUtil.recalculate(diseases, technologies, c.panelFile ,datastore);
+                CSVSUtil.loadVariants(inputFile, diseaseGroupId, technologyId, datastore, panelFile, personReference, c.checkPanel);
+
+                System.out.println(c.recalculate);
+                if (panelFile != null && c.recalculate) {
+                    List<Integer> diseases = new ArrayList<>();
+                    diseases.add(diseaseGroupId);
+                    List<Integer> technologies = new ArrayList<>();
+                    technologies.add(technologyId);
+
+                    CSVSUtil.recalculate(diseases, technologies, panelFile.getFileName().toString(), datastore);
+                }
             }
+
+
 
         } else if (command instanceof OptionsParser.CommandUnload) {
             OptionsParser.CommandUnload c = (OptionsParser.CommandUnload) command;

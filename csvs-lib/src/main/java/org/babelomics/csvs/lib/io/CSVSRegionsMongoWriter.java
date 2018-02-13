@@ -5,7 +5,6 @@ import org.mongodb.morphia.Datastore;
 import org.opencb.commons.io.DataWriter;
 import org.opencb.biodata.models.feature.Region;
 
-
 import java.util.List;
 
 /**

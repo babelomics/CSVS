@@ -1,10 +1,7 @@
 package org.babelomics.csvs.lib;
 
 import com.google.common.base.Joiner;
-import com.mongodb.DuplicateKeyException;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
+import com.mongodb.*;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.writer.Options;
@@ -15,6 +12,7 @@ import org.babelomics.csvs.lib.annot.CellBaseAnnotator;
 import org.babelomics.csvs.lib.io.*;
 import org.babelomics.csvs.lib.models.*;
 import org.babelomics.csvs.lib.stats.CSVSVariantStatsTask;
+import org.bson.types.ObjectId;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 import org.mongodb.morphia.query.Criteria;
@@ -36,12 +34,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Date;
+import java.util.*;
+
 
 /**
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
@@ -164,8 +158,14 @@ public class CSVSUtil {
          return p;
      }
 
-     public static void loadVariants(Path variantsPath, int diseaseGroupId, int technologyId, Datastore datastore,  Path panelFilePath, String personReference ) throws IOException, NoSuchAlgorithmException {
-        System.out.println("START: loadVariant" + new Date());
+
+    public static void loadVariants(Path variantsPath, int diseaseGroupId, int technologyId, Datastore datastore ) throws IOException, NoSuchAlgorithmException {
+        loadVariants(variantsPath,diseaseGroupId,technologyId,datastore, null, "", true);
+    }
+
+
+    public static void loadVariants(Path variantsPath, int diseaseGroupId, int technologyId, Datastore datastore,  Path panelFilePath, String personReference, boolean checkPanel ) throws IOException, NoSuchAlgorithmException {
+        System.out.println("START: loadVariant " + new Date());
         File f;
         String sha256 = calculateSHA256(variantsPath);
 
@@ -186,10 +186,11 @@ public class CSVSUtil {
             f.setDate(new Date());
 
             // Read panelFile with regions
+            Panel p = null;
             if (panelFilePath != null) {
-                Panel p = loadPanel(datastore, panelFilePath);
+                p = loadPanel(datastore, panelFilePath);
                 datastore.save(p);
-                f.setPanel(p);
+                f.setIdPanel( (ObjectId) p.getId());
             }
 
             try {
@@ -201,7 +202,7 @@ public class CSVSUtil {
             }
 
             // Read variants
-            DataReader<Variant> reader = new CSVSVariantCountCSVDataReader(variantsPath.toAbsolutePath().toString(), dg, t, f.getPanel());
+            DataReader<Variant> reader = new CSVSVariantCountCSVDataReader(variantsPath.toAbsolutePath().toString(), dg, t, (checkPanel == true)? p: null, checkPanel);
 
             List<Task<Variant>> taskList = new SortedList<>();
             List<DataWriter<Variant>> writers = new ArrayList<>();
@@ -235,7 +236,6 @@ public class CSVSUtil {
         int samples = 0;
         int variants = 0;
 
-
         String sha256 = calculateSHA256(variantsPath);
         File fDb = datastore.createQuery(File.class).field("sum").equal(sha256).get();
 
@@ -250,7 +250,12 @@ public class CSVSUtil {
         Query<Technology> queryTechnology = datastore.createQuery(Technology.class).field("technologyId").equal(technologyId);
         Technology t = queryTechnology.get();
 
-        DataReader<Variant> reader = new CSVSVariantCountCSVDataReader(variantsPath.toAbsolutePath().toString(), dg, t, fDb.getPanel());
+        Panel p =  null;
+        if (fDb.getIdPanel() != null) {
+           p = datastore.createQuery(Panel.class).field("_id").equal(fDb.getIdPanel()).get();
+        }
+
+        DataReader<Variant> reader = new CSVSVariantCountCSVDataReader(variantsPath.toAbsolutePath().toString(), dg, t, p);
 
         reader.open();
         reader.pre();
@@ -271,6 +276,7 @@ public class CSVSUtil {
                         .get();
 
                 if (v != null) {
+
                     variants++;
                     DiseaseCount vDc = v.getDiseaseCount(dg, t);
                     DiseaseCount elemDC = elem.getDiseaseCount(dg, t);
@@ -289,13 +295,9 @@ public class CSVSUtil {
                             if (v.getDiseases().size() == 0) {
                                 datastore.delete(Variant.class, v.getId());
                             } else {
-                                // Delete file
-                                v.deleteFile(fDb);
                                 datastore.save(v);
                             }
                         } else {
-                            // Delete file
-                            v.deleteFile(fDb);
                             datastore.save(v);
                         }
                     }
@@ -337,18 +339,24 @@ public class CSVSUtil {
         reader.post();
         reader.close();
 
-        if (fDb.getPanel() != null) {
-            File fileDelete = new File(null, fDb.getDisease(), fDb.getTechnology(), fDb.getPanel());
+        // Delete fileVariant
+        Query<FileVariant>  queryfv = datastore.createQuery(FileVariant.class);
+        queryfv.field("fid").equal(fDb.getId());
+        datastore.delete(queryfv);
+
+        if (fDb.getIdPanel() != null) {
+            File fileDelete = new File(null, fDb.getDisease(), fDb.getTechnology(), p);
             fileDelete.setSamples(fDb.getSamples());
             datastore.delete(File.class, fDb.getId());
             recalculateUnload(fileDelete, datastore);
             // Delete panel if it is not used
-            long numUsed = datastore.createQuery(File.class).field ("panel").equal(fileDelete.getPanel()).countAll();
+            long numUsed = datastore.createQuery(File.class).field ("pid").equal(fileDelete.getIdPanel()).countAll();
             if (numUsed == 0 ) {
-                datastore.delete(fDb.getPanel());
+                datastore.delete(p);
             }
         } else
             datastore.delete(File.class, fDb.getId());
+
 
         // Delete samples
         dg.setSamples(dg.getSamples()-samples);
@@ -393,7 +401,8 @@ public class CSVSUtil {
         System.out.println("All variants = "  + query.countAll());
         System.out.println("INI  =" +  new Date());
 
-        query.or(criteriaSearchVariant(file.getPanel().getRegions() , datastore));
+        Panel p =  datastore.createQuery(Panel.class).field("_id").equal(file.getIdPanel()).get();
+        query.or(criteriaSearchVariant(p.getRegions() , datastore));
         System.out.println("Variants in regions = " + query.countAll());
 
         // Calculate Sample Count
@@ -419,12 +428,12 @@ public class CSVSUtil {
                 Variant v = it.next();
 
                 // Get sum all file
-                boolean inFileWithRegions = false;
-                Map<String, Integer> sampleCountMap = qm.calculateSampleCount(diseaseId, technologyId);
-                if (sampleCountMap.size() != 0 &&  sampleCountMap.get(d+"-"+t) != 0)
-                   inFileWithRegions = true;
+                boolean withRegions = false;
+                int sumSampleRegion =  qm.initialCalculateSampleCount(v,d, t, datastore);
+                if(sumSampleRegion  > 0)
+                   withRegions = true;
 
-                v.decSumSampleRegion(file.getSamples(), dg, tg, inFileWithRegions);
+                v.decSumSampleRegion(file.getSamples(), dg, tg, withRegions);
 
                 batch.add(v);
                 System.out.println("VARIANTE: " + v.getChromosome() + ":" + v.getPosition() );
@@ -569,14 +578,12 @@ public class CSVSUtil {
 
         query.or(criteriaSearchVariant(regions, datastore));
         System.out.println("Variants in regions = " + query.countAll());
-        // System.out.println("query = " + query);
 
-         // Calculate Sample Count
-        int varModify = 0;
+        // Calculate Sample Count
         int numVAr = 0;
         Iterator<Variant> it = query.batchSize(100).iterator();
+        System.out.println("Start");
         while (it.hasNext()) {
-            varModify++;
             List<Variant> batch = new ArrayList<>();
 
             for (int i = 0; i < 100 && it.hasNext(); i++) {
@@ -586,22 +593,20 @@ public class CSVSUtil {
                     for (int t : technologies){
                         int sumSampleRegion =  qm.initialCalculateSampleCount(v, d, t, datastore);
                         v.setSumSampleRegion(new DiseaseSum(d, t, sumSampleRegion));
+                        System.out.println("VARIANTE: " + v.getChromosome() + ":" + v.getPosition()  +  "  Samples: " + sumSampleRegion);
                     }
                 }
                 batch.add(v);
-                System.out.println("VARIANTE: " + v.getChromosome() + ":" + v.getPosition() );
+
             }
 
             datastore.save(batch);
-            System.out.println(varModify);
             batch.clear();
             System.out.println("Total: " +  numVAr + "      " +  new Date());
         }
 
         System.out.println("END  =" +  new Date());
     }
-
-
 
 
     private static String calculateSHA256(Path variantsPath) throws NoSuchAlgorithmException, IOException {
@@ -653,6 +658,36 @@ public class CSVSUtil {
             datastore.save(batch);
             batch.clear();
         }
+    }
+
+    /**
+     * Filter file variant: Remove CHR and check variant in the panel.
+     * @param variantsPath
+     * @param panelFilePath
+     * @param datastore
+     * @throws IOException
+     * @throws NoSuchAlgorithmException
+     */
+    public static void filterFile(Path variantsPath, Path panelFilePath, Datastore datastore  ) throws IOException, NoSuchAlgorithmException {
+        if (panelFilePath != null){
+            Panel p = loadPanel(datastore, panelFilePath);
+
+            DataReader<Variant> readerFilter = new CSVSVariantFilterCSVDataReader(variantsPath.toAbsolutePath().toString(), p);
+            List<DataWriter<Variant>> writersRegions = new ArrayList<>();
+
+            Runner<Variant> pvsRunner = new CSVSRunner(readerFilter, writersRegions,  new SortedList<>(), 100);
+            System.out.println("Filter variant...");
+            pvsRunner.run();
+            System.out.println("Variant Filter!.");
+            System.out.println("Generated file: " + "Filter_" + variantsPath.getFileName() );
+
+            // Delete panel if not used
+            long numUsed = datastore.createQuery(File.class).field("pid").equal(p.getId()).countAll();
+            if (numUsed == 0 ) {
+                datastore.delete(p);
+            }
+        }
+
     }
 
 }

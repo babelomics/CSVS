@@ -2,10 +2,10 @@ package org.babelomics.csvs.lib.models;
 
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.*;
-import org.opencb.biodata.models.feature.Region;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.opencb.biodata.models.feature.Region;
 
 /**
  * @author Gema Roldán González <gema.roldan@juntadeandalucia.es>
@@ -13,12 +13,10 @@ import java.util.List;
 
 @Entity(noClassnameStored = true)
 @Indexes({
-        // @Index(name = "index_file_reg", value = "reg")
-
-        @Index(name = "index_file_reg", value = "reg.chromosome, reg.start, reg.end"),
-        @Index(name = "index_file_c", value = "reg.chromosome"),
-        @Index(name = "index_file_s", value = "reg.start"),
-        @Index(name = "index_file_e", value = "reg.end")
+        @Index(name = "index_file_reg", fields = {@Field("reg.chromosome"), @Field("reg.start"), @Field("reg.end") }),
+        @Index(name = "index_file_c", fields = {@Field("reg.chromosome") }),
+        @Index(name = "index_file_s", fields = {@Field("reg.start") }),
+        @Index(name = "index_file_e", fields = {@Field("reg.end") })
 })
 public class Panel {
     @Id
@@ -29,6 +27,7 @@ public class Panel {
     @Property("n")
     private String panelName;
 
+    @Indexed(name = "index_reg", unique = true)
     @Embedded("reg")
     private List<Region> regions;
 
