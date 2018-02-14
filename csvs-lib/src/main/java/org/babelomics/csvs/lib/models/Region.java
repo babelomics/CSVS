@@ -78,15 +78,15 @@ public class Region {
         }
     }
 
-    public static  Region parseRegion(String regionString) {
+    public static Region parseRegion(String regionString) {
         Region region = null;
         if (regionString != null && !regionString.equals("")) {
             if (regionString.indexOf(':') != -1) {
                 String[] fields = regionString.split("[:-]", -1);
                 if (fields.length == 3) {
-                    region = new  Region(fields[0], Integer.parseInt(fields[1]), Integer.parseInt(fields[2]));
+                    region = new Region(fields[0], Integer.parseInt(fields[1]), Integer.parseInt(fields[2]));
                 } else if (fields.length == 2) {
-                    region = new  Region(fields[0], Integer.parseInt(fields[1]), Integer.MAX_VALUE);
+                    region = new Region(fields[0], Integer.parseInt(fields[1]), Integer.MAX_VALUE);
                 }
             } else {
                 region = new Region(regionString, 0, Integer.MAX_VALUE);
@@ -95,7 +95,7 @@ public class Region {
         return region;
     }
 
-    public static List< Region> parseRegions(String regionsString) {
+    public static List<Region> parseRegions(String regionsString) {
         List<Region> regions = null;
         if (regionsString != null && !regionsString.equals("")) {
             String[] regionItems = regionsString.split(",");
@@ -105,12 +105,12 @@ public class Region {
                 if (regionString.indexOf(':') != -1) {
                     fields = regionString.split("[:-]", -1);
                     if (fields.length == 3) {
-                        regions.add(new  Region(fields[0], Integer.parseInt(fields[1]), Integer.parseInt(fields[2])));
+                        regions.add(new Region(fields[0], Integer.parseInt(fields[1]), Integer.parseInt(fields[2])));
                     } else {
                         regions.add(null);
                     }
                 } else {
-                    regions.add(new   Region(regionString, 0, Integer.MAX_VALUE));
+                    regions.add(new Region(regionString, 0, Integer.MAX_VALUE));
                 }
             }
         }
