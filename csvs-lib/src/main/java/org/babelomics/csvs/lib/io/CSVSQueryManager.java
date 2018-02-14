@@ -628,20 +628,17 @@ public class CSVSQueryManager {
         BasicDBList listDBObjects = new BasicDBList();
 
         BasicDBList listDBObjectsExists = new BasicDBList();
-        listDBObjectsExists.add(new BasicDBObject("reg.chromosome", v.getChromosome()));
-        listDBObjectsExists.add(new BasicDBObject("reg.start", new BasicDBObject("$lte",v.getPosition())));
-        listDBObjectsExists.add(new BasicDBObject("reg.end", new BasicDBObject("$gte",v.getPosition())));
+        listDBObjectsExists.add(new BasicDBObject("c", v.getChromosome()));
+        listDBObjectsExists.add(new BasicDBObject("s", new BasicDBObject("$lte",v.getPosition())));
+        listDBObjectsExists.add(new BasicDBObject("e", new BasicDBObject("$gte",v.getPosition())));
 
         listDBObjects.addAll(listDBObjectsExists);
 
         BasicDBObject match = new BasicDBObject("$match", new BasicDBObject("$and", listDBObjects));
 
-
-        BasicDBObject unwind = new BasicDBObject("$unwind", new BasicDBObject("path","$reg"));
-        DBCollection collection = datastore.getCollection(Panel.class);
+        DBCollection collection = datastore.getCollection(Region.class);
 
         List<BasicDBObject> aggList = new ArrayList<>();
-        aggList.add(unwind);
         aggList.add(match);
 
         //System.out.println(aggList);
@@ -649,7 +646,7 @@ public class CSVSQueryManager {
 
         List objtid = new ArrayList<>();
         for (DBObject oObj : aggregation.results()) {
-            objtid.add(oObj.get("_id"));
+            objtid.add(oObj.get("pid"));
         }
 
         Query<File> queryFile = datastore.createQuery(File.class);

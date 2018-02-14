@@ -11,6 +11,7 @@ import htsjdk.variant.vcf.*;
 import org.babelomics.csvs.lib.annot.CellBaseAnnotator;
 import org.babelomics.csvs.lib.io.*;
 import org.babelomics.csvs.lib.models.*;
+import org.babelomics.csvs.lib.models.Region;
 import org.babelomics.csvs.lib.stats.CSVSVariantStatsTask;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.Datastore;
@@ -20,7 +21,6 @@ import org.mongodb.morphia.query.Query;
 import org.opencb.biodata.formats.variant.io.VariantReader;
 import org.opencb.biodata.formats.variant.io.VariantWriter;
 import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfReader;
-import org.opencb.biodata.models.feature.Region;
 import org.opencb.biodata.models.variant.VariantSource;
 import org.opencb.biodata.tools.variant.tasks.VariantRunner;
 import org.opencb.commons.containers.list.SortedList;
@@ -143,7 +143,8 @@ public class CSVSUtil {
 
          if (p == null){
              p = new Panel(panelSha256, panelFilePath.getFileName().toString());
-             DataReader<Region> regionReader = new CSVSRegionsCSVDataReader(panelFilePath.toAbsolutePath().toString());
+             datastore.save(p);
+             DataReader<Region> regionReader = new CSVSRegionsCSVDataReader(panelFilePath.toAbsolutePath().toString(), p);
              DataWriter<Region> writerRegions = new CSVSRegionsMongoWriter(p, datastore);
              List<DataWriter<Region>> writersRegions = new ArrayList<>();
 
@@ -155,6 +156,7 @@ public class CSVSUtil {
              pvsRegionRunner.run();
              System.out.println("Regions loaded!");
          }
+
          return p;
      }
 
@@ -187,10 +189,11 @@ public class CSVSUtil {
 
             // Read panelFile with regions
             Panel p = null;
+            List <Region> regions = new ArrayList<>();
             if (panelFilePath != null) {
                 p = loadPanel(datastore, panelFilePath);
-                datastore.save(p);
                 f.setIdPanel( (ObjectId) p.getId());
+                regions = datastore.createQuery(Region.class).field("pid").equal((ObjectId) p.getId()).asList();
             }
 
             try {
@@ -202,7 +205,7 @@ public class CSVSUtil {
             }
 
             // Read variants
-            DataReader<Variant> reader = new CSVSVariantCountCSVDataReader(variantsPath.toAbsolutePath().toString(), dg, t, (checkPanel == true)? p: null, checkPanel);
+            DataReader<Variant> reader = new CSVSVariantCountCSVDataReader(variantsPath.toAbsolutePath().toString(), dg, t, (checkPanel == true)? p: null, checkPanel, regions);
 
             List<Task<Variant>> taskList = new SortedList<>();
             List<DataWriter<Variant>> writers = new ArrayList<>();
@@ -352,6 +355,11 @@ public class CSVSUtil {
             // Delete panel if it is not used
             long numUsed = datastore.createQuery(File.class).field ("pid").equal(fileDelete.getIdPanel()).countAll();
             if (numUsed == 0 ) {
+                // Delete Regions
+                Query<Region>  queryr = datastore.createQuery(Region.class);
+                queryr.field("pid").equal(p.getId());
+                datastore.delete(queryr);
+                // Delete Panel
                 datastore.delete(p);
             }
         } else
@@ -402,7 +410,10 @@ public class CSVSUtil {
         System.out.println("INI  =" +  new Date());
 
         Panel p =  datastore.createQuery(Panel.class).field("_id").equal(file.getIdPanel()).get();
-        query.or(criteriaSearchVariant(p.getRegions() , datastore));
+        // Get regions
+        List<Region> regionList =  datastore.createQuery(Region.class).field("pid").equal(file.getIdPanel()).asList();
+
+        query.or(criteriaSearchVariant(regionList , datastore));
         System.out.println("Variants in regions = " + query.countAll());
 
         // Calculate Sample Count
@@ -573,7 +584,7 @@ public class CSVSUtil {
         Panel p = queryFile.get();
         List<Region> regions = new ArrayList<>();
         if (p != null) {
-            regions.addAll(p.getRegions());
+            regions.addAll(datastore.createQuery(Region.class).field("pid").equal(p.getId()).asList());
         }
 
         query.or(criteriaSearchVariant(regions, datastore));
@@ -671,8 +682,11 @@ public class CSVSUtil {
     public static void filterFile(Path variantsPath, Path panelFilePath, Datastore datastore  ) throws IOException, NoSuchAlgorithmException {
         if (panelFilePath != null){
             Panel p = loadPanel(datastore, panelFilePath);
+            List<Region> regions = new ArrayList<>();
+            if(p != null)
+                regions = datastore.createQuery(Region.class).field("pid").equal((ObjectId) p.getId()).asList();
 
-            DataReader<Variant> readerFilter = new CSVSVariantFilterCSVDataReader(variantsPath.toAbsolutePath().toString(), p);
+            DataReader<Variant> readerFilter = new CSVSVariantFilterCSVDataReader(variantsPath.toAbsolutePath().toString(), p, regions);
             List<DataWriter<Variant>> writersRegions = new ArrayList<>();
 
             Runner<Variant> pvsRunner = new CSVSRunner(readerFilter, writersRegions,  new SortedList<>(), 100);
