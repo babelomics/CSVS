@@ -5,19 +5,14 @@ import org.mongodb.morphia.annotations.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.opencb.biodata.models.feature.Region;
+import org.babelomics.csvs.lib.models.Region;
 
 /**
  * @author Gema Roldán González <gema.roldan@juntadeandalucia.es>
  */
 
 @Entity(noClassnameStored = true)
-@Indexes({
-        @Index(name = "index_file_reg", fields = {@Field("reg.chromosome"), @Field("reg.start"), @Field("reg.end") }),
-        @Index(name = "index_file_c", fields = {@Field("reg.chromosome") }),
-        @Index(name = "index_file_s", fields = {@Field("reg.start") }),
-        @Index(name = "index_file_e", fields = {@Field("reg.end") })
-})
+
 public class Panel {
     @Id
     private ObjectId id;
@@ -27,10 +22,6 @@ public class Panel {
     @Property("n")
     private String panelName;
 
-    @Indexed(name = "index_reg", unique = true)
-    @Embedded("reg")
-    private List<Region> regions;
-
     public Panel(){ }
 
     public Panel(String sum, String panelName){
@@ -38,7 +29,7 @@ public class Panel {
         this.panelName = panelName;
     }
 
-    public Object getId() { return id;}
+    public ObjectId getId() { return id;}
 
     public String getPanelName() {
         return panelName;
@@ -49,27 +40,7 @@ public class Panel {
         this.panelName = panelName;
     }
 
-    public List<Region> getRegions() {
-        return regions;
-    }
 
-    public void setRegions(List<Region> regions) {
-        this.regions = regions;
-    }
-
-    public void addRegion(Region r) {
-        this.regions.add(r);
-    }
-
-    public void addRegion(List<Region> r) {
-        if (this.regions == null)
-            this.regions = new ArrayList<>();
-        this.regions.addAll(r);
-    }
-
-    public void deleteRegion(Region r) {
-        this.regions.remove(r);
-    }
 
 
     /**
@@ -77,11 +48,11 @@ public class Panel {
      * @param v Variant
      * @return boolean true if exists
      */
-    public boolean contains(Variant v){
-        if (v == null || this.regions == null || this.regions.isEmpty()){
+    public boolean contains(Variant v, List<Region> regions){
+        if (v == null || regions == null || regions.isEmpty()){
             return true;
         } else {
-            return  this.regions.stream().anyMatch(r -> r.contains(v.getChromosome(), v.getPosition()));
+            return  regions.stream().anyMatch(r -> r.contains(v.getChromosome(), v.getPosition()));
         }
     }
 

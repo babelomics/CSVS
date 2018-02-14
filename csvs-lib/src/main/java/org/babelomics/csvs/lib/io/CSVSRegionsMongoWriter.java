@@ -3,7 +3,7 @@ package org.babelomics.csvs.lib.io;
 import org.babelomics.csvs.lib.models.*;
 import org.mongodb.morphia.Datastore;
 import org.opencb.commons.io.DataWriter;
-import org.opencb.biodata.models.feature.Region;
+import  org.babelomics.csvs.lib.models.Region;
 
 import java.util.List;
 
@@ -53,12 +53,16 @@ public class CSVSRegionsMongoWriter implements DataWriter<Region> {
 
     @Override
     public boolean write(Region elem) {
+
+        this.datastore.save(elem);
         return true;
     }
 
     @Override
     public boolean write(List<Region> batch) {
-        this.panel.addRegion(batch);
+        for (Region r : batch) {
+            this.write(r);
+        }
         return true;
     }
 }

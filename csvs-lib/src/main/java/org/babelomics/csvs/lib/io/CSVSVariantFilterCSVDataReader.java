@@ -2,7 +2,7 @@ package org.babelomics.csvs.lib.io;
 
 import org.babelomics.csvs.lib.models.DiseaseGroup;
 import org.babelomics.csvs.lib.models.Panel;
-import org.babelomics.csvs.lib.models.Technology;
+import org.babelomics.csvs.lib.models.Region;
 import org.babelomics.csvs.lib.models.Variant;
 import org.opencb.commons.io.DataReader;
 
@@ -24,9 +24,10 @@ public class CSVSVariantFilterCSVDataReader extends CSVSVariantCountCSVDataReade
     protected PrintWriter printer;
 
 
-    public CSVSVariantFilterCSVDataReader(String filePath,  Panel p) {
-        super(filePath, p);
+    public CSVSVariantFilterCSVDataReader(String filePath,  Panel p, List<Region> regions) {
+        super(filePath, p, regions);
     }
+
 
     @Override
     public boolean pre() {
@@ -95,7 +96,7 @@ public class CSVSVariantFilterCSVDataReader extends CSVSVariantCountCSVDataReade
                     }
 
                     // Add variants if it is in list de regions of file
-                    if (panel != null  &&  !panel.contains(v)) {
+                    if (panel != null  &&  !panel.contains(v, regions)) {
                         System.out.println("Variant not in list regions: " + line);
                         continue;
                     }

@@ -1,7 +1,8 @@
 package org.babelomics.csvs.lib.io;
 
 import org.opencb.commons.io.DataReader;
-import org.opencb.biodata.models.feature.Region;
+import org.babelomics.csvs.lib.models.Region;
+import org.babelomics.csvs.lib.models.Panel;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,10 +19,12 @@ import java.util.List;
 public class CSVSRegionsCSVDataReader implements DataReader<Region> {
 
     private String filePath;
+    private Panel panel;
     private BufferedReader reader;
 
-    public CSVSRegionsCSVDataReader(String filePath) {
+    public CSVSRegionsCSVDataReader(String filePath, Panel panel) {
         this.filePath = filePath;
+        this.panel = panel;
     }
 
     @Override
@@ -85,7 +88,7 @@ public class CSVSRegionsCSVDataReader implements DataReader<Region> {
 
                     String c = splits[0].toUpperCase().replace("CHR","");
 
-                    Region r = new Region(c, Integer.parseInt(splits[1]), Integer.parseInt(splits[2]));
+                    Region r = new Region(c, Integer.parseInt(splits[1]), Integer.parseInt(splits[2]), panel);
 
                     regions.add(r);
                     return regions;

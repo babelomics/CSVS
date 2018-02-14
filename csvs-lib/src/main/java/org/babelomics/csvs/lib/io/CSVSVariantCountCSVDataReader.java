@@ -4,6 +4,7 @@ import org.babelomics.csvs.lib.models.DiseaseGroup;
 import org.babelomics.csvs.lib.models.Technology;
 import org.babelomics.csvs.lib.models.Variant;
 import org.babelomics.csvs.lib.models.Panel;
+import org.babelomics.csvs.lib.models.Region;
 import org.opencb.commons.io.DataReader;
 
 import java.io.BufferedReader;
@@ -26,6 +27,7 @@ public class CSVSVariantCountCSVDataReader implements DataReader<Variant> {
     private Technology technology;
     protected Panel panel;
     private boolean checkPanel = true;
+    protected List<Region> regions = new ArrayList<>();
 
     public CSVSVariantCountCSVDataReader(String filePath, DiseaseGroup dg, Technology t) {
         this.filePath = filePath;
@@ -33,9 +35,10 @@ public class CSVSVariantCountCSVDataReader implements DataReader<Variant> {
         this.technology = t;
     }
 
-    public CSVSVariantCountCSVDataReader(String filePath, Panel p) {
+    public CSVSVariantCountCSVDataReader(String filePath, Panel p, List<Region> regions) {
         this.filePath = filePath;
         this.panel = p;
+        this.regions = regions;
     }
 
     public CSVSVariantCountCSVDataReader(String filePath, DiseaseGroup dg, Technology t, Panel p ) {
@@ -52,6 +55,16 @@ public class CSVSVariantCountCSVDataReader implements DataReader<Variant> {
         this.panel = p;
         this.checkPanel = checkPanel;
     }
+
+    public CSVSVariantCountCSVDataReader(String filePath, DiseaseGroup dg, Technology t, Panel p, boolean checkPanel, List<Region> regions) {
+        this.filePath = filePath;
+        this.diseaseGroup = dg;
+        this.technology = t;
+        this.panel = p;
+        this.checkPanel = checkPanel;
+        this.regions = regions;
+    }
+
 
     @Override
     public boolean open() {
@@ -122,7 +135,7 @@ public class CSVSVariantCountCSVDataReader implements DataReader<Variant> {
 
                     // Add variants if it is in list de regions of file
                     if (panel != null  && checkPanel)
-			            if( !panel.contains(v)) {
+			            if( !panel.contains(v, regions)) {
 	                        System.out.println("Variant not in list regions: " + line);
 	                        continue;
                         }
@@ -141,6 +154,9 @@ public class CSVSVariantCountCSVDataReader implements DataReader<Variant> {
 
         return null;
     }
+
+
+
 
     @Override
     public List<Variant> read(int batchSize) {
