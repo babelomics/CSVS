@@ -127,7 +127,6 @@ public class CSVSMain {
 
                 CSVSUtil.loadVariants(inputFile, diseaseGroupId, technologyId, datastore, panelFile, personReference, c.checkPanel);
 
-                System.out.println(c.recalculate);
                 if (panelFile != null && c.recalculate) {
                     List<Integer> diseases = new ArrayList<>();
                     diseases.add(diseaseGroupId);

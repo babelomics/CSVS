@@ -228,10 +228,10 @@ public class CSVSUtil {
             }
 
         } else {
-            System.out.println("File is already in the database.  (Name:" + fDb.getNameFile() + " Sum: " +fDb.getSum() + ")");
+            System.out.println("File is already in the database.  (Name: " + fDb.getNameFile() + " Sum: " +fDb.getSum() + ")");
             System.exit(0);
         }
-         System.out.println("END: loadVariant" + new Date());
+         System.out.println("END: loadVariant " + new Date());
     }
 
     public static void unloadVariants(Path variantsPath, int diseaseGroupId, int technologyId, Datastore datastore) throws IOException, NoSuchAlgorithmException {
@@ -539,7 +539,8 @@ public class CSVSUtil {
     public static void compressVariants(Path input, Path output) throws IOException {
 
         VariantSource source = new VariantSource("file", "file", "file", "file");
-        VariantReader reader = new VariantVcfReader(source, input.toAbsolutePath().toString());
+        //VariantReader reader = new VariantVcfReader(source, input.toAbsolutePath().toString());
+        VariantReader reader = new CSVSVariantVcfReader(source, input.toAbsolutePath().toString());
         VariantWriter writer = new CSVSVariantCountsCSVDataWriter(output.toAbsolutePath().toString());
 
 
@@ -551,6 +552,7 @@ public class CSVSUtil {
 
         VariantRunner variantRunner = new VariantRunner(source, reader, null, writers, taskList, 100);
 
+        System.out.println("File: " + input.getFileName());
         System.out.println("Compressing variants...");
         variantRunner.run();
         System.out.println("Variants compressed!");
@@ -695,9 +697,11 @@ public class CSVSUtil {
             System.out.println("Variant Filter!.");
             System.out.println("Generated file: " + "Filter_" + variantsPath.getFileName() );
 
-            // Delete panel if not used
+            // Delete panel and regions if not used
             long numUsed = datastore.createQuery(File.class).field("pid").equal(p.getId()).countAll();
             if (numUsed == 0 ) {
+                for (Region r : regions)
+                    datastore.delete(r);
                 datastore.delete(p);
             }
         }
