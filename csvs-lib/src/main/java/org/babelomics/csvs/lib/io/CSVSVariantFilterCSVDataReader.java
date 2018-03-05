@@ -83,7 +83,7 @@ public class CSVSVariantFilterCSVDataReader extends CSVSVariantCountCSVDataReade
             variants = new ArrayList<>();
             while ((line = this.reader.readLine()) != null) {
 
-                if (!line.trim().equals("")) {
+                if (!line.trim().equals("") &&  !line.startsWith("#")) {
 
                     String[] splits = line.split("\t");
 		   

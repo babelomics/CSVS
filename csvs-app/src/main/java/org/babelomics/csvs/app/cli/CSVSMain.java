@@ -134,7 +134,9 @@ public class CSVSMain {
                     technologies.add(technologyId);
 
                     CSVSUtil.recalculate(diseases, technologies, panelFile.getFileName().toString(), datastore);
-                }
+                } else
+                    if (panelFile == null && c.recalculate)
+                        CSVSUtil.recalculate(inputFile, diseaseGroupId, technologyId, datastore);
             }
 
 

@@ -24,6 +24,8 @@ public class FileVariant {
     @Property("vid")
     private ObjectId idVariant;
 
+    public FileVariant(){}
+
     public FileVariant( ObjectId idFile, ObjectId idVariant) {
         this.idFile = idFile;
         this.idVariant = idVariant;
@@ -32,4 +34,16 @@ public class FileVariant {
     public ObjectId getId() {
         return id;
     }
+
+
+
+    public ObjectId getIdFile() {
+        return idFile;
+    }
+
+    public ObjectId getIdVariant() {
+        return idVariant;
+    }
+
+
 }

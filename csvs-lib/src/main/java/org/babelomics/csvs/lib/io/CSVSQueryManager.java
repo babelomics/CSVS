@@ -675,7 +675,7 @@ public class CSVSQueryManager {
 	    boolean existsRegions = false;
 
         // Variants by regions
-        System.out.println("\nCSVS (calculateStats): Variant= "+ v +  " Samples: "  + sampleCountTemp);
+       // System.out.println("\nCSVS (calculateStats): Variant= "+ v +  " Samples: "  + sampleCountTemp);
 
         for (DiseaseCount auxDc : v.getDiseases()) {
             if (diseaseId.contains(auxDc.getDiseaseGroup().getGroupId()) && technologyId.contains(auxDc.getTechnology().getTechnologyId())) {

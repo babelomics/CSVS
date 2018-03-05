@@ -622,6 +622,79 @@ public class CSVSUtil {
     }
 
 
+    /**
+     * Calculate examples of a variant for a new file
+     * @param diseaseGroupId
+     * @param technologyId
+     * @param datastore
+     */
+    public static void recalculate(Path variantsPath, Integer diseaseGroupId, Integer technologyId, Datastore datastore) throws IOException, NoSuchAlgorithmException {
+        CSVSQueryManager qm = new CSVSQueryManager(datastore);
+
+        // Search files with panel
+        Query<File> queryFile = datastore.createQuery(File.class);
+        List<File> files = queryFile.field("dgid").equal(diseaseGroupId).field("tid").equal(technologyId).field("pid").exists().asList();
+
+        if(files.size() > 0){
+            String sha256 = calculateSHA256(variantsPath);
+
+            File fDb = datastore.createQuery(File.class).field("sum").equal(sha256).get();
+
+            if (fDb != null) {
+                // Search variant in the file
+                Query<FileVariant> querFileVariant = datastore.createQuery(FileVariant.class);
+                List<FileVariant> fvquery = querFileVariant.field("fid").equal(fDb.getId()).asList();
+                System.out.println("All variants file = "  + fvquery.size());
+                List<ObjectId> variantObjId = new ArrayList<>();
+                for (FileVariant fv : fvquery){
+                    variantObjId.add(fv.getIdVariant());
+                }
+
+                // Serach variant without examples calculate
+                Query<Variant> query = datastore.createQuery(Variant.class);
+                query.field("_id").in(variantObjId);
+
+                // Calculate    List<Region> regions = new ArrayList<>();
+                List<ObjectId> panelObjectIds = new ArrayList<>();
+                for (File f : files){
+                    panelObjectIds.add(f.getIdPanel());
+                }
+                List<Region> regions = datastore.createQuery(Region.class).field("pid").in(panelObjectIds).asList();
+
+                query.or(criteriaSearchVariant(regions, datastore));
+                System.out.println("Variants in regions = " + query.countAll());
+
+                // Calculate Sample Count
+                int numVAr = 0;
+                Iterator<Variant> it = query.batchSize(100).iterator();
+                System.out.println("Start");
+                while (it.hasNext()) {
+                    List<Variant> batch = new ArrayList<>();
+
+                    for (int i = 0; i < 100 && it.hasNext(); i++) {
+                        Variant v = it.next();
+                        numVAr++;
+                        int sumSampleRegion =  qm.initialCalculateSampleCount(v, diseaseGroupId, technologyId, datastore);
+                        v.setSumSampleRegion(new DiseaseSum(diseaseGroupId, technologyId, sumSampleRegion));
+                        System.out.println("VARIANTE: " + v.getChromosome() + ":" + v.getPosition()  +  "  Samples: " + sumSampleRegion);
+
+                        batch.add(v);
+                    }
+
+                    datastore.save(batch);
+                    batch.clear();
+                    System.out.println("Total: " +  numVAr + "      " +  new Date());
+                }
+
+                System.out.println("END  =" +  new Date());
+
+            }
+        }
+    }
+
+
+
+
     private static String calculateSHA256(Path variantsPath) throws NoSuchAlgorithmException, IOException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         FileInputStream fis = new FileInputStream(variantsPath.toAbsolutePath().toString());
