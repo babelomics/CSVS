@@ -88,6 +88,10 @@ public class CSVSUtil {
         diseaseGroups.add(new DiseaseGroup(20, "XX External causes of morbidity and mortality"));
         diseaseGroups.add(new DiseaseGroup(21, "XXI Factors influencing health status and contact with health services"));
         diseaseGroups.add(new DiseaseGroup(22, "XXII Codes for special purposes"));
+        diseaseGroups.add(new DiseaseGroup(23, "MGP (267 healthy controls)"));
+        diseaseGroups.add(new DiseaseGroup(24, "IBS (107 Spanish individuals from 1000genomes)"));
+        diseaseGroups.add(new DiseaseGroup(25, "V Mental and behavioural disorders(controls)"));
+        diseaseGroups.add(new DiseaseGroup(26, "Healthy controls"));
 
         for (DiseaseGroup dg : diseaseGroups) {
             try {

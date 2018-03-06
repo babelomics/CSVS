@@ -136,7 +136,7 @@ public class CSVSQueryManagerTest {
 
         List<DiseaseGroup> list = qm.getAllDiseaseGroups();
 
-        assertEquals(list.size(), 22);
+        assertEquals(list.size(), 26);
 
     }
 
