@@ -1,0 +1,988 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html"/>
+
+<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
+
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+
+
+<!-- Ini: List -->
+<link rel="import" href="../bower_components/paper-styles/typography.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../bower_components/iron-overlay-behavior/iron-overlay-manager.html">
+<link rel="import" href="../bower_components/iron-checked-element-behavior/iron-checked-element-behavior.html">
+<!-- End: List -->
+<style is="custom-style">
+:root{
+    --B:green;
+    --LB:#57bb8a;
+    --LP:orange;
+    --P:red;
+    --OK:green;
+    --KO:#bf4747;
+}
+</style>
+
+<script>
+    PathopediaBehavior = {
+        properties: {
+            typeP: {
+                type: Object,
+                value: {
+                    "B": "Benign",
+                    "LB": "Likely Benign",
+                    "LP": "Likely Pathogenic",
+                    "P": "Pathogenic"
+                }
+            },
+        },
+        _toArray: function(obj) {
+            return Object.keys(obj).map(function(key) {
+                return {
+                    name: key,
+                    value: obj[key]
+                };
+            });
+        }
+    };
+</script>
+
+<dom-module id="csvs-desc-pathopedia">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            padding: 0px 5px;
+            display: block;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns:  min-content min-content min-content  min-content min-content min-content min-content min-content;
+            grid-gap: 4px;
+            padding: 0px 5px;
+        }
+        .B {
+            background-color: var(--B);
+            width: 10px;
+            padding: 0px 5px; 0px; 5px;
+
+        }
+
+        .LB {
+            background-color: var(--LB);
+            text-align: center;
+            width: 10px;
+            padding: 0px 5px; 0px; 10px;
+        }
+
+        .LP {
+            background-color: var(--LP);
+            text-align: center;
+            width: 10px;
+            padding: 0px 5px; 0px; 10px;
+        }
+
+        .P {
+            background-color: var(--P);
+            text-align: center;
+            width: 10px;
+            padding: 0px 5px; 0px; 10px;
+        }
+    </style>
+    <template>
+            <div class="grid-container" title="">
+                <template is="dom-repeat" items="{{_toArray(typeP)}}">
+                    <div style="padding-left: 5px;">{{item.name}}</div>
+                    <div class$="{{item.name}}" title="{{item.name}}: {{item.value}}"></div>
+                </template>
+            </div>
+    </template>
+    <script>
+        Polymer({
+            is: "csvs-desc-pathopedia",
+            behaviors: [PathopediaBehavior],
+        });
+    </script>
+</dom-module>
+
+<dom-module id="csvs-process-pathopedia">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            padding: 0px 0px;
+            display: block;
+        }
+
+        .grid-container-process {
+            display: grid;
+            grid-template-columns:  min-content min-content min-content  min-content max-content;
+            grid-gap: 0px;
+            padding: 0px;
+            width: 100px;
+            background-color: #e0e0e0;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns:  min-content min-content;
+            grid-gap: 0px 0px;
+            padding: 0px 5px;
+        }
+        .B {
+            background-color: var(--B);
+            text-align: center;
+        }
+
+        .LB {
+            background-color: var(--LB);
+            text-align: center;
+        }
+
+        .LP {
+            background-color: var(--LP);
+            text-align: center;
+        }
+
+        .P {
+            background-color: var(--P);
+            text-align: center;
+        }
+    </style>
+    <template>
+        <!-- Ini: Show opinions -->
+        <div class="grid-container" title="">
+            <div class="grid-container-process" title="">
+                <template is="dom-repeat" items="{{_toArray(typeP)}}">
+                    <div style="width:{{getPorc(map_total_type_opinion,item.name, total)}}px;" class$="{{item.name}}" title="{{item.value}}: {{getValue(map_total_type_opinion,item.name)}}  ({{getPorc(map_total_type_opinion,item.name, total)}}%)">
+                        {{getInfo(map_total_type_opinion,item.name)}}
+                     </div>
+                </template>
+            </div>
+            <div>
+                <div style="padding-left: 5px;" title="Number of published reviews: {{total}}">{{total}}</div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        Polymer({
+            is: "csvs-process-pathopedia",
+            properties: {
+                map_total_type_opinion:{
+                    type: Object,
+                },
+                value_max:{
+                    type: Number,
+                    computed: '_calculateMax(map_total_type_opinion)',
+                    value:0
+                },
+                type_max: {
+                    type:Array
+                },
+                total:{
+                    type: Number,
+                    value: "0"
+                },
+                variant:{
+                    type:String
+                },
+            },
+            behaviors: [PathopediaBehavior],
+
+            getInfo:function(mapTypeOpinion, t){
+                var value = this.getValue(mapTypeOpinion,t);
+                if (value != 0)
+                  return " ";
+            },
+            getValue: function(mapTypeOpinion, t) {
+                var value = 0;
+                if (mapTypeOpinion[t] !== undefined)
+                    value = mapTypeOpinion[t];
+                return value;
+            },
+
+            getPorc:function (mapTypeOpinion, t, total ) {
+                var value = this.getValue(mapTypeOpinion, t);
+                var porc ="";
+                if (total != 0)
+                    porc = value*100/total;
+                    porc = Math.round(porc * 100) / 100 ;
+                return porc;
+            },
+            _calculateMax: function (mapTotalTypeOpinion){
+                type_max = [];
+                value_max = 0;
+                for (var key in mapTotalTypeOpinion) {
+                    var value = mapTotalTypeOpinion[key];
+                    if (type_max.length == 0){
+                        value_max = value;
+                        type_max.push(key)
+                    }
+                    else {
+                        if (value_max < value ){
+                            type_max = [];
+                            type_max.push(key);
+                            value_max = value;
+                        } else if (value_max == value){
+                            type_max.push(key);
+                            value_max = value;
+                        }
+                    }
+                }
+                this.type_max = type_max;
+                return value_max;
+            },
+        });
+    </script>
+</dom-module>
+
+
+
+<dom-module id="csvs-new-pathopedia">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            width: 450px;
+        }
+
+        paper-dropdown-menu{
+            display:block;
+        }
+
+        .output{
+            white-space: pre-wrap;
+        }
+        .error {
+            right: auto;
+            left: auto;
+            margin-top: auto;
+        }
+        paper-input-error[invalid] .error{
+            display:block;
+        }
+        paper-input-error:not[invalid] .error{
+            display:none;
+        }
+        paper-button {
+            text-transform: inherit;
+            display: inline-block;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: auto max-content max-content;
+            grid-gap: 1px;
+            padding: 20px 0px 0px 0px;
+            vertical-align: bottom;
+            align-items: flex-end;
+        }
+
+        .ok {
+            color: var(--OK);
+            font-weight: bold;
+        }
+        .ko {
+            color: var(--KO);
+            font-weight: bold;
+        }
+
+    </style>
+    <template>
+        <div align="center">
+            <p>Select your review: <title-variant  variant={{variant}}></title-variant></p>
+        </div>
+
+        <paper-dropdown-menu label="Review"  id="opinionMenu" class="dropdown-content" >
+            <paper-tabs slot="dropdown-content" id="opinion" attr-for-selected="name" on-iron-select="validAll">
+                <paper-tab name="B">Benign</paper-tab>
+                <paper-tab name="LB">Likely bening</paper-tab>
+                <paper-tab name="LP">Likely Pathogenic</paper-tab>
+                <paper-tab name="P">Pathogenic</paper-tab>
+            </paper-tabs>
+        </paper-dropdown-menu>
+        <paper-input-error  style="margin-top:-8px" aria-live="assertive" id="opinionMenuError" class="error">Required</paper-input-error>
+
+        <paper-input label="Name" id="name" required error-message="Required" on-input="validAll"></paper-input>
+
+        <paper-input label="Institution" id="institution" required  error-message="Required" on-input="validAll"></paper-input>
+        <paper-textarea label="Evidence" maxRows="4" id="evidence" required error-message="Required" on-input="validAll"></paper-textarea>
+
+            <div class="grid-container">
+                <div class="output ok" id="output">  </div>
+                <div id="Sending" hidden$="{{!sending}}">
+                    <i class="fa fa-circle-o-notch fa-spin"></i> Sending...
+                </div>
+                <div><paper-button class="stv-btn stv-btn-shdw stv-btn-big" on-click="sendOpinion" id="send_opinion">Send review</paper-button></div>
+            </div>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: "csvs-new-pathopedia",
+            properties: {
+                variant:{
+                    type:String
+                },
+                sending: {
+                    type: Boolean,
+                    value: false
+                },
+            },
+            validAll:function(){
+                this.$.opinionMenuError.removeAttribute("invalid");
+                this.$.opinionMenu.getElementsByTagName("paper-input")[0].removeAttribute("invalid");
+                this.$.name.invalid = false;
+                this.$.evidence.invalid = false;
+                this.$.institution.invalid = false;
+            },
+            _clear: function(){
+                this.$.name.value = "";
+                this.$.institution.value  = "";
+                this.$.evidence.value = "";
+                this.$.output.innerHTML = "";
+                this.$.sending = false;
+                this.$.send_opinion.hidden=false;
+                this.$.opinion.selected=undefined;
+                this.validAll();
+                document.getElementById("opinionMenu")._setSelectedItem();
+            },
+
+            sendOpinion: function () {
+                this.$.output.innerHTML = "";
+                this.$.output.classList.remove(["ok","ko"]);
+                var v1 = false;
+
+                if (this.$.opinion.selected) {
+                    v1 = true;
+                    this.$.opinionMenuError.removeAttribute("invalid");
+                    this.$.opinionMenu.getElementsByTagName("paper-input")[0].removeAttribute("invalid");
+                } else {
+                    this.$.opinionMenuError.setAttribute("invalid", true);
+                    this.$.opinionMenu.getElementsByTagName("paper-input")[0].setAttribute("invalid", true);
+                }
+
+                var v2 = this.$.name.validate();
+                var v3 = this.$.institution.validate();
+                var v4 = this.$.evidence.validate();
+                if (v1 && v2 && v3 && v4) {
+
+                    var me = this;
+
+                    var variant = this.variant;
+                    if (variant != null) {
+                        variant = variant.replace(" ", ":");
+                        variant = variant.replace(">", ":");
+                    }
+                    this.sending = true;
+                    var type = this.$.opinion.selected;
+                    $.ajax({
+                        url:  window.CSVS_HOST + "/pathologies/" + variant + "/" + type + "/add",
+                        data: {
+                            name: me.$.name.value,
+                            institution: me.$.institution.value,
+                            evidence: me.$.evidence.value,
+                        },
+                        crossDomain: true,
+                        success: function (data) {
+                            if (data != null && data.result != null && data.result[0] != null && data.result[0].state == 0) {
+                                me.sending = false;
+                                me.$.output.innerHTML = "The reviews has been registered correctly. It is pending to be published.";
+                                me.$.output.classList.add("ok");
+                                me.$.send_opinion.hidden=true;
+                            }
+                        },
+                        error: function (jqXHR, exception) {
+                            me.sending = false;
+                            me.$.output.innerHTML = "There has been a problem with the server, try again later.";
+                            me.$.output.classList.add("ko");
+                        },
+                        type: "POST"
+                    }); // End ajax
+
+                }
+            },
+        });
+    </script>
+</dom-module>
+
+
+
+
+
+<!-- Ini: Resume opinions -->
+<dom-module id="csvs-resume-pathopedia">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            padding: 0px 5px;
+        }
+        .B {
+            --paper-progress-active-color: var(--B);
+            --paper-progress-height: 6px;
+        }
+
+        .LB {
+            --paper-progress-active-color: var(--LB) ;
+            --paper-progress-height: 6px;
+        }
+
+        .LP {
+            --paper-progress-active-color: var(--LP);
+            --paper-progress-height: 6px;
+        }
+
+        .P {
+            --paper-progress-active-color: var(--P);
+            --paper-progress-height: 6px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: max-content auto min-content;
+            grid-gap: 0px 10px;
+            padding: 0px;
+            white-space:normal;
+        }
+
+
+        paper-progress{
+            width:auto ;
+            padding-top: 5px;
+        }
+
+    </style>
+    <template>
+        <div class="grid-container">
+        <template is="dom-repeat" items="{{_toArray(typeP)}}">
+            <div>{{item.value}}</div>
+            <div title=" {{getPorc(map_total_type_opinion,item.name,total)}}">
+                <paper-progress value={{getValue(map_total_type_opinion,item.name)}}" max={{total}} class$="{{item.name}}"></paper-progress>
+            </div>
+            <div title="Number of published reviews: {{total}}">{{getValue(map_total_type_opinion,item.name)}}/{{total}}</div>
+
+        </template>
+        </div>
+    </template>
+
+    <script>
+        Polymer({
+            is: "csvs-resume-pathopedia",
+            properties: {
+                map_total_type_opinion:{
+                    type: Object,
+                },
+                total:{
+                    type: Number,
+                    value: "0"
+                },
+                variant:{
+                    type:String
+                },
+            },
+            behaviors: [PathopediaBehavior],
+            getValue: function(mapTypeOpinion, t) {
+                var value = 0;
+                if (mapTypeOpinion[t] !== undefined)
+                    value = mapTypeOpinion[t];
+                return value;
+            },
+            getPorc:function (mapTypeOpinion, t, total ) {
+                var value = this.getValue(mapTypeOpinion,t);
+                if (total != 0)
+                    porc = value*100/total;
+                porc = Math.round(porc * 100) / 100 + "%";
+                return porc;
+            },
+            _calculate: function (mapTotalTypeOpinion){
+                type = [];
+                value = 0;
+                for (var key in mapTotalTypeOpinion) {
+                    value = mapTotalTypeOpinion[key];
+                    type.push(key);
+                }
+                this.type = type;
+                return value;
+            },
+        });
+    </script>
+</dom-module>
+<!-- End: Resume opinions -->
+
+
+<dom-module id="csvs-pathopedia">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+         :host {
+            display: block;
+             padding: 0px 0px;
+        }
+
+         .grid-max-container {
+             display: grid;
+             grid-template-columns: minmax(min-content, auto) minmax(min-content, max-content);
+             grid-gap: 0px;
+             padding: 0px;
+         }
+
+         .grid-max-container > div {
+             padding: 0px 3px 0px 0px;
+             align-self: center;
+             text-align: left;
+         }
+
+         #dropDownDialogOpinion > .grid-container {
+             grid-template-columns: minmax(max-content, auto)  minmax(min-content, max-content);
+         }
+
+         #dropDownDialogAllOpinion{
+             width: 500px;
+             height: 560px;
+         }
+
+
+         paper-button {
+             min-width: 0px;
+             text-transform: inherit;
+
+             line-height: 21px;
+             border: 1px solid #ccc;
+             padding: 1px 5px;
+             color: #333;
+             background-color: #fff;
+         }
+
+         paper-dialog{
+             text-align: left;
+             margin:0px;
+         }
+
+         paper-dropdown-menu {
+             display: inherit;
+         }
+        .dialog-head{
+            padding: 0px;
+            margin: 0px;
+            text-align: center;
+        }
+
+    </style>
+    <template>
+            <!-- Ini: Show max opinions -->
+            <div class="grid-max-container" title="">
+                <div>
+                    <csvs-process-pathopedia map_total_type_opinion={{map_total_type_opinion}} total={{total}}></csvs-process-pathopedia>
+                </div>
+
+                <div>
+                    <paper-button on-click="openDropdownDialogOpinion" title="Click to see reviews">
+                        <i class="fa fa-eye" aria-hidden="true"></i>
+                    </paper-button>
+
+                    <paper-button on-click="openNewDialogOpinion" title="Click to add new review">
+                        <i class="fa fa-plus" aria-hidden="true"></i>
+                    </paper-button>
+                </div>
+            </div>
+            <!-- End: Show max opinions -->
+
+
+        <!-- Ini: Show resume opinions -->
+        <paper-dialog id="dropDownDialogOpinion" title="">
+            <div align="right"><i class="fa fa-close" dialog-dismiss></i></div>
+            <div class="dialog-head">
+                <p class="dialog-head">Pathopedia: <title-variant  variant={{variant}}></title-variant></p>
+            </div>
+
+            <csvs-resume-pathopedia map_total_type_opinion={{map_total_type_opinion}} total={{total}}></csvs-resume-pathopedia>
+
+            <template is="dom-if" if="[[checkTotal(total,'eq')]]">
+                <div title="Click to see review">
+                    <label on-click="openDialogAllOpinion" style="cursor: pointer;"> See review <i class="fa fa-caret-right"></i></label>
+                </div>
+            </template>
+            <template is="dom-if" if="[[checkTotal(total,'gt')]]">
+                <div title="Click to see {{total}} reviews">
+                    <label on-click="openDialogAllOpinion" style="cursor: pointer;"> See all {{total}} reviews <i class="fa fa-caret-right"></i></label>
+                </div>
+            </template>
+
+
+            <div align="right">
+                    <paper-button class="stv-btn stv-btn-shdw stv-btn-big" on-click="openNewDialogOpinion" title="Click to add new review"><i class="fa fa-plus" aria-hidden="true"></i> Add new review</paper-button>
+            </div>
+        </paper-dialog>
+        <!-- End: Show resume opinions -->
+
+        <!-- Ini: New opinion -->
+        <paper-dialog id="newDialogOpinion" title="">
+            <div align="right"><i class="fa fa-close" dialog-dismiss></i></div>
+            <csvs-new-pathopedia variant="{{variant}}" id="new_pathopedia"></csvs-new-pathopedia>
+        </paper-dialog>
+        <!-- End: New opinion -->
+
+
+        <!-- Ini: All Opinions -->
+        <paper-dialog id="dropDownDialogAllOpinion" title="">
+            <div align="right"><i class="fa fa-close" dialog-dismiss></i></div>
+            <csvs-all-pathopedia variant="{{variant}}" id="all_opinion"></csvs-all-pathopedia>
+        </paper-dialog>
+        <!-- End: All Opinions -->
+    </template>
+
+    <script>
+        Polymer({
+            is: "csvs-pathopedia",
+            properties: {
+                map_total_type_opinion:{
+                    type: Object,
+                },
+                total:{
+                    type: Number,
+                    value: "0"
+                },
+                variant:{
+                    type:String
+                },
+            },
+            behaviors: [PathopediaBehavior],
+            openNewDialogOpinion: function() {
+                this.$.dropDownDialogOpinion.close();
+                this.$.dropDownDialogAllOpinion.close();
+                this.$.new_pathopedia._clear();
+                this.$.newDialogOpinion.open()
+            },
+
+            openDropdownDialogOpinion: function () {
+                this.$.newDialogOpinion.close();
+                this.$.dropDownDialogAllOpinion.close();
+                this.$.dropDownDialogOpinion.open();
+            },
+
+            openDialogAllOpinion: function () {
+                this.$.newDialogOpinion.close();
+                this.$.dropDownDialogOpinion.close();
+                this.$.dropDownDialogAllOpinion.open();
+                this.$.all_opinion.init();
+
+            },
+            checkTotal: function (total, op) {
+                if("eq" == op){
+                    return total == 1;
+                } else if("gt" == op)
+                    return total > 1;
+
+            }
+        });
+    </script>
+</dom-module>
+
+<dom-module id="csvs-all-pathopedia">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            padding: 0px 5px;
+            display: block;
+
+        }
+
+        body {
+            @apply(--paper-font-common-base);
+            margin: 0;
+            padding: 0;
+            background-color: #eee;
+        }
+
+
+        iron-list {
+            height: 380px;
+            overflow-y: auto;
+            --iron-list-items-container: {
+                max-width: 530px;
+
+                overflow-y: auto;
+                margin: 0px;
+                margin-top: 0px;
+                margin-bottom: 0px;
+                white-space: normal;
+                text-align: justify;
+            };
+        }
+
+        .opinionItem {
+            @apply(--layout-horizontal);
+
+            margin: 16px 16px 0 16px;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: white;
+            border: 1px solid #ddd;
+        }
+
+        .pad {
+            padding: 0 16px;
+            @apply(--layout-flex);
+            @apply(--layout-vertical);
+        }
+
+        .primary {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        info {
+            font-size: 14px;
+            margin: 0px 0;
+        }
+
+        .spacer {
+            @apply(--layout-flex);
+        }
+
+        .index {
+            width: 30px;
+        }
+        .grid-container-filter {
+            display: grid;
+            grid-template-columns: max-content auto;
+            vertical-align: bottom;
+            align-items: flex-end;
+            padding-left: 20px;
+        }
+        .dialog-head{
+            padding: 0px;
+            margin: 0px;
+            text-align: center;
+        }
+    </style>
+
+
+    <template  is="data-bind" id="app">
+        <div class="dialog-head">
+            <p class="dialog-head">Reviews: <title-variant  variant={{variant}}></title-variant></p>
+        </div>
+
+        <iron-ajax id="ajax"
+                   auto="false"
+                   url=""
+                   parameters="{{_getParams()}}"
+                   handle-as="json"
+                   on-response="_onResponse">
+        </iron-ajax>
+
+        <!-- Ini: Sort -->
+        <div class="grid-container-filter">
+            <div>
+                <paper-dropdown-menu label="Sort by">
+                    <paper-tabs slot="dropdown-content" id="sort" name="sort" selected="{{sort}}" attr-for-selected="data-sortby" on-iron-select="_reloadData" >
+                        <paper-tab data-sortby="most_recent">Most recent</paper-tab>
+                        <paper-tab data-sortby="review">Review</paper-tab>
+                        <paper-tab data-sortby="top">Top</paper-tab>
+                    </paper-tabs>
+                </paper-dropdown-menu>
+            </div>
+            <div >
+                <simple-checkbox id="reverse" name="reverse"  checked="{{reverse}}" value="true"  on-tap="_reloadData"></simple-checkbox>
+            </div>
+        </div>
+        <!-- End: Sort -->
+
+        <iron-list id="listOpinion" items="[]" as="opinion" scroll-target="html">
+            <template>
+                <div>
+                    <div class="opinionItem" tabindex$="[[tabIndex]]">
+                        <div class="pad">
+                            <div class="primary">[[opinion.typeDesc]] </div>
+                            <div>
+                                <p >By [[ opinion.name ]] ([[ opinion.institution ]]) on [[opinion.created]] </p>
+                            </div>
+                                <info><strong>Evidence:</strong> [[ opinion.evidence ]]<br/></info>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </iron-list>
+    </template>
+
+    <script>
+        HTMLImports.whenReady(function() {
+            Polymer({
+                is: 'csvs-all-pathopedia',
+                properties: {
+                    variant: {
+                        type: String
+                    },
+                    limit: {
+                        type: Number,
+                        value: 0
+                    },
+                    skip: {
+                        type: Number,
+                        value: 0
+                    },
+                    sort: {
+                        type: String,
+                    },
+                    reverse: {
+                        type: Boolean,
+                        value: false
+                    },
+                    sort_by:{
+                        type: Object,
+                        value: {
+                            "most_recent": "-c",
+                            "review": "t",
+                            "top": "-top"
+                        }
+                    },
+                },
+                init: function(){
+                   this.sort = "most_recent";
+                },
+                sort_reverse: function(value) {
+                    if(value.includes("-"))
+                        return value.replace("-","");
+                    else
+                        return "-"+value;
+                },
+                _reloadData: function () {
+                    this.$.ajax.set( 'params', this._getParams());
+                    this.$.ajax.set('url', this._getUrl());
+                },
+                ready: function() {
+                },
+                _getUrl: function(){
+                    var variant = this.variant;
+                    if (variant != null) {
+                        variant = variant.replace(" ", ":");
+                        variant = variant.replace(">", ":");
+                    }
+                    return window.CSVS_HOST + "/pathologies/"+ variant +"/list";
+                },
+                _getParams: function(){
+                    var params={};
+                    if (this.sort){
+                        params["skip"] = this.skip;
+                        if (this.limit != undefined)
+                            params["limit"] = this.limit;
+                        if (this.sort != undefined){
+                            params["sort"] = (this.reverse ? this.sort_reverse(this.sort_by[this.sort]) : this.sort_by[this.sort]);
+                        }
+
+                        params["states"]=1;
+
+                        }
+                        return (params);
+                },
+                _onResponse : function (e) {
+                    this.$.listOpinion.items = [];
+                    if (e.detail.response != null){
+                        var variants = e.detail.response.result;
+                        var list = [];
+                        variants.forEach(function(o) {
+                            var d =   new Date(o["created"]);
+                            o["created"]=  new Date(o["created"]).toDateString();
+                            list.push(o);
+                        });
+                        this.$.listOpinion.items = list;
+                    }
+                },
+            })
+        });
+    </script>
+
+</dom-module>
+
+
+
+
+<dom-module id="title-variant">
+    <template>
+        <style>
+            :host {
+                display: block;
+            },
+        </style>
+
+        <label class="stv">Chr:</label>{{chr}}</span>
+        <label class="stv">Position:</label>{{position}}
+        <label class="stv">Alleles:</label>{{alleles}}
+    </template>
+    <script>
+        Polymer({
+            is: 'title-variant',
+            properties: {
+                variant: {
+                    type: String,
+                },
+
+                chr: {
+                    type: String,
+                    computed: '_getField(variant, 0)',
+                },
+                position: {
+                    type: String,
+                    computed: '_getField(variant,1)',
+                },
+                alleles: {
+                    type: String,
+                    computed: '_getField(variant, 2)',
+                },
+
+            },
+            _getField: function(variant, pos) {
+                var fields = variant.split(/[:-\s]+/);
+                if (fields.length > pos)
+                    return fields[pos];
+            },
+
+        });
+    </script>
+
+</dom-module>
+
+
+<dom-module id="simple-checkbox">
+    <template>
+        <style>
+            :host {
+                display: block;
+                padding: 8px;
+            }
+
+            :host([invalid]) span {
+                color: red;
+            }
+
+            #labelText {
+                display: inline-block;
+                width: 100px;
+            }
+        </style>
+
+        <input type="checkbox" id="checkbox" on-tap="_onCheckTap">
+        <span id="labelText">{{label}}</span>
+    </template>
+    <script>
+        Polymer({
+
+            is: 'simple-checkbox',
+
+            behaviors: [
+                Polymer.IronCheckedElementBehavior
+            ],
+            properties: {
+                label: {
+                    type: String,
+                    value: 'Reverse'
+                }
+            },
+            _onCheckTap: function() {
+                this.checked = this.$.checkbox.checked;
+
+            },
+
+        });
+    </script>
+
+</dom-module>

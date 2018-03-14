@@ -1,6 +1,7 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
+
 <link rel="import" href="../bower_components/jsorolla/src/lib/components/jso-genome-viewer-element.html">
 
 <link rel="import" href="../bower_components/stevia-elements/src/filter/stv-filter-position.html">
@@ -9,6 +10,9 @@
 <script src="../bower_components/stevia-elements/src/manager/cellbase-manager.js"></script>
 
 <link rel="import" href="csvs-saturation-element.html">
+
+<link rel="import" href="csvs-pathopedia.html">
+
 
 <dom-module id="csvs-search-element">
     <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
@@ -889,6 +893,20 @@
 
                         }
                     }]
+                },
+                {
+                    name: 'pathopedia',
+                    title: 'Pathopedia <br/><br/><csvs-desc-pathopedia></csvs-desc-pathopedia>',
+                    width: 190,
+                    formula: function(row) {
+                        var variant = row.chromosome + ":" + row.position + " " + row.reference + ">"+ row.alternate;
+                        if (row.pathopedia != null) {
+                            var mtto =JSON.stringify(row.pathopedia.mapTotalTypeOpinion);
+                           return "<csvs-pathopedia map_total_type_opinion=" + mtto + " variant='"+ variant+"'"+ " total='"+row.pathopedia.total+"'></csvs-pathopedia>";
+                        } else {
+                            return "<csvs-pathopedia  variant='"+ variant+"'></csvs-pathopedia>";
+                        }
+                    }
                 }
             ];
             this.reloadChart({});
@@ -1265,7 +1283,41 @@
 
                 var variant = row.chromosome + ":" + row.position + ":" + row.reference + ":" + row.alternate;
                 positions.push(variant);
+            }
 
+
+            // Pathopedia
+            var query = positions.join(",");
+            if (positions.length > 0) {
+                CSVSManager.pathologies.fetch({
+                    id: query,
+                    request: {
+                        async: false,
+                        success: function (response) {
+                            if (response != undefined && response.numResults > 0) {
+                                for (var i = 0; i < response.result.length; i++) {
+                                    var obj = response.result[i];
+                                    if (obj.total > 0) {
+                                        for (var j = 0; j < data.length; j++) {
+                                            if (obj.variant.chromosome == data[j].chromosome &&
+                                                obj.variant.position == data[j].position &&
+                                                obj.variant.reference == data[j].reference &&
+                                                obj.variant.alternate == data[j].alternate) {
+
+                                                data[j].pathopedia = {
+                                                    "mapTotalTypeOpinion": obj.mapTotalTypeOpinion.valueOf(),
+                                                    "total": obj.total
+                                                };
+                                                continue;
+                                            }
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                });
             }
 
             // Annotate
@@ -1588,10 +1640,13 @@
         handleRowClick: function(e) {
             var row = e.detail.row;
 
-            this.$.gv.genomeViewer.setRegion(row);
-            this.$.effect.row = row;
-            this.$.frequency.row = row;
-            this.$.phenotype.row = row;
+            // Call if changue row
+            if (this.$.effect.row != row){
+                this.$.gv.genomeViewer.setRegion(row);
+                this.$.effect.row = row;
+                this.$.frequency.row = row;
+                this.$.phenotype.row = row;
+            }
 
         },
         handleMenuClick: function(e) {

@@ -22,6 +22,12 @@ var CSVSManager = {
             return CSVSManager._doRequest(args, 'regions', 'saturation');
         }
     },
+
+    pathologies:{
+        fetch: function (args) {
+            return CSVSManager._doRequest(args, 'pathologies', 'fetch');
+        }
+    },
     _url: function (args, api, action) {
         var host = CSVSManager.host;
         if (typeof args.request.host !== 'undefined' && args.request.host != null) {

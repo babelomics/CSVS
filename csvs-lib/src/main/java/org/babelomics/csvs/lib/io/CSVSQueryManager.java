@@ -3,6 +3,7 @@ package org.babelomics.csvs.lib.io;
 import com.mongodb.*;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.babelomics.csvs.lib.models.*;
+import org.bson.types.ObjectId;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 import org.mongodb.morphia.query.Criteria;
@@ -645,6 +646,160 @@ public class CSVSQueryManager {
     private int getChunkEnd(int id, int chunksize) {
         return (id * chunksize) + chunksize - 1;
     }
+
+    /**
+     * Get info pathopedia from a variant.
+     * @param variants
+     * @return
+     */
+    public List<Pathology> getVariantsPathopedia(List<Variant> variants, List<Integer> statesList){
+
+        List<Variant> listVariant = getVariants( variants, null, null);
+
+        List<ObjectId> ids = new ArrayList<>();
+        for(Variant v:listVariant)
+            ids.add(v.getId());
+
+        Map listMatchDBObjects = new HashMap();
+        listMatchDBObjects.put("v.$id",  new BasicDBObject("$in",ids));
+        listMatchDBObjects.put("s",  new BasicDBObject("$in", statesList));
+
+        BasicDBObject match = new BasicDBObject("$match", listMatchDBObjects);
+
+        Map listDBObjects = new HashMap();
+        listDBObjects.put("variant", "$v");
+        listDBObjects.put("type", "$t");
+
+        Map listGroupDBObjects = new HashMap();
+        listGroupDBObjects.put("_id", listDBObjects);
+        listGroupDBObjects.put("count",  new BasicDBObject("$sum", Opinion.PUBLISHED));
+
+        BasicDBObject group = new BasicDBObject("$group", listGroupDBObjects);
+
+        Map listGroup2DBObjects = new HashMap();
+        Map push = new HashMap();
+        push.put("t", "$_id.type");
+        push.put("c", "$count");
+        listGroup2DBObjects.put("_id", "$_id.variant");
+        listGroup2DBObjects.put("total",  new BasicDBObject("$push", push));
+
+        BasicDBObject group2 = new BasicDBObject("$group", listGroup2DBObjects);
+
+        DBCollection collection = datastore.getCollection(Opinion.class);
+
+        List<BasicDBObject> aggList = new ArrayList<>();
+        aggList.add(match);
+        aggList.add(group);
+        aggList.add(group2);
+
+        AggregationOutput aggregation = collection.aggregate(aggList);
+
+        List<Pathology> pathologies = new ArrayList<>();
+
+        for (DBObject opObject : aggregation.results()) {
+            DBRef aux = (DBRef) opObject.get("_id");
+            ObjectId v = (ObjectId) aux.getId();
+
+            Map type = new HashMap();
+            BasicDBList total = (BasicDBList) opObject.get("total");
+            for(int i=0 ; i < total.size(); i++){
+                BasicDBObject o = (BasicDBObject) total.get(i);
+                type.put(o.get("t"), o.get("c"));
+            }
+
+            Variant variant = this.datastore.createQuery(Variant.class).field("_id").equal(v).get();
+            Pathology p = new Pathology( variant, type);
+
+            pathologies.add(p);
+        }
+
+
+        return pathologies;
+    }
+
+
+    /**
+     * Get list all opinion.
+     * @param v
+     * @return
+     */
+    public List<Opinion> getAllOpinion(Variant v, List<Integer> statesList, String sort, Integer limit, Integer skip) {
+        List<Opinion> res = new ArrayList<Opinion>();
+
+        List<Variant> variants=new ArrayList<>();
+        variants.add(v);
+        List<Pathology> pathology =  getVariantsPathopedia(variants, statesList);
+        Pathology pat = (!pathology.isEmpty() && pathology != null) ? pathology.get(0) : null;
+
+        if(pat != null) {
+            Query<Opinion> query = this.datastore.createQuery(Opinion.class);
+            query.field("v").equal(pat.getVariant());
+
+            if (statesList != null && !statesList.isEmpty()) {
+                query.field("s").in(statesList);
+            }
+
+            if (sort != null && !"".equals(sort) && ("top".equals(sort) || "-top".equals(sort))) {
+                List<Map.Entry<String, Integer>> order = new ArrayList<>();
+                for (Map.Entry<String, Integer> entry : pat.getMapTotalTypeOpinion().entrySet())
+                    order.add(entry);
+
+
+                if ("top".equals(sort)) {
+                    order.sort((Map.Entry o1, Map.Entry o2) -> ((Integer) o1.getValue()).compareTo((Integer) o2.getValue()));
+                } else {
+                    order.sort((Map.Entry o1, Map.Entry o2) -> ((Integer) o2.getValue()).compareTo((Integer) o1.getValue()));
+                }
+
+                for (Map.Entry<String, Integer> entry : order) {
+                    Query<Opinion> query_aux = query.cloneQuery();
+                    query_aux.field("t").equal(entry.getKey());
+                    query_aux.order("-c");
+
+                    res.addAll(query_aux.asList());
+                }
+
+            } else {
+                if (sort != null && !"".equals(sort)) {
+                    query.order(sort);
+                }
+
+                if (skip != null && limit != null) {
+                    query.offset(skip).limit(limit);
+                }
+                res = query.asList();
+            }
+        }
+
+        return res;
+    }
+
+    /**
+     * Add new opinion or update.
+     * @param op
+     * @return
+     */
+    public Opinion saveOpinion(Opinion op, int newState) {
+        int oldState = op.getState();
+        if (oldState != newState ||  op.getId() == null) {
+            op.setState(newState);
+            this.datastore.save(op);
+         }
+
+        return op;
+    }
+
+
+    /**
+     * Get opinion.
+     * @param idOption
+     * @return
+     */
+    public Opinion getOpinion(ObjectId idOption) {
+        Opinion res = datastore.createQuery(Opinion.class).field("_id").equal(idOption).get();
+        return res;
+    }
+
 
 
     class AllVariantsIterable implements Iterable<Variant> {

@@ -277,14 +277,7 @@
                         text: text,
                         html: '<pre>' + text + '</pre>',
                         from: window.FROM_EMAIL || '',
-                        to: window.TO_EMAIL || '',
-                        host: window.HOST || '',
-                        port: window.PORT || '',
-                        secure: window.SECURE,
-                        debug: window.DEBUG,
-                        ignoreTLS: window.IGNORE_TLS,
-                        user: window.USER,
-                        pass: window.PASS
+                        to: window.TO_EMAIL || ''
                     },
                     crossDomain: true,
                     success: function (data) {

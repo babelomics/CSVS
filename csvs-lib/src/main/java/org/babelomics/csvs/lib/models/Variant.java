@@ -205,4 +205,20 @@ public class Variant {
 //                ", annots=" + annots +
                 '}';
     }
+
+    /**
+     * Return pretty-formmat variant.
+     * @return
+     */
+    public String pretty(){
+        StringBuffer textVar = new StringBuffer();
+        textVar.append(getChromosome());
+        textVar.append(":");
+        textVar.append(getPosition());
+        textVar.append(" ");
+        textVar.append(getReference());
+        textVar.append(">");
+        textVar.append(getAlternate());
+        return textVar.toString();
+    }
 }

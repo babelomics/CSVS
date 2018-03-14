@@ -23,10 +23,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -120,7 +117,7 @@ public class CSVSQueryManagerTest {
 
         List<DiseaseGroup> list = qm.getAllDiseaseGroups();
 
-        assertEquals(list.size(), 18);
+        assertEquals(list.size(), 22);
 
     }
 
@@ -348,4 +345,92 @@ public class CSVSQueryManagerTest {
     public void testGetChunkId() throws Exception {
 
     }
+
+
+    @Test
+    public void testsaveOpinion() throws Exception {
+        Variant v1 = qm.getVariant("1", 1, "A", "C", new ArrayList<>(), new ArrayList<>());
+        Opinion op1 = new Opinion();
+        op1.setVariant(v1);
+        op1.setName("Name person");
+        op1.setInstitution("Name institucion");
+        op1.setEvidence("Evidence");
+        op1.setType(Opinion.LIKELY_PATHOGENIC);
+        op1.setCreated(new Date());
+
+        op1 = qm.saveOpinion(op1,Opinion.PENDING);
+        assertEquals(op1.getState(), 0);
+
+        Variant v2 = qm.getVariant("1", 1, "A", "C", new ArrayList<>(), new ArrayList<>());
+        Opinion op2 = new Opinion();
+        op2.setVariant(v2);
+        op2.setName("Name person");
+        op2.setInstitution("Name institucion");
+        op2.setEvidence("Evidence");
+        op2.setType(Opinion.PATHOGENIC);
+        op2.setCreated(new Date());
+        qm.saveOpinion(op2, Opinion.PENDING);
+        assertEquals(op2.getState(), 0);
+
+        qm.saveOpinion(op1, Opinion.PUBLISHED);
+        assertEquals(op1.getState(), 1);
+
+        Opinion op3 = new Opinion();
+        op3.setVariant(v1);
+        op3.setName("Name person");
+        op3.setInstitution("Name institucion");
+        op3.setEvidence("Evidence");
+        op3.setType(Opinion.BENING);
+        op3.setCreated(new Date());
+        qm.saveOpinion(op3, Opinion.REJECTED);
+        assertEquals(op3.getState(), 2);
+        qm.saveOpinion(op3, Opinion.PUBLISHED);
+
+        Opinion op4 = new Opinion("Name person","Name institucion","Evidence",Opinion.LIKELY_PATHOGENIC);
+        op4.setVariant(v1);
+        qm.saveOpinion(op4, Opinion.PUBLISHED);
+    }
+
+    @Test
+    public void testGetVariantsPathopedia() throws Exception{
+
+        List<Variant> variants = new ArrayList<>();
+        variants.add(new Variant("1",1,"A","C"));
+        variants.add(new Variant("1",2,"A","C"));
+        variants.add(new Variant("1",3,"A","C"));
+        variants.add(new Variant("1",4,"G","A"));
+        variants.add(new Variant("1",5,"C","T"));
+
+        List<Integer> states = new ArrayList<>();
+        states.add(Opinion.PUBLISHED);
+
+        List<Pathology> pathologies = qm.getVariantsPathopedia(variants, states);
+        System.out.println("List pathologies =  " + pathologies.size());
+
+        if (pathologies != null){
+            for(Pathology p: pathologies){
+                System.out.println(p);
+            }
+        }
+    }
+
+    @Test
+    public void testGetAllOpinion()throws Exception {
+
+        Variant v1 = new Variant("1",1,"A","C");
+        List<Integer> states = new ArrayList<>();
+        states.add(Opinion.PUBLISHED);
+
+
+        List<Opinion> listOpinions = qm.getAllOpinion(v1, states, "top", null, null);
+        if (listOpinions != null){
+            for(Opinion op: listOpinions){
+                System.out.println(op);
+            }
+        }
+
+    }
+
+
+
 }

@@ -26,12 +26,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.*;
 
 @Path("/")
 public class CSVSWSServer {
@@ -54,6 +53,13 @@ public class CSVSWSServer {
     static final CSVSQueryManager qm;
 
     static final Datastore datastore;
+
+    static String DOWNLOAD_PATH;
+    static String URL_MAIL_DEFAULT;
+    static final String SENT = "sent";
+    static final Map<String , String> configMail = new HashMap<String, String>();
+    public static final String SUBJECT = "subject", TEXT = "text", HTML="html", FROM="from", TO="to",
+                              HOST="host", PORT="port", SECURE="secure", DEBUG="debug", IGNORETLS="ignoreTLS", USER="user", PASS="pass";
 
     static {
 
@@ -80,6 +86,18 @@ public class CSVSWSServer {
         String host = properties.getProperty("CSVS.DB.HOST", "localhost");
         String database = properties.getProperty("CSVS.DB.DATABASE", "csvs");
         int port = Integer.parseInt(properties.getProperty("CSVS.DB.PORT", "27017"));
+
+        DOWNLOAD_PATH = properties.getProperty("CSVS.DOWNLOAD_PATH", "");
+        // Config Mail
+        URL_MAIL_DEFAULT = properties.getProperty("CSVS.URL_MAIL_DEFAULT", "http://localhost:8081");
+        configMail.put(TO, properties.getProperty("CSVS.MAIL.TO", "csvs"));
+        configMail.put(HOST, properties.getProperty("CSVS.MAIL.HOST", ""));
+        configMail.put(PORT, properties.getProperty("CSVS.MAIL.PORT", "25"));
+        configMail.put(SECURE, properties.getProperty("CSVS.MAIL.SECURE", ""));
+        configMail.put(DEBUG, properties.getProperty("CSVS.MAIL.DEBUG", ""));
+        configMail.put(IGNORETLS, properties.getProperty("CSVS.MAIL.IGNORETLS", ""));
+        configMail.put(USER, properties.getProperty("CSVS.MAIL.USER", ""));
+        configMail.put(PASS, properties.getProperty("CSVS.MAIL.PASS", ""));
 
         System.out.println(properties);
 
@@ -163,4 +181,94 @@ public class CSVSWSServer {
     protected Response buildResponse(ResponseBuilder responseBuilder) {
         return responseBuilder.header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Headers", "x-requested-with, content-type").build();
     }
+
+    /**
+     * Parse map to string
+     *
+     * @param map
+     * @return
+     */
+    protected static String mapToString(Map<String, String> map) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for (String key : map.keySet()) {
+            if (stringBuilder.length() > 0) {
+                stringBuilder.append("&");
+            }
+            String value = map.get(key);
+            try {
+                stringBuilder.append((key != null ? URLEncoder.encode(key, "UTF-8") : ""));
+                stringBuilder.append("=");
+                stringBuilder.append(value != null ? URLEncoder.encode(value, "UTF-8") : "");
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException("This method requires UTF-8 encoding support", e);
+            }
+        }
+
+        return stringBuilder.toString();
+    }
+
+
+    /**
+     * Method to send mail
+     *
+     * @param urlParameters
+     * @return
+     */
+    protected boolean sendMail(String urlParameters) {
+
+        try {
+            System.out.print("CSVS: " + URL_MAIL_DEFAULT);
+
+            URL myURL = new URL(URL_MAIL_DEFAULT);
+            logger.info("CSVS: URL " + myURL);
+
+            System.out.print("Post parameters : " + urlParameters);
+            logger.info("CSVS: URL " + myURL);
+
+            // Connect
+            HttpURLConnection con = (HttpURLConnection) myURL.openConnection();
+            con.setDoOutput(true);
+
+            // Send
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(con.getOutputStream());
+            logger.info("CSVS: outputStreamWriter : " + outputStreamWriter);
+            outputStreamWriter.write(urlParameters);
+            logger.info("CSVS: urlParameters : " + urlParameters);
+            outputStreamWriter.flush();
+
+
+            // Response
+            int responseCode = con.getResponseCode();
+            logger.info("CSVS: Response Code : " + responseCode);
+
+            // Read file
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            String result = response.toString();
+            logger.info("CSVS: result : " + result);
+
+            // Parse info to json
+            HashMap<String, Object> json = new ObjectMapper().readValue(result, HashMap.class);
+            logger.info("CSVS: DATA" + json.get("data"));
+
+            if (!json.isEmpty() && SENT.equals(json.get("data")))
+                return true;
+            else
+                return false;
+        } // end try
+        catch (IOException e) {
+            System.err.println("Error: " + e);
+            logger.error("CSVS: " + e);
+        }
+        return false;
+    }
+
 }
