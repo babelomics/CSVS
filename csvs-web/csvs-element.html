@@ -282,6 +282,7 @@
 
                             var ibsPos = -1;
                             var mgpPos = -1;
+                            var healthyPos = -1;
 
                             for (var i = 0; i < response.result.length; i++) {
                                 var elem = response.result[i];
@@ -289,9 +290,14 @@
                                     ibsPos = i;
                                 } else if (elem.name === "MGP (267 healthy controls)") {
                                     mgpPos = i;
+                                } else if (elem.name === "Healthy controls") {
+                                    healthyPos = i;
                                 } else {
                                     diseases.push(elem);
                                 }
+                            }
+                            if (healthyPos != -1) {
+                                diseases.unshift(response.result[healthyPos]);
                             }
                             if (ibsPos != -1) {
                                 diseases.unshift(response.result[ibsPos]);
@@ -299,6 +305,7 @@
                             if (mgpPos != -1) {
                                 diseases.unshift(response.result[mgpPos]);
                             }
+
                             me.diseases = diseases;
                         } catch (err) {
                             console.log("Error loading diseases: " + err);

@@ -3,6 +3,8 @@ package org.babelomics.csvs.lib.io;
 import org.babelomics.csvs.lib.models.DiseaseGroup;
 import org.babelomics.csvs.lib.models.Technology;
 import org.babelomics.csvs.lib.models.Variant;
+import org.babelomics.csvs.lib.models.Panel;
+import org.babelomics.csvs.lib.models.Region;
 import org.opencb.commons.io.DataReader;
 
 import java.io.BufferedReader;
@@ -19,16 +21,50 @@ import java.util.List;
  */
 public class CSVSVariantCountCSVDataReader implements DataReader<Variant> {
 
-    private String filePath;
-    private BufferedReader reader;
+    protected String filePath;
+    protected BufferedReader reader;
     private DiseaseGroup diseaseGroup;
     private Technology technology;
+    protected Panel panel;
+    private boolean checkPanel = true;
+    protected List<Region> regions = new ArrayList<>();
 
     public CSVSVariantCountCSVDataReader(String filePath, DiseaseGroup dg, Technology t) {
         this.filePath = filePath;
         this.diseaseGroup = dg;
         this.technology = t;
     }
+
+    public CSVSVariantCountCSVDataReader(String filePath, Panel p, List<Region> regions) {
+        this.filePath = filePath;
+        this.panel = p;
+        this.regions = regions;
+    }
+
+    public CSVSVariantCountCSVDataReader(String filePath, DiseaseGroup dg, Technology t, Panel p ) {
+        this.filePath = filePath;
+        this.diseaseGroup = dg;
+        this.technology = t;
+        this.panel = p;
+    }
+
+    public CSVSVariantCountCSVDataReader(String filePath, DiseaseGroup dg, Technology t, Panel p, boolean checkPanel) {
+        this.filePath = filePath;
+        this.diseaseGroup = dg;
+        this.technology = t;
+        this.panel = p;
+        this.checkPanel = checkPanel;
+    }
+
+    public CSVSVariantCountCSVDataReader(String filePath, DiseaseGroup dg, Technology t, Panel p, boolean checkPanel, List<Region> regions) {
+        this.filePath = filePath;
+        this.diseaseGroup = dg;
+        this.technology = t;
+        this.panel = p;
+        this.checkPanel = checkPanel;
+        this.regions = regions;
+    }
+
 
     @Override
     public boolean open() {
@@ -88,14 +124,23 @@ public class CSVSVariantCountCSVDataReader implements DataReader<Variant> {
                 if (!line.trim().equals("")) {
 
                     String[] splits = line.split("\t");
+		   
+                    // Replace CHR
+                    String c = splits[0].toUpperCase().replace("CHR","");
 
-                    Variant v = new Variant(splits[0], Integer.parseInt(splits[1]), splits[2], splits[3]);
+                    Variant v = new Variant(c, Integer.parseInt(splits[1]), splits[2], splits[3]);
                     if (!splits[4].isEmpty() && !splits[4].equals(".")) {
                         v.setIds(splits[4]);
                     }
 
-                    v.addGenotypesToDiseaseAndTechnology(this.diseaseGroup,this.technology, Integer.parseInt(splits[5]), Integer.parseInt(splits[6]), Integer.parseInt(splits[7]), Integer.parseInt(splits[8]));
+                    // Add variants if it is in list de regions of file
+                    if (panel != null  && checkPanel)
+			            if( !panel.contains(v, regions)) {
+	                        System.out.println("Variant not in list regions: " + line);
+	                        continue;
+                        }
 
+                    v.addGenotypesToDiseaseAndTechnology(this.diseaseGroup, this.technology, Integer.parseInt(splits[5]), Integer.parseInt(splits[6]), Integer.parseInt(splits[7]), Integer.parseInt(splits[8]));
                     variants.add(v);
                     return variants;
                 }
@@ -109,6 +154,9 @@ public class CSVSVariantCountCSVDataReader implements DataReader<Variant> {
 
         return null;
     }
+
+
+
 
     @Override
     public List<Variant> read(int batchSize) {

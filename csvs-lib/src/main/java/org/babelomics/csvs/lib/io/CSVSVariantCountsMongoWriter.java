@@ -1,6 +1,7 @@
 package org.babelomics.csvs.lib.io;
 
 import org.babelomics.csvs.lib.models.*;
+import org.bson.types.ObjectId;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.query.Query;
 import org.opencb.commons.io.DataWriter;
@@ -81,12 +82,14 @@ public class CSVSVariantCountsMongoWriter implements DataWriter<Variant> {
                         field("alternate").equal(elem.getAlternate())
                 .get();
 
+        ObjectId idVariant = null;
+
         if (v == null) {
             this.datastore.save(elem);
             this.variantsD++;
             this.variantsT++;
+            idVariant = elem.getId();
         } else {
-
             if (v.getIds() == null || v.getIds().isEmpty()) {
                 v.setIds(elem.getIds());
             }
@@ -127,8 +130,13 @@ public class CSVSVariantCountsMongoWriter implements DataWriter<Variant> {
 
                 this.datastore.save(v);
             }
-
+            idVariant = v.getId();
         }
+
+        // Add file
+        FileVariant fv = new FileVariant(this.file.getId(), idVariant);
+        this.datastore.save(fv);
+
 
         return true;
     }

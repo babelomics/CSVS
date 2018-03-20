@@ -22,6 +22,7 @@ public class OptionsParser {
     private final CommandSetup setup;
     private final CommandAnnot annot;
     private final CommandAnnotFile annotFile;
+    private final CommandRecalculate recalculate;
 
 
     public OptionsParser() {
@@ -33,6 +34,7 @@ public class OptionsParser {
         jcommander.addCommand(setup = new CommandSetup());
         jcommander.addCommand(annot = new CommandAnnot());
         jcommander.addCommand(annotFile = new CommandAnnotFile());
+        jcommander.addCommand(recalculate = new CommandRecalculate());
     }
 
     interface Command {
@@ -49,6 +51,21 @@ public class OptionsParser {
 
         @Parameter(names = {"-t", "--technologyId"}, description = "Technology Id", required = true, arity = 1)
         int technology;
+
+        @Parameter(names = {"-p","--panelFile"}, description = "PanelFile with list of regions")
+        String panelFile="";
+
+        @Parameter(names = {"-r", "--recalculate"}, description = "If panel recalculate all variants", arity = 1)
+        boolean recalculate=true;
+
+        @Parameter(names = {"-pr", "--personReference"}, description = "Name person reference", arity = 1)
+        String personReference="";
+
+        @Parameter(names = {"--filter"}, description = "Filter file: remove variants when not in the panel", arity = 0)
+        boolean filter=false;
+
+        @Parameter(names = {"-c", "--checkPanel"}, description = "Check  variants in the panel and format file", arity = 1)
+        boolean checkPanel=true;
 
         @Parameter(names = {"--host"}, description = "DB host", arity = 1)
         String host = "localhost";
@@ -230,6 +247,29 @@ public class OptionsParser {
 
     }
 
+    @Parameters(commandNames = {"recalculate"}, commandDescription = "Calculate examples of a variant studied in a region")
+    class CommandRecalculate implements Command {
+
+        @Parameter(names = {"--diseaseId"}, description = "DiseaseId")
+        List<Integer> diseaseId = new ArrayList<>();
+
+        @Parameter(names = {"--technologyId"}, description = "TechnologyId")
+        List<Integer> technologyId = new ArrayList<>();
+
+        @Parameter(names = {"--panelName"}, description = "Panel name to recalculate", required = true, arity = 1)
+        String panelName = "";
+
+        @Parameter(names = {"--host"}, description = "DB host", arity = 1)
+        String host = "localhost";
+
+        @Parameter(names = {"--user"}, description = "DB User", arity = 1)
+        String user = "";
+        @Parameter(names = {"--pass"}, description = "DB Pass", arity = 1)
+        String pass = "";
+        @Parameter(names = {"--dbName"}, description = "DB Name", arity = 1)
+        String dbName = "csvs";
+    }
+
     String parse(String[] args) throws ParameterException {
         jcommander.parse(args);
         return jcommander.getParsedCommand();
@@ -268,4 +308,6 @@ public class OptionsParser {
     CommandAnnotFile getAnnotFileCommand() {
         return annotFile;
     }
+
+    CommandRecalculate getRecalculateCommand() { return recalculate; }
 }
