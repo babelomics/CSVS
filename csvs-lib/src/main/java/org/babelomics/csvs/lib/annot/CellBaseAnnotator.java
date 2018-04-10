@@ -32,7 +32,7 @@ public class CellBaseAnnotator {
     private final static String VERSION = "v3";
     private final static String SPECIES = "hsapiens";
 
-    public CellBaseAnnotator() {
+    public CellBaseAnnotator(String host, String version) {
         this.cellBaseClient = null;
         this.override = false;
         this.remove = false;
@@ -41,8 +41,8 @@ public class CellBaseAnnotator {
 
 
         try {
-            URI uri = new URI(HOST);
-            cellBaseClient = new CellBaseClient(uri, VERSION, SPECIES);
+            URI uri = new URI(host != null? host : HOST);
+            cellBaseClient = new CellBaseClient(uri, version != null ? version : VERSION, SPECIES);
         } catch (URISyntaxException e) {
             e.printStackTrace();
             System.err.println("Invalid URL: " + HOST);

@@ -107,8 +107,8 @@
 
         function getSpecies(callback) {
             CellBaseManager.get({
-                host: "http://bioinfo.hpc.cam.ac.uk/cellbase",
-                version: "v3",
+                host: (typeof window.CELLBASE_HOST === 'undefined') ? 'http://bioinfo.hpc.cam.ac.uk/cellbase' : window.CELLBASE_HOST,
+                version: (typeof window.CELLBASE_VERSION === 'undefined') ? 'v3' : window.CELLBASE_VERSION,
                 category: "meta",
                 subCategory: "species",
                 success: function(r) {

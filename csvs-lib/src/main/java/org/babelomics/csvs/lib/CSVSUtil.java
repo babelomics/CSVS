@@ -725,17 +725,15 @@ public class CSVSUtil {
         return res;
     }
 
-    public static void annot(boolean ct, boolean remove, boolean override, boolean gene, Datastore datastore) throws IOException {
-        CellBaseAnnotator cba = new CellBaseAnnotator();
+    public static void annot(boolean ct, boolean remove, boolean override, boolean gene, Datastore datastore, String host, String version) throws IOException {
+        CellBaseAnnotator cba = new CellBaseAnnotator(host, version);
 
         cba.setCt(ct);
         cba.setRemove(remove);
         cba.setOverride(override);
         cba.setGene(gene);
 
-
         Iterator<Variant> it = datastore.createQuery(Variant.class).batchSize(10).iterator();
-
 
         while (it.hasNext()) {
             List<Variant> batch = new ArrayList<>();

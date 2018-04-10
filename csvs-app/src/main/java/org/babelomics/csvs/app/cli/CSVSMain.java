@@ -18,6 +18,7 @@ import org.opencb.datastore.core.QueryResponse;
 import org.opencb.datastore.core.QueryResult;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -26,12 +27,29 @@ import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
  */
 public class CSVSMain {
 
+    // Load configuration cellbase
+    protected static InputStream is = CSVSMain.class.getClassLoader().getResourceAsStream("csvs.properties");
+    protected static Properties properties = new Properties();
+    static String CELLBASE_HOST, CELLBASE_VERSION;
+    static {
+        try {
+            properties.load(is);
+        } catch (IOException e) {
+            System.out.println("Error loading cellbase properties" );
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+
+        CELLBASE_HOST = properties.getProperty("CELLBASE.HOST", "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest");
+        CELLBASE_VERSION = properties.getProperty("CELLBASE.VERSION", "v3");
+    }
 
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException, URISyntaxException {
         OptionsParser parser = new OptionsParser();
@@ -169,7 +187,7 @@ public class CSVSMain {
 
             Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName);
 
-            CSVSUtil.annot(ct, remove, override, gene, datastore);
+            CSVSUtil.annot(ct, remove, override, gene, datastore, CELLBASE_HOST, CELLBASE_VERSION);
 
         } else if (command instanceof OptionsParser.CommandQuery) {
             OptionsParser.CommandQuery c = (OptionsParser.CommandQuery) command;
@@ -212,8 +230,8 @@ public class CSVSMain {
                 }
 
                 if (c.geneList.size() > 0) {
-                    URI cellbaseUri = new URI("http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest");
-                    CellBaseClient cbc = new CellBaseClient(cellbaseUri, "v3", "hsapiens");
+                    URI cellbaseUri = new URI(CELLBASE_HOST);
+                    CellBaseClient cbc = new CellBaseClient(cellbaseUri, CELLBASE_VERSION, "hsapiens");
                     String id = Joiner.on(",").join(c.geneList).toUpperCase();
                     QueryOptions qo = new QueryOptions();
                     qo.add("include", "chromosome,start,end");
