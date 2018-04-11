@@ -22,7 +22,11 @@ var CSVSManager = {
             return CSVSManager._doRequest(args, 'regions', 'saturation');
         }
     },
-
+    files:{
+        samples: function (args) {
+            return CSVSManager._doRequest(args, 'files', 'samples');
+        }
+    },
     pathologies:{
         fetch: function (args) {
             return CSVSManager._doRequest(args, 'pathologies', 'fetch');

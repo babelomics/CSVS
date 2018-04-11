@@ -552,6 +552,36 @@ public class CSVSQueryManager {
     }
 
     /**
+     * Calculate sum of all samples.
+     * @return
+     */
+    public int calculateSampleCount() {
+        int res = 0;
+
+        BasicDBObject g = new BasicDBObject("_id", "");
+        g.put("total", new BasicDBObject("$sum", "$s"));
+
+        BasicDBObject p = new BasicDBObject("_id", 0);
+        p.put("total", "$total");
+
+        BasicDBObject group = new BasicDBObject("$group", g);
+        BasicDBObject project = new BasicDBObject("$project", p);
+
+        DBCollection collection = datastore.getCollection(File.class);
+
+        List<BasicDBObject> aggList = new ArrayList<>();
+        aggList.add(group);
+        aggList.add(project);
+
+        AggregationOutput aggregation = collection.aggregate(aggList);
+
+        for (DBObject fileObj : aggregation.results()) {
+            res = (Integer) fileObj.get("total");
+        }
+        return res;
+    }
+
+    /**
      * Calculte sum of samples by diseased and technology
      * @param sampleCountMap
      * @return
