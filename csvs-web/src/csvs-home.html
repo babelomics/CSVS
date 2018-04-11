@@ -100,7 +100,7 @@
                 variability
                 of the Spanish population to the scientific/medical community.
                 It is useful for filtering polymorphisms and local variations in the process of prioritizing candidate
-                disease genes. CSVS currently stores information on 1644 unrelated Spanish individuals.
+                disease genes. CSVS currently stores information on <csvs-samples></csvs-samples> unrelated Spanish individuals.
                 We accept submissions from WES or WGS.
             </div>
 
@@ -136,3 +136,43 @@
         }
     });
 </script>
+<dom-module id="csvs-samples">
+    <template>{{samples}}
+    </template>
+
+    <script>
+        Polymer({
+            is: "csvs-samples",
+            properties: {
+                samples: {
+                    type: Number,
+                    value: 0
+                },
+            },
+            ready: function() {
+                this.getSamples();
+            },
+            getSamples: function () {
+                me = this;
+                try {
+                    CSVSManager.files.samples({
+                        request: {
+                            async: false,
+                            success: function (response) {
+                                if (response != undefined && response.result != undefined && response.result.length > 0) {
+                                    me.samples =  response.result[0];
+                                }
+                            },
+                            error: function(response) {
+                                console.log("ERROR downloading samples");
+                                console.log(response);
+                            }
+                        }
+                    });
+                } catch (err){
+                    console.log("ERROR server down");
+                }
+            }
+        });
+    </script>
+</dom-module>
