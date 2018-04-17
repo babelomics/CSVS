@@ -56,6 +56,7 @@ public class CSVSWSServer {
 
     static String DOWNLOAD_PATH;
     static String URL_MAIL_DEFAULT;
+    static int SEARCH_MAX;
     static final String SENT = "sent";
     static final Map<String , String> configMail = new HashMap<String, String>();
     public static final String SUBJECT = "subject", TEXT = "text", HTML="html", FROM="from", TO="to",
@@ -99,6 +100,8 @@ public class CSVSWSServer {
         configMail.put(USER, properties.getProperty("CSVS.MAIL.USER", ""));
         configMail.put(PASS, properties.getProperty("CSVS.MAIL.PASS", ""));
 
+        SEARCH_MAX = Integer.parseInt(properties.getProperty("CSVS.SEARCH.MAX", "-1"));
+
         System.out.println(properties);
 
         MongoClient mongoClient;
@@ -130,8 +133,9 @@ public class CSVSWSServer {
         System.out.println("o.toString() = " + o.toString());
         QueryResult<ObjectMap> result = new QueryResult();
         result.setErrorMsg(o.toString());
-//        QueryResponse qr = createQueryResponse(result);
-        return createOkResponse(null);
+        QueryResponse qr = createQueryResponse(result);
+        //return createOkResponse(null);
+        return createOkResponse(qr);
     }
 
     protected Response createOkResponse(QueryResponse qr) {

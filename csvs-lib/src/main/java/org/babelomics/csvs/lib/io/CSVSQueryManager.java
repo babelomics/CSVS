@@ -1,5 +1,6 @@
 package org.babelomics.csvs.lib.io;
 
+import com.google.common.collect.Iterators;
 import com.mongodb.*;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.babelomics.csvs.lib.models.*;
@@ -21,7 +22,6 @@ public class CSVSQueryManager {
 
     final Datastore datastore;
     static final int DECIMAL_POSITIONS = 3;
-
 
     public CSVSQueryManager(String host, String dbName) {
         Morphia morphia = new Morphia();
@@ -128,6 +128,8 @@ public class CSVSQueryManager {
 
         return res;
     }
+
+
 
     public Variant getVariant(String chromosome, int position, String reference, String alternate, List<Integer> diseaseIds, List<Integer> technologyIds) {
 
@@ -308,37 +310,53 @@ public class CSVSQueryManager {
         return res;
     }
 
+    /**
+     * Get query of Variants where it is order by chromosome and position
+     * @param c1
+     * @param listDBObjects
+     * @return
+     */
+    private Query<Variant> getQuery(List<Criteria> c1, BasicDBList listDBObjects){
+
+        Query<Variant> queryVariant = this.datastore.createQuery(Variant.class);
+
+        queryVariant.or(c1.toArray(new Criteria[c1.size()]));
+
+        if (listDBObjects.isEmpty()) {
+            queryVariant.filter("diseases elem", new BasicDBObject("$and", listDBObjects));
+        }
+
+        queryVariant.order("c,p");
+
+        return queryVariant;
+    }
+
+
     public Iterable<Variant> getVariantsByRegionList(List<Region> regions, List<Integer> diseaseIds, List<Integer> technologyIds, Integer skip, Integer limit, boolean skipCount, MutableLong count) {
 
-        Criteria[] or = new Criteria[regions.size()];
-
-        int i = 0;
+        // Order by chromosome
+        List<Criteria> or = new ArrayList<Criteria>();
+        List<Criteria> or_c2 = new ArrayList<Criteria>();
         for (Region r : regions) {
-            List<String> chunkIds = getChunkIds(r);
             Query<Variant> auxQuery = this.datastore.createQuery(Variant.class);
 
             List<Criteria> and = new ArrayList<>();
-            and.add(auxQuery.criteria("_at.chIds").in(chunkIds));
             and.add(auxQuery.criteria("chromosome").equal(r.getChromosome()));
             and.add(auxQuery.criteria("position").greaterThanOrEq(r.getStart()));
             and.add(auxQuery.criteria("position").lessThanOrEq(r.getEnd()));
 
-            or[i++] = auxQuery.and(and.toArray(new Criteria[and.size()]));
+            if (r.getChromosome().matches("[1-9]"))
+                or.add(auxQuery.and(and.toArray(new Criteria[and.size()])));
+            else
+                or_c2.add(auxQuery.and(and.toArray(new Criteria[and.size()])));
         }
 
-        Query<Variant> query = this.datastore.createQuery(Variant.class);
-
-        query.or(or);
-
-
         boolean disTechCheck = false;
-
         BasicDBList listDBObjects = new BasicDBList();
 
         if (diseaseIds != null && !diseaseIds.isEmpty()) {
             listDBObjects.add(new BasicDBObject("dgid", new BasicDBObject("$in", diseaseIds)));
             disTechCheck = true;
-
         }
 
         if (technologyIds != null && !technologyIds.isEmpty()) {
@@ -346,21 +364,55 @@ public class CSVSQueryManager {
             disTechCheck = true;
         }
 
-        if (disTechCheck) {
-            query.filter("diseases elem", new BasicDBObject("$and", listDBObjects));
+        // Order by chromosome
+        List<Iterable<Variant>> aux = new ArrayList<>();
+        boolean createQuery2 = false;
+        Query<Variant> query = null, query2 = null;
+        if ( skip == null || limit == null || (!or.isEmpty() && or_c2.isEmpty()) || (or.isEmpty() && !or_c2.isEmpty()))
+            or.addAll(or_c2);
+        else
+            createQuery2 = true;
+
+        query = getQuery(or, listDBObjects);
+        System.out.println(query.toString());
+
+        int count_all = 0;
+        if (!skipCount) {
+            count_all =(int) query.countAll();
+            count.setValue(count_all);
         }
 
         if (skip != null && limit != null) {
             query.offset(skip).limit(limit);
         }
+        aux.add(query.fetch());
 
+        // Order by chromosome
+        if (createQuery2){
+            if (!skipCount) {
+                query2 = getQuery(or_c2, listDBObjects);
+                count.setValue(count_all + query2.countAll());
+            } else {
+                count_all =(int) query.countAll();
+            }
 
-        System.out.println("query = " + query);
+            if (skip != null && limit != null && limit != 0) {
+                int length_or = query.asKeyList().size();
+                int limit_or2 = limit-length_or;
 
-        Iterable<Variant> aux = query.fetch();
+                if (limit_or2 > 0) {
+                    if (query2 == null)
+                        query2 = getQuery(or_c2, listDBObjects);
 
-        if (!skipCount) {
-            count.setValue(query.countAll());
+                    query2.offset(skip-count_all < 0 ? 0  : skip-count_all ).limit(limit_or2);
+                    aux.add(query2.fetch());
+                }
+            } else {
+                if (query2 == null)
+                    query2 = getQuery(or_c2, listDBObjects);
+                aux.add(query2.fetch());
+            }
+
         }
 
         List<Variant> res = new ArrayList<>();
@@ -385,10 +437,12 @@ public class CSVSQueryManager {
         Map<String, Integer> sampleCountMap = calculateSampleCount(diseaseIds, technologyIds);
         int sampleCount = calculateSampleCount(sampleCountMap);
 
-        for (Variant v : aux) {
-            v.setStats(calculateStats(v, diseaseIds, technologyIds, sampleCount, sampleCountMap));
-            v.setDiseases(null);
-            res.add(v);
+        for(Iterable<Variant> it: aux){
+            for (Variant v : it) {
+                v.setStats(calculateStats(v, diseaseIds, technologyIds, sampleCount, sampleCountMap));
+                v.setDiseases(null);
+                res.add(v);
+            }
         }
 
         return res;
@@ -440,9 +494,6 @@ public class CSVSQueryManager {
             if (disTechCheck) {
                 query.filter("diseases elem", new BasicDBObject("$and", listDBObjects));
             }
-
-
-            System.out.println(query);
 
             Iterable<Variant> aux = query.fetch();
 
@@ -582,7 +633,7 @@ public class CSVSQueryManager {
     }
 
     /**
-     * Calculte sum of samples by diseased and technology
+     * Calculate sum of samples by diseased and technology.
      * @param sampleCountMap
      * @return
      */
@@ -591,7 +642,7 @@ public class CSVSQueryManager {
     }
 
     /**
-     * Return map samples by diseased and technology (without regions)
+     * Return map samples by diseased and technology (without regions).
      * @param diseaseId
      * @param technologyId
      * @return
@@ -632,9 +683,7 @@ public class CSVSQueryManager {
         aggList.add(match);
         aggList.add(group);
 
-        // System.out.println("QUERY: " + aggList);
         AggregationOutput aggregation = collection.aggregate(aggList);
-        //  System.out.println("RESULT: " + aggregation.results());
         Map<String, Integer> res = new HashMap<>();
 
         for (DBObject fileObj : aggregation.results()) {
@@ -818,7 +867,8 @@ public class CSVSQueryManager {
 
         List<ObjectId> ids = new ArrayList<>();
         for(Variant v:listVariant)
-            ids.add(v.getId());
+            if(v != null)
+                ids.add(v.getId());
 
         Map listMatchDBObjects = new HashMap();
         listMatchDBObjects.put("v.$id",  new BasicDBObject("$in",ids));

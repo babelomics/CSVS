@@ -67,7 +67,7 @@
         .B {
             background-color: var(--B);
             width: 10px;
-            padding: 0px 5px; 0px; 5px;
+            padding: 0px 5px 0px 5px;
 
         }
 
@@ -75,27 +75,28 @@
             background-color: var(--LB);
             text-align: center;
             width: 10px;
-            padding: 0px 5px; 0px; 10px;
+            padding: 0px 5px 0px 10px;
         }
 
         .LP {
             background-color: var(--LP);
             text-align: center;
             width: 10px;
-            padding: 0px 5px; 0px; 10px;
+            padding: 0px 5px 0px 10px;
         }
 
         .P {
             background-color: var(--P);
             text-align: center;
             width: 10px;
-            padding: 0px 5px; 0px; 10px;
+            padding: 0px 5px 0px 10px;
         }
     </style>
     <template>
-            <div class="grid-container" title="">
+            <div class="grid-container" title="" on-tap="handleTap">
+
                 <template is="dom-repeat" items="{{_toArray(typeP)}}">
-                    <div style="padding-left: 5px;">{{item.name}}</div>
+                    <div style="padding-left: 5px;"  title="{{item.name}}: {{item.value}}">{{item.name}}</div>
                     <div class$="{{item.name}}" title="{{item.name}}: {{item.value}}"></div>
                 </template>
             </div>
@@ -104,6 +105,10 @@
         Polymer({
             is: "csvs-desc-pathopedia",
             behaviors: [PathopediaBehavior],
+            handleTap:function(e) {
+                e.detail.sourceEvent.stopPropagation();
+                e.detail.sourceEvent.cancelBubble = true;
+            }
         });
     </script>
 </dom-module>
@@ -212,8 +217,8 @@
                 return porc;
             },
             _calculateMax: function (mapTotalTypeOpinion){
-                type_max = [];
-                value_max = 0;
+                var type_max = [];
+                var value_max = 0;
                 for (var key in mapTotalTypeOpinion) {
                     var value = mapTotalTypeOpinion[key];
                     if (type_max.length == 0){
@@ -244,7 +249,10 @@
     <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
         :host {
             display: block;
-            width: 450px;
+            min-width: 450px;
+            --paper-input-container-input:{
+                max-height: 100px;
+            }
         }
 
         paper-dropdown-menu{
@@ -294,7 +302,7 @@
             <p>Select your review: <title-variant  variant={{variant}}></title-variant></p>
         </div>
 
-        <paper-dropdown-menu label="Review"  id="opinionMenu" class="dropdown-content" >
+        <paper-dropdown-menu label="Clinical significance"  id="opinionMenu" class="dropdown-content" >
             <paper-tabs slot="dropdown-content" id="opinion" attr-for-selected="name" on-iron-select="validAll">
                 <paper-tab name="B">Benign</paper-tab>
                 <paper-tab name="LB">Likely bening</paper-tab>
@@ -384,6 +392,7 @@
                             name: me.$.name.value,
                             institution: me.$.institution.value,
                             evidence: me.$.evidence.value,
+                            from: window.TO_EMAIL
                         },
                         crossDomain: true,
                         success: function (data) {
@@ -763,7 +772,6 @@
         </div>
 
         <iron-ajax id="ajax"
-                   auto="false"
                    url=""
                    parameters="{{_getParams()}}"
                    handle-as="json"
@@ -848,6 +856,7 @@
                 _reloadData: function () {
                     this.$.ajax.set( 'params', this._getParams());
                     this.$.ajax.set('url', this._getUrl());
+                    this.$.ajax.generateRequest();
                 },
                 ready: function() {
                 },
@@ -901,12 +910,33 @@
         <style>
             :host {
                 display: block;
-            },
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+            .cut{
+                max-width:550px;
+                width:  auto;
+                text-overflow:ellipsis;
+                white-space:nowrap;
+                overflow:hidden;
+
+            }
+            .cut:hover {
+                height: auto;
+                white-space: initial;
+                overflow:visible;
+                overflow-wrap: break-word;
+
+                display: inline-block;
+            }
+            .parent-div {
+                display: inline-flex;
+            }
         </style>
 
-        <label class="stv">Chr:</label>{{chr}}</span>
+        <label class="stv">Chr:</label>{{chr}}
         <label class="stv">Position:</label>{{position}}
-        <label class="stv">Alleles:</label>{{alleles}}
+        <label class="stv">Alleles:</label><div class="parent-div"><label class="cut">{{alleles}}</label></div>
     </template>
     <script>
         Polymer({

@@ -19,7 +19,7 @@ import java.util.List;
  */
 
 @Path("/diseases")
-@Api(value = "Diseases", description = "Diseases")
+@Api(value = "diseases", description = "Diseases")
 @Produces(MediaType.APPLICATION_JSON)
 public class DiseasesWSServer extends CSVSWSServer {
     public DiseasesWSServer(@DefaultValue("") @PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)

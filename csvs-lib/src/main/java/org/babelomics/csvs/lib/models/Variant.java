@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 @Entity(noClassnameStored = true)
 @Indexes({
         @Index(name = "index_variant_chr_pos_ref_alt", value = "c,p,r,a", unique = true),
+        @Index(name = "index_variant_chr", value = "c"),
+        @Index(name = "index_variant_chr_pos", value = "c,p" ),
         @Index(name = "index_variant_chIds", value = "_at.chIds")
 })
 public class Variant {

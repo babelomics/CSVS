@@ -18,6 +18,8 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 
 @Path("/variants")
@@ -87,7 +89,15 @@ public class VariantsWSServer extends CSVSWSServer {
         }
 
         long start = System.currentTimeMillis();
-        Iterable<Variant> variants = qm.getVariantsByRegionList(regionList, diseaseList, technologyList, skip, limit, skipCount, count);
+
+        Iterable<Variant> variants = null;
+
+        try {
+            variants = qm.getVariantsByRegionList(regionList, diseaseList, technologyList, skip, limit, skipCount, count);
+        } catch (Exception e1){
+            return  createErrorResponse(e1);
+        }
+
         long end = System.currentTimeMillis();
 
         System.out.println("(end-start) = " + (end - start));
@@ -103,6 +113,7 @@ public class VariantsWSServer extends CSVSWSServer {
         if (!csv) {
             qr.addQueryOption("limit", limit);
             qr.addQueryOption("skip", skip);
+            qr.addQueryOption("maxSearch", SEARCH_MAX);
         } else {
             qr.addQueryOption("csv", csv);
         }

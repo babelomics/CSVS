@@ -17,7 +17,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
 @Path("/download")
-@Api(value = "Downloads", description = "Downloads file")
+@Api(value = "downloads", description = "Downloads file")
 public class CSVSDownloadRestService extends CSVSWSServer {
     public CSVSDownloadRestService(@DefaultValue("") @PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
             throws IOException {

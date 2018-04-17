@@ -190,6 +190,15 @@
             color: var(--accent-color);
             font-weight: bold;
         }
+
+        /* Delete events table (sort) */
+        stv-table::shadow #header  {
+            pointer-events:none;
+        }
+        /* Enable desc pathopedia */
+        stv-table::shadow .csvs-desc-pathopedia  {
+            pointer-events:auto;
+        }
     </style>
     <template>
         <div class="horizontal layout">
@@ -323,7 +332,7 @@
                 type: Array,
                 value: function() {
                     return [];
-                }
+                },
             },
             formURL: {
                 type: String,
@@ -352,6 +361,9 @@
             maxLength: {
                 type: Number,
                 value: 1000000
+            },
+            maxSearch:{
+                type: Number
             },
             isLogged: {
                 type: Boolean
@@ -466,6 +478,17 @@
         created: function() {
             this.selectedSpecies = DEFAULT_SPECIES;
         },
+        // Init title menu and not sort
+        initPathopedia: function() {
+            var list = document.getElementById('columnsMenu').getElementsByTagName("span");
+            for (var i = list.length-1; i>0; i--) {
+                var title = list[i].innerText;
+                if (title.indexOf('Pathopedia') != -1) {
+                    list[i].innerText = "Pathopedia";
+                    break;
+                }
+            }
+        },
         ready: function() {
             if (localStorage.csvs_filter_history) {
                 this.historyFilters = JSON.parse(localStorage.csvs_filter_history);
@@ -477,314 +500,315 @@
             var lastQuery = '';
             this.geneValue = "PPL";
 
-            this.async(function() { // DOM READY
+            this.async(function () { // DOM READY
                 me.selectedMenuTool = me.$.menu.querySelector('div');
                 me.$.gv.createGenomeViewer();
                 me.$.gv.genomeViewer.draw();
 
+                this.initPathopedia();
             }, 50);
 
             this.columns = [{
-                    name: 'chromosome',
-                    title: "Chr",
-                    width: 40
-                }, {
-                    name: 'position',
-                    title: 'Position',
-                    width: 70
-                }, {
-                    name: 'alleles',
-                    title: 'Alleles',
-                    width: 50,
-                    formula: function(row) {
-                        return row.reference + ">" + row.alternate;
-                    }
-                }, {
-                    name: 'genes',
-                    title: 'Gene',
-                    width: 90,
-                    defaultValue: "."
-                }, {
-                    name: 'id',
-                    title: 'Id',
-                    width: 90,
-                    defaultValue: "."
-                },{
-                    title: 'MAF',
-                    name: 'maf',
-                    width: 350,
+                name: 'chromosome',
+                title: "Chr",
+                width: 40
+            }, {
+                name: 'position',
+                title: 'Position',
+                width: 70
+            }, {
+                name: 'alleles',
+                title: 'Alleles',
+                width: 50,
+                formula: function (row) {
+                    return row.reference + ">" + row.alternate;
+                }
+            }, {
+                name: 'genes',
+                title: 'Gene',
+                width: 90,
+                defaultValue: "."
+            }, {
+                name: 'id',
+                title: 'Id',
+                width: 90,
+                defaultValue: "."
+            }, {
+                title: 'MAF',
+                name: 'maf',
+                width: 350,
+                columns: [{
+                    title: "Genotypes",
+                    name: 'genotypes',
+                    width: 200,
                     columns: [{
-                        title: "Genotypes",
-                        name: 'genotypes',
-                        width: 200,
-                        columns: [{
-                            name: "gt00",
-                            width: 50,
-                            title: "0/0",
-                            formula: function(row) {
-                                if (row.stats != null && row.stats.gt00 != null)
-                                    return row.stats.gt00;
-                                else
-                                    return ".";
-                            }
-                        }, {
-                            name: "gt01",
-                            width: 50,
-                            title: "0/1",
-                            formula: function(row) {
-                                if (row.stats != null && row.stats.gt01 != null)
-                                    return row.stats.gt01;
-                                else
-                                    return ".";
-                            }
-                        }, {
-                            name: "gt11",
-                            width: 50,
-                            title: "1/1",
-                            formula: function(row) {
-                                if (row.stats != null && row.stats.gt11 != null)
-                                    return row.stats.gt11;
-                                else
-                                    return ".";
-                            }
-                        }, {
-                            name: "gtmissing",
-                            width: 50,
-                            title: "./.",
-                            formula: function(row) {
-                                if (row.stats != null && row.stats.gtmissing != null)
-                                    return row.stats.gtmissing;
-                                else
-                                    return ".";
-                            }
-                        }]
+                        name: "gt00",
+                        width: 50,
+                        title: "0/0",
+                        formula: function (row) {
+                            if (row.stats != null && row.stats.gt00 != null)
+                                return row.stats.gt00;
+                            else
+                                return ".";
+                        }
                     }, {
-                        title: "Freq.",
-                        name: "freq",
-                        width: 150,
-                        columns: [{
-                            name: "refFreq",
-                            width: 50,
-                            title: "0 Freq",
-                            formula: function(row) {
-                                if (row.stats != null && row.stats.refFreq != null)
-                                    return row.stats.refFreq;
-                                else
-                                    return ".";
-                            }
-                        }, {
-                            name: "altFreq",
-                            width: 50,
-                            title: "1 Freq",
-                            formula: function(row) {
-                                if (row.stats != null && row.stats.altFreq != null)
-                                    return row.stats.altFreq;
-                                else
-                                    return ".";
-                            }
-                        }, {
-                            name: "maf",
-                            width: 50,
-                            title: "MAF",
-                            formula: function(row) {
-                                if (row.stats != null && row.stats.maf != null)
-                                    return row.stats.maf;
-                                else
-                                    return ".";
-                            }
-                        }]
+                        name: "gt01",
+                        width: 50,
+                        title: "0/1",
+                        formula: function (row) {
+                            if (row.stats != null && row.stats.gt01 != null)
+                                return row.stats.gt01;
+                            else
+                                return ".";
+                        }
+                    }, {
+                        name: "gt11",
+                        width: 50,
+                        title: "1/1",
+                        formula: function (row) {
+                            if (row.stats != null && row.stats.gt11 != null)
+                                return row.stats.gt11;
+                            else
+                                return ".";
+                        }
+                    }, {
+                        name: "gtmissing",
+                        width: 50,
+                        title: "./.",
+                        formula: function (row) {
+                            if (row.stats != null && row.stats.gtmissing != null)
+                                return row.stats.gtmissing;
+                            else
+                                return ".";
+                        }
                     }]
                 }, {
-                    title: "1000G MAF (phase 1)",
-                    width: 250,
-                    name: 'maf1000g',
-                    visible: false,
-                    columns: [{
-                            name: "maf1000G",
-                            title: "ALL",
-                            defaultValue: ".",
-                            formula: function(row) {
-                                if (row.maf1000G != null) {
-                                    return row.maf1000G;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        }, {
-                            name: "maf1000GAME",
-                            title: "AME",
-                            defaultValue: ".",
-                            formula: function(row) {
-                                if (row.maf1000GAME != null) {
-                                    return row.maf1000GAME;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        }, {
-                            name: "maf1000GASI",
-                            title: "ASI",
-                            defaultValue: ".",
-                            formula: function(row) {
-                                if (row.maf1000GASI != null) {
-                                    return row.maf1000GASI;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        }, {
-                            name: "maf1000GAFR",
-                            title: "AFR",
-                            defaultValue: ".",
-                            formula: function(row) {
-                                if (row.maf1000GAFR != null) {
-                                    return row.maf1000GAFR;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        }, {
-                            name: "maf1000GEUR",
-                            title: "EUR",
-                            defaultValue: ".",
-                            formula: function(row) {
-                                if (row.maf1000GEUR != null) {
-                                    return row.maf1000GEUR;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        }
-
-                    ]
-                }, {
-                    title: "1000G MAF (phase 3)",
+                    title: "Freq.",
+                    name: "freq",
                     width: 150,
-                    name: 'maf1000G3',
                     columns: [{
-                        name: "maf1000G_PHASE_3_ALL",
-                        title: "ALL",
-                        defaultValue: ".",
-                        formula: function(row) {
-                            if (row.maf1000G_PHASE_3_ALL != null) {
-                                return row.maf1000G_PHASE_3_ALL;
-                            } else {
+                        name: "refFreq",
+                        width: 50,
+                        title: "0 Freq",
+                        formula: function (row) {
+                            if (row.stats != null && row.stats.refFreq != null)
+                                return row.stats.refFreq;
+                            else
                                 return ".";
-                            }
                         }
                     }, {
-                        name: "maf1000G_PHASE_3_AMR",
-                        title: "AME",
-                        defaultValue: ".",
-                        visible: false,
-                        formula: function(row) {
-                            if (row.maf1000G_PHASE_3_AMR != null) {
-                                return row.maf1000G_PHASE_3_AMR;
-                            } else {
+                        name: "altFreq",
+                        width: 50,
+                        title: "1 Freq",
+                        formula: function (row) {
+                            if (row.stats != null && row.stats.altFreq != null)
+                                return row.stats.altFreq;
+                            else
                                 return ".";
-                            }
                         }
                     }, {
-                        name: "maf1000G_PHASE_3_SAS",
-                        title: "South ASI",
-                        defaultValue: ".",
-                        visible: false,
-                        formula: function(row) {
-                            if (row.maf1000G_PHASE_3_SAS != null) {
-                                return row.maf1000G_PHASE_3_SAS;
-                            } else {
+                        name: "maf",
+                        width: 50,
+                        title: "MAF",
+                        formula: function (row) {
+                            if (row.stats != null && row.stats.maf != null)
+                                return row.stats.maf;
+                            else
                                 return ".";
-                            }
                         }
-                    }, {
-                        name: "maf1000G_PHASE_3_EAS",
-                        title: "East ASI",
-                        defaultValue: ".",
-                        visible: false,
-                        formula: function(row) {
-                            if (row.maf1000G_PHASE_3_EAS != null) {
-                                return row.maf1000G_PHASE_3_EAS;
-                            } else {
-                                return ".";
-                            }
+                    }]
+                }]
+            }, {
+                title: "1000G MAF (phase 1)",
+                width: 250,
+                name: 'maf1000g',
+                visible: false,
+                columns: [{
+                    name: "maf1000G",
+                    title: "ALL",
+                    defaultValue: ".",
+                    formula: function (row) {
+                        if (row.maf1000G != null) {
+                            return row.maf1000G;
+                        } else {
+                            return ".";
                         }
-                    }, {
-                        name: "maf1000G_PHASE_3_AFR",
-                        title: "AFR",
-                        defaultValue: ".",
-                        visible: false,
-                        formula: function(row) {
-                            if (row.maf1000G_PHASE_3_AFR != null) {
-                                return row.maf1000G_PHASE_3_AFR;
-                            } else {
-                                return ".";
-                            }
-                        }
-                    }, {
-                        name: "maf1000G_PHASE_3_EUR",
-                        title: "EUR",
-                        defaultValue: ".",
-                        formula: function(row) {
-                            if (row.maf1000G_PHASE_3_EUR != null) {
-                                return row.maf1000G_PHASE_3_EUR;
-                            } else {
-                                return ".";
-                            }
-                        }
-                    } ]
-
+                    }
                 }, {
-                    title: "ExAC",
-                    width: 50,
-                    name: 'mafexac',
-                    columns: [{
-                            name: "mafexac_ALL",
-                            title: "ALL",
-                            defaultValue: ".",
-                            formula: function(row) {
-                                if (row.mafexac_ALL != null) {
-                                    return row.mafexac_ALL;
-                                } else {
-                                    return ".";
-                                }
-                            }
+                    name: "maf1000GAME",
+                    title: "AME",
+                    defaultValue: ".",
+                    formula: function (row) {
+                        if (row.maf1000GAME != null) {
+                            return row.maf1000GAME;
+                        } else {
+                            return ".";
                         }
-                    ]
-                },
+                    }
+                }, {
+                    name: "maf1000GASI",
+                    title: "ASI",
+                    defaultValue: ".",
+                    formula: function (row) {
+                        if (row.maf1000GASI != null) {
+                            return row.maf1000GASI;
+                        } else {
+                            return ".";
+                        }
+                    }
+                }, {
+                    name: "maf1000GAFR",
+                    title: "AFR",
+                    defaultValue: ".",
+                    formula: function (row) {
+                        if (row.maf1000GAFR != null) {
+                            return row.maf1000GAFR;
+                        } else {
+                            return ".";
+                        }
+                    }
+                }, {
+                    name: "maf1000GEUR",
+                    title: "EUR",
+                    defaultValue: ".",
+                    formula: function (row) {
+                        if (row.maf1000GEUR != null) {
+                            return row.maf1000GEUR;
+                        } else {
+                            return ".";
+                        }
+                    }
+                }
+
+                ]
+            }, {
+                title: "1000G MAF (phase 3)",
+                width: 150,
+                name: 'maf1000G3',
+                columns: [{
+                    name: "maf1000G_PHASE_3_ALL",
+                    title: "ALL",
+                    defaultValue: ".",
+                    formula: function (row) {
+                        if (row.maf1000G_PHASE_3_ALL != null) {
+                            return row.maf1000G_PHASE_3_ALL;
+                        } else {
+                            return ".";
+                        }
+                    }
+                }, {
+                    name: "maf1000G_PHASE_3_AMR",
+                    title: "AME",
+                    defaultValue: ".",
+                    visible: false,
+                    formula: function (row) {
+                        if (row.maf1000G_PHASE_3_AMR != null) {
+                            return row.maf1000G_PHASE_3_AMR;
+                        } else {
+                            return ".";
+                        }
+                    }
+                }, {
+                    name: "maf1000G_PHASE_3_SAS",
+                    title: "South ASI",
+                    defaultValue: ".",
+                    visible: false,
+                    formula: function (row) {
+                        if (row.maf1000G_PHASE_3_SAS != null) {
+                            return row.maf1000G_PHASE_3_SAS;
+                        } else {
+                            return ".";
+                        }
+                    }
+                }, {
+                    name: "maf1000G_PHASE_3_EAS",
+                    title: "East ASI",
+                    defaultValue: ".",
+                    visible: false,
+                    formula: function (row) {
+                        if (row.maf1000G_PHASE_3_EAS != null) {
+                            return row.maf1000G_PHASE_3_EAS;
+                        } else {
+                            return ".";
+                        }
+                    }
+                }, {
+                    name: "maf1000G_PHASE_3_AFR",
+                    title: "AFR",
+                    defaultValue: ".",
+                    visible: false,
+                    formula: function (row) {
+                        if (row.maf1000G_PHASE_3_AFR != null) {
+                            return row.maf1000G_PHASE_3_AFR;
+                        } else {
+                            return ".";
+                        }
+                    }
+                }, {
+                    name: "maf1000G_PHASE_3_EUR",
+                    title: "EUR",
+                    defaultValue: ".",
+                    formula: function (row) {
+                        if (row.maf1000G_PHASE_3_EUR != null) {
+                            return row.maf1000G_PHASE_3_EUR;
+                        } else {
+                            return ".";
+                        }
+                    }
+                }]
+
+            }, {
+                title: "ExAC",
+                width: 50,
+                name: 'mafexac',
+                columns: [{
+                    name: "mafexac_ALL",
+                    title: "ALL",
+                    defaultValue: ".",
+                    formula: function (row) {
+                        if (row.mafexac_ALL != null) {
+                            return row.mafexac_ALL;
+                        } else {
+                            return ".";
+                        }
+                    }
+                }
+                ]
+            },
 
                 {
                     title: "ESP 6500",
                     width: 100,
                     name: 'maf6500',
                     columns: [{
-                            name: "mafESP_ALL",
-                            title: "ALL",
-                            defaultValue: ".",
-                            formula: function(row) {
-                                if (row.mafESP_ALL != null) {
-                                    return row.mafESP_ALL;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        }, {
-                            name: "mafESP_EA",
-                            title: "Eur. Ame.",
-                            defaultValue: ".",
-                            formula: function(row) {
-                                if (row.mafESP_EA != null) {
-                                    return row.mafESP_EA;
-                                } else {
-                                    return ".";
-                                }
+                        name: "mafESP_ALL",
+                        title: "ALL",
+                        defaultValue: ".",
+                        formula: function (row) {
+                            if (row.mafESP_ALL != null) {
+                                return row.mafESP_ALL;
+                            } else {
+                                return ".";
                             }
                         }
+                    }, {
+                        name: "mafESP_EA",
+                        title: "Eur. Ame.",
+                        defaultValue: ".",
+                        formula: function (row) {
+                            if (row.mafESP_EA != null) {
+                                return row.mafESP_EA;
+                            } else {
+                                return ".";
+                            }
+                        }
+                    }
                     ]
                 }, {
                     name: 'sift',
                     title: 'SIFT',
                     width: 50,
-                    formula: function(row) {
+                    formula: function (row) {
                         if (row.sift !== null && typeof row.sift !== 'undefined') {
                             return row.sift;
                         } else {
@@ -795,8 +819,8 @@
                     name: 'polyphen',
                     title: 'Polyphen',
                     width: 60,
-                    formula: function(row) {
-                        if (row.polyphen !== null  && typeof row.polyphen !== 'undefined') {
+                    formula: function (row) {
+                        if (row.polyphen !== null && typeof row.polyphen !== 'undefined') {
                             return row.polyphen;
                         } else {
                             return ".";
@@ -806,8 +830,8 @@
                     name: 'phastcons',
                     title: 'PhastCons',
                     width: 60,
-                    formula: function(row) {
-                        if (row.phastcons !== null  && typeof row.phastcons !== 'undefined') {
+                    formula: function (row) {
+                        if (row.phastcons !== null && typeof row.phastcons !== 'undefined') {
                             return row.phastcons;
                         } else {
                             return ".";
@@ -817,8 +841,8 @@
                     name: 'phylop',
                     title: 'phyloP',
                     width: 50,
-                    formula: function(row) {
-                        if (row.phylop !== null  && typeof row.phylop !== 'undefined') {
+                    formula: function (row) {
+                        if (row.phylop !== null && typeof row.phylop !== 'undefined') {
                             return row.phylop;
                         } else {
                             return ".";
@@ -828,8 +852,8 @@
                     name: 'gerp',
                     title: 'GERP',
                     width: 50,
-                    formula: function(row) {
-                        if (row.gerp !== null  && typeof row.gerp !== 'undefined') {
+                    formula: function (row) {
+                        if (row.gerp !== null && typeof row.gerp !== 'undefined') {
                             return row.gerp;
                         } else {
                             return ".";
@@ -839,8 +863,8 @@
                     name: 'cadd',
                     title: 'CADD',
                     width: 50,
-                    formula: function(row) {
-                        if (row.cadd !== null  && typeof row.cadd !== 'undefined') {
+                    formula: function (row) {
+                        if (row.cadd !== null && typeof row.cadd !== 'undefined') {
                             return row.cadd;
                         } else {
                             return ".";
@@ -861,7 +885,7 @@
                         name: 'clinvar',
                         title: 'Clinvar',
                         width: 150,
-                        formula: function(row) {
+                        formula: function (row) {
                             try {
                                 return row.phenotypes.clinvar;
                             } catch (e) {
@@ -872,7 +896,7 @@
                         name: 'cosmic',
                         title: 'Cosmic',
                         width: 150,
-                        formula: function(row) {
+                        formula: function (row) {
                             try {
                                 return row.phenotypes.cosmic;
                             } catch (e) {
@@ -884,7 +908,7 @@
                         name: 'gwas',
                         title: 'GWas',
                         width: 150,
-                        formula: function(row) {
+                        formula: function (row) {
                             try {
                                 return row.phenotypes.gwas;
                             } catch (e) {
@@ -898,17 +922,18 @@
                     name: 'pathopedia',
                     title: 'Pathopedia <br/><br/><csvs-desc-pathopedia></csvs-desc-pathopedia>',
                     width: 190,
-                    formula: function(row) {
-                        var variant = row.chromosome + ":" + row.position + " " + row.reference + ">"+ row.alternate;
+                    formula: function (row) {
+                        var variant = row.chromosome + ":" + row.position + " " + row.reference + ">" + row.alternate;
                         if (row.pathopedia != null) {
-                            var mtto =JSON.stringify(row.pathopedia.mapTotalTypeOpinion);
-                           return "<csvs-pathopedia map_total_type_opinion=" + mtto + " variant='"+ variant+"'"+ " total='"+row.pathopedia.total+"'></csvs-pathopedia>";
+                            var mtto = JSON.stringify(row.pathopedia.mapTotalTypeOpinion);
+                            return "<csvs-pathopedia map_total_type_opinion=" + mtto + " variant='" + variant + "'" + " total='" + row.pathopedia.total + "'></csvs-pathopedia>";
                         } else {
-                            return "<csvs-pathopedia  variant='"+ variant+"'></csvs-pathopedia>";
+                            return "<csvs-pathopedia  variant='" + variant + "'></csvs-pathopedia>";
                         }
                     }
                 }
             ];
+
             this.reloadChart({});
         },
         downloadFiles: function(e) {
@@ -983,7 +1008,6 @@
             return results;
         },
         submitForm: function() {
-
             var me = this;
             var query = {};
 
@@ -1215,19 +1239,21 @@
             }
         },
         urlChanged: function(neo, old) {
-
             var me = this;
 
             if (neo == null || neo == "") {
                 return;
             }
+
+
             this.request = {
                 url: this.formURL,
                 auxTotalCount: -1,
-                parse: function(response) {
+                parse: function (response) {
                     return me._parse(response);
+
                 },
-                parseTotal: function(response) {
+                parseTotal: function (response) {
                     var total = me._parseTotal(response);
 
                     me.numTotalResults = total;
@@ -1249,18 +1275,35 @@
                 },
             };
 
+
         },
         _parse: function(response) {
-
             var me = this;
             var data = response.result;
             var positions = [];
+            var positionsPathopedia = [];
             var positionsDoubleVariant = [];
             var doubleVariant = [];
             var referencePosition = [];
+
+            // inicialize maxSearch
+            if (response.queryOptions.maxSearch){
+               this.maxSearch = response.queryOptions.maxSearch;
+            }
+
+            for (var i = 0; i < data.length; i++) {
+                var row = data[i];
+                if (row.errorMsg != undefined) {
+                    console.log(row.errorMsg);
+                }
+            }
+
             //Cellbase use - never * o nothing, we need change, annotate and change
             for (var i = 0; i < data.length; i++) {
                 var row = data[i];
+
+                positionsPathopedia.push(row.chromosome + ":" + row.position + ":" + row.reference + ":" + row.alternate);
+
                 if(row.alternate == "" || row.alternate =="*"){
                     positionsDoubleVariant.push(i);
                     doubleVariant.push(row.alternate);
@@ -1285,10 +1328,9 @@
                 positions.push(variant);
             }
 
-
             // Pathopedia
-            var query = positions.join(",");
-            if (positions.length > 0) {
+            var query = positionsPathopedia.join("&");
+            if (positionsPathopedia.length > 0) {
                 CSVSManager.pathologies.fetch({
                     id: query,
                     request: {
@@ -1299,6 +1341,7 @@
                                     var obj = response.result[i];
                                     if (obj.total > 0) {
                                         for (var j = 0; j < data.length; j++) {
+
                                             if (obj.variant.chromosome == data[j].chromosome &&
                                                 obj.variant.position == data[j].position &&
                                                 obj.variant.reference == data[j].reference &&
@@ -1308,7 +1351,7 @@
                                                     "mapTotalTypeOpinion": obj.mapTotalTypeOpinion.valueOf(),
                                                     "total": obj.total
                                                 };
-                                                continue;
+                                                break;
                                             }
                                         }
                                     }
@@ -1319,6 +1362,7 @@
                     }
                 });
             }
+
 
             // Annotate
             var query = positions.join(",");
@@ -1357,6 +1401,8 @@
             for (var z = 0; z < referencePosition.length; z++) {
                 data[referencePosition[z]].reference =  "*";
             }
+
+
 
             for (var i = 0; i < data.length; i++) {
                 var variant = data[i];
@@ -1635,12 +1681,24 @@
             } else {
                 total = 0;
             }
+            // inicialize maxSearch
+            if (this.maxSearch == undefined && response.queryOptions.maxSearch){
+                this.maxSearch = response.queryOptions.maxSearch;
+            }
+
+            if (total > this.maxSearch){
+                new StvDialog().alert("The number of variants found ("+ total + ") can't exceed " + this.maxSearch + ".    \n \n" +
+                    "It is return only " + this.maxSearch + " first positions." +
+                    "Please limit the number of positions to search.");
+
+            }
+
             return total;
         },
         handleRowClick: function(e) {
             var row = e.detail.row;
 
-            // Call if changue row
+            // Call if change row
             if (this.$.effect.row != row){
                 this.$.gv.genomeViewer.setRegion(row);
                 this.$.effect.row = row;

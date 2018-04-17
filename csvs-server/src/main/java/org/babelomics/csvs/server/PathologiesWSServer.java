@@ -28,7 +28,7 @@ import java.util.Map;
  * @author Gema Roldán Gonzalez <gema.roldan@juntadeandalucia.es>
  */
 @Path("/pathologies")
-@Api(value = "Pathologies", description = "Pathologies from variants")
+@Api(value = "pathologies", description = "Pathologies from variants")
 @Produces(MediaType.APPLICATION_JSON)
 public class PathologiesWSServer extends CSVSWSServer {
 
@@ -45,7 +45,7 @@ public class PathologiesWSServer extends CSVSWSServer {
 
         long start = System.currentTimeMillis();
         List<Variant> listVariants = new ArrayList<>();
-        String[] splits = variants.split(",");
+        String[] splits = variants.split("&");
         for (String v : splits){
             listVariants.add(new Variant(v));
         }
@@ -157,31 +157,31 @@ public class PathologiesWSServer extends CSVSWSServer {
         text.append(opinion.getVariant().pretty());
 
         if ("update".equals(action))
-            text.append(" -> New opinion");
+            text.append(" -> Change state opinion");
         else
-            text.append(" -> Changue state opinion");
+            text.append(" -> New opinion");
 
         map.put(CSVSWSServer.SUBJECT, text.toString());
 
         text = new StringBuffer();
-        text.append("DATA OPINION: \n");
-        text.append("\n Variant: ");
+        text.append("- Review pathopedia: \n");
+        text.append("\n   Variant: ");
         text.append(opinion.getVariant().pretty());
-        text.append("\n Name: ");
+        text.append("\n   Name: ");
         text.append(opinion.getName());
-        text.append("\n Institution: ");
+        text.append("\n   Institution: ");
         text.append(opinion.getInstitution());
-        text.append("\n Evidence: ");
+        text.append("\n   Evidence: ");
         text.append(opinion.getEvidence());
-        text.append("\n Type: ");
+        text.append("\n   Type: ");
         text.append(opinion.getTypeDesc());
-        text.append("\n State: ");
+        text.append("\n   State: ");
         text.append(opinion.getStateDesc());
 
-        text.append("\n\nSelect what action you want to do:");
+        text.append("\n\n- Select what action you want to do:");
 
         if(opinion.getState() != Opinion.PENDING) {
-            text.append("\n\n GO TO PENDING TO PUBLIC: ");
+            text.append("\n\n  GO TO PENDING TO PUBLIC: ");
             text.append(uriInfo.getBaseUri());
             text.append("pathologies/");
             text.append(opinion.getId());
@@ -191,7 +191,7 @@ public class PathologiesWSServer extends CSVSWSServer {
         }
 
         if(opinion.getState() != Opinion.PUBLISHED) {
-            text.append("\n\n GO TO PUBLISH: ");
+            text.append("\n\n  GO TO PUBLISH: ");
             text.append(uriInfo.getBaseUri());
             text.append("pathologies/");
             text.append(opinion.getId());
