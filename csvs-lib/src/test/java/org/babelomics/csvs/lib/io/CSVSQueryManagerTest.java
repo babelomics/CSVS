@@ -447,7 +447,7 @@ public class CSVSQueryManagerTest {
         states.add(Opinion.PUBLISHED);
 
 
-        List<Opinion> listOpinions = qm.getAllOpinion(v1, states, "top", null, null);
+        List<Opinion> listOpinions = qm.getAllOpinion(v1, states, "c", null, null, null);
         if (listOpinions != null){
             for(Opinion op: listOpinions){
                 System.out.println(op);

@@ -149,4 +149,8 @@ public class File {
     public void setIdPanel(ObjectId idPanel) {
         this.idPanel =    idPanel;
     }
+
+    public int getDiseaseGroupId() { return this.diseaseGroupId; }
+
+    public int getTechnologyId() { return this.technologyId;}
 }

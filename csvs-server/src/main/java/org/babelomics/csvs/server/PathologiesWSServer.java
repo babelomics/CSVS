@@ -69,7 +69,8 @@ public class PathologiesWSServer extends CSVSWSServer {
                                    @ApiParam(value = "limit") @QueryParam("limit") @DefaultValue("10") int limit,
                                    @ApiParam(value = "skip") @QueryParam("skip") @DefaultValue("0") int skip,
                                    @ApiParam(value = "sort") @QueryParam("sort") @DefaultValue("") String sort,
-                                   @ApiParam(value = "states") @QueryParam("states") @DefaultValue("") String states
+                                   @ApiParam(value = "states") @QueryParam("states") @DefaultValue("") String states,
+                                   @ApiParam(value = "clinSignificance") @QueryParam("clinSignificance")  List<String> clinSignificance
     ) {
 
         List<Integer> statesList = new ArrayList<>();
@@ -81,7 +82,7 @@ public class PathologiesWSServer extends CSVSWSServer {
             }
         }
 
-        List<Opinion> res = qm.getAllOpinion(new Variant(variant), statesList, sort, limit, skip) ;
+        List<Opinion> res = qm.getAllOpinion(new Variant(variant), statesList, sort, limit, skip, clinSignificance) ;
 
         QueryResponse qr = createQueryResponse(res);
         qr.setNumTotalResults(qr.getNumResults());

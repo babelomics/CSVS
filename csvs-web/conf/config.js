@@ -28,3 +28,4 @@ DEBUG=null;
 IGNORE_TLS=null;
 USER='';
 PASS='';
+SEARCH_MAX=50000

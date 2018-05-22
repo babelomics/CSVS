@@ -13,6 +13,7 @@
 
 <link rel="import" href="csvs-pathopedia.html">
 
+<link rel="import" href="csvs-contact-request.html">
 
 <dom-module id="csvs-search-element">
     <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
@@ -191,14 +192,16 @@
             font-weight: bold;
         }
 
-        /* Delete events table (sort) */
-        stv-table::shadow #header  {
-            pointer-events:none;
+        /* Delete style table (sort)*/
+        stv-table::shadow .table-header-field {
+            cursor:default;
         }
-        /* Enable desc pathopedia */
-        stv-table::shadow .csvs-desc-pathopedia  {
-            pointer-events:auto;
+
+        stv-table::shadow .sort-down>.name:after ,
+        stv-table::shadow .sort-up>.name:after {
+            display:none;
         }
+
     </style>
     <template>
         <div class="horizontal layout">
@@ -363,7 +366,8 @@
                 value: 1000000
             },
             maxSearch:{
-                type: Number
+                type: Number,
+                value: window.SEARCH_MAX ? window.SEARCH_MAX: 0
             },
             isLogged: {
                 type: Boolean
@@ -391,6 +395,11 @@
                 type: Boolean,
                 value: false
             }
+        },
+        listeners: {  // when open popup
+            "disablescroll": 'disableScroll',
+            "enablescroll": 'enableScroll',
+            "getDataSearch": 'getDataSearch'
         },
 
         resultsChanged: function(neo, old) {
@@ -479,13 +488,19 @@
             this.selectedSpecies = DEFAULT_SPECIES;
         },
         // Init title menu and not sort
-        initPathopedia: function() {
+        initTitleMenu: function() {
             var list = document.getElementById('columnsMenu').getElementsByTagName("span");
-            for (var i = list.length-1; i>0; i--) {
+            // Num colums to modify
+            var num_search = 2;
+            for (var i = list.length-1; i>0 && num_search>0; i--) {
                 var title = list[i].innerText;
                 if (title.indexOf('Pathopedia') != -1) {
                     list[i].innerText = "Pathopedia";
-                    break;
+                    num_search --;
+                }
+                if (title.indexOf('Address') != -1) {
+                    list[i].innerText = "Address Book";
+                    num_search --;
                 }
             }
         },
@@ -495,6 +510,7 @@
 
             }
 
+
             var me = this;
             this.species = 'Homo sapiens';
             var lastQuery = '';
@@ -503,9 +519,11 @@
             this.async(function () { // DOM READY
                 me.selectedMenuTool = me.$.menu.querySelector('div');
                 me.$.gv.createGenomeViewer();
+                // remove block SNP
+                me.$.gv.genomeViewer.removeTrack(snpTrack);
                 me.$.gv.genomeViewer.draw();
 
-                this.initPathopedia();
+                this.initTitleMenu();
             }, 50);
 
             this.columns = [{
@@ -924,29 +942,54 @@
                     width: 190,
                     formula: function (row) {
                         var variant = row.chromosome + ":" + row.position + " " + row.reference + ">" + row.alternate;
+                        var refIni = ("referenceIni" in row)? " ref_ini='" + row.referenceIni + "'" : "";
+                        var altIni = ("alternateIni" in row)? " alt_ini='" + row.alternateIni + "'" : "";
+
                         if (row.pathopedia != null) {
                             var mtto = JSON.stringify(row.pathopedia.mapTotalTypeOpinion);
-                            return "<csvs-pathopedia map_total_type_opinion=" + mtto + " variant='" + variant + "'" + " total='" + row.pathopedia.total + "'></csvs-pathopedia>";
+                            return "<csvs-pathopedia map_total_type_opinion=" + mtto + " variant='" + variant + "'" + " total='" + row.pathopedia.total + "'" + refIni + altIni + "></csvs-pathopedia>";
                         } else {
-                            return "<csvs-pathopedia  variant='" + variant + "'></csvs-pathopedia>";
+                            return "<csvs-pathopedia  variant='" + variant + "'" + refIni + altIni + "></csvs-pathopedia>";
                         }
                     }
-                }
+                },
+                {
+                    name: 'addressBook',
+                    title: 'Address<br/>Book',
+                    width: 50,
+                    formula: function (row) {
+                        var variant = row.chromosome + ":" + row.position + " " + row.reference + ">" + row.alternate;
+                        var refIni = ("referenceIni" in row)? " ref_ini='" + row.referenceIni + "'" : "";
+                        var altIni = ("alternateIni" in row)? " alt_ini='" + row.alternateIni + "'" : "";
+                        var file = row.addressBook == undefined ? "" : row.addressBook;
+                        return "<csvs-address-book  variant='" + variant + "'" + " file='" + file + "'" + refIni + altIni + "></csvs-address-book>";
+                    }
+                },
             ];
 
             this.reloadChart({});
         },
+
         downloadFiles: function(e) {
-            this.query.limit = 0;
+            this.query.limit = this.maxSearch != -1 ? this.maxSearch : 0;
             var me = this;
             var url = CSVSManager.variants.fetch({
                 query: this.query,
                 request: {
                     success: function(r) {
-                        var stringToSave = "Chr"+ "\t"+"Position"+ "\t"+"alleles"+ "\t"+"0/0"+ "\t"+"0/1"+ "\t"+"1/1"
-                                + "\t"+"./,"+ "\t"+"0Freq"+ "\t"+ "1Freq"+ "\t"+ "MAF"+"\n";
+                        var len_result = r.result.length;
+                        var total = r.numTotalResults;
 
-                        for( var i = 0; i < r.result.length; i++){
+                        if( window.SEARCH_MAX != -1  && total > len_result ) {
+                            new StvDialog().alert("The number of variants found (" + total + ") can't exceed the maximun (" + window.SEARCH_MAX + ").    \n \n" +
+                                "The first " + window.SEARCH_MAX + " variants are retorned. " +
+                                "Please limit your search.");
+                        }
+
+                        var stringToSave = "Chr"+ "\t"+"Position"+ "\t"+"alleles"+ "\t"+"0/0"+ "\t"+"0/1"+ "\t"+"1/1"
+                            + "\t"+"./,"+ "\t"+"0Freq"+ "\t"+ "1Freq"+ "\t"+ "MAF"+"\n";
+
+                        for( var i = 0; i < len_result; i++){
                             stringToSave = stringToSave + me._csvToString(r.result[i]);
                         }
                         var blob = new Blob([stringToSave], {
@@ -1251,7 +1294,6 @@
                 auxTotalCount: -1,
                 parse: function (response) {
                     return me._parse(response);
-
                 },
                 parseTotal: function (response) {
                     var total = me._parseTotal(response);
@@ -1291,26 +1333,27 @@
                this.maxSearch = response.queryOptions.maxSearch;
             }
 
-            for (var i = 0; i < data.length; i++) {
-                var row = data[i];
-                if (row.errorMsg != undefined) {
-                    console.log(row.errorMsg);
-                }
-            }
 
             //Cellbase use - never * o nothing, we need change, annotate and change
             for (var i = 0; i < data.length; i++) {
                 var row = data[i];
 
+                if (row.errorMsg != undefined) {
+                    console.log(row.errorMsg);
+                }
+
                 positionsPathopedia.push(row.chromosome + ":" + row.position + ":" + row.reference + ":" + row.alternate);
 
                 if(row.alternate == "" || row.alternate =="*"){
+                    row.alternateIni = row.alternate;
                     positionsDoubleVariant.push(i);
                     doubleVariant.push(row.alternate);
                     row.alternate = "-";
+
                 }
 
                 if((row.alternate).indexOf(",") != -1){
+                    row.alternateIni = row.alternate;
                     positionsDoubleVariant.push(i);
                     doubleVariant.push(row.alternate);
                     row.alternate = row.alternate.split(",")[0];
@@ -1320,6 +1363,7 @@
                 }
 
                 if(row.reference == "" || row.reference =="*"){
+                    row.referenceIni = row.reference;
                     referencePosition.push(i);
                     row.reference = "-";
                 }
@@ -1343,18 +1387,55 @@
                                         for (var j = 0; j < data.length; j++) {
 
                                             if (obj.variant.chromosome == data[j].chromosome &&
-                                                obj.variant.position == data[j].position &&
-                                                obj.variant.reference == data[j].reference &&
-                                                obj.variant.alternate == data[j].alternate) {
+                                                obj.variant.position == data[j].position) {
 
-                                                data[j].pathopedia = {
-                                                    "mapTotalTypeOpinion": obj.mapTotalTypeOpinion.valueOf(),
-                                                    "total": obj.total
-                                                };
-                                                break;
+
+                                                var alt = ("alternateIni" in data[j]) ? data[j].alternateIni :  data[j].alternate;
+                                                var ref = ("referenceIni" in data[j]) ? data[j].referenceIni :  data[j].reference;
+
+
+                                                if (obj.variant.alternate == alt && obj.variant.reference == ref) {
+
+                                                    data[j].pathopedia = {
+                                                        "mapTotalTypeOpinion": obj.mapTotalTypeOpinion.valueOf(),
+                                                        "total": obj.total,
+                                                    };
+                                                    break;
+                                                }
                                             }
                                         }
                                     }
+                                }
+
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Address book
+            if (positionsPathopedia.length > 0) {
+                CSVSManager.variants.addressBook({
+                    id: query,
+                    request: {
+                        async: false,
+                        success: function (response) {
+                            if (response != undefined && response.numResults > 0) {
+                                for (var i = 0; i < response.result.length; i++) {
+                                    var obj = response.result[i];
+
+                                    for (var j = 0; j < data.length; j++) {
+
+                                        var alt = ("alternateIni" in data[j]) ? data[j].alternateIni :  data[j].alternate;
+                                        var ref = ("referenceIni" in data[j]) ? data[j].referenceIni :  data[j].reference;
+
+                                        if (obj == data[j].chromosome + ":" +data[j].position + ":" + ref + ":" + alt) {
+                                            data[j].addressBook = true;
+                                            break;
+
+                                        }
+                                    }
+
                                 }
 
                             }
@@ -1682,21 +1763,68 @@
                 total = 0;
             }
             // inicialize maxSearch
-            if (this.maxSearch == undefined && response.queryOptions.maxSearch){
+            if (response.queryOptions.maxSearch){
                 this.maxSearch = response.queryOptions.maxSearch;
             }
 
-            if (total > this.maxSearch){
-                new StvDialog().alert("The number of variants found ("+ total + ") can't exceed " + this.maxSearch + ".    \n \n" +
-                    "It is return only " + this.maxSearch + " first positions." +
-                    "Please limit the number of positions to search.");
-
+            if (this.maxSearch != -1 && total > this.maxSearch ){
+                new StvDialog().alert("The number of variants found ("+ total + ") can't exceed the maximun (" + this.maxSearch + ").    \n \n" +
+                    "The first " + this.maxSearch + " variants are retorned. " +
+                    "Please limit your search.");
+                total =  this.maxSearch;
             }
 
             return total;
         },
+
+        // Get data search to conctact
+        getDataSearch: function(e){
+            var data_search = {};
+            data_search.regionsSearch = this.$.filterPosition.checkRegion();
+            data_search.geneSearch = this.$.filterPosition.checkGene();
+
+
+            var diseaseEls = this.$.diseases_div.querySelectorAll(".diseaseName");
+            var diseaseIds = [];
+            diseaseEls.forEach(function(d){
+                if (d.checked)
+                    diseaseIds.push(d.getAttribute("value"));
+            });
+
+            var technologyEls = this.$.technologies_div.querySelectorAll(".technologyName");
+            var technologyIds = [];
+            technologyEls.forEach(function(t){
+                if (t.checked)
+                    technologyIds.push(t.getAttribute("value"));
+            });
+            data_search.diseasesSearch = diseaseIds.join(",");
+            data_search.technologiesSearch = technologyIds.join(",");
+            e.target.search = data_search;
+         },
+
+        // enable scroll when popup is closed
+        enableScroll: function(e){
+            this.$.dataTable.handleScroll = function(e) {
+                if (this.enablePaging == true) {
+                    e.preventDefault();
+                    if (e.deltaY > 0) {
+                        this.handleNextClick();
+                    }
+                    if (e.deltaY < 0) {
+                        this.handlePreviousClick();
+                    }
+                }
+            }
+        },
+        // disable scroll when popup is closed
+        disableScroll: function(e){
+            this.$.dataTable.handleScroll =  function(e) { }
+        },
+
+
         handleRowClick: function(e) {
             var row = e.detail.row;
+
 
             // Call if change row
             if (this.$.effect.row != row){

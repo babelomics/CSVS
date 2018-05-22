@@ -100,8 +100,6 @@ public class CSVSWSServer {
         configMail.put(USER, properties.getProperty("CSVS.MAIL.USER", ""));
         configMail.put(PASS, properties.getProperty("CSVS.MAIL.PASS", ""));
 
-        SEARCH_MAX = Integer.parseInt(properties.getProperty("CSVS.SEARCH.MAX", "-1"));
-
         System.out.println(properties);
 
         MongoClient mongoClient;

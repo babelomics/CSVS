@@ -341,6 +341,7 @@ public class CSVSQueryManager {
             Query<Variant> auxQuery = this.datastore.createQuery(Variant.class);
 
             List<Criteria> and = new ArrayList<>();
+          //  and.add(auxQuery.criteria("_at.chIds").in(getChunkIds(r)));
             and.add(auxQuery.criteria("chromosome").equal(r.getChromosome()));
             and.add(auxQuery.criteria("position").greaterThanOrEq(r.getStart()));
             and.add(auxQuery.criteria("position").lessThanOrEq(r.getEnd()));
@@ -856,8 +857,9 @@ public class CSVSQueryManager {
         return (id * chunksize) + chunksize - 1;
     }
 
+
     /**
-     * Get info pathopedia from a variant.
+     * Pathopedia: Get info pathopedia from a variant.
      * @param variants
      * @return
      */
@@ -929,11 +931,11 @@ public class CSVSQueryManager {
 
 
     /**
-     * Get list all opinion.
+     * Pathopedia: Get list all opinion.
      * @param v
      * @return
      */
-    public List<Opinion> getAllOpinion(Variant v, List<Integer> statesList, String sort, Integer limit, Integer skip) {
+    public List<Opinion> getAllOpinion(Variant v, List<Integer> statesList, String sort, Integer limit, Integer skip, List<String> clinSignificance) {
         List<Opinion> res = new ArrayList<Opinion>();
 
         List<Variant> variants=new ArrayList<>();
@@ -949,43 +951,26 @@ public class CSVSQueryManager {
                 query.field("s").in(statesList);
             }
 
-            if (sort != null && !"".equals(sort) && ("top".equals(sort) || "-top".equals(sort))) {
-                List<Map.Entry<String, Integer>> order = new ArrayList<>();
-                for (Map.Entry<String, Integer> entry : pat.getMapTotalTypeOpinion().entrySet())
-                    order.add(entry);
-
-
-                if ("top".equals(sort)) {
-                    order.sort((Map.Entry o1, Map.Entry o2) -> ((Integer) o1.getValue()).compareTo((Integer) o2.getValue()));
-                } else {
-                    order.sort((Map.Entry o1, Map.Entry o2) -> ((Integer) o2.getValue()).compareTo((Integer) o1.getValue()));
-                }
-
-                for (Map.Entry<String, Integer> entry : order) {
-                    Query<Opinion> query_aux = query.cloneQuery();
-                    query_aux.field("t").equal(entry.getKey());
-                    query_aux.order("-c");
-
-                    res.addAll(query_aux.asList());
-                }
-
-            } else {
-                if (sort != null && !"".equals(sort)) {
-                    query.order(sort);
-                }
-
-                if (skip != null && limit != null) {
-                    query.offset(skip).limit(limit);
-                }
-                res = query.asList();
+            if(clinSignificance != null && !clinSignificance.isEmpty()){
+                query.field("t").in(clinSignificance);
             }
+
+            if (sort != null && !"".equals(sort)) {
+                query.order(sort);
+            }
+
+            if (skip != null && limit != null) {
+                query.offset(skip).limit(limit);
+            }
+            res = query.asList();
+
         }
 
         return res;
     }
 
     /**
-     * Add new opinion or update.
+     * Pathopedia: Add new opinion or update.
      * @param op
      * @return
      */
@@ -1001,13 +986,75 @@ public class CSVSQueryManager {
 
 
     /**
-     * Get opinion.
+     * Pathopedia: Get opinion.
      * @param idOption
      * @return
      */
     public Opinion getOpinion(ObjectId idOption) {
         Opinion res = datastore.createQuery(Opinion.class).field("_id").equal(idOption).get();
         return res;
+    }
+
+    /**
+     * ContactRequest: Get id file variants with person reference.
+     * @param listVariants
+     * @return
+     */
+    public List<String>  getVariantsAddressBook(List<Variant> listVariants) {
+        List<String> result = new ArrayList<>();
+
+        // Gets ids variants
+        List<Variant> lv = getVariants( listVariants, null, null);
+
+        Map<ObjectId, String> ids = new HashMap();
+        for (Variant v:lv)
+            if(v != null)
+                ids.put(v.getId(), v.getChromosome() + ":"+ v.getPosition()  + ":"+ v.getReference() + ":"+ v.getAlternate());
+
+        // Get variants with file
+        DBCollection myCol =  this.datastore.getCollection(FileVariant.class);
+
+        List<DBObject> idVariantsResults = myCol.distinct("vid", new BasicDBObject("vid",new BasicDBObject("$in", ids.keySet())));
+
+        if(idVariantsResults!=null){
+            for(int i = 0; i < idVariantsResults.size(); i++){
+                result.add( ids.get(idVariantsResults.get(i)));
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * ContactRequest: Get file.
+     * @param variant Id variant
+     * @return
+     */
+    public List<File> getInfoFile(String variant) {
+        // Gets ids variants
+        Variant v = getVariant(new Variant(variant) , null, null);
+
+        // Get ids files
+        DBCollection myCol =  this.datastore.getCollection(FileVariant.class);
+        BasicDBObject project = new BasicDBObject();
+        project.put("fid", 1);
+        project.put("_id", 0);
+
+        List<ObjectId> ids_file = new ArrayList<>();
+        DBCursor myCursor = myCol.find(new BasicDBObject("$query", new BasicDBObject("vid",v.getId())), project);
+        while (myCursor.hasNext()) {
+            DBObject obj = myCursor.next();
+            ids_file.add((ObjectId) obj.get("fid"));
+        }
+
+        // Get files
+        Query<File> queryFile = this.datastore.createQuery(File.class);
+        queryFile.field("_id").in(ids_file);
+        queryFile.order("pr");
+        // Get info
+        System.out.println(queryFile);
+
+        return queryFile.asList();
     }
 
 
