@@ -1,0 +1,335 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="csvs-pathopedia.html">
+
+
+<!-- Ini: Main block -->
+<dom-module id="csvs-address-book">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            padding: 0px 0px;
+        }
+
+        .grid-max-container {
+            display: grid;
+            grid-template-columns: minmax(min-content, auto) minmax(min-content, max-content);
+            grid-gap: 0px;
+            padding: 0px;
+        }
+
+        .grid-max-container > div {
+            padding: 0px 3px 0px 0px;
+            align-self: center;
+            text-align: left;
+        }
+
+        #dropDownDialogOpinion > .grid-container {
+            grid-template-columns: minmax(max-content, auto)  minmax(min-content, max-content);
+        }
+
+        #dropDownDialogAllOpinion{
+            height: 560px;
+        }
+
+
+        paper-button {
+            min-width: 0px;
+            text-transform: inherit;
+
+            line-height: 21px;
+
+            padding: 1px 5px;
+            color: var(--ICO);
+            font-size: 18px;
+
+        }
+
+        paper-dialog{
+            text-align: left;
+            margin:0px;
+        }
+
+        paper-dropdown-menu {
+            display: inherit;
+        }
+        .dialog-head{
+            padding: 0px;
+            margin: 0px;
+            text-align: center;
+        }
+
+    </style>
+    <template>
+        <template is="dom-if" if="{{file}}">
+            <paper-button on-click="openDropdownDialogAddressBook" title="Click to open contact request form">
+                <i class="fa fa-address-book-o" aria-hidden="true" ></i>
+            </paper-button>
+        </template>
+
+        <!-- Ini: New opinion -->
+        <paper-dialog id="openDialogoAddressBook" title="" on-iron-overlay-opened="_disableScroll" on-iron-overlay-closed="_enableScroll" class="handlerScroll">
+            <div align="right"><i class="fa fa-close" dialog-dismiss></i></div>
+            <csvs-open-address-book variant="{{variant}}" file="{{file}}" id="new_address_book" alt_ini="{{alt_ini}}" ref_ini="{{ref_ini}}" search="{{search}}"></csvs-open-address-book>
+        </paper-dialog>
+        <!-- End: New opinion -->
+
+
+    </template>
+
+    <script>
+        Polymer({
+            is: "csvs-address-book",
+            properties: {
+                map_total_type_opinion:{
+                    type: Object,
+                },
+                total:{
+                    type: Number,
+                    value: "0"
+                },
+                variant:{
+                    type: String,
+                },
+                file:{
+                    type: String,
+                },
+                ref_ini:{
+                    type: String
+                },
+                alt_ini:{
+                    type: String,
+                },
+                search:{
+                    type: Object
+                }
+            },
+            behaviors: [PathopediaBehavior],
+            openDropdownDialogAddressBook: function(e) {
+                this.$.new_address_book._clear();
+                // Call enable scroll parent
+                this.fire('getDataSearch',e);
+                this.$.openDialogoAddressBook.open();
+            },
+            checkTotal: function (total, op) {
+                if("eq" == op){
+                    return total == 1;
+                } else if("gt" == op)
+                    return total > 1;
+
+            },
+            // Call disable scroll parent
+            _disableScroll: function(e) {
+                if (e.target.classList.contains("handlerScroll"))
+                    this.fire('disablescroll', e);
+            },
+            // Call enable scroll parent
+            _enableScroll: function(e) {
+                if (e.target.classList.contains("handlerScroll"))
+                    this.fire('enablescroll', e);
+            },
+        });
+    </script>
+</dom-module>
+<!-- End: Main block -->
+
+
+
+<dom-module id="csvs-open-address-book">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            min-width: 450px;
+            --paper-input-container-input:{
+                max-height: 100px;
+                max-width: 800px;
+            }
+        }
+
+        paper-dropdown-menu{
+            display:block;
+        }
+
+        .output{
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+            max-width: 600px;
+        }
+        .error {
+            right: auto;
+            left: auto;
+            margin-top: auto;
+        }
+        paper-input-error[invalid] .error{
+            display:block;
+        }
+        paper-input-error:not[invalid] .error{
+            display:none;
+        }
+        paper-button {
+            text-transform: inherit;
+            display: inline-block;
+            /** Reload style **/
+            height: 50px;
+            line-height: 50px;
+            padding: 0px 50px;
+            text-align: center;
+            box-shadow: 2px 2px 3px 0px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.15s;
+            cursor: pointer;
+            position: relative;
+            outline: transparent solid 0px;
+            box-sizing: border-box;
+
+            border:1px solid rgba(0, 0, 0, 0.2);
+        }
+
+        /** Reload style **/
+        paper-button:hover {
+            background-color: #f5f5f5;
+            box-shadow:  2px 2px 3px 0px rgba(0, 0, 0, 0.2);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: auto max-content max-content;
+            grid-gap: 1px;
+            padding: 20px 0px 0px 0px;
+            vertical-align: bottom;
+            align-items: flex-end;
+            margin-right: 0px;
+            width: 100%;
+        }
+
+        .ok {
+            color: var(--OK);
+            font-weight: bold;
+        }
+        .ko {
+            color: var(--KO);
+            font-weight: bold;
+        }
+
+    </style>
+    <template>
+        <div align="center">
+            <p>Request information form: <title-variant  variant={{variant}}></title-variant></p>
+        </div>
+
+        <paper-input label="Your name" id="name" required error-message="Required" on-input="validAll" char-counter maxlength="150"></paper-input>
+        <paper-input label="Your institution" id="institution" required  error-message="Required" on-input="validAll" char-counter maxlength="150"></paper-input>
+        <paper-input label="Your e-mail" id="email" type="email" required error-message=""  on-input="validAll" maxlength="360"></paper-input>
+        <paper-textarea label="Why do you want to contact the reporter of this variant?" maxRows="4" id="reason" required error-message="Required" on-input="validAll" char-counter maxlength="600"></paper-textarea>
+            <div class="grid-container">
+                <div class="output ok" id="output">  </div>
+                <div id="Sending" hidden$="{{!sending}}">
+                    <i class="fa fa-circle-o-notch fa-spin"></i> Sending...
+                </div>
+                <div><paper-button class="stv-btn stv-btn-shdw stv-btn-big" on-click="sendContactRequest" id="send_request_cont">Submit</paper-button></div>
+            </div>
+    </template>
+
+    <script>
+        Polymer({
+            is: "csvs-open-address-book",
+            properties: {
+                variant:{
+                    type:String
+                },
+                sending: {
+                    type: Boolean,
+                    value: false
+                },
+                alt_ini:{
+                    type: String
+                },
+                ref_ini: {
+                    type: String
+                },
+                search:{
+                    type: Object
+                }
+            },
+            behaviors: [PathopediaBehavior],
+            validAll:function(){
+                this.$.name.invalid = false;
+                this.$.institution.invalid = false;
+                this.$.email.invalid = false;
+                this.$.reason.invalid = false;
+            },
+            _clear: function(){
+                this.$.name.value = "";
+                this.$.institution.value  = "";
+                this.$.email.value = "";
+                this.$.reason.value = "";
+                this.$.output.innerHTML = "";
+                this.$.sending = false;
+                this.$.send_request_cont.hidden=false;
+                this.validAll();
+            },
+            sendContactRequest: function () {
+                this.$.email.errorMessage="";
+                this.$.output.innerHTML = "";
+                this.$.output.classList.remove("ok","ko");
+                var v1 = this.$.name.validate();
+                var v2 = this.$.email.validate();
+                var v3 = this.$.institution.validate();
+                var v4 = this.$.reason.validate();
+                if(!v2) {
+                    if (this.$.email.value.length != 0)
+                        this.$.email.errorMessage ="Invalid email format";
+                    else
+                        this.$.email.errorMessage = "Required";
+                }
+                if (v1 && v2 && v3 && v4) {
+
+                    var me = this;
+                    var variant = this._getVariantUrl(this.variant, this.ref_ini, this.alt_ini);
+
+                    this.sending = true;
+
+                    var data = {
+                            name: me.$.name.value,
+                            institution: me.$.institution.value,
+                            email: me.$.email.value,
+                            reason: me.$.reason.value,
+                    }
+                    data = Object.assign(data, this.search);
+
+                    var data_contact = (window.DATA_CONTACT != null && window.DATA_CONTACT) ?" and if the problem persists, contact us at <a href='mailto:"+window.DATA_CONTACT+"' id='mymailto' target='_top'>" + window.DATA_CONTACT +"</a>" : ".";
+                    $.ajax({
+                        url:  window.CSVS_HOST + "/variants/" + variant + "/contact",
+                        data: data,
+                        crossDomain: true,
+                        success: function (data) {
+                            me.sending = false;
+                            if (data != null && data.result != null && data.result[0] != null ) {
+                                if(data.result[0].errorMsg != undefined){
+                                    if( data.result[0].errorMsg == "PROBLEM_SERVER")
+                                        me.$.output.innerHTML = "There was a problem saving your request. Please, try again later" + data_contact ;
+                                    else
+                                        me.$.output.innerHTML = data.result[0].errorMsg;
+                                    me.$.output.classList.add("ko");
+                                } else {
+                                    me.$.output.innerHTML = "Your request has been submitted successfully. It will be sent to the reporter of this variant.";
+                                    me.$.output.classList.add("ok");
+                                    me.$.send_request_cont.hidden=true;
+                                }
+                            } else {
+                                me.$.output.innerHTML = "There was a problem saving your request. Please, try again later" + data_contact ;
+                                me.$.output.classList.add("ko");
+                            }
+                        },
+                        error: function (jqXHR, exception) {
+                            me.sending = false;
+                            me.$.output.innerHTML = "There was a problem saving your request. Please, try again later" + data_contact;
+                            me.$.output.classList.add("ko");
+                        },
+                        type: "POST"
+                    }); // End ajax
+
+                }
+            },
+        });
+    </script>
+</dom-module>
