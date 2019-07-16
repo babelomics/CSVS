@@ -12,6 +12,8 @@ import java.util.Date;
 @Entity(noClassnameStored = true)
 @Indexes({
         @Index(name = "index_fileVariant_f_v", fields = {@Field("idFile"),@Field("idVariant") }),
+        @Index(name = "index_fileVariant_f", fields = {@Field("idFile") }),
+        @Index(name = "index_fileVariant_v", fields = {@Field("idVariant") }),
 })
 public class FileVariant {
     @JsonIgnore

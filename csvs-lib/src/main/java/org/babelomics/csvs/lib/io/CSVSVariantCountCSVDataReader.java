@@ -127,6 +127,8 @@ public class CSVSVariantCountCSVDataReader implements DataReader<Variant> {
 		   
                     // Replace CHR
                     String c = splits[0].toUpperCase().replace("CHR","");
+                    if ("M".equals(c))
+                        c = "MT";
 
                     Variant v = new Variant(c, Integer.parseInt(splits[1]), splits[2], splits[3]);
                     if (!splits[4].isEmpty() && !splits[4].equals(".")) {

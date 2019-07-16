@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
+import static org.mongodb.morphia.aggregation.Projection.add;
 
 /**
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
@@ -68,32 +69,51 @@ public class CSVSQueryManagerTest {
         CSVSUtil.populateDiseases(datastore);
         CSVSUtil.populateTechnologies(datastore);
 
+        // Load files
         URL url_d1_t1 = CSVSQueryManagerTest.class.getClassLoader().getResource("d1_t1.csv");
         File file_d1_t1 = new File(url_d1_t1.toURI());
         CSVSUtil.loadVariants(file_d1_t1.toPath(), 1, 1, datastore);
 
-        URL url_d1_t2 = CSVSQueryManagerTest.class.getClassLoader().getResource("d1_t2.csv");
-        File file_d1_t2 = new File(url_d1_t2.toURI());
-        CSVSUtil.loadVariants(file_d1_t2.toPath(), 1, 2, datastore);
 
         URL url_d2_t1 = CSVSQueryManagerTest.class.getClassLoader().getResource("d2_t1.csv");
         File file_d2_t1 = new File(url_d2_t1.toURI());
         CSVSUtil.loadVariants(file_d2_t1.toPath(), 2, 1, datastore);
 
+        // Load panel
         URL url_d2_t2 = CSVSQueryManagerTest.class.getClassLoader().getResource("d2_t2.csv");
         File file_d2_t2 = new File(url_d2_t2.toURI());
-
         URL url_fileRegions = CSVSQueryManagerTest.class.getClassLoader().getResource("TruSight_One_v1.1.bed");
         File file_regions = new File(url_fileRegions.toURI());
-        //CSVSUtil.loadVariants(file_d2_t2.toPath(), 2, 2, datastore, null, "Nombre Apellido1 Apellido2");
         CSVSUtil.loadVariants(file_d2_t2.toPath(), 2, 2, datastore, file_regions.toPath(), "Nombre Apellido1 Apellido2", true);
 
+        // Recalculate panel
         List<Integer> diseases = new ArrayList<>();
         diseases.add(2);
         List<Integer> technologies = new ArrayList<>();
         technologies.add(2);
         CSVSUtil.recalculate(diseases, technologies, "TruSight_One_v1.1.bed", datastore);
 
+        // Load panel
+        URL url_d1_t2 = CSVSQueryManagerTest.class.getClassLoader().getResource("d1_t2.csv");
+        File file_d1_t2 = new File(url_d1_t2.toURI());
+        CSVSUtil.loadVariants(file_d1_t2.toPath(), 1, 2, datastore, file_regions.toPath(), "Nombre Apellido1 Apellido2", true);
+
+        // Recalculate panel
+        diseases = new ArrayList<>();
+        diseases.add(1);
+        CSVSUtil.recalculate(diseases, technologies, "TruSight_One_v1.1.bed",  datastore);
+
+        // Unload panel
+        CSVSUtil.unloadVariants(file_d1_t2.toPath(), 1, 2,  datastore);
+
+
+        // Load file
+        CSVSUtil.loadVariants(file_d1_t2.toPath(), 1, 2, datastore);
+        diseases = new ArrayList<>();
+        diseases.add(1);
+
+        // Recalculate all
+        CSVSUtil.recalculate(diseases, technologies,  datastore);
     }
 
     @AfterClass

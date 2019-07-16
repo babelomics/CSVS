@@ -54,7 +54,7 @@ public class CSVSRegionsCSVDataReader implements DataReader<Region> {
         return true;
     }
 
-    @Override
+   /* @Override
     public boolean pre() {
 
         try {
@@ -66,7 +66,7 @@ public class CSVSRegionsCSVDataReader implements DataReader<Region> {
 
         return true;
     }
-
+*/
     @Override
     public boolean post() {
         return true;
@@ -87,6 +87,8 @@ public class CSVSRegionsCSVDataReader implements DataReader<Region> {
                     String[] splits = line.split("\t");
 
                     String c = splits[0].toUpperCase().replace("CHR","");
+                    if ("M".equals(c))
+                        c = "MT";
 
                     Region r = new Region(c, Integer.parseInt(splits[1]), Integer.parseInt(splits[2]), panel);
 

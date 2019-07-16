@@ -110,6 +110,8 @@ public class OptionsParser {
         @Parameter(names = {"-o", "--output"}, description = "Output File", required = true, arity = 1)
         String output;
 
+        @Parameter(names = {"-r", "--replace_AF"}, description = "Replace AF when is distinct 'Allele Frequency'", arity = 1)
+        boolean replaceAF = false;
 
     }
 
@@ -250,14 +252,17 @@ public class OptionsParser {
     @Parameters(commandNames = {"recalculate"}, commandDescription = "Calculate examples of a variant studied in a region")
     class CommandRecalculate implements Command {
 
-        @Parameter(names = {"--diseaseId"}, description = "DiseaseId")
+        @Parameter(names = {"-d", "--diseaseId"},  description = "List diseaseId")
         List<Integer> diseaseId = new ArrayList<>();
 
-        @Parameter(names = {"--technologyId"}, description = "TechnologyId")
+        @Parameter(names = {"-t", "--technologyId"},  description = "List technologyId")
         List<Integer> technologyId = new ArrayList<>();
 
-        @Parameter(names = {"--panelName"}, description = "Panel name to recalculate", required = true, arity = 1)
+        @Parameter(names = {"--panelName"}, description = "Panel name to recalculate",  arity = 1)
         String panelName = "";
+
+        @Parameter(names = {"-i", "--input"}, description = "Path file to recalculate", arity = 1)
+        String input = null;
 
         @Parameter(names = {"--host"}, description = "DB host", arity = 1)
         String host = "localhost";

@@ -145,16 +145,19 @@ public class CSVSMain {
 
                 CSVSUtil.loadVariants(inputFile, diseaseGroupId, technologyId, datastore, panelFile, personReference, c.checkPanel);
 
-                if (panelFile != null && c.recalculate) {
+                if (c.recalculate){
+                    // When load file affect all diseases and technologies with panels
                     List<Integer> diseases = new ArrayList<>();
-                    diseases.add(diseaseGroupId);
                     List<Integer> technologies = new ArrayList<>();
-                    technologies.add(technologyId);
 
-                    CSVSUtil.recalculate(diseases, technologies, panelFile.getFileName().toString(), datastore);
-                } else
-                    if (panelFile == null && c.recalculate)
-                        CSVSUtil.recalculate(inputFile, diseaseGroupId, technologyId, datastore);
+                    // Exome
+                    if (panelFile != null) {
+                        CSVSUtil.recalculate(diseases, technologies, panelFile.getFileName().toString(),  datastore);
+                    } else {
+                        // Genome - Check new variants in the panels
+                        CSVSUtil.recalculate(inputFile, diseases, technologies, datastore);
+                    }
+                }
             }
 
 
@@ -175,7 +178,7 @@ public class CSVSMain {
             Path input = Paths.get(c.input);
             Path output = Paths.get(c.output);
 
-            CSVSUtil.compressVariants(input, output);
+            CSVSUtil.compressVariants(input, output, c.replaceAF);
         } else if (command instanceof OptionsParser.CommandAnnot) {
 
             OptionsParser.CommandAnnot c = (OptionsParser.CommandAnnot) command;
@@ -353,8 +356,19 @@ public class CSVSMain {
 
             Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName);
 
-            CSVSUtil.recalculate( c.diseaseId, c.technologyId, c.panelName, datastore);
-
+            if ( c.panelName != null && !"".equals(c.panelName))
+                // Exome - Panel
+                CSVSUtil.recalculate( c.diseaseId, c.technologyId, c.panelName, datastore);
+            else {
+                // Genome
+                if (c.input != null) {
+                    CSVSUtil.recalculate(Paths.get(c.input), c.diseaseId, c.technologyId, datastore);
+                } else {
+                    // All
+                    CSVSUtil.recalculate(c.diseaseId, c.technologyId, datastore);
+                    CSVSUtil.recalculateCheckUnload(c.diseaseId, c.technologyId, datastore);
+                }
+            }
         } else {
             System.err.println("Comand not found");
         }

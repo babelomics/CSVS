@@ -179,7 +179,7 @@ public class CSVSQueryManager {
                     technologyIds.add(t.getTechnologyId());
                 }
             }
-	    
+
             // Map with disease-technology-samples
             Map<String, Integer> sampleCountMap = calculateSampleCount(diseaseIds, technologyIds);
             int sampleCount = calculateSampleCount(sampleCountMap);
@@ -354,7 +354,7 @@ public class CSVSQueryManager {
         }
 
 
-        System.out.println("query = " + query);
+        // System.out.println("query = " + query);
 
         Iterable<Variant> aux = query.fetch();
 
@@ -379,7 +379,7 @@ public class CSVSQueryManager {
                 technologyIds.add(t.getTechnologyId());
             }
         }
-	
+
         // Map with disease-technology-samples
         Map<String, Integer> sampleCountMap = calculateSampleCount(diseaseIds, technologyIds);
         int sampleCount = calculateSampleCount(sampleCountMap);
@@ -586,7 +586,7 @@ public class CSVSQueryManager {
      * @return
      */
     private int calculateSampleCount(Map<String, Integer> sampleCountMap) {
-	    return sampleCountMap.values().stream().mapToInt(i -> i.intValue()).sum();
+        return sampleCountMap.values().stream().mapToInt(i -> i.intValue()).sum();
     }
 
     /**
@@ -655,41 +655,67 @@ public class CSVSQueryManager {
     public static int initialCalculateSampleCount(Variant v, int diseaseId, int technologyId, Datastore datastore) {
         int res = 0;
 
-        BasicDBList listDBObjects = new BasicDBList();
+        List objtIdRegion = new ArrayList<>();
+        BasicDBObject filter = new BasicDBObject();
+        filter.append("c", v.getChromosome());
+        filter.append("s", new BasicDBObject("$lte",v.getPosition()));
+        filter.append("e", new BasicDBObject("$gte",v.getPosition()));
+        objtIdRegion = datastore.getCollection(org.babelomics.csvs.lib.models.Region.class).distinct("pid", filter);
 
-        BasicDBList listDBObjectsExists = new BasicDBList();
-        listDBObjectsExists.add(new BasicDBObject("c", v.getChromosome()));
-        listDBObjectsExists.add(new BasicDBObject("s", new BasicDBObject("$lte",v.getPosition())));
-        listDBObjectsExists.add(new BasicDBObject("e", new BasicDBObject("$gte",v.getPosition())));
+        if (objtIdRegion != null && objtIdRegion.size() > 0) {
+            // Replace with calculateSampleRegions
+            List<BasicDBObject> aggList = new ArrayList<>();
+            BasicDBObject match = new BasicDBObject().append("pid", new BasicDBObject("$in", objtIdRegion)).append("dgid",diseaseId).append("tid", technologyId);
+            BasicDBObject group = new BasicDBObject().append("_id", new BasicDBObject().append("dgid", "$dgid").append("tid","$tid")).append("samples",new BasicDBObject("$sum","$s"));
+            BasicDBObject project = new BasicDBObject().append("_id", 0).append("samples","1");
+            aggList.add(new BasicDBObject("$match", match));
+            aggList.add(new BasicDBObject("$group", group));
 
-        listDBObjects.addAll(listDBObjectsExists);
+            Iterator aggregation = datastore.getCollection(File.class).aggregate(aggList).results().iterator();
 
-        BasicDBObject match = new BasicDBObject("$match", new BasicDBObject("$and", listDBObjects));
-
-        DBCollection collection = datastore.getCollection(Region.class);
-
-        List<BasicDBObject> aggList = new ArrayList<>();
-        aggList.add(match);
-
-        //System.out.println(aggList);
-        AggregationOutput aggregation = collection.aggregate(aggList);
-
-        List objtid = new ArrayList<>();
-        for (DBObject oObj : aggregation.results()) {
-            objtid.add(oObj.get("pid"));
-        }
-
-        Query<File> queryFile = datastore.createQuery(File.class);
-        queryFile.field("dgid").equal(diseaseId);
-        queryFile.field("tid").equal(technologyId);
-        queryFile.field("pid").in(objtid);
-        Iterable<File> auxFile = queryFile.fetch();
-
-        for (File file : auxFile) {
-            res = res + (int) file.getSamples();
+            if(aggregation.hasNext()){
+                BasicDBObject oObj = (BasicDBObject) aggregation.next();
+                res = (int) oObj.get("samples");
+            }
         }
 
         return res;
+    }
+
+
+
+
+
+
+    public static Map calculateSampleRegions(Datastore datastore) {
+        Map<String, Map> result = new HashMap<>();
+
+        List<BasicDBObject> aggList = new ArrayList<>();
+        BasicDBObject match = new BasicDBObject().append("pid", new BasicDBObject("$exists", true));
+        BasicDBObject group = new BasicDBObject().append("_id", new BasicDBObject().append("dgid", "$dgid").append("tid", "$tid")
+                .append("pid", "$pid")).append("samples",new BasicDBObject("$sum","$s"));
+        //BasicDBObject project = new BasicDBObject().append("_id", "$_id.pid").append("samples","1");
+
+        aggList.add(new BasicDBObject("$match", match));
+        aggList.add(new BasicDBObject("$group", group));
+
+        Iterator aggregation = datastore.getCollection(File.class).aggregate(aggList).results().iterator();
+
+        while (aggregation.hasNext()){
+            BasicDBObject oObj = (BasicDBObject) aggregation.next();
+            String key = ((Map) oObj.get("_id")).get("dgid")+"_"+((Map) oObj.get("_id")).get("tid");
+            if (result.containsKey(key)){
+                Map value = result.get(key);
+                value.put(((Map) oObj.get("_id")).get("pid"), (int) oObj.get("samples"));
+                result.put( key,  value );
+            } else{
+                Map value = new HashMap();
+                value.put(  ((Map) oObj.get("_id")).get("pid"), (int) oObj.get("samples"));
+                result.put(key, value);
+            }
+        }
+
+        return result;
     }
 
 
@@ -702,10 +728,10 @@ public class CSVSQueryManager {
         int gtmissing = 0;
         int sampleCountVariant = 0;
         Map<String, Integer> sampleCountTemp = new HashMap<>(sampleCountMap);
-	    boolean existsRegions = false;
+        boolean existsRegions = false;
 
         // Variants by regions
-       // System.out.println("\nCSVS (calculateStats): Variant= "+ v +  " Samples: "  + sampleCountTemp);
+        // System.out.println("\nCSVS (calculateStats): Variant= "+ v +  " Samples: "  + sampleCountTemp);
 
         for (DiseaseCount auxDc : v.getDiseases()) {
             if (diseaseId.contains(auxDc.getDiseaseGroup().getGroupId()) && technologyId.contains(auxDc.getTechnology().getTechnologyId())) {
@@ -713,36 +739,28 @@ public class CSVSQueryManager {
                 gt01 += auxDc.getGt01();
                 gt11 += auxDc.getGt11();
                 gtmissing += auxDc.getGtmissing();
-
-                // exists samples load in the panel
-                if(auxDc.getSumSampleRegions() != 0) {
-                    String key = auxDc.getDiseaseGroup().getGroupId() + "-" + auxDc.getTechnology().getTechnologyId();
-                    int sum =  sampleCountMap.containsKey(key) ? sampleCountMap.get(key) : 0;
-                    sampleCountTemp.put(key, auxDc.getSumSampleRegions() + sum);
-                    existsRegions = true;
-                }
             }
         }
 
-
-        if ( v.getNoDiseases() != null) {
-            for (DiseaseSum auxDs : v.getNoDiseases()) {
+        // exists samples load in the panel
+        if ( v.getDiseasesSamplePanel() != null) {
+            for (DiseaseSum auxDs : v.getDiseasesSamplePanel()) {
                 if (diseaseId.contains(auxDs.getDiseaseGroupId()) && technologyId.contains(auxDs.getTechnologyId())) {
                     // exists samples load in the panel
                     if (auxDs.getSumSampleRegions() != 0){
                         String key = auxDs.getDiseaseGroupId() + "-" + auxDs.getTechnologyId();
                         int sum =  sampleCountMap.containsKey(key) ? sampleCountMap.get(key) : 0;
                         sampleCountTemp.put(key, auxDs.getSumSampleRegions() + sum);
-			            existsRegions = true;
+                        existsRegions = true;
                     }
                 }
             }
         }
 
-	    if (existsRegions)
-	        sampleCountVariant = sampleCountTemp.values().stream().mapToInt(i -> i.intValue()).sum();
-	    else
-		    sampleCountVariant = sampleCount;
+        if (existsRegions)
+            sampleCountVariant = sampleCountTemp.values().stream().mapToInt(i -> i.intValue()).sum();
+        else
+            sampleCountVariant = sampleCount;
 
         gt00 = sampleCountVariant - gt01 - gt11 - gtmissing;
 

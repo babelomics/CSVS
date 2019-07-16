@@ -1,7 +1,9 @@
 package org.babelomics.csvs.lib;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import com.mongodb.*;
+import com.mongodb.Cursor;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.variantcontext.writer.Options;
@@ -11,6 +13,7 @@ import htsjdk.variant.vcf.*;
 import org.babelomics.csvs.lib.annot.CellBaseAnnotator;
 import org.babelomics.csvs.lib.io.*;
 import org.babelomics.csvs.lib.models.*;
+import org.babelomics.csvs.lib.models.Panel;
 import org.babelomics.csvs.lib.models.Region;
 import org.babelomics.csvs.lib.stats.CSVSVariantStatsTask;
 import org.bson.types.ObjectId;
@@ -29,12 +32,17 @@ import org.opencb.commons.io.DataWriter;
 import org.opencb.commons.run.Runner;
 import org.opencb.commons.run.Task;
 
+import java.awt.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.List;
+import java.util.stream.IntStream;
+
+import static java.lang.System.exit;
 
 
 /**
@@ -233,7 +241,7 @@ public class CSVSUtil {
 
         } else {
             System.out.println("File is already in the database.  (Name: " + fDb.getNameFile() + " Sum: " +fDb.getSum() + ")");
-            System.exit(0);
+            exit(0);
         }
          System.out.println("END: loadVariant " + new Date());
     }
@@ -248,7 +256,7 @@ public class CSVSUtil {
 
         if (fDb == null) {
             System.out.println("File is not in the database");
-            System.exit(1);
+            exit(1);
         }
 
         Query<DiseaseGroup> queryDiseaseGroup = datastore.createQuery(DiseaseGroup.class).field("groupId").equal(diseaseGroupId);
@@ -355,7 +363,15 @@ public class CSVSUtil {
             File fileDelete = new File(null, fDb.getDisease(), fDb.getTechnology(), p);
             fileDelete.setSamples(fDb.getSamples());
             datastore.delete(File.class, fDb.getId());
-            recalculateUnload(fileDelete, datastore);
+
+            // Reload sum variants with panels
+            List diseases  = new ArrayList();
+            diseases.add(diseaseGroupId);
+            List tecnologies  = new ArrayList();
+            tecnologies.add(technologyId);
+            recalculate(diseases, tecnologies, p.getPanelName(), datastore);
+            recalculateCheckUnload(diseases, tecnologies, datastore);
+
             // Delete panel if it is not used
             long numUsed = datastore.createQuery(File.class).field ("pid").equal(fileDelete.getIdPanel()).countAll();
             if (numUsed == 0 ) {
@@ -400,67 +416,6 @@ public class CSVSUtil {
             or[j++] = auxQuery.and(and.toArray(new Criteria[and.size()]));
         }
         return or;
-    }
-
-    /**
-     * Recalcualte examples of a variant studied in a region after unload.
-     * @param datastore
-     */
-    public static void recalculateUnload(  File file, Datastore datastore) {
-        CSVSQueryManager qm = new CSVSQueryManager(datastore);
-
-        Query<Variant> query = datastore.createQuery(Variant.class);
-        System.out.println("All variants = "  + query.countAll());
-        System.out.println("INI  =" +  new Date());
-
-        Panel p =  datastore.createQuery(Panel.class).field("_id").equal(file.getIdPanel()).get();
-        // Get regions
-        List<Region> regionList =  datastore.createQuery(Region.class).field("pid").equal(file.getIdPanel()).asList();
-
-        query.or(criteriaSearchVariant(regionList , datastore));
-        System.out.println("Variants in regions = " + query.countAll());
-
-        // Calculate Sample Count
-        int varModify = 0;
-        int numVAr = 0;
-        DiseaseGroup dg = file.getDisease();
-        Technology tg = file.getTechnology();
-        int d = dg.getGroupId();
-        int t = tg.getTechnologyId();
-
-        List<Integer> diseaseId = new ArrayList<>();
-        diseaseId.add(d);
-        List<Integer> technologyId= new ArrayList<>();
-        technologyId.add(t);
-
-
-        Iterator<Variant> it = query.batchSize(100).iterator();
-        while (it.hasNext()) {
-            varModify++;
-            List<Variant> batch = new ArrayList<>();
-
-            for (int i = 0; i < 100 && it.hasNext(); i++) {
-                Variant v = it.next();
-
-                // Get sum all file
-                boolean withRegions = false;
-                int sumSampleRegion =  qm.initialCalculateSampleCount(v,d, t, datastore);
-                if(sumSampleRegion  > 0)
-                   withRegions = true;
-
-                v.decSumSampleRegion(file.getSamples(), dg, tg, withRegions);
-
-                batch.add(v);
-                System.out.println("VARIANTE: " + v.getChromosome() + ":" + v.getPosition() );
-            }
-
-            datastore.save(batch);
-            System.out.println(varModify);
-            batch.clear();
-            System.out.println("Total: " +  numVAr + "      " +  new Date());
-        }
-
-        System.out.println("END  =" +  new Date());
     }
 
 
@@ -540,11 +495,11 @@ public class CSVSUtil {
         vcfWriter.close();
     }
 
-    public static void compressVariants(Path input, Path output) throws IOException {
+    public static void compressVariants(Path input, Path output, boolean replaceAF) throws IOException {
 
         VariantSource source = new VariantSource("file", "file", "file", "file");
         //VariantReader reader = new VariantVcfReader(source, input.toAbsolutePath().toString());
-        VariantReader reader = new CSVSVariantVcfReader(source, input.toAbsolutePath().toString());
+        VariantReader reader = new CSVSVariantVcfReader(source, input.toAbsolutePath().toString(), replaceAF);
         VariantWriter writer = new CSVSVariantCountsCSVDataWriter(output.toAbsolutePath().toString());
 
 
@@ -563,8 +518,46 @@ public class CSVSUtil {
 
     }
 
+
+
     /**
-     * Calculate examples of a variant studied in a region.
+     * Calculate examples of a variant for all variants - ALL.
+     * @param diseases
+     * @param technologies
+     * @param datastore
+     */
+    public static void recalculate(List<Integer> diseases , List<Integer> technologies, Datastore datastore) throws IOException, NoSuchAlgorithmException {
+
+        CSVSQueryManager qm = new CSVSQueryManager(datastore);
+        long numVAr = 0;
+
+        if (diseases == null || diseases.isEmpty()) {
+            diseases = qm.getAllDiseaseGroupIds();
+        }
+        if (technologies == null || technologies.isEmpty()) {
+            technologies = qm.getAllTechnologieIds();
+        }
+
+        // Search files with panel
+        Query<File> queryFile = datastore.createQuery(File.class);
+        List<File> files = queryFile.field("dgid").in(diseases).field("tid").in(technologies).field("pid").exists().asList();
+
+        // Check if exist panels for disease and technology
+        if (files.size() > 0) {
+            // All variants
+            Query<Variant> queryVariant = datastore.createQuery(Variant.class);
+
+            System.out.println("All variants = " + queryVariant.countAll());
+            System.out.println("INI  =" +  new Date());
+            Map<String, Map> calculateSampleRegions = qm.calculateSampleRegions(datastore);
+            recalc_regions(numVAr, qm, diseases, technologies, queryVariant, calculateSampleRegions, datastore);
+        }
+    }
+
+
+
+    /**
+     * Calculate examples of a variant studied in a region (panel) - EXOME.
      * @param diseases List diseased
      * @param technologies List technologies
      * @param panelName Name panel to search regions. If null seach all panel by disease and technologies
@@ -580,121 +573,263 @@ public class CSVSUtil {
             technologies = qm.getAllTechnologieIds();
         }
 
-        Query<Variant> query = datastore.createQuery(Variant.class);
-        System.out.println("All variants = "  + query.countAll());
+        System.out.println("All variants = "  + datastore.createQuery(Variant.class).countAll());
         System.out.println("INI  =" +  new Date());
 
         // Search file with regions
         Query<Panel> queryFile = datastore.createQuery(Panel.class);
         queryFile.field("panelName").equal(panelName);
         Panel p = queryFile.get();
-        List<Region> regions = new ArrayList<>();
+
+        // Basch regions: Search only affeted variants
         if (p != null) {
-            regions.addAll(datastore.createQuery(Region.class).field("pid").equal(p.getId()).asList());
-        }
+            long num_regions =  datastore.createQuery(Region.class).field("pid").equal(p.getId()).countAll();
+            int limit = 1000;
+            long pages = num_regions/limit;
+            long numVAr = 0;
+            Map<String, Map> calculateSampleRegions = qm.calculateSampleRegions(datastore);
+            for ( int skip = 0 ; skip <= pages; skip++) {
+                System.out.println("Skip Region: " + skip);
+                Iterator<Region> regions_iterator = datastore.createQuery(Region.class).field("pid").equal(p.getId()).offset(skip*limit).limit(limit).iterator();
+                Query<Variant> queryVariant = datastore.createQuery(Variant.class);
+                // if check regions
+                if (regions_iterator != null && regions_iterator.hasNext()) {
+                    List<Region> regions = Lists.newArrayList(regions_iterator);
 
-        query.or(criteriaSearchVariant(regions, datastore));
-        System.out.println("Variants in regions = " + query.countAll());
-
-        // Calculate Sample Count
-        int numVAr = 0;
-        Iterator<Variant> it = query.batchSize(100).iterator();
-        System.out.println("Start");
-        while (it.hasNext()) {
-            List<Variant> batch = new ArrayList<>();
-
-            for (int i = 0; i < 100 && it.hasNext(); i++) {
-                Variant v = it.next();
-                numVAr++;
-                for (int d : diseases){
-                    for (int t : technologies){
-                        int sumSampleRegion =  qm.initialCalculateSampleCount(v, d, t, datastore);
-                        v.setSumSampleRegion(new DiseaseSum(d, t, sumSampleRegion));
-                        System.out.println("VARIANTE: " + v.getChromosome() + ":" + v.getPosition()  +  "  Samples: " + sumSampleRegion);
-                    }
+                    queryVariant.or(criteriaSearchVariant(regions, datastore));
+                    System.out.println("Variants banch in regions = " + queryVariant.countAll());
+                    // System.out.println("Variants banch in regions = " + regions.toString());
                 }
-                batch.add(v);
-
+                numVAr = recalc_regions(numVAr, qm, diseases, technologies, queryVariant, calculateSampleRegions, datastore);
             }
-
-            datastore.save(batch);
-            batch.clear();
-            System.out.println("Total: " +  numVAr + "      " +  new Date());
         }
-
-        System.out.println("END  =" +  new Date());
     }
 
 
     /**
-     * Calculate examples of a variant for a new file
-     * @param diseaseGroupId
-     * @param technologyId
+     * Calculate examples of a variant for a new file - GENOME.
+     * @param variantsPath
+     * @param diseases
+     * @param technologies
      * @param datastore
+     * @throws IOException
+     * @throws NoSuchAlgorithmException
      */
-    public static void recalculate(Path variantsPath, Integer diseaseGroupId, Integer technologyId, Datastore datastore) throws IOException, NoSuchAlgorithmException {
+    public static void recalculate(Path variantsPath, List<Integer> diseases , List<Integer> technologies, Datastore datastore) throws IOException, NoSuchAlgorithmException {
+
         CSVSQueryManager qm = new CSVSQueryManager(datastore);
+        long numVAr = 0;
+
+        if (diseases == null || diseases.isEmpty()) {
+            diseases = qm.getAllDiseaseGroupIds();
+        }
+        if (technologies == null || technologies.isEmpty()) {
+            technologies = qm.getAllTechnologieIds();
+        }
 
         // Search files with panel
         Query<File> queryFile = datastore.createQuery(File.class);
-        List<File> files = queryFile.field("dgid").equal(diseaseGroupId).field("tid").equal(technologyId).field("pid").exists().asList();
+        List<File> files = queryFile.field("dgid").in(diseases).field("tid").in(technologies).field("pid").exists().asList();
 
-        if(files.size() > 0){
-            String sha256 = calculateSHA256(variantsPath);
+        // Check if exist panels for disease and technology
+        if (files.size() > 0) {
+            File fDb = null;
 
-            File fDb = datastore.createQuery(File.class).field("sum").equal(sha256).get();
+            // Check exist file
+            if (variantsPath != null) {
+                String sha256 = calculateSHA256(variantsPath);
+                fDb = datastore.createQuery(File.class).field("sum").equal(sha256).get();
+            }
+            if (fDb == null || variantsPath == null) {
+                System.out.println("File don't exist");
+            } else {
+                Map<String, Map> calculateSampleRegions = qm.calculateSampleRegions(datastore);
 
-            if (fDb != null) {
-                // Search variant in the file
-                Query<FileVariant> querFileVariant = datastore.createQuery(FileVariant.class);
-                List<FileVariant> fvquery = querFileVariant.field("fid").equal(fDb.getId()).asList();
-                System.out.println("All variants file = "  + fvquery.size());
+                // Search variant news load in the file
+                int limit = 1000;
+                int numVariants = 0;
                 List<ObjectId> variantObjId = new ArrayList<>();
-                for (FileVariant fv : fvquery){
-                    variantObjId.add(fv.getIdVariant());
+
+                AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
+
+                List<BasicDBObject> aggList = new ArrayList<>();
+                BasicDBObject group = new BasicDBObject().append("_id", "$vid").append("sumFile", new BasicDBObject("$sum",1)).append("itemsFileId", new BasicDBObject("$addToSet","$fid"));
+                BasicDBObject match = new BasicDBObject().append("sumFile",1).append("itemsFileId",fDb.getId());
+                aggList.add(new BasicDBObject("$group", group));
+                aggList.add(new BasicDBObject("$match", match));
+
+                // Get count to batch
+                List listCount = ((List) ((ArrayList) aggList).clone());
+                BasicDBObject groupCount = new BasicDBObject().append("_id", null).append("listCount", new BasicDBObject("$sum", 1));
+                listCount.add(new BasicDBObject("$group", groupCount));
+
+                Cursor listCountResult=  datastore.getCollection(FileVariant.class).aggregate(listCount, options);
+                if (listCountResult  != null &&  listCountResult.hasNext()){
+                    BasicDBObject obj = (BasicDBObject)  listCountResult.next();
+                    numVariants = (int) obj.get("listCount");
                 }
+                // Batch variants
+                long pages = numVariants/limit;
+                BasicDBObject groupProject = new BasicDBObject().append("_id", null).append("listVariants", new BasicDBObject("$push", "$_id"));
+                for ( int skip = 0 ; skip <= pages; skip++) {
+                    List aggListSkip = ((List) ((ArrayList) aggList).clone());
+                    aggListSkip.add(new BasicDBObject("$limit",  skip + limit));
+                    aggListSkip.add(new BasicDBObject("$skip", skip));
+                    aggListSkip.add(new BasicDBObject("$group", groupProject));
+                    Cursor fileVariant = datastore.getCollection(FileVariant.class).aggregate(aggListSkip, options);
 
-                // Serach variant without examples calculate
-                Query<Variant> query = datastore.createQuery(Variant.class);
-                query.field("_id").in(variantObjId);
-
-                // Calculate    List<Region> regions = new ArrayList<>();
-                List<ObjectId> panelObjectIds = new ArrayList<>();
-                for (File f : files){
-                    panelObjectIds.add(f.getIdPanel());
-                }
-                List<Region> regions = datastore.createQuery(Region.class).field("pid").in(panelObjectIds).asList();
-
-                query.or(criteriaSearchVariant(regions, datastore));
-                System.out.println("Variants in regions = " + query.countAll());
-
-                // Calculate Sample Count
-                int numVAr = 0;
-                Iterator<Variant> it = query.batchSize(100).iterator();
-                System.out.println("Start");
-                while (it.hasNext()) {
-                    List<Variant> batch = new ArrayList<>();
-
-                    for (int i = 0; i < 100 && it.hasNext(); i++) {
-                        Variant v = it.next();
-                        numVAr++;
-                        int sumSampleRegion =  qm.initialCalculateSampleCount(v, diseaseGroupId, technologyId, datastore);
-                        v.setSumSampleRegion(new DiseaseSum(diseaseGroupId, technologyId, sumSampleRegion));
-                        System.out.println("VARIANTE: " + v.getChromosome() + ":" + v.getPosition()  +  "  Samples: " + sumSampleRegion);
-
-                        batch.add(v);
+                    if (fileVariant != null && fileVariant.hasNext()){
+                        BasicDBObject oObj = (BasicDBObject) fileVariant.next();
+                        variantObjId = (ArrayList) oObj.get("listVariants");
                     }
 
-                    datastore.save(batch);
-                    batch.clear();
-                    System.out.println("Total: " +  numVAr + "      " +  new Date());
-                }
+                    // Get variants file
+                    if (!variantObjId.isEmpty()) {
+                        Query<Variant> queryVariant = datastore.createQuery(Variant.class).field("_id").in(variantObjId);
 
-                System.out.println("END  =" +  new Date());
+                        System.out.println("Skip: " + skip + " Variants file = " + variantObjId.size());
+                        numVAr = recalc_regions(numVAr, qm, diseases, technologies, queryVariant, calculateSampleRegions, datastore);
+                    }
+                }
 
             }
         }
     }
+
+    /**
+     *  Recalculate only a group of regions
+     * @param numVAr Counter: num variants procesed
+     * @param qm
+     * @param diseases
+     * @param technologies
+     * @param queryVariant
+     * @param calculateSampleRegions  Map with num samples in the file (only count files with panels)
+     * @param datastore
+     * @return
+     */
+    private static long recalc_regions(long numVAr, CSVSQueryManager qm, List<Integer> diseases , List<Integer> technologies,  Query<Variant> queryVariant, Map<String, Map> calculateSampleRegions,
+                                      Datastore datastore){
+        System.out.println("Start REGIONS");
+        int limit = 1000;
+
+        if (queryVariant.countAll() > 0) {
+
+            List<String> distChrom = datastore.getCollection(Variant.class).distinct("c");
+
+            // Search by chromosome
+            if (distChrom.size() > 0) {
+                for (String c: distChrom) {
+                    Query<Variant> query = queryVariant.cloneQuery();
+                    // Variant order chromosome and position
+                    Iterator<Variant> it = query.field("c").equal(c).order("p").batchSize(limit).iterator();
+                    // Get cursor of start regions ordered and cursor of end regions ordered
+                    Iterator itStart = datastore.getCollection(Region.class).find(new BasicDBObject("c",c)).sort(new BasicDBObject("s",1)).iterator();
+                    Iterator itEnd = datastore.getCollection(Region.class).find(new BasicDBObject("c",c)).sort(new BasicDBObject("e",1)).iterator();
+
+                    // Initialize
+                    Map cursor = new HashMap();
+                    BasicDBObject cursorStart = null, cursorEnd = null;
+                    if (itStart.hasNext())
+                       cursorStart = (BasicDBObject) itStart.next();
+                    if(itEnd.hasNext())
+                        cursorEnd = (BasicDBObject) itEnd.next();
+
+                    while (it != null && it.hasNext()) {
+                        List<Variant> batch = new ArrayList<>();
+
+                        for (int i = 0; i < limit && it.hasNext(); i++) {
+                            Variant v = it.next();
+                            numVAr++;
+                            for (int d : diseases) {
+                                for (int t : technologies) {
+                                    if (calculateSampleRegions.containsKey(d+"_"+t)) {
+                                        // Add
+                                        while (cursorStart != null && (int)cursorStart.get("s") <= v.getPosition() ) {
+                                            if (calculateSampleRegions.get(d + "_" + t).containsKey(cursorStart.get("pid"))) {
+                                                Map reg_pid = new HashMap<>();
+                                                reg_pid.put(cursorStart.get("pid"), calculateSampleRegions.get(d + "_" + t).get(cursorStart.get("pid")));
+                                                cursor.put(cursorStart.get("_id"), reg_pid);
+                                            }
+                                            if (itStart.hasNext())
+                                                cursorStart = (BasicDBObject) itStart.next();
+                                            else
+                                                cursorStart = null;
+                                        }
+                                        // Remove
+                                        while (cursorEnd != null && v.getPosition() > (int) cursorEnd.get("e") ) {
+                                            if (cursor.containsKey(cursorEnd.get("_id")))
+                                                cursor.remove(cursorEnd.get("_id"));
+                                            if (itEnd.hasNext())
+                                                cursorEnd = (BasicDBObject) itEnd.next();
+                                            else
+                                                cursorEnd = null;
+                                        }
+
+                                        // CalculateSampleCount
+                                        int sumSampleRegion = 0;
+                                        if (!cursor.isEmpty()) {
+                                            // Sum only no overlapping regions
+                                            sumSampleRegion = 0;
+                                            List panel_procesed = new ArrayList();
+                                            for (Object key: cursor.keySet()){
+                                                Map<String, Integer> reg_pid = (Map<String, Integer>) cursor.get(key);
+                                                Object pid = reg_pid.keySet().stream().findFirst().get();
+                                                if (!panel_procesed.contains(pid)){
+                                                    sumSampleRegion+=reg_pid.get(pid);
+                                                    panel_procesed.add(pid);
+                                                }
+                                            }
+                                        }
+
+                                        v.setSumSampleRegion(new DiseaseSum(d, t, sumSampleRegion));
+                                        if (sumSampleRegion != 0){
+                                            System.out.println("VARIANTE: " + v.getChromosome() + ":" + v.getPosition() + "  Samples: " + sumSampleRegion);
+                                        }
+                                    }
+                                }
+                            }
+                            batch.add(v);
+                        }
+
+                        datastore.save(batch);
+                        batch.clear();
+                        System.out.println("Total: " + numVAr + "      " + new Date());
+                    }
+                    System.out.println("END  =" + new Date());
+                }
+            }
+
+        }
+
+        return numVAr;
+    }
+
+    /**
+     * Delete samples from panels unloads
+     * @param diseases
+     * @param technologies
+     * @param datastore
+     * @throws IOException
+     * @throws NoSuchAlgorithmException
+     */
+    public static void recalculateCheckUnload(List<Integer> diseases , List<Integer> technologies, Datastore datastore) throws IOException, NoSuchAlgorithmException {
+        CSVSQueryManager qm = new CSVSQueryManager(datastore);
+        Map<String, Map> calculateSampleRegions = qm.calculateSampleRegions(datastore);
+        for (int d : diseases) {
+            for (int t : technologies) {
+                if (!calculateSampleRegions.containsKey(d + "_" + t)) {
+                    BasicDBObject query = new BasicDBObject().append("dspanel", new BasicDBObject("$exists", true))
+                                                              .append("dspanel", new BasicDBObject("$elemMatch", new BasicDBObject().append("dgid", d).append("tid", t)));
+                    BasicDBObject pull = new BasicDBObject("$pull", new BasicDBObject("dspanel", new BasicDBObject().append("dgid",d).append("tid", t)));
+                    WriteResult update = datastore.getCollection(Variant.class).updateMulti(query, pull);
+
+                    System.out.println("Num variants remove panels d= "  +d + " t= " +  t + "  : " +update.getN());
+                }
+            }
+        }
+    }
+
+
 
 
 
