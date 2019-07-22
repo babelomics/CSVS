@@ -54,7 +54,7 @@
         <div class="vertical layout center-justified">
             <div  class="vertical main">
                 <div class="paragraph">
-                    Here you can download aggregated data corresponding to phenotypically healthy controls
+                    Here you can request access aggregated data corresponding to phenotypically healthy controls
                     of MGP and the IBS population of 1000 genomes phase 3 as well as the pseudo-controls for each ICD10 category made with
                     all the samples except each specific ICD10 disease category.<br/>
                     Datasets are downloaded as tab-delimited text files. Select dataset to download:
@@ -181,17 +181,17 @@
                 <br/>
                 <label class="stv-control">
                     <input type="checkbox" id="conditions">
-                    <span>Check here to indicate that you have read agree with the terms and conditions of use of this data described <a href="/downloads/CSVSTermsAndConditions.pdf" target="_blank">here</a>.</span>
+                    <span>Check here to indicate that you have read agree with the terms and conditions of use of this data described <a href="/downloads/CSVSTermsAndConditions_v2.pdf" target="_blank">here</a>.</span>
                 </label>
                 <br/>
                 <div>
                     <div class="version_file"> <label class="stv">Version: {{version_file}}</label></div>
                     <div class="horizontal layout center end-justified " >
                         <div id="Sending_disease" hidden$="{{!sending}}">
-                            <i class="fa fa-circle-o-notch fa-spin"></i> Downloading ...
+                            <i class="fa fa-circle-o-notch fa-spin"></i> Sending request...
                         </div>
                         <div id="message_donwload" class="ok">{{message_donwload}} &nbsp;</div>
-                        <div class="stv-btn stv-btn-shdw stv-btn-big" on-click="email_disease_file">&nbsp; Download</div>
+                        <div class="stv-btn stv-btn-shdw stv-btn-big" on-click="email_disease_file">&nbsp; Request</div>
                     </div>
                 </div>
             </div>
@@ -300,25 +300,14 @@
 
                             // Download datas from file
                             if (dataJSON == undefined) {
-                                var link = document.createElement('a');
-                                link.name="tmpDownload";
-                                document.body.appendChild(link);
-                                var blob = new Blob([data], {type: 'application/csv'});
-                                link.href = window.URL.createObjectURL(blob);
-                                link.download = $('[name="fileDownload"]:checked').val() + ".csv";
-                                link.click();
-                                document.body.removeChild(link);
-
                                 me.sending = false;
-                                me.message_donwload = 'Download done!';
+                                me.message_donwload = 'Request send!';
                                 document.getElementById("message_donwload").style = "color:green";
                             } else {
                                 // Donwload  url
                                 if (dataJSON['data']['url'] != undefined) {
-                                    window.open('/downloads/' + dataJSON["data"]["url"], "_blank");
-
                                     me.sending = false;
-                                    me.message_donwload = 'Download done!';
+                                    me.message_donwload = 'Request send!';
                                     document.getElementById("message_donwload").style = "color:green";
                                 } else {
                                     // Error to download

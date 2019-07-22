@@ -3,6 +3,7 @@
 
 <script src="bower_components/stevia-elements/src/manager/stevia-manager.js"></script>
 <script src="bower_components/stevia-elements/src/utils/utils.js"></script>
+<link rel="import" href="../bower_components/stevia-elements/src/stv-dialog/stv-dialog.html">
 
 
 
@@ -100,11 +101,17 @@
             min-width: 600px;
             min-height: 400px;
         }
+
+        div.disabled {
+            color: #CCC;
+            opacity: 0.5;
+        }
     </style>
     <template>
 
         <div class="content" menu-option="home">
-            <csvs-home on-try="handleTry"></csvs-home>
+            <csvs-home on-try="handleTry" atc="{{acceptTermsCond}}" on-checket-accept="handleAcceptTermsCond" on-msj-accept="handleMsjAccept"
+                       is-not-accept="{{_isNotAccept(acceptTermsCond)}}" is-accept="{{_isAccept(acceptTermsCond)}}"></csvs-home>
         </div>
 
         <div class="content" menu-option="search,saturation">
@@ -154,25 +161,48 @@
             <span class="description"></span>
 
             <div id="menu" class="menu horizontal layout center flex">
-                <div title="Search" class="option" on-click="handleMenuOption" data-option="search">
-                    <i class="fa fa-search"></i>
-                    <span class="option-text">Search</span>
-                </div>
+                <template is="dom-if" if="{{_isAccept(acceptTermsCond)}}">
+                    <div title="Search" class="option" on-click="handleMenuOption" data-option="search">
+                        <i class="fa fa-search"></i>
+                        <span class="option-text">Search</span>
+                    </div>
 
-                <div title="Stats" class="option" on-click="handleMenuOption" data-option="stats">
-                    <i class="fa fa-pie-chart"></i>
-                    <span class="option-text">Stats</span>
-                </div>
+                    <div title="Stats" class="option" on-click="handleMenuOption" data-option="stats">
+                        <i class="fa fa-pie-chart"></i>
+                        <span class="option-text">Stats</span>
+                    </div>
 
-                <div title="Saturation" class="option" on-click="handleMenuOption" data-option="saturation">
-                    <i class="fa fa-line-chart"></i>
-                    <span class="option-text">Saturation</span>
-                </div>
+                    <div title="Saturation" class="option" on-click="handleMenuOption" data-option="saturation">
+                        <i class="fa fa-line-chart"></i>
+                        <span class="option-text">Saturation</span>
+                    </div>
 
-                <div title="Downloads" class="option" on-click="handleMenuOption" data-option="downloads">
-                    <i class="fa fa-download"></i>
-                    <span class="option-text">Downloads</span>
-                </div>
+                    <div title="Downloads" class="option" on-click="handleMenuOption" data-option="downloads">
+                        <i class="fa fa-download"></i>
+                        <span class="option-text">Downloads</span>
+                    </div>
+                </template>
+                <template is="dom-if" if="{{_isNotAccept(acceptTermsCond)}}">
+                    <div title="Checked I agree terms and conditions to search" class="option disabled" on-click="handleMsjAccept" data-option="search">
+                        <i class="fa fa-search"></i>
+                        <span class="option-text">Search</span>
+                    </div>
+
+                    <div title="Checked I agree terms and conditions to go to stats" class="option disabled" on-click="handleMsjAccept" data-option="stats">
+                        <i class="fa fa-pie-chart"></i>
+                        <span class="option-text">Stats</span>
+                    </div>
+
+                    <div title="Checked I agree terms and conditions to go to saturation" class="option disabled" on-click="handleMsjAccept" data-option="saturation">
+                        <i class="fa fa-line-chart"></i>
+                        <span class="option-text">Saturation</span>
+                    </div>
+
+                    <div title="hecked I agree terms and conditions to go to downloads" class="option disabled" on-click="handleMsjAccept" data-option="downloads">
+                        <i class="fa fa-download"></i>
+                        <span class="option-text">Downloads</span>
+                    </div>
+                </template>
 
                 <div title="Annotate VCF file" class="option" on-click="handleLoggedOnlyMenuOption" login-required data-option="annot" hidden>
                     <i class="fa fa-pencil-square-o"></i>
@@ -216,7 +246,7 @@
         <stv-footer menu-option="home,login,singup,profile,remember">
             CSVS: created by Clinical Bioinformatics Area
             <br> Fundación Progreso y Salud
-            <br> 2015-2017
+            <br> 2015-2019
         </stv-footer>
     </template>
 </dom-module>
@@ -265,6 +295,9 @@
                 type:Boolean,
                 value: false
             },
+            acceptTermsCond: {
+                type: Boolean
+            },
         },
         ready: function() {
             this.isLogged = this.$.stvHeader.isLogged;
@@ -272,6 +305,7 @@
             this.getTechnologies();
             this.checkShowMenuOnLogin();
             this.selectedOption = "home";
+            this.acceptTermsCond = this.getAcceptTermsCond() == 'true'? true : false;
         },
         getDiseases: function() {
             var me = this;
@@ -412,7 +446,37 @@
 
             this.selectedOption = "annot";
             this.$.annotationForm.relaunch(job);
-        }
+        },
 
+
+        handleAcceptTermsCond: function(e, isAccept) {
+            document.cookie = "CSVS_AcceptTermsCond" + "=" + isAccept  + ";path=/";
+            this.acceptTermsCond = isAccept;
+        },
+
+        getAcceptTermsCond: function() {
+            var name = "CSVS_AcceptTermsCond" + "=";
+            var decodedCookie = decodeURIComponent(document.cookie);
+            var ca = decodedCookie.split(';');
+            for(var i = 0; i <ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+        },
+        _isAccept: function(atc) {
+            return !!atc;
+        },
+        _isNotAccept: function(atc) {
+            return !atc;
+        },
+        handleMsjAccept: function() {
+            new StvDialog().alert("Check I agree terms and conditions to Start.");
+        }
     });
 </script>
