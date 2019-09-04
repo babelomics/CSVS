@@ -23,9 +23,8 @@ import java.util.List;
 public class CSVSVariantFilterCSVDataReader extends CSVSVariantCountCSVDataReader {
     protected PrintWriter printer;
 
-
-    public CSVSVariantFilterCSVDataReader(String filePath,  Panel p, List<Region> regions) {
-        super(filePath, p, regions);
+    public CSVSVariantFilterCSVDataReader(String filePath,  Panel p, List<Region> regions, String chromGender) {
+        super(filePath, p, regions, chromGender);
     }
 
 
@@ -91,6 +90,12 @@ public class CSVSVariantFilterCSVDataReader extends CSVSVariantCountCSVDataReade
                     String c = splits[0].toUpperCase().replace("CHR","");
                     if ("M".equals(c))
                         c="MT";
+
+                    // Ignore chromosome Y when is a woman
+                    if (XX.equals(chromGender) && c.equals("Y")){
+                        System.out.println("Ignore chromosome: " + line);
+                        continue;
+                    }
 
                     Variant v = new Variant(c, Integer.parseInt(splits[1]), splits[2], splits[3]);
                     if (!splits[4].isEmpty() && !splits[4].equals(".")) {

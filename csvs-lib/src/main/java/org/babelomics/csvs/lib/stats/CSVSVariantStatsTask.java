@@ -53,7 +53,8 @@ public class CSVSVariantStatsTask extends Task<Variant> {
                     // Replace value GT when FILTER distinct PASS
                     if (file.getAttributes() != null && file.getAttributes().containsKey(FILTER) && !(PASS.equals(file.getAttributes().get(FILTER)) || PASS_INDETERMIATE.equals(file.getAttributes().get(FILTER)))) {
                         if (!NOT_SEQ.equals(linkedHashMap.get(key).get(GT))) {
-                            System.out.println(variant.getChromosome() + ":" + variant.getStart() + " " + variant.getReference() + "-> " + variant.getAlternate() + "  FILTER = " + file.getAttributes().get(FILTER) + "   Replaced: GT = " + linkedHashMap.get(key).get(GT) + "-> " + NOT_SEQ);
+                        // TODO: Remove comment FILTER
+                            //    System.out.println(variant.getChromosome() + ":" + variant.getStart() + " " + variant.getReference() + "-> " + variant.getAlternate() + "  FILTER = " + file.getAttributes().get(FILTER) + "   Replaced: GT = " + linkedHashMap.get(key).get(GT) + "-> " + NOT_SEQ);
                             linkedHashMap.get(key).put(GT, NOT_SEQ);
                         }
                     }

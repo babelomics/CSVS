@@ -1,0 +1,9 @@
+chr	pos	ref	alt	id	0/0	0/1	1/1	./.	total
+X	1	T	C	.	0	0	0	1	1
+X	2	T	C	.	0	0	1	0	1
+X	3	T	C	.	0	1	0	0	1
+X	4	T	C	.	1	0	0	0	1
+Y	5	T	C	.	0	0	0	1	1
+Y	6	T	C	.	0	0	1	0	1
+Y	7	T	C	.	0	1	0	0	1
+Y	8	T	C	.	1	0	0	0	1

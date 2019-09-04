@@ -8,6 +8,8 @@
 
 <script src="../bower_components/stevia-elements/src/manager/cellbase-manager.js"></script>
 
+<link rel="import" href="./csvs-table-saturation.html">
+
 <link rel="import" href="csvs-saturation-element.html">
 
 <dom-module id="csvs-search-element">
@@ -45,7 +47,8 @@
         #saturationDiv {
             margin: 20px 20px 20px 0px;
             background-color: #FFFFFF;
-            width: calc(100% - 290px);
+            width: calc(100% - 29em);
+            padding: 0em 4em;
         }
 
         .container> span {
@@ -233,10 +236,12 @@
                             <div class="container">
                                 <div id="diseases_div">
                                     <template is="dom-repeat" items="{{diseases}}">
-                                        <label class="stv-control">
-                                            <input type="checkbox" class="diseaseName" name="disease" id="disease" value="{{item.groupId}}" checked/>
-                                            <span>{{item.name}}</span>
-                                        </label>
+                                        <template is="dom-if" if="{{item.samples}}">
+                                            <label class="stv-control">
+                                                <input type="checkbox" class="diseaseName" name="disease" id="disease" value="{{item.groupId}}" checked/>
+                                                <span>{{item.name}}</span>
+                                            </label>
+                                        </template>
                                     </template>
                                 </div>
                             </div>
@@ -255,10 +260,12 @@
                             <div class="container">
                                 <div id="technologies_div">
                                     <template is="dom-repeat" items="{{technologies}}">
-                                        <label class="stv-control">
-                                            <input type="checkbox" class="technologyName" name="technology" id="technology" value="{{item.technologyId}}" checked/>
-                                            <span>{{item.name}}</span>
-                                        </label>
+                                        <template is="dom-if" if="{{item.samples}}">
+                                            <label class="stv-control">
+                                                <input type="checkbox" class="technologyName" name="technology" id="technology" value="{{item.technologyId}}" checked/>
+                                                <span>{{item.name}}</span>
+                                            </label>
+                                        </template>
                                     </template>
                                 </div>
                             </div>
@@ -288,7 +295,14 @@
                 </div>
             </div>
             <div id="saturationDiv" hidden$="{{!saturation}}" class="vertical layout">
-                <div id="chart" class="horizontal layout center-justified"></div>
+
+                <div id="chart" class="horizontal layout center-justified" ></div>
+                <div id="loading" hidden$="{{!loadingSaturation}}">
+                    <i class="fa fa-circle-o-notch fa-spin"></i> Loading...
+                </div>
+                <div id=saturationDivTable" class="horizontal layout flex center-justified">
+                    <csvs-table-saturation id="tvSaturation" ></csvs-table-saturation>
+                </div>
             </div>
         </div>
 
@@ -373,10 +387,19 @@
             },
             saturation: {
                 type: Boolean,
+                value: false,
+                observer: "saturationChanged"
+            },
+            loadingSaturation:{
+                type: Boolean,
                 value: false
             }
         },
 
+        saturationChanged: function(){
+            // Check if tab is changed and reload info
+            this.submitForm();
+        },
         resultsChanged: function(neo, old) {
             return;
             if (neo != -1) {
@@ -506,89 +529,84 @@
                     width: 90,
                     defaultValue: "."
                 },{
-                    title: 'MAF',
-                    name: 'maf',
-                    width: 350,
+                    title: "Genotypes",
+                    name: 'genotypes',
+                    width: 200,
                     columns: [{
-                        title: "Genotypes",
-                        name: 'genotypes',
-                        width: 200,
-                        columns: [{
-                            name: "gt00",
-                            width: 50,
-                            title: "0/0",
-                            formula: function(row) {
-                                if (row.stats != null && row.stats.gt00 != null)
-                                    return row.stats.gt00;
-                                else
-                                    return ".";
+                        name: "gt00",
+                        width: 50,
+                        title: "0/0",
+                        formula: function(row) {
+                            if (row.stats != null && row.stats.gt00 != null)
+                                return row.stats.gt00;
+                            else
+                                return ".";
                             }
-                        }, {
-                            name: "gt01",
-                            width: 50,
-                            title: "0/1",
-                            formula: function(row) {
-                                if (row.stats != null && row.stats.gt01 != null)
-                                    return row.stats.gt01;
-                                else
-                                    return ".";
-                            }
-                        }, {
-                            name: "gt11",
-                            width: 50,
-                            title: "1/1",
-                            formula: function(row) {
-                                if (row.stats != null && row.stats.gt11 != null)
-                                    return row.stats.gt11;
-                                else
-                                    return ".";
-                            }
-                        }, {
-                            name: "gtmissing",
-                            width: 50,
-                            title: "./.",
-                            formula: function(row) {
-                                if (row.stats != null && row.stats.gtmissing != null)
-                                    return row.stats.gtmissing;
-                                else
-                                    return ".";
-                            }
-                        }]
                     }, {
-                        title: "Freq.",
-                        name: "freq",
-                        width: 150,
-                        columns: [{
-                            name: "refFreq",
-                            width: 50,
-                            title: "0 Freq",
-                            formula: function(row) {
-                                if (row.stats != null && row.stats.refFreq != null)
-                                    return row.stats.refFreq;
-                                else
-                                    return ".";
+                        name: "gt01",
+                        width: 50,
+                        title: "0/1",
+                        formula: function(row) {
+                            if (row.stats != null && row.stats.gt01 != null)
+                                return row.stats.gt01;
+                            else
+                                return ".";
                             }
-                        }, {
-                            name: "altFreq",
-                            width: 50,
-                            title: "1 Freq",
-                            formula: function(row) {
-                                if (row.stats != null && row.stats.altFreq != null)
-                                    return row.stats.altFreq;
-                                else
-                                    return ".";
+                    }, {
+                        name: "gt11",
+                        width: 50,
+                        title: "1/1",
+                        formula: function(row) {
+                            if (row.stats != null && row.stats.gt11 != null)
+                                return row.stats.gt11;
+                            else
+                                return ".";
                             }
-                        }, {
-                            name: "maf",
-                            width: 50,
-                            title: "MAF",
-                            formula: function(row) {
-                                if (row.stats != null && row.stats.maf != null)
-                                    return row.stats.maf;
-                                else
-                                    return ".";
-                            }
-                        }]
+                    }, {
+                        name: "gtmissing",
+                        width: 50,
+                        title: "./.",
+                        formula: function(row) {
+                            if (row.stats != null && row.stats.gtmissing != null)
+                                return row.stats.gtmissing;
+                            else
+                                return ".";
+                        }
+                    }]
+                }, {
+                    title: "Freq.",
+                    name: "freq",
+                    width: 150,
+                    columns: [{
+                        name: "refFreq",
+                        width: 50,
+                        title: "0 Freq",
+                        formula: function(row) {
+                            if (row.stats != null && row.stats.refFreq != null)
+                                return row.stats.refFreq;
+                            else
+                                return ".";
+                        }
+                    }, {
+                        name: "altFreq",
+                        width: 50,
+                        title: "1 Freq",
+                        formula: function(row) {
+                            if (row.stats != null && row.stats.altFreq != null)
+                                return row.stats.altFreq;
+                            else
+                                return ".";
+                        }
+                    }, {
+                        name: "maf",
+                        width: 50,
+                        title: "MAF",
+                        formula: function(row) {
+                            if (row.stats != null && row.stats.maf != null)
+                                return row.stats.maf;
+                            else
+                                return ".";
+                        }
                     }]
                 }, {
                     title: "1000G MAF (phase 1)",
@@ -650,132 +668,132 @@
                                     return ".";
                                 }
                             }
-                        }
-
-                    ]
+                        }]
                 }, {
-                    title: "1000G MAF (phase 3)",
-                    width: 150,
-                    name: 'maf1000G3',
+                    title: 'Alt. Allele Freq.',
+                    name: 'aaf',
+                    width: 300,
                     columns: [{
-                        name: "maf1000G_PHASE_3_ALL",
-                        title: "ALL",
-                        defaultValue: ".",
-                        formula: function(row) {
-                            if (row.maf1000G_PHASE_3_ALL != null) {
-                                return row.maf1000G_PHASE_3_ALL;
-                            } else {
-                                return ".";
-                            }
-                        }
-                    }, {
-                        name: "maf1000G_PHASE_3_AMR",
-                        title: "AME",
-                        defaultValue: ".",
-                        visible: false,
-                        formula: function(row) {
-                            if (row.maf1000G_PHASE_3_AMR != null) {
-                                return row.maf1000G_PHASE_3_AMR;
-                            } else {
-                                return ".";
-                            }
-                        }
-                    }, {
-                        name: "maf1000G_PHASE_3_SAS",
-                        title: "South ASI",
-                        defaultValue: ".",
-                        visible: false,
-                        formula: function(row) {
-                            if (row.maf1000G_PHASE_3_SAS != null) {
-                                return row.maf1000G_PHASE_3_SAS;
-                            } else {
-                                return ".";
-                            }
-                        }
-                    }, {
-                        name: "maf1000G_PHASE_3_EAS",
-                        title: "East ASI",
-                        defaultValue: ".",
-                        visible: false,
-                        formula: function(row) {
-                            if (row.maf1000G_PHASE_3_EAS != null) {
-                                return row.maf1000G_PHASE_3_EAS;
-                            } else {
-                                return ".";
-                            }
-                        }
-                    }, {
-                        name: "maf1000G_PHASE_3_AFR",
-                        title: "AFR",
-                        defaultValue: ".",
-                        visible: false,
-                        formula: function(row) {
-                            if (row.maf1000G_PHASE_3_AFR != null) {
-                                return row.maf1000G_PHASE_3_AFR;
-                            } else {
-                                return ".";
-                            }
-                        }
-                    }, {
-                        name: "maf1000G_PHASE_3_EUR",
-                        title: "EUR",
-                        defaultValue: ".",
-                        formula: function(row) {
-                            if (row.maf1000G_PHASE_3_EUR != null) {
-                                return row.maf1000G_PHASE_3_EUR;
-                            } else {
-                                return ".";
-                            }
-                        }
-                    } ]
-
-                }, {
-                    title: "ExAC",
-                    width: 50,
-                    name: 'mafexac',
-                    columns: [{
-                            name: "mafexac_ALL",
+                        title: "1000G (phase 3)",
+                        width: 150,
+                        name: 'aaf1000G3',
+                        columns: [{
+                            name: "aaf1000G_PHASE_3_ALL",
                             title: "ALL",
                             defaultValue: ".",
                             formula: function(row) {
-                                if (row.mafexac_ALL != null) {
-                                    return row.mafexac_ALL;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        }
-                    ]
-                },
-
-                {
-                    title: "ESP 6500",
-                    width: 100,
-                    name: 'maf6500',
-                    columns: [{
-                            name: "mafESP_ALL",
-                            title: "ALL",
-                            defaultValue: ".",
-                            formula: function(row) {
-                                if (row.mafESP_ALL != null) {
-                                    return row.mafESP_ALL;
+                                if (row.aaf1000G_PHASE_3_ALL != null) {
+                                    return row.aaf1000G_PHASE_3_ALL;
                                 } else {
                                     return ".";
                                 }
                             }
                         }, {
-                            name: "mafESP_EA",
-                            title: "Eur. Ame.",
+                            name: "maf1000G_PHASE_3_AMR",
+                            title: "AME",
                             defaultValue: ".",
+                            visible: false,
                             formula: function(row) {
-                                if (row.mafESP_EA != null) {
-                                    return row.mafESP_EA;
+                                if (row.maf1000G_PHASE_3_AMR != null) {
+                                    return row.maf1000G_PHASE_3_AMR;
                                 } else {
                                     return ".";
                                 }
                             }
-                        }
-                    ]
+                        }, {
+                            name: "maf1000G_PHASE_3_SAS",
+                            title: "South ASI",
+                            defaultValue: ".",
+                            visible: false,
+                            formula: function(row) {
+                                if (row.maf1000G_PHASE_3_SAS != null) {
+                                    return row.maf1000G_PHASE_3_SAS;
+                                } else {
+                                    return ".";
+                                }
+                            }
+                        }, {
+                            name: "maf1000G_PHASE_3_EAS",
+                            title: "East ASI",
+                            defaultValue: ".",
+                            visible: false,
+                            formula: function(row) {
+                                if (row.maf1000G_PHASE_3_EAS != null) {
+                                    return row.maf1000G_PHASE_3_EAS;
+                                } else {
+                                    return ".";
+                                }
+                            }
+                        }, {
+                            name: "maf1000G_PHASE_3_AFR",
+                            title: "AFR",
+                            defaultValue: ".",
+                            visible: false,
+                            formula: function(row) {
+                                if (row.maf1000G_PHASE_3_AFR != null) {
+                                    return row.maf1000G_PHASE_3_AFR;
+                                } else {
+                                    return ".";
+                                }
+                            }
+                        }, {
+                            name: "aaf1000G_PHASE_3_EUR",
+                            title: "EUR",
+                            defaultValue: ".",
+                            formula: function(row) {
+                                if (row.aaf1000G_PHASE_3_EUR != null) {
+                                    return row.aaf1000G_PHASE_3_EUR;
+                                } else {
+                                    return ".";
+                                }
+                            }
+                        } ]
+
+                    }, {
+                        title: "ExAC",
+                        width: 50,
+                        name: 'aafexac',
+                        columns: [{
+                                name: "aafexac_ALL",
+                                title: "ALL",
+                                defaultValue: ".",
+                                formula: function(row) {
+                                    if (row.aafexac_ALL != null) {
+                                        return row.aafexac_ALL;
+                                    } else {
+                                        return ".";
+                                    }
+                                }
+                            }
+                        ]
+                    }, {
+                        title: "ESP 6500",
+                        width: 100,
+                        name: 'aaf6500',
+                        columns: [{
+                            name: "aafESP_ALL",
+                            title: "ALL",
+                            defaultValue: ".",
+                            formula: function (row) {
+                                if (row.aafESP_ALL != null) {
+                                    return row.aafESP_ALL;
+                                } else {
+                                    return ".";
+                                }
+                            }
+                        }, {
+                            name: "aafESP_EA",
+                            title: "Eur. Ame.",
+                            defaultValue: ".",
+                            formula: function (row) {
+                                if (row.aafESP_EA != null) {
+                                    return row.aafESP_EA;
+                                } else {
+                                    return ".";
+                                }
+                            }
+                        }]
+                    }]
                 }, {
                     name: 'sift',
                     title: 'SIFT',
@@ -964,7 +982,7 @@
             });
             return results;
         },
-        submitForm: function() {
+        submitForm: function(e) {
 
             var me = this;
             var query = {};
@@ -1043,7 +1061,6 @@
                 }
             }
 
-
             var technologyEls = this.$.technologies_div.querySelectorAll(".technologyName");
             var technologyIds = [];
 
@@ -1061,42 +1078,54 @@
                 query.technologies = technologyIds.join(",");
                 query.skipCount = false;
 
-                CSVSManager.regions.saturation({
-                    id: regionQuery,
-                    query: query,
-                    request: {
-                        success: function(response) {
+                // Select tab saturation
+                if (this.saturation){
+                    // show msj loading
+                    this.loadingSaturation = true;
+                    // remove data chart
+                    this.reloadChart({});
+                    CSVSManager.regions.saturation({
+                        id: regionQuery,
+                        query: query,
+                        request: {
+                            success: function(response) {
 
-                            var data = response.result[0];
+                                var data = response.result[0];
 
-                            for (var region in regionGene) {
-                                if (region in data) {
-                                    var newKey = regionGene[region];
-                                    data[newKey] = data[region];
-                                    delete data[region];
+                                for (var region in regionGene) {
+                                    if (region in data) {
+                                        var newKey = regionGene[region];
+                                        data[newKey] = data[region];
+                                        delete data[region];
+                                    }
                                 }
-                            }
-                            try {
+                                try {
+                                    me.reloadChart(data);
+                                    // remove msj loading
+                                    me.loadingSaturation = false;
+                                } catch (e) {
+                                    me.reloadChart({});
+                                    // remove msj loading
+                                    me.loadingSaturation = false
+                                }
 
-                                me.reloadChart(data);
-                            } catch (e) {
-                                me.reloadChart({});
                             }
-
                         }
-                    }
-                });
+                    });
+                } else {
+                    // Select tab saturation search
+                    var url = CSVSManager.variants.fetch({
+                        query: query,
+                        request: {
+                            url: true
+                        }
+                    });
 
-                var url = CSVSManager.variants.fetch({
-                    query: query,
-                    request: {
-                        url: true
-                    }
-                });
-
-                this.formURL = url;
+                    this.formURL = url;
+                }
             }
-            if (regions.length == 0 && genes.length == 0) {
+            // e -> If event is click check region/gene
+            if (regions.length == 0 && genes.length == 0 && e != undefined) {
                 alert("Please add a region/gene and check any subpopulation/technology");
             }
 
@@ -1492,7 +1521,7 @@
                             switch (pfreq.population) {
                                 case "ALL":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000G = Number(maf).toFixed(3)
+                                    variant.maf1000G = Number(maf).toFixed(3);
                                     break;
 
                                 case "AMR":
@@ -1519,7 +1548,8 @@
                             switch (pfreq.population) {
                                 case "ALL":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000G_PHASE_3_ALL = Number(maf).toFixed(3)
+                                    variant.maf1000G_PHASE_3_ALL = Number(maf).toFixed(3);
+                                    variant.aaf1000G_PHASE_3_ALL = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
                                 case "SAS":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
@@ -1539,7 +1569,8 @@
                                     break;
                                 case "EUR":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000G_PHASE_3_EUR = Number(maf).toFixed(3)
+                                    variant.maf1000G_PHASE_3_EUR = Number(maf).toFixed(3);
+                                    variant.aaf1000G_PHASE_3_EUR = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
 
                             }
@@ -1547,15 +1578,17 @@
                             switch (pfreq.population) {
                                 case "EA":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.mafESP_EA = Number(maf).toFixed(3)
+                                    variant.mafESP_EA = Number(maf).toFixed(3);
+                                    variant.aafESP_EA = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
                                 case "AA":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.mafESP_AA = Number(maf).toFixed(3)
+                                    variant.mafESP_AA = Number(maf).toFixed(3);
                                     break;
                                 case "ALL":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.mafESP_ALL = Number(maf).toFixed(3)
+                                    variant.mafESP_ALL = Number(maf).toFixed(3);
+                                    variant.aafESP_ALL = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
 
 
@@ -1565,6 +1598,7 @@
                                 case "ALL":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
                                     variant.mafexac_ALL = Number(maf).toFixed(3)
+                                    variant.aafexac_ALL = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
                                 case "EUR":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
@@ -1738,7 +1772,6 @@
             }
         },
         reloadChart: function(data) {
-
             var me = this;
             var chartData = [];
 
@@ -1781,15 +1814,14 @@
                 for (var i = 0; i < diseaseData.length; i++) {
                     var elem = diseaseData[i];
                     var dis = this.diseaseMap[elem.diseaseId];
-                    if (dis.samples == 0) {
-                        continue;
-                    }
 
                     labels.push(dis.name);
                     counts.push({
+                        x: elem.samples,
                         y: elem.count,
                         _count: elem.count,
-                        _samples: dis.samples
+                        _samples: elem.samples,
+                        _disease: dis.name
                     });
 
                     total += elem.count;
@@ -1797,24 +1829,36 @@
 
                 for (var i = 1; i < counts.length; i++) {
                     counts[i].y += counts[i - 1].y;
+                    counts[i].x += counts[i - 1].x;
                 }
                 for (var i = 0; i < counts.length; i++) {
-                    counts[i].radius = counts[i]._count / 5; //1/(counts[i]._count)
+
+                    counts[i].radius = counts[i]._count / 5; //1/(counts[i]._count);
+                    counts[i].fillColor = Highcharts.Color(Highcharts.getOptions().colors[chartData.length]).setOpacity(0.7).get('rgba');
+                    if (counts[i].radius > 120) {
+                        counts[i].radius = 120;
+                        counts[i].lineWidth = 5;
+                        counts[i].lineColor = Highcharts.Color('#dddddd').setOpacity(0.7).get('rgba');
+                    }
                 }
 
                 labels.unshift(
                     ""
                 );
                 counts.unshift({
-                    y: 0
+                    y: 0,
+                    x:0
                 });
+
 
                 chartData.push({
                     name: key,
                     data: counts
                 });
-                console.log(chartData);
+
+
             }
+            me.$.tvSaturation.dataSaturation=chartData;
 
             var chart = new Highcharts.Chart({
                 _me: me,
@@ -1825,7 +1869,7 @@
                     plotShadow: false,
                     renderTo: this.$.chart,
                     borderRadius: 10,
-                    width: 1000,
+                   // width: 1000,
                     height: 700,
                     pointStart: 0,
                     _me: me
@@ -1839,7 +1883,12 @@
                     formatter: function() {
                         //                        debugger
                         var point = this.point;
-                        return ' Disease Group: <b>' + this.x + '</b><br> New Variants: <b>' + point._count + '</b> <br> Acum. Variants: <b>' + this.y + '</b></br>Samples: <b>' + point._samples + '</b>';
+                        if(point._samples != undefined)
+                            return ' Disease Group: <b>' + point._disease + '</b><br> New Variants: <b>' + point._count + '</b> <br> Acum. Variants: <b>' + this.y + '</b></br>Samples: <b>' + point._samples + '</b>' +
+                                '</br>Acum. Samples: <b>' + this.x + '</b>'
+                                ;
+                        else
+                            return ' Disease Group: <b> </b><br> New Variants: <b>0 </b> <br> Acum. Variants: <b>0 </b></br>Samples: <b> 0</b>';
 
                     }
                 },
@@ -1847,20 +1896,30 @@
                     enabled: false
                 },
                 xAxis: {
-                    categories: labels,
-                    tickInterval: 1,
-                    breaks: diseaseBreaks,
                     labels: {
                         rotation: 335
                     },
+                    crosshair: {
+                        width: 2,
+                        color: 'gray',
+                        dashStyle: 'shortdot'
+                    },
+                    title: {
+                        text: 'Num. samples'
+                    },
                 },
+
                 yAxis: {
                     title: {
                         text: 'Num. variants'
                     },
                     min: 0,
-                    startOnTick: true
-                },
+                    startOnTick: true,
+                    crosshair: {
+                        width: 2,
+                        color: 'gray',
+                        dashStyle: 'shortdot'
+                    }                },
                 plotOptions: {
                     line: {
                         dataLabels: {
@@ -1870,6 +1929,7 @@
                 },
                 series: chartData
             });
+
         }
     });
 </script>

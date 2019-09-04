@@ -67,6 +67,9 @@ public class OptionsParser {
         @Parameter(names = {"-c", "--checkPanel"}, description = "Check  variants in the panel and format file", arity = 1)
         boolean checkPanel=true;
 
+        @Parameter(names = {"-cg", "--chromGender"}, description = "Chromosomal Gender (XX or XY)", arity = 1)
+        String chromGender="" ;
+
         @Parameter(names = {"--host"}, description = "DB host", arity = 1)
         String host = "localhost";
 
@@ -109,6 +112,9 @@ public class OptionsParser {
 
         @Parameter(names = {"-o", "--output"}, description = "Output File", required = true, arity = 1)
         String output;
+
+        @Parameter(names = {"-cg", "--chromGender"}, description = "Chromosomal Gender (XX or XY)", arity = 1)
+        String chromGender="" ;
 
         @Parameter(names = {"-r", "--replace_AF"}, description = "Replace AF when is distinct 'Allele Frequency'", arity = 1)
         boolean replaceAF = false;

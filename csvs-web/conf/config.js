@@ -15,6 +15,7 @@ STV_APP="CSVS";
 
 // Version file download
 VERSION_FILE = "28/11/2017";
+CSVS_EMAIL='csvs@clinbioinfosspa.es';
 
 // Mail
 URL_MAIL='http://babemailer.clinbioinfosspa.es:8081/babemailer';

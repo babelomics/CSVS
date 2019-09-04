@@ -1,6 +1,7 @@
 package org.babelomics.csvs.lib.io;
 
 import com.mongodb.*;
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.babelomics.csvs.lib.models.*;
 import org.mongodb.morphia.Datastore;
@@ -9,9 +10,18 @@ import org.mongodb.morphia.query.Criteria;
 import org.mongodb.morphia.query.Query;
 import org.opencb.biodata.models.feature.Region;
 
+import javax.swing.text.html.StyleSheet;
+import java.awt.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
@@ -393,14 +403,18 @@ public class CSVSQueryManager {
         return res;
     }
 
-
-    public Map<Region, List<SaturationElement>> getSaturation(List<Region> regions, List<Integer> diseaseIds, List<Integer> technologyIds) {
+    /**
+     * Get saturation order by num variants new / num samples disease
+     * @param regions
+     * @param diseaseIds
+     * @param technologyIds
+     * @return
+     */
+    public Map<Region, List<SaturationElement>> getSaturationOrderIncrement(List<Region> regions, List<Integer> diseaseIds, List<Integer> technologyIds) {
 
         Map<Region, List<SaturationElement>> map = new LinkedHashMap<>();
 
         List<DiseaseGroup> diseaseOrder = getAllDiseaseGroupsOrderedBySample();
-        List<Technology> technologyOrder = getAllTechnologiesOrderedBySample();
-
 
         for (Region r : regions) {
 
@@ -409,112 +423,111 @@ public class CSVSQueryManager {
             List<SaturationElement> list = new ArrayList<>();
             Map<Integer, Integer> diseaseCount = new HashMap<>();
 
-
+            // Get Variants
             Query<Variant> auxQuery = this.datastore.createQuery(Variant.class);
-
             List<Criteria> and = new ArrayList<>();
             and.add(auxQuery.criteria("_at.chIds").in(chunkIds));
             and.add(auxQuery.criteria("chromosome").equal(r.getChromosome()));
             and.add(auxQuery.criteria("position").greaterThanOrEq(r.getStart()));
             and.add(auxQuery.criteria("position").lessThanOrEq(r.getEnd()));
-
             Query<Variant> query = this.datastore.createQuery(Variant.class);
             query.and(and.toArray(new Criteria[and.size()]));
 
-            boolean disTechCheck = false;
+            // Get Panels
+            List<Criteria> andPanels = new ArrayList<>();
+            Query<org.babelomics.csvs.lib.models.Region> auxQueryPanels = this.datastore.createQuery(org.babelomics.csvs.lib.models.Region.class);
+            andPanels.add(auxQueryPanels.criteria("c").equal(r.getChromosome()));
+            andPanels.add(auxQueryPanels.criteria("e").greaterThanOrEq(r.getStart()));
+            andPanels.add(auxQueryPanels.criteria("s").lessThanOrEq(r.getEnd()));
+            Query<org.babelomics.csvs.lib.models.Region> queryRegion = this.datastore.createQuery(org.babelomics.csvs.lib.models.Region.class);
+            queryRegion.and(andPanels.toArray(new Criteria[andPanels.size()]));
+            List panelsRegions = this.datastore.getCollection(Region.class).distinct("pid", queryRegion.getQueryObject());
 
-            BasicDBList listDBObjects = new BasicDBList();
+            List<Integer> diseaseView = new ArrayList<>();
 
-            if (diseaseIds != null && !diseaseIds.isEmpty()) {
-                listDBObjects.add(new BasicDBObject("dgid", new BasicDBObject("$in", diseaseIds)));
-                disTechCheck = true;
+            do {
+                // Order disease
+                Map<Integer, Long> mapDiseaseIncrement = new HashMap<>();
+                Map<Integer, Double> mapDiseaseIncrementSample = new HashMap<>();
+                Map<Integer, Integer> mapDiseaseSample = new HashMap<>();
+                int sumAcum = list.stream().mapToInt(o -> o.getCount()).sum();
 
-            }
-
-            if (technologyIds != null && !technologyIds.isEmpty()) {
-                listDBObjects.add(new BasicDBObject("tid", new BasicDBObject("$in", technologyIds)));
-                disTechCheck = true;
-            }
-
-            if (disTechCheck) {
-                query.filter("diseases elem", new BasicDBObject("$and", listDBObjects));
-            }
-
-
-            System.out.println(query);
-
-            Iterable<Variant> aux = query.fetch();
-
-            for (Variant v : aux) {
-                if (!v.getDiseases().isEmpty()) {
-
-                    DiseaseCount dc = null;
-
-                    Iterator<DiseaseGroup> dgIt = diseaseOrder.iterator();
-
-                    while (dgIt.hasNext() && dc == null) {
-                        DiseaseGroup dg = dgIt.next();
-                        if (!diseaseIds.contains(dg.getGroupId())) {
-                            continue;
+                // Calculate the largest increase ( num variant increase / num samples disease) by disease, and select the largest
+               // int finalSumAcum = sumAcum;
+                diseaseIds.forEach(dId -> {
+                    if (! diseaseView.contains(dId)) {
+                        // Num variant when add a disease                        
+                        Query<Variant> queryDisease = this.datastore.createQuery(Variant.class);
+                        queryDisease.and(and.toArray(new Criteria[and.size()]));
+                        BasicDBList listDBObjectsDisease = new BasicDBList();
+                        listDBObjectsDisease.add(new BasicDBObject("dgid", new BasicDBObject("$in", ListUtils.union(diseaseView, Arrays.asList(dId)))));
+                        if (technologyIds != null && !technologyIds.isEmpty()) {
+                            listDBObjectsDisease.add(new BasicDBObject("tid", new BasicDBObject("$in", technologyIds)));
                         }
-                        Iterator<Technology> tIt = technologyOrder.iterator();
-                        while (dgIt.hasNext() && tIt.hasNext() && dc == null) {
-                            Technology t = tIt.next();
-                            if (!technologyIds.contains(t.getTechnologyId())) {
-                                continue;
-                            }
-                            dc = v.getDiseaseCount(dg, t);
+                        queryDisease.filter("diseases elem", new BasicDBObject("$and", listDBObjectsDisease));
+
+
+                        // Num samples when add a disease (genome+exome+panels)
+                        int samplesUnionPanels = 0;
+                        Query<File> querySampleDisease = this.datastore.createQuery(File.class);
+                        querySampleDisease.filter("dgid in ",  Arrays.asList(dId));
+                        if (technologyIds != null && !technologyIds.isEmpty()) {
+                            querySampleDisease.filter("tid in ", technologyIds);
                         }
+                        if (panelsRegions != null && !panelsRegions.isEmpty() && panelsRegions.size() > 0) {
+                            Query<File> auxQueryPid = this.datastore.createQuery(org.babelomics.csvs.lib.models.File.class);
+                            querySampleDisease.or(auxQueryPid.criteria("pid").in(panelsRegions),auxQueryPid.criteria("pid").doesNotExist() );
+                        } else{
+                            querySampleDisease.filter("pid in", panelsRegions);
+                        }
+                        List<File> sampl = querySampleDisease.asList();
+                        if (querySampleDisease != null && sampl.size() > 0)
+                            samplesUnionPanels = sampl.stream().mapToInt(f -> f.getSamples()).sum();
+
+
+                        // Increment variantes / num. samples disease
+                        mapDiseaseIncrementSample.put(dId, ((double) queryDisease.countAll() - sumAcum)/ samplesUnionPanels);
+                        mapDiseaseIncrement.put(dId, (queryDisease.countAll()- sumAcum));
+                        mapDiseaseSample.put(dId, samplesUnionPanels);
+
                     }
+                });
 
-                    if(dc == null){
-                        continue;
-                    }
-                    int count = 0;
-                    if (diseaseCount.containsKey(dc.getDiseaseGroup().getGroupId())) {
-                        count = diseaseCount.get(dc.getDiseaseGroup().getGroupId());
-                    }
-                    count += 1;
-                    diseaseCount.put(dc.getDiseaseGroup().getGroupId(), count);
-                }
-            }
+                // Order
+                LinkedHashMap<Integer, Double> sortedMap =
+                        mapDiseaseIncrementSample.entrySet().stream().
+                                filter(line -> !diseaseView.contains(line.getKey())).
+                                sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).
+                                collect(Collectors.toMap(e -> e.getKey(), (Map.Entry<Integer, Double> e) -> e.getValue(),
+                                        (v1, v2) -> v2, LinkedHashMap::new));
 
+                Integer key = sortedMap.keySet().iterator().next();
 
-            Iterator<DiseaseGroup> dgIt = diseaseOrder.iterator();
+                // Select first
+                Optional<DiseaseGroup> dgFirst = diseaseOrder.stream()
+                        .filter(dg -> key.equals(dg.getGroupId()))
+                        .findFirst();
 
-            while (dgIt.hasNext()) {
-                DiseaseGroup dg = dgIt.next();
-                if (diseaseCount.containsKey(dg.getGroupId())) {
+                if (dgFirst.isPresent()) {
+                    diseaseView.add(key);
+                    long increment = Integer.parseInt(String.valueOf(mapDiseaseIncrement.get(key))) ;
                     list.add(new SaturationElement(
-                            dg.getGroupId(),
-                            diseaseCount.get(dg.getGroupId()),
-                            dg.getSamples()
-                    ));
-                } else {
-                    list.add(new SaturationElement(
-                            dg.getGroupId(),
-                            0,
-                            dg.getSamples()
+                            key,
+                            increment > 0 ? Integer.parseInt(String.valueOf(mapDiseaseIncrement.get(key))) : 0,
+                            /// gest sample calculate ( genome + beds)
+                            mapDiseaseSample.get(key)
+
                     ));
                 }
 
-            }
+            } while (diseaseView.size() != diseaseIds.size());
 
-//            for (Map.Entry<Integer, Integer> entry : diseaseCount.entrySet()) {
-//                DiseaseGroup diseaseGroup = this.getDiseaseById(entry.getKey());
-//                list.add(new SaturationElement(
-//                        entry.getKey(),
-//                        entry.getValue(),
-//                        diseaseGroup.getSamples()
-//                ));
-//            }
-
-//            Collections.sort(list, new SaturationElementSampleDescComparator());
             map.put(r, list);
         }
 
         return map;
     }
+
 
     public Iterable<Variant> getAllVariants(List<Integer> diseaseIds, List<Integer> technologyIds, Integer skip, Integer limit, MutableLong count) {
 
@@ -690,33 +703,41 @@ public class CSVSQueryManager {
     public static Map calculateSampleRegions(Datastore datastore) {
         Map<String, Map> result = new HashMap<>();
 
-        List<BasicDBObject> aggList = new ArrayList<>();
-        BasicDBObject match = new BasicDBObject().append("pid", new BasicDBObject("$exists", true));
-        BasicDBObject group = new BasicDBObject().append("_id", new BasicDBObject().append("dgid", "$dgid").append("tid", "$tid")
-                .append("pid", "$pid")).append("samples",new BasicDBObject("$sum","$s"));
-        //BasicDBObject project = new BasicDBObject().append("_id", "$_id.pid").append("samples","1");
+        String[]  listGender = {"","XX","XY"};
+        for ( String gender : listGender) {
+            List<BasicDBObject> aggList = new ArrayList<>();
+            BasicDBObject match = new BasicDBObject().append("pid", new BasicDBObject("$exists", true));
+            BasicDBObject group = new BasicDBObject().append("_id", new BasicDBObject().append("dgid", "$dgid").append("tid", "$tid")
+                    .append("pid", "$pid")).append("samples", new BasicDBObject("$sum", "$s"));
+            if (!"".equals(gender))
+                match.append("gender", gender);
+            //BasicDBObject project = new BasicDBObject().append("_id", "$_id.pid").append("samples","1");
 
-        aggList.add(new BasicDBObject("$match", match));
-        aggList.add(new BasicDBObject("$group", group));
+            aggList.add(new BasicDBObject("$match", match));
+            aggList.add(new BasicDBObject("$group", group));
 
-        Iterator aggregation = datastore.getCollection(File.class).aggregate(aggList).results().iterator();
+            Iterator aggregation = datastore.getCollection(File.class).aggregate(aggList).results().iterator();
 
-        while (aggregation.hasNext()){
-            BasicDBObject oObj = (BasicDBObject) aggregation.next();
-            String key = ((Map) oObj.get("_id")).get("dgid")+"_"+((Map) oObj.get("_id")).get("tid");
-            if (result.containsKey(key)){
-                Map value = result.get(key);
-                value.put(((Map) oObj.get("_id")).get("pid"), (int) oObj.get("samples"));
-                result.put( key,  value );
-            } else{
-                Map value = new HashMap();
-                value.put(  ((Map) oObj.get("_id")).get("pid"), (int) oObj.get("samples"));
-                result.put(key, value);
+            while (aggregation.hasNext()) {
+                BasicDBObject oObj = (BasicDBObject) aggregation.next();
+                String key = ((Map) oObj.get("_id")).get("dgid") + "_" + ((Map) oObj.get("_id")).get("tid") + (!"".equals(gender) ? "_"+ gender : "");
+                if (result.containsKey(key)) {
+                    Map value = result.get(key);
+                    value.put(((Map) oObj.get("_id")).get("pid"), (int) oObj.get("samples"));
+                    result.put(key, value);
+                } else {
+                    Map value = new HashMap();
+                    value.put(((Map) oObj.get("_id")).get("pid"), (int) oObj.get("samples"));
+                    result.put(key, value);
+                }
             }
         }
 
         return result;
     }
+
+
+
 
 
     private DiseaseCount calculateStats(Variant v, List<Integer> diseaseId, List<Integer> technologyId, int sampleCount, Map<String, Integer> sampleCountMap) {
@@ -732,7 +753,6 @@ public class CSVSQueryManager {
 
         // Variants by regions
         // System.out.println("\nCSVS (calculateStats): Variant= "+ v +  " Samples: "  + sampleCountTemp);
-
         for (DiseaseCount auxDc : v.getDiseases()) {
             if (diseaseId.contains(auxDc.getDiseaseGroup().getGroupId()) && technologyId.contains(auxDc.getTechnology().getTechnologyId())) {
                 gt00 += auxDc.getGt00();
@@ -743,15 +763,36 @@ public class CSVSQueryManager {
         }
 
         // exists samples load in the panel
-        if ( v.getDiseasesSamplePanel() != null) {
+        if (v.getDiseasesSamplePanel() != null) {
             for (DiseaseSum auxDs : v.getDiseasesSamplePanel()) {
                 if (diseaseId.contains(auxDs.getDiseaseGroupId()) && technologyId.contains(auxDs.getTechnologyId())) {
-                    // exists samples load in the panel
-                    if (auxDs.getSumSampleRegions() != 0){
-                        String key = auxDs.getDiseaseGroupId() + "-" + auxDs.getTechnologyId();
-                        int sum =  sampleCountMap.containsKey(key) ? sampleCountMap.get(key) : 0;
-                        sampleCountTemp.put(key, auxDs.getSumSampleRegions() + sum);
-                        existsRegions = true;
+                    switch (v.getChromosome()){
+                        case "X":
+                            // exists samples load in the panel XX + XY
+                            if (auxDs.getSumSampleRegionsXX() != 0 || auxDs.getSumSampleRegionsXX() != 0 ) {
+                                String key = auxDs.getDiseaseGroupId() + "-" + auxDs.getTechnologyId();
+                                int sum = sampleCountMap.containsKey(key) ? sampleCountMap.get(key) : 0;
+                                sampleCountTemp.put(key, (auxDs.getSumSampleRegionsXX() != 0 ? auxDs.getSumSampleRegionsXX(): 0) + (auxDs.getSumSampleRegionsXY() != 0 ? auxDs.getSumSampleRegionsXY(): 0) + sum);
+                                existsRegions = true;
+                            }
+                            break;
+                        case "Y":
+                            // exists samples load in the panel XY
+                            if (auxDs.getSumSampleRegionsXY() != 0) {
+                                String key = auxDs.getDiseaseGroupId() + "-" + auxDs.getTechnologyId();
+                                int sum = sampleCountMap.containsKey(key) ? sampleCountMap.get(key) : 0;
+                                sampleCountTemp.put(key, auxDs.getSumSampleRegionsXY() + sum);
+                                existsRegions = true;
+                            }
+                            break;
+                        default:
+                            // exists samples load in the panel (All)
+                            if (auxDs.getSumSampleRegions() != 0) {
+                                String key = auxDs.getDiseaseGroupId() + "-" + auxDs.getTechnologyId();
+                                int sum = sampleCountMap.containsKey(key) ? sampleCountMap.get(key) : 0;
+                                sampleCountTemp.put(key, auxDs.getSumSampleRegions() + sum);
+                                existsRegions = true;
+                            }
                     }
                 }
             }
@@ -764,16 +805,31 @@ public class CSVSQueryManager {
 
         gt00 = sampleCountVariant - gt01 - gt11 - gtmissing;
 
-        int refCount = gt00 * 2 + gt01;
-        int altCount = gt11 * 2 + gt01;
+        float refFreq = 0;
+        float altFreq;
+        switch (v.getChromosome()) {
+            case "X":
+                refFreq = (float) (gt01 + gt00*2 + gt01) / ( 2*(gt00+gt01+gt11) + gt00 + gt01);
+                altFreq = (float) (gt01 + gt11*2 + gt01) / ( 2*(gt00+gt01+gt11) + gt00 + gt01);
+                break;
 
-        float refFreq = (float) refCount / (refCount + altCount);
-        float altFreq = (float) altCount / (refCount + altCount);
+            case "Y":
+                refFreq = (float) gt00 / (gt00 + gt11);
+                altFreq = (float) gt11 / (gt00 + gt11);
+                break;
+
+            default:
+                int refCount, altCount;
+                refCount = gt00 * 2 + gt01;
+                altCount = gt11 * 2 + gt01;
+                refFreq = (float) refCount / (refCount + altCount);
+                altFreq = (float) altCount / (refCount + altCount);
+        }
 
         float maf = Math.min(refFreq, altFreq);
 
         dc = new DiseaseCount(null, null, gt00, gt01, gt11, gtmissing);
-
+ 
         if (!Float.isNaN(refFreq)) {
             dc.setRefFreq(round(refFreq, DECIMAL_POSITIONS));
         }

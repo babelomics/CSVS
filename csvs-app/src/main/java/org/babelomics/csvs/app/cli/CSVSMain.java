@@ -5,10 +5,7 @@ import com.google.common.base.Joiner;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.babelomics.csvs.lib.CSVSUtil;
 import org.babelomics.csvs.lib.io.CSVSQueryManager;
-import org.babelomics.csvs.lib.models.DiseaseCount;
-import org.babelomics.csvs.lib.models.DiseaseGroup;
-import org.babelomics.csvs.lib.models.Technology;
-import org.babelomics.csvs.lib.models.Variant;
+import org.babelomics.csvs.lib.models.*;
 import org.mongodb.morphia.Datastore;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.client.CellBaseClient;
@@ -38,6 +35,7 @@ public class CSVSMain {
     protected static InputStream is = CSVSMain.class.getClassLoader().getResourceAsStream("csvs.properties");
     protected static Properties properties = new Properties();
     static String CELLBASE_HOST, CELLBASE_VERSION;
+    static List<ParRegions> PAR_REGIONS = new ArrayList<>();
     static {
         try {
             properties.load(is);
@@ -49,7 +47,24 @@ public class CSVSMain {
 
         CELLBASE_HOST = properties.getProperty("CELLBASE.HOST", "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest");
         CELLBASE_VERSION = properties.getProperty("CELLBASE.VERSION", "v3");
+        // Para regions 37
+        PAR_REGIONS =  iniParRegions(properties.getProperty("PAR_REGIONS", "X:60001-2699520;Y:10001-2649520,X:154931044-155260560;Y:59034050-59363566"));
     }
+
+    private static List<ParRegions> iniParRegions(String parPegions) {
+        List<ParRegions> listParRegions = new ArrayList<>();
+        String[] data = parPegions.split("[-:,;]");
+        for (int i = 0; i < data.length ; i=i+6){
+            listParRegions.add(
+                new ParRegions(
+                        new Region(data[i], Integer.parseInt(data[i+1]), Integer.parseInt(data[i+2])),
+                        new Region(data[i+3], Integer.parseInt(data[i+4]), Integer.parseInt(data[i+5])),
+                        Integer.parseInt(data[i+4]) - Integer.parseInt(data[i+1]))
+                );
+        }
+        return  listParRegions;
+    }
+
 
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException, URISyntaxException {
         OptionsParser parser = new OptionsParser();
@@ -115,7 +130,6 @@ public class CSVSMain {
                 CSVSUtil.populateTechnologies(datastore);
             }
 
-
             if (c.newDisease != null && c.newDisease.length() > 0) {
                 CSVSUtil.addNewDisease(datastore, c.newDisease);
             }
@@ -134,16 +148,17 @@ public class CSVSMain {
                 panelFile = Paths.get(c.panelFile);
 
             String personReference = c.personReference;
+            String chromGender = c.chromGender;
 
             if(c.filter){
                 if(c.panelFile == null) {
                     System.out.println("Add param --panelFile");
                     System.exit(0);
                 }
-                CSVSUtil.filterFile(inputFile, panelFile, datastore);
+                CSVSUtil.filterFile(inputFile, panelFile, chromGender, datastore);
             } else {
 
-                CSVSUtil.loadVariants(inputFile, diseaseGroupId, technologyId, datastore, panelFile, personReference, c.checkPanel);
+                CSVSUtil.loadVariants(inputFile, diseaseGroupId, technologyId, datastore, panelFile, personReference, c.checkPanel, chromGender);
 
                 if (c.recalculate){
                     // When load file affect all diseases and technologies with panels
@@ -177,8 +192,9 @@ public class CSVSMain {
 
             Path input = Paths.get(c.input);
             Path output = Paths.get(c.output);
+            String chromGender = c.chromGender;
 
-            CSVSUtil.compressVariants(input, output, c.replaceAF);
+            CSVSUtil.compressVariants(input, output, c.replaceAF, chromGender, PAR_REGIONS);
         } else if (command instanceof OptionsParser.CommandAnnot) {
 
             OptionsParser.CommandAnnot c = (OptionsParser.CommandAnnot) command;
@@ -318,7 +334,7 @@ public class CSVSMain {
                     sb.append(ref).append("\t");
                     sb.append(alt).append("\t");
                     sb.append(id).append("\t");
-
+                    System.out.println(sb);
                     DiseaseCount dc = v.getStats();
 
                     sb.append(dc.getGt00()).append("\t");

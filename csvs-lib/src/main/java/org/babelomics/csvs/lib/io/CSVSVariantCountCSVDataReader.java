@@ -21,6 +21,16 @@ import java.util.List;
  */
 public class CSVSVariantCountCSVDataReader implements DataReader<Variant> {
 
+    static final String XX = "XX";
+    static List<String> LIST_CHROMOSOME = new ArrayList<>();
+    static {
+        for (int i = 1; i <= 22 ; i++)
+            LIST_CHROMOSOME.add(String.valueOf(i));
+        LIST_CHROMOSOME.add("X");
+        LIST_CHROMOSOME.add("Y");
+        LIST_CHROMOSOME.add("MT");
+    }
+
     protected String filePath;
     protected BufferedReader reader;
     private DiseaseGroup diseaseGroup;
@@ -28,6 +38,7 @@ public class CSVSVariantCountCSVDataReader implements DataReader<Variant> {
     protected Panel panel;
     private boolean checkPanel = true;
     protected List<Region> regions = new ArrayList<>();
+    protected String chromGender;
 
     public CSVSVariantCountCSVDataReader(String filePath, DiseaseGroup dg, Technology t) {
         this.filePath = filePath;
@@ -35,13 +46,14 @@ public class CSVSVariantCountCSVDataReader implements DataReader<Variant> {
         this.technology = t;
     }
 
-    public CSVSVariantCountCSVDataReader(String filePath, Panel p, List<Region> regions) {
+    public CSVSVariantCountCSVDataReader(String filePath, Panel p, List<Region> regions, String chromGender) {
         this.filePath = filePath;
         this.panel = p;
         this.regions = regions;
+        this.chromGender = chromGender;
     }
 
-    public CSVSVariantCountCSVDataReader(String filePath, DiseaseGroup dg, Technology t, Panel p ) {
+    public CSVSVariantCountCSVDataReader(String filePath, DiseaseGroup dg, Technology t, Panel p) {
         this.filePath = filePath;
         this.diseaseGroup = dg;
         this.technology = t;
@@ -141,6 +153,17 @@ public class CSVSVariantCountCSVDataReader implements DataReader<Variant> {
 	                        System.out.println("Variant not in list regions: " + line);
 	                        continue;
                         }
+                    // Ignore chromosome Y when is a woman
+                    if (checkPanel && XX.equals(chromGender) && c.equals("Y")){
+                        System.out.println("Ignore chromosome: " + line);
+                        continue;
+                    }
+
+                    // Ignore chromosome not in 1-22, X, Y or MT
+                    if (!LIST_CHROMOSOME.contains(c) ){
+                        System.out.println("Ignore chromosome: " + line);
+                        continue;
+                    }
 
                     v.addGenotypesToDiseaseAndTechnology(this.diseaseGroup, this.technology, Integer.parseInt(splits[5]), Integer.parseInt(splits[6]), Integer.parseInt(splits[7]), Integer.parseInt(splits[8]));
                     variants.add(v);

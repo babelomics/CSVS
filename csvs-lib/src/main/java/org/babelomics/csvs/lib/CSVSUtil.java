@@ -96,10 +96,32 @@ public class CSVSUtil {
         diseaseGroups.add(new DiseaseGroup(20, "XX External causes of morbidity and mortality"));
         diseaseGroups.add(new DiseaseGroup(21, "XXI Factors influencing health status and contact with health services"));
         diseaseGroups.add(new DiseaseGroup(22, "XXII Codes for special purposes"));
-        diseaseGroups.add(new DiseaseGroup(23, "MGP (267 healthy controls)"));
-        diseaseGroups.add(new DiseaseGroup(24, "IBS (107 Spanish individuals from 1000genomes)"));
-        diseaseGroups.add(new DiseaseGroup(25, "V Mental and behavioural disorders(controls)"));
+        diseaseGroups.add(new DiseaseGroup(23, "MGP (267 healthy controls, Solid 5500)"));
+        diseaseGroups.add(new DiseaseGroup(24, "MGP (healthy controls, Solid 4)"));
+        diseaseGroups.add(new DiseaseGroup(25, "IBS (107 Spanish individuals from 1000genomes)"));
         diseaseGroups.add(new DiseaseGroup(26, "Healthy controls"));
+        diseaseGroups.add(new DiseaseGroup(27, "I Certain infectious and parasitic diseases (controls)"));
+        diseaseGroups.add(new DiseaseGroup(28, "II Neoplasms (controls)"));
+        diseaseGroups.add(new DiseaseGroup(29, "III Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism (controls)"));
+        diseaseGroups.add(new DiseaseGroup(30, "IV Endocrine, nutritional and metabolic diseases (controls)"));
+        diseaseGroups.add(new DiseaseGroup(31, "V Mental and behavioural disorders (controls)"));
+        diseaseGroups.add(new DiseaseGroup(32, "VI Diseases of the nervous system (controls)"));
+        diseaseGroups.add(new DiseaseGroup(33, "VII Diseases of the eye and adnexa (controls)"));
+        diseaseGroups.add(new DiseaseGroup(34, "VIII Diseases of the ear and mastoid process (controls)"));
+        diseaseGroups.add(new DiseaseGroup(35, "IX Diseases of the circulatory system (controls)"));
+        diseaseGroups.add(new DiseaseGroup(36, "X Diseases of the respiratory system (controls)"));
+        diseaseGroups.add(new DiseaseGroup(37, "XI Diseases of the digestive system (controls)"));
+        diseaseGroups.add(new DiseaseGroup(38, "XII Diseases of the skin and subcutaneous tissue (controls)"));
+        diseaseGroups.add(new DiseaseGroup(39, "XIII Diseases of the musculoskeletal system and connective tissue (controls)"));
+        diseaseGroups.add(new DiseaseGroup(40, "XIV Diseases of the genitourinary system (controls)"));
+        diseaseGroups.add(new DiseaseGroup(41, "XV Pregnancy, childbirth and the puerperium (controls)"));
+        diseaseGroups.add(new DiseaseGroup(42, "XVI Certain conditions originating in the perinatal period (controls)"));
+        diseaseGroups.add(new DiseaseGroup(43, "XVII Congenital malformations, deformations and chromosomal abnormalities (controls)"));
+        diseaseGroups.add(new DiseaseGroup(44, "XVIII Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified (controls)"));
+        diseaseGroups.add(new DiseaseGroup(45, "XIX Injury, poisoning and certain other consequences of external causes (controls)"));
+        diseaseGroups.add(new DiseaseGroup(46, "XX External causes of morbidity and mortality (controls)"));
+        diseaseGroups.add(new DiseaseGroup(47, "XXI Factors influencing health status and contact with health services (controls)"));
+        diseaseGroups.add(new DiseaseGroup(48, "XXII Codes for special purposes (controls)"));
 
         for (DiseaseGroup dg : diseaseGroups) {
             try {
@@ -174,11 +196,11 @@ public class CSVSUtil {
 
 
     public static void loadVariants(Path variantsPath, int diseaseGroupId, int technologyId, Datastore datastore ) throws IOException, NoSuchAlgorithmException {
-        loadVariants(variantsPath,diseaseGroupId,technologyId,datastore, null, "", true);
+        loadVariants(variantsPath,diseaseGroupId,technologyId,datastore, null, "", true, "");
     }
 
 
-    public static void loadVariants(Path variantsPath, int diseaseGroupId, int technologyId, Datastore datastore,  Path panelFilePath, String personReference, boolean checkPanel ) throws IOException, NoSuchAlgorithmException {
+    public static void loadVariants(Path variantsPath, int diseaseGroupId, int technologyId, Datastore datastore,  Path panelFilePath, String personReference, boolean checkPanel, String chromGender ) throws IOException, NoSuchAlgorithmException {
         System.out.println("START: loadVariant " + new Date());
         File f;
         String sha256 = calculateSHA256(variantsPath);
@@ -197,6 +219,8 @@ public class CSVSUtil {
             f.setNameFile(variantsPath.getFileName().toString());
             if (!personReference.isEmpty())
                 f.setPersonReference(personReference);
+            if (!chromGender.isEmpty())
+                f.setChromGender(chromGender);
             f.setDate(new Date());
 
             // Read panelFile with regions
@@ -495,11 +519,11 @@ public class CSVSUtil {
         vcfWriter.close();
     }
 
-    public static void compressVariants(Path input, Path output, boolean replaceAF) throws IOException {
+    public static void compressVariants(Path input, Path output, boolean replaceAF, String chromGender, List<ParRegions> parRegions) throws IOException {
 
         VariantSource source = new VariantSource("file", "file", "file", "file");
         //VariantReader reader = new VariantVcfReader(source, input.toAbsolutePath().toString());
-        VariantReader reader = new CSVSVariantVcfReader(source, input.toAbsolutePath().toString(), replaceAF);
+        VariantReader reader = new CSVSVariantVcfReader(source, input.toAbsolutePath().toString(), replaceAF, chromGender, parRegions);
         VariantWriter writer = new CSVSVariantCountsCSVDataWriter(output.toAbsolutePath().toString());
 
 
@@ -728,6 +752,8 @@ public class CSVSUtil {
 
                     // Initialize
                     Map cursor = new HashMap();
+                    Map cursorXX = new HashMap();
+                    Map cursorXY = new HashMap();
                     BasicDBObject cursorStart = null, cursorEnd = null;
                     if (itStart.hasNext())
                        cursorStart = (BasicDBObject) itStart.next();
@@ -747,8 +773,39 @@ public class CSVSUtil {
                                         while (cursorStart != null && (int)cursorStart.get("s") <= v.getPosition() ) {
                                             if (calculateSampleRegions.get(d + "_" + t).containsKey(cursorStart.get("pid"))) {
                                                 Map reg_pid = new HashMap<>();
+                                                Map reg_pidXX = new HashMap<>();
+                                                Map reg_pidXY = new HashMap<>();
                                                 reg_pid.put(cursorStart.get("pid"), calculateSampleRegions.get(d + "_" + t).get(cursorStart.get("pid")));
+
+                                                // Case XX
+                                                if ("X".equals(c)) {
+                                                    if (calculateSampleRegions.get(d + "_" + t+ "_XX").containsKey(cursorStart.get("pid")))
+                                                        reg_pidXX.put(cursorStart.get("pid"), calculateSampleRegions.get(d + "_" + t + "_XX").get(cursorStart.get("pid")));
+                                                    else
+                                                        reg_pidXX.put(cursorStart.get("pid"), 0);
+
+                                                    if (calculateSampleRegions.get(d + "_" + t+ "_XY").containsKey(cursorStart.get("pid")))
+                                                        reg_pidXY.put(cursorStart.get("pid"), calculateSampleRegions.get(d + "_" + t + "_XY").get(cursorStart.get("pid")));
+                                                    else
+                                                        reg_pidXY.put(cursorStart.get("pid"), 0);
+                                                }
+
+                                                // Case XY
+                                                if ("Y".equals(c)) {
+                                                    if (calculateSampleRegions.get(d + "_" + t+ "_XY").containsKey(cursorStart.get("pid")))
+                                                        reg_pidXY.put(cursorStart.get("pid"), calculateSampleRegions.get(d + "_" + t + "_XY").get(cursorStart.get("pid")));
+                                                    else
+                                                        reg_pidXY.put(cursorStart.get("pid"), 0);
+                                                }
+
                                                 cursor.put(cursorStart.get("_id"), reg_pid);
+                                                if ("X".equals(c)) {
+                                                    cursorXX.put(cursorStart.get("_id"), reg_pidXX);
+                                                    cursorXY.put(cursorStart.get("_id"), reg_pidXY);
+                                                }
+                                                if ("Y".equals(c)) {
+                                                    cursorXY.put(cursorStart.get("_id"), reg_pidXY);
+                                                }
                                             }
                                             if (itStart.hasNext())
                                                 cursorStart = (BasicDBObject) itStart.next();
@@ -766,10 +823,16 @@ public class CSVSUtil {
                                         }
 
                                         // CalculateSampleCount
-                                        int sumSampleRegion = 0;
+                                        int sumSampleRegion = 0, sumSampleRegionXX = 0, sumSampleRegionXY = 0;
                                         if (!cursor.isEmpty()) {
                                             // Sum only no overlapping regions
                                             sumSampleRegion = 0;
+
+                                            // Sum only no overlapping regions Case XX
+                                            sumSampleRegionXX = 0;
+                                            // Sum only no overlapping regions Case XY
+                                            sumSampleRegionXY = 0;
+
                                             List panel_procesed = new ArrayList();
                                             for (Object key: cursor.keySet()){
                                                 Map<String, Integer> reg_pid = (Map<String, Integer>) cursor.get(key);
@@ -777,13 +840,40 @@ public class CSVSUtil {
                                                 if (!panel_procesed.contains(pid)){
                                                     sumSampleRegion+=reg_pid.get(pid);
                                                     panel_procesed.add(pid);
+
+                                                    // Case XX
+                                                    if ("X".equals(c)) {
+                                                        Map<String, Integer> reg_pidXX = (Map<String, Integer>) cursorXX.get(key);
+                                                        sumSampleRegionXX += reg_pidXX.get(pid);
+                                                        Map<String, Integer> reg_pidXY = (Map<String, Integer>) cursorXY.get(key);
+                                                        if (reg_pidXY != null && reg_pidXY.containsKey(pid))
+                                                            sumSampleRegionXY += reg_pidXY.get(pid);
+                                                    }
+
+                                                    // Case XY
+                                                    if ("Y".equals(c)) {
+                                                        Map<String, Integer> reg_pidXY = (Map<String, Integer>) cursorXY.get(key);
+                                                        sumSampleRegionXY += reg_pidXY.get(pid);
+                                                    }
                                                 }
                                             }
                                         }
+                                        DiseaseSum diseaseSum = new DiseaseSum(d, t, sumSampleRegion);
 
-                                        v.setSumSampleRegion(new DiseaseSum(d, t, sumSampleRegion));
+                                        if ("X".equals(c)){
+                                            if (sumSampleRegionXX > 0)
+                                                diseaseSum.setSumSampleRegionsXX(sumSampleRegionXX);
+                                            if (sumSampleRegionXY > 0)
+                                                diseaseSum.setSumSampleRegionsXY(sumSampleRegionXY);
+                                        }
+                                        if ("Y".equals(c)){
+                                            if (sumSampleRegionXY > 0)
+                                                diseaseSum.setSumSampleRegionsXY(sumSampleRegionXY);
+                                        }
+
+                                        v.setSumSampleRegion(diseaseSum);
                                         if (sumSampleRegion != 0){
-                                            System.out.println("VARIANTE: " + v.getChromosome() + ":" + v.getPosition() + "  Samples: " + sumSampleRegion);
+                                            System.out.println("VARIANT: " + v.getChromosome() + ":" + v.getPosition() + "  Samples: " + sumSampleRegion +  "  Samples XX: " + sumSampleRegionXX +  "  Samples XY: " + sumSampleRegionXY);
                                         }
                                     }
                                 }
@@ -891,14 +981,14 @@ public class CSVSUtil {
      * @throws IOException
      * @throws NoSuchAlgorithmException
      */
-    public static void filterFile(Path variantsPath, Path panelFilePath, Datastore datastore  ) throws IOException, NoSuchAlgorithmException {
+    public static void filterFile(Path variantsPath, Path panelFilePath, String chromGender, Datastore datastore  ) throws IOException, NoSuchAlgorithmException {
         if (panelFilePath != null){
             Panel p = loadPanel(datastore, panelFilePath);
             List<Region> regions = new ArrayList<>();
             if(p != null)
                 regions = datastore.createQuery(Region.class).field("pid").equal((ObjectId) p.getId()).asList();
 
-            DataReader<Variant> readerFilter = new CSVSVariantFilterCSVDataReader(variantsPath.toAbsolutePath().toString(), p, regions);
+            DataReader<Variant> readerFilter = new CSVSVariantFilterCSVDataReader(variantsPath.toAbsolutePath().toString(), p, regions, chromGender);
             List<DataWriter<Variant>> writersRegions = new ArrayList<>();
 
             Runner<Variant> pvsRunner = new CSVSRunner(readerFilter, writersRegions,  new SortedList<>(), 100);

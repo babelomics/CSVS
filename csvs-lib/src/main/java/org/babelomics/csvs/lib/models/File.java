@@ -39,6 +39,9 @@ public class File {
     @Property("n")
     private String nameFile;
 
+    @Property("gender")
+    private String chromGender;
+
     @Property("pr")
     private String personReference;
 
@@ -123,6 +126,14 @@ public class File {
 
     public void setNameFile(String nameFile) {
         this.nameFile = nameFile;
+    }
+
+    public String getChromGender() {
+        return chromGender;
+    }
+
+    public void setChromGender(String chromGender) {
+        this.chromGender = chromGender;
     }
 
     public String getPersonReference() {
