@@ -74,8 +74,8 @@
             overflow-y: auto;
         }
         #highlights_div{
-            height: 300px;
-            max-height: 300px;
+            height: 550px;
+            max-height: 550px;
             width: 230px;
             overflow-y: auto;
         }
@@ -234,82 +234,6 @@
                             <div class="stv-btn stv-btn-shdw flex" on-click="submitForm">Search</div>
                         </div>
 
-                        <stv-form-box>
-                            <div class="header horizontal layout flex">
-                                <div>Highlights</div>
-                                <div class="flex"></div>
-                                <div on-click="selectAllHighlights" >
-                                    <i class="fa fa-check-square-o check"></i>
-                                </div>
-                                <div on-click="deselectAllHighlights">
-                                    <i class="fa fa-square-o check"></i>
-                                </div>
-                            </div>
-                            <div class="container">
-                                <div id="highlights_div">
-                                    <template is="dom-repeat" items="{{highlights}}" as="highlightGroup">
-                                        <div>
-                                            <label class="stv-control">
-                                                <label class="stv"><span>{{highlightGroup.group}}:</span></label>
-                                                <template is="dom-repeat" items="{{highlightGroup.groupValues}}" as="item">
-                                                       <div style="padding-left: 15px; display:inline-block">
-                                                            <span style="display:inline-block; width: 60px">{{item.title}}:</span>
-                                                            <select class="highlightsOp stv stv-btn" style="display:inline-flex;" name="highlightOp" id="opc_{{item.name}}" key="{{item.name}}" value="{{item.op}}"  />
-                                                                <template is="dom-repeat" items="{{item.ops}}" as="itemOp">
-                                                                    <option value="{{itemOp}}"> {{itemOp}} </option>
-                                                                </template>
-                                                            </select>
-                                                            <input type="text" class="highlightsName stv" style="width: auto; display:inline" name="highlight"  id="highlight_{{item.name}}" key="{{item.name}}" value="{{item.value}}" size="5" />
-                                                       </div>
-                                                </template>
-                                            </label>
-                                        </div>
-                                    </template>
-
-                                    <div>
-
-                                        <label class="stv"><span>{{highlightsSO.group}}:</span></label>
-                                        <div style="padding-left: 15px">
-                                            <template is="dom-repeat" items="{{highlightsSO.groupValues}}" as="itemHighlightsSO">
-                                                <template is="dom-if" if="{{itemHighlightsSO.category}}">
-                                                    <div class="stv-control titleCategory" >
-                                                        <div style="display:inline-block; min-width:140px">
-                                                            <label class="stv" ><span>{{itemHighlightsSO.category}}</span></label>
-                                                        </div>
-                                                        <div on-click="selectAllHighlights"  style="display:inline">
-                                                            <i class="fa fa-check-square-o check" name="{{itemHighlightsSO.category}}"></i>
-                                                        </div>
-                                                        <div on-click="deselectAllHighlights" style="display:inline">
-                                                            <i class="fa fa-square-o check " name="{{itemHighlightsSO.category}}"></i>
-                                                        </div>
-                                                    </div>
-                                                    <template is="dom-repeat" items="{{itemHighlightsSO.ops}}" as="ops">
-                                                        <div style="padding-left: 15px">
-                                                            <label class="stv-control">
-                                                                <input type="checkbox" class="highlightSOName" name="{{itemHighlightsSO.category}}" id="{{ops.name}}" value="{{ops.name}}" checked="{{ops.checked}}" />
-                                                                <span style="width: 250px; word-break:break-all">{{ops.name}}</span>
-                                                            </label>
-                                                        </div>
-                                                    </template>
-                                                </template>
-
-                                                <template is="dom-if" if="{{!itemHighlightsSO.category}}">
-                                                    <template is="dom-repeat" items="{{itemHighlightsSO.ops}}" as="ops" >
-                                                        <label class="stv-control">
-                                                            <input type="checkbox" class="highlightSOName" name="highlightSOName" id="{{ops.name}}" value="{{ops.name}}"  checked="{{ops.checked}}" />
-                                                            <span>{{ops.name}}</span>
-                                                        </label>
-                                                    </template>
-                                                </template>
-
-                                            </template>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </stv-form-box>
-
                         <stv-filter-position id="filterPosition"></stv-filter-position>
                         <stv-form-box>
                             <div class="header horizontal layout flex">
@@ -359,7 +283,83 @@
                                 </div>
                             </div>
                         </stv-form-box>
+                        <stv-form-box>
+                            <div class="header horizontal layout flex">
+                                <div>Highlights</div>
+                                <div class="flex"></div>
+                                <div on-click="selectAllHighlights" >
+                                    <i class="fa fa-check-square-o check"></i>
+                                </div>
+                                <div on-click="deselectAllHighlights">
+                                    <i class="fa fa-square-o check"></i>
+                                </div>
+                            </div>
+                            <div class="container">
+                                <div id="highlights_div">
+                                    <template is="dom-repeat" items="{{highlights}}" as="highlightGroup">
+                                        <div>
+                                            <label class="stv-control">
+                                                <label class="stv"><span>{{highlightGroup.group}}:</span></label>
+                                                <template is="dom-repeat" items="{{highlightGroup.groupValues}}" as="item">
+                                                    <div style="padding-left: 15px; display:inline-block">
+                                                        <span style="display:inline-block; width: 60px">{{item.title}}:</span>
+                                                        <select class="highlightsOp stv stv-btn" style="display:inline-flex;"
+                                                                name="highlightOp" id="opc_{{item.name}}" key="{{item.name}}" value="{{item.op}}"  />
+                                                        <template is="dom-repeat" items="{{item.ops}}" as="itemOp">
+                                                            <option value="{{itemOp}}"> {{itemOp}} </option>
+                                                        </template>
+                                                        </select>
+                                                        <input type="text" class="highlightsName stv" style="width: auto; display:inline"
+                                                               name="highlight"  id="highlight_{{item.name}}" key="{{item.name}}" value="{{item.value}}" size="5"/>
+                                                    </div>
+                                                </template>
+                                            </label>
+                                        </div>
+                                    </template>
 
+                                    <div>
+
+                                        <label class="stv"><span>{{highlightsSO.group}}:</span></label>
+                                        <div style="padding-left: 15px">
+                                            <template is="dom-repeat" items="{{highlightsSO.groupValues}}" as="itemHighlightsSO">
+                                                <template is="dom-if" if="{{itemHighlightsSO.category}}">
+                                                    <div class="stv-control titleCategory" >
+                                                        <div style="display:inline-block; min-width:140px">
+                                                            <label class="stv" ><span>{{itemHighlightsSO.category}}</span></label>
+                                                        </div>
+                                                        <div on-click="selectAllHighlights"  style="display:inline">
+                                                            <i class="fa fa-check-square-o check" name="{{itemHighlightsSO.category}}"></i>
+                                                        </div>
+                                                        <div on-click="deselectAllHighlights" style="display:inline">
+                                                            <i class="fa fa-square-o check " name="{{itemHighlightsSO.category}}"></i>
+                                                        </div>
+                                                    </div>
+                                                    <template is="dom-repeat" items="{{itemHighlightsSO.ops}}" as="ops">
+                                                        <div style="padding-left: 15px">
+                                                            <label class="stv-control">
+                                                                <input type="checkbox" class="highlightSOName" name="{{itemHighlightsSO.category}}" id="{{ops.name}}" value="{{ops.name}}" checked="{{ops.checked}}" />
+                                                                <span style="width: 250px; word-break:break-all">{{ops.name}}</span>
+                                                            </label>
+                                                        </div>
+                                                    </template>
+                                                </template>
+
+                                                <template is="dom-if" if="{{!itemHighlightsSO.category}}">
+                                                    <template is="dom-repeat" items="{{itemHighlightsSO.ops}}" as="ops" >
+                                                        <label class="stv-control">
+                                                            <input type="checkbox" class="highlightSOName" name="highlightSOName" id="{{ops.name}}" value="{{ops.name}}"  checked="{{ops.checked}}" />
+                                                            <span>{{ops.name}}</span>
+                                                        </label>
+                                                    </template>
+                                                </template>
+
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </stv-form-box>
 
 
                     </div>
@@ -742,16 +742,23 @@
         },
 
         handleHighlights: function(){
+            var msj = "";
             var highlightsNameValue = this.$.highlights_div.querySelectorAll(".highlightsName");
             var highlightsOpValue = this.$.highlights_div.querySelectorAll(".highlightsOp");
 
             var  pos = 0;
             for (var i = 0; i < this.highlights.length && highlightsNameValue.length ; i++) {
                 for (var j = 0; j < this.highlights[i].groupValues.length ; j++) {
+                        if (highlightsNameValue[pos].value != "" && !/^-?\d{1,9}(\.\d{1,2})?$/.test(highlightsNameValue[pos].value))
+                            msj = msj + "Format incorrect " + this.highlights[i].groupValues[j].title + ": " + highlightsNameValue[pos].value + "\n";
                         this.highlights[i].groupValues[j].value = highlightsNameValue[pos].value;
                         this.highlights[i].groupValues[j].op = highlightsOpValue[pos].value;
                         pos++;
                 }
+            }
+            if (msj != ""){
+                alert(msj);
+                return
             }
 
             var highlightsSOChecked = this.$.highlights_div.querySelectorAll(".highlightSOName");
@@ -764,6 +771,7 @@
                 }
 
             }
+            return true;
         },
 
         highlightsDefault: function(){
@@ -1312,8 +1320,6 @@
 
             var me = this;
             var query = {};
-
-            this.handleHighlights();
             var regionValue = this.$.filterPosition.checkRegion();
             if (regionValue == -1) {
                 return;
@@ -1324,13 +1330,24 @@
 
             var regions = [];
             if (regionValue != null) {
-
                 regions = regionValue.split(",");
                 if (regions.length > this.maxLength && !this.isLogged) {
                     alert("The total size of all provided regions can't exceed " + this.maxLength + " positions");
                     return
                 }
             }
+
+
+            if (regionValue != null) {
+                regions = regionValue.split(",");
+                if (regions.length > this.maxLength && !this.isLogged) {
+                    alert("The total size of all provided regions can't exceed " + this.maxLength + " positions");
+                    return
+                }
+            }
+            if (!this.handleHighlights())
+                return
+
 
             var genes = [];
             if (geneValue != null) {
@@ -1575,6 +1592,7 @@
             }
 
         },
+
         urlChanged: function(neo, old) {
 
             var me = this;
