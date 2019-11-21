@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+
 /**
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
  */
@@ -191,10 +192,14 @@ public class CSVSQueryManager {
             }
 
             // Map with disease-technology-samples
-            Map<String, Integer> sampleCountMap = calculateSampleCount(diseaseIds, technologyIds);
+            Map<String, Integer> sampleCountMap = calculateSampleCount(diseaseIds, technologyIds, null);
+            Map<String, Integer> sampleCountMap_XX = calculateSampleCount(diseaseIds, technologyIds, "XX");
+            Map<String, Integer> sampleCountMap_XY = calculateSampleCount(diseaseIds, technologyIds, "XY");
             int sampleCount = calculateSampleCount(sampleCountMap);
+            int sampleCount_XX = calculateSampleCount(sampleCountMap_XX);
+            int sampleCount_XY = calculateSampleCount(sampleCountMap_XY);
 
-            DiseaseCount diseaseCount = calculateStats(res, diseaseIds, technologyIds, sampleCount, sampleCountMap);
+            DiseaseCount diseaseCount = calculateStats(res, diseaseIds, technologyIds, sampleCount, sampleCountMap, sampleCount_XX, sampleCountMap_XX, sampleCount_XY, sampleCountMap_XY);
 
             res.setStats(diseaseCount);
             res.setDiseases(null);
@@ -391,11 +396,15 @@ public class CSVSQueryManager {
         }
 
         // Map with disease-technology-samples
-        Map<String, Integer> sampleCountMap = calculateSampleCount(diseaseIds, technologyIds);
+        Map<String, Integer> sampleCountMap = calculateSampleCount(diseaseIds, technologyIds, null);
+        Map<String, Integer> sampleCountMap_XX = calculateSampleCount(diseaseIds, technologyIds, "XX");
+        Map<String, Integer> sampleCountMap_XY = calculateSampleCount(diseaseIds, technologyIds, "XY");
         int sampleCount = calculateSampleCount(sampleCountMap);
+        int sampleCount_XX = calculateSampleCount(sampleCountMap_XX);
+        int sampleCount_XY = calculateSampleCount(sampleCountMap_XY);
 
         for (Variant v : aux) {
-            v.setStats(calculateStats(v, diseaseIds, technologyIds, sampleCount, sampleCountMap));
+            v.setStats(calculateStats(v, diseaseIds, technologyIds, sampleCount, sampleCountMap, sampleCount_XX, sampleCountMap_XX, sampleCount_XY, sampleCountMap_XY));
             v.setDiseases(null);
             res.add(v);
         }
@@ -406,18 +415,18 @@ public class CSVSQueryManager {
     /**
      * Get saturation order by num variants new / num samples disease
      * @param regions
-     * @param diseaseIds
+     * @param diseaseIdsOriginal
      * @param technologyIds
      * @return
      */
-    public Map<Region, List<SaturationElement>> getSaturationOrderIncrement(List<Region> regions, List<Integer> diseaseIds, List<Integer> technologyIds) {
+    public Map<Region, List<SaturationElement>> getSaturationOrderIncrement(List<Region> regions, List<Integer> diseaseIdsOriginal, List<Integer> technologyIds) {
 
         Map<Region, List<SaturationElement>> map = new LinkedHashMap<>();
 
         List<DiseaseGroup> diseaseOrder = getAllDiseaseGroupsOrderedBySample();
 
         for (Region r : regions) {
-
+            List<Integer> diseaseIds = new ArrayList<> (diseaseIdsOriginal);
             List<String> chunkIds = getChunkIds(r);
 
             List<SaturationElement> list = new ArrayList<>();
@@ -445,7 +454,7 @@ public class CSVSQueryManager {
 
             List<Integer> diseaseView = new ArrayList<>();
 
-            do {
+            while (diseaseIds.size() > 0) {
                 // Order disease
                 Map<Integer, Long> mapDiseaseIncrement = new HashMap<>();
                 Map<Integer, Double> mapDiseaseIncrementSample = new HashMap<>();
@@ -453,11 +462,11 @@ public class CSVSQueryManager {
                 int sumAcum = list.stream().mapToInt(o -> o.getCount()).sum();
 
                 // Calculate the largest increase ( num variant increase / num samples disease) by disease, and select the largest
-               // int finalSumAcum = sumAcum;
                 diseaseIds.forEach(dId -> {
-                    if (! diseaseView.contains(dId)) {
+                   // if (! diseaseView.contains(dId)) {
                         // Num variant when add a disease                        
                         Query<Variant> queryDisease = this.datastore.createQuery(Variant.class);
+                        queryDisease.disableValidation();
                         queryDisease.and(and.toArray(new Criteria[and.size()]));
                         BasicDBList listDBObjectsDisease = new BasicDBList();
                         listDBObjectsDisease.add(new BasicDBObject("dgid", new BasicDBObject("$in", ListUtils.union(diseaseView, Arrays.asList(dId)))));
@@ -466,10 +475,10 @@ public class CSVSQueryManager {
                         }
                         queryDisease.filter("diseases elem", new BasicDBObject("$and", listDBObjectsDisease));
 
-
                         // Num samples when add a disease (genome+exome+panels)
                         int samplesUnionPanels = 0;
                         Query<File> querySampleDisease = this.datastore.createQuery(File.class);
+                        querySampleDisease.disableValidation();
                         querySampleDisease.filter("dgid in ",  Arrays.asList(dId));
                         if (technologyIds != null && !technologyIds.isEmpty()) {
                             querySampleDisease.filter("tid in ", technologyIds);
@@ -478,7 +487,7 @@ public class CSVSQueryManager {
                             Query<File> auxQueryPid = this.datastore.createQuery(org.babelomics.csvs.lib.models.File.class);
                             querySampleDisease.or(auxQueryPid.criteria("pid").in(panelsRegions),auxQueryPid.criteria("pid").doesNotExist() );
                         } else{
-                            querySampleDisease.filter("pid in", panelsRegions);
+                            querySampleDisease.criteria("pid").doesNotExist();
                         }
                         List<File> sampl = querySampleDisease.asList();
                         if (querySampleDisease != null && sampl.size() > 0)
@@ -486,11 +495,11 @@ public class CSVSQueryManager {
 
 
                         // Increment variantes / num. samples disease
-                        mapDiseaseIncrementSample.put(dId, ((double) queryDisease.countAll() - sumAcum)/ samplesUnionPanels);
+                        mapDiseaseIncrementSample.put(dId, samplesUnionPanels > 0 ? ((double) queryDisease.countAll() - sumAcum)/ samplesUnionPanels : 0);
                         mapDiseaseIncrement.put(dId, (queryDisease.countAll()- sumAcum));
                         mapDiseaseSample.put(dId, samplesUnionPanels);
 
-                    }
+                    //}
                 });
 
                 // Order
@@ -510,6 +519,7 @@ public class CSVSQueryManager {
 
                 if (dgFirst.isPresent()) {
                     diseaseView.add(key);
+                    diseaseIds.remove(key);
                     long increment = Integer.parseInt(String.valueOf(mapDiseaseIncrement.get(key))) ;
                     list.add(new SaturationElement(
                             key,
@@ -519,8 +529,7 @@ public class CSVSQueryManager {
 
                     ));
                 }
-
-            } while (diseaseView.size() != diseaseIds.size());
+            }
 
             map.put(r, list);
         }
@@ -554,11 +563,17 @@ public class CSVSQueryManager {
             }
         }
         // Map with disease-technology-samples
-        Map<String, Integer> sampleCountMap = calculateSampleCount(diseaseIds, technologyIds);
+
+        // Map with disease-technology-samples
+        Map<String, Integer> sampleCountMap = calculateSampleCount(diseaseIds, technologyIds, null);
+        Map<String, Integer> sampleCountMap_XX = calculateSampleCount(diseaseIds, technologyIds, "XX");
+        Map<String, Integer> sampleCountMap_XY = calculateSampleCount(diseaseIds, technologyIds, "XY");
         int sampleCount = calculateSampleCount(sampleCountMap);
+        int sampleCount_XX = calculateSampleCount(sampleCountMap_XX);
+        int sampleCount_XY = calculateSampleCount(sampleCountMap_XY);
 
         Iterable<Variant> aux = query.fetch();
-        Iterable<Variant> customIterable = new AllVariantsIterable(aux, diseaseIds, technologyIds, sampleCount, sampleCountMap);
+        Iterable<Variant> customIterable = new AllVariantsIterable(aux, diseaseIds, technologyIds, sampleCount, sampleCountMap, sampleCount_XX, sampleCountMap_XX, sampleCount_XY, sampleCountMap_XY);
 
         return customIterable;
     }
@@ -608,7 +623,7 @@ public class CSVSQueryManager {
      * @param technologyId
      * @return
      */
-    public Map<String, Integer> calculateSampleCount(List<Integer> diseaseId, List<Integer> technologyId) {
+    public Map<String, Integer> calculateSampleCount(List<Integer> diseaseId, List<Integer> technologyId, String gender) {
         BasicDBList listDBObjects = new BasicDBList();
 
         listDBObjects.add(new BasicDBObject("dgid", new BasicDBObject("$in", diseaseId)));
@@ -616,6 +631,8 @@ public class CSVSQueryManager {
 
 
         listDBObjects.add(new BasicDBObject("pid", new BasicDBObject("$eq", null)));
+        if (gender != null && !"".equals(gender))
+            listDBObjects.add(new BasicDBObject("gender", new BasicDBObject("$eq", gender)));
         BasicDBObject match = new BasicDBObject("$match", new BasicDBObject("$and", listDBObjects));
 
         BasicDBList listDBObjectsGroupSub = new BasicDBList();
@@ -740,7 +757,8 @@ public class CSVSQueryManager {
 
 
 
-    private DiseaseCount calculateStats(Variant v, List<Integer> diseaseId, List<Integer> technologyId, int sampleCount, Map<String, Integer> sampleCountMap) {
+    private DiseaseCount calculateStats(Variant v, List<Integer> diseaseId, List<Integer> technologyId, int sampleCount, Map<String, Integer> sampleCountMap,
+                                        int sampleCount_XX,  Map<String, Integer> sampleCountMap_XX, int sampleCount_XY, Map<String, Integer> sampleCountMap_XY) {
         DiseaseCount dc;
 
         int gt00 = 0;
@@ -748,8 +766,22 @@ public class CSVSQueryManager {
         int gt11 = 0;
         int gtmissing = 0;
         int sampleCountVariant = 0;
-        Map<String, Integer> sampleCountTemp = new HashMap<>(sampleCountMap);
+        Map<String, Integer> sampleCountTemp = new HashMap<>();
         boolean existsRegions = false;
+
+
+        if("X".equals(v.getChromosome())){
+            sampleCountTemp =  new HashMap<>(sampleCountMap_XX);
+            for(String key : sampleCountMap_XY.keySet()){
+                sampleCountTemp.put(key, sampleCountTemp.containsKey(key)? sampleCountTemp.get(key)+sampleCountMap_XY.get(key):sampleCountMap_XY.get(key));
+            }
+
+        } else {
+            if("Y".equals(v.getChromosome()))
+                sampleCountTemp =  new HashMap<>(sampleCountMap_XY);
+            else
+                sampleCountTemp =  new HashMap<>(sampleCountMap);
+        }
 
         // Variants by regions
         // System.out.println("\nCSVS (calculateStats): Variant= "+ v +  " Samples: "  + sampleCountTemp);
@@ -769,10 +801,15 @@ public class CSVSQueryManager {
                     switch (v.getChromosome()){
                         case "X":
                             // exists samples load in the panel XX + XY
-                            if (auxDs.getSumSampleRegionsXX() != 0 || auxDs.getSumSampleRegionsXX() != 0 ) {
+                            if (auxDs.getSumSampleRegionsXX() != 0 || auxDs.getSumSampleRegionsXY() != 0 ) {
                                 String key = auxDs.getDiseaseGroupId() + "-" + auxDs.getTechnologyId();
-                                int sum = sampleCountMap.containsKey(key) ? sampleCountMap.get(key) : 0;
+                                int sum = sampleCountMap_XX.containsKey(key) ? sampleCountMap.get(key) : 0;
+                                sum = sampleCountMap_XY.containsKey(key) ? sum + sampleCountMap_XY.get(key) : sum;
                                 sampleCountTemp.put(key, (auxDs.getSumSampleRegionsXX() != 0 ? auxDs.getSumSampleRegionsXX(): 0) + (auxDs.getSumSampleRegionsXY() != 0 ? auxDs.getSumSampleRegionsXY(): 0) + sum);
+                                existsRegions = true;
+                            } else{
+                                String key = auxDs.getDiseaseGroupId() + "-" + auxDs.getTechnologyId();
+                                sampleCountTemp.put(key, 0);
                                 existsRegions = true;
                             }
                             break;
@@ -780,7 +817,7 @@ public class CSVSQueryManager {
                             // exists samples load in the panel XY
                             if (auxDs.getSumSampleRegionsXY() != 0) {
                                 String key = auxDs.getDiseaseGroupId() + "-" + auxDs.getTechnologyId();
-                                int sum = sampleCountMap.containsKey(key) ? sampleCountMap.get(key) : 0;
+                                int sum = sampleCountMap_XY.containsKey(key) ? sampleCountMap_XY.get(key) : 0;
                                 sampleCountTemp.put(key, auxDs.getSumSampleRegionsXY() + sum);
                                 existsRegions = true;
                             }
@@ -800,8 +837,17 @@ public class CSVSQueryManager {
 
         if (existsRegions)
             sampleCountVariant = sampleCountTemp.values().stream().mapToInt(i -> i.intValue()).sum();
-        else
-            sampleCountVariant = sampleCount;
+        else {
+            if("X".equals(v.getChromosome())){
+                sampleCountVariant = sampleCount_XX + sampleCount_XY;
+            }else{
+                if("Y".equals(v.getChromosome()))
+                    sampleCountVariant = sampleCount_XY;
+                else
+                    sampleCountVariant = sampleCount;
+            }
+        }
+
 
         gt00 = sampleCountVariant - gt01 - gt11 - gtmissing;
 
@@ -887,14 +933,23 @@ public class CSVSQueryManager {
         private List<Integer> diseaseIds;
         private List<Integer> technologyIds;
         private int sampleCount;
+        private int sampleCount_XX;
+        private int sampleCount_XY;
         private Map<String, Integer> sampleCountMap;
+        private Map<String, Integer> sampleCountMap_XX;
+        private Map<String, Integer> sampleCountMap_XY;
 
-        public AllVariantsIterable(Iterable iterable, List<Integer> diseaseIds, List<Integer> technologyIds, int sampleCount, Map<String, Integer> sampleCountMap) {
+        public AllVariantsIterable(Iterable iterable, List<Integer> diseaseIds, List<Integer> technologyIds, int sampleCount, Map<String, Integer> sampleCountMap,
+                                   int sampleCount_XX, Map<String, Integer> sampleCountMap_XX, int sampleCount_XY, Map<String, Integer> sampleCountMap_XY) {
             this.iterable = iterable;
             this.diseaseIds = diseaseIds;
             this.technologyIds = technologyIds;
             this.sampleCount = sampleCount;
+            this.sampleCount_XX = sampleCount_XX;
+            this.sampleCount_XY = sampleCount_XY;
             this.sampleCountMap = sampleCountMap;
+            this.sampleCountMap_XX = sampleCountMap_XX;
+            this.sampleCountMap_XY = sampleCountMap_XY;
         }
 
         @Override
@@ -919,7 +974,7 @@ public class CSVSQueryManager {
             @Override
             public Variant next() {
                 Variant v = this.it.next();
-                v.setStats(calculateStats(v, diseaseIds, technologyIds, sampleCount, sampleCountMap));
+                v.setStats(calculateStats(v, diseaseIds, technologyIds, sampleCount, sampleCountMap, sampleCount_XX, sampleCountMap_XX, sampleCount_XY, sampleCountMap_XY));
                 v.setDiseases(null);
                 return v;
             }

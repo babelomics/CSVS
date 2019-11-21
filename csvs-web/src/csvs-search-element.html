@@ -60,15 +60,24 @@
             ;
         }
 
-        #diseases_div,
-        #technologies_div {
+        #diseases_div
+        {
             height: 300px;
             max-height: 300px;
             overflow-y: auto;
         }
 
         #technologies_div {
-            height: 150px;
+            height: 50px;
+            max-height: 50px;
+            width: 230px;
+            overflow-y: auto;
+        }
+        #highlights_div{
+            height: 300px;
+            max-height: 300px;
+            width: 230px;
+            overflow-y: auto;
         }
 
         #exportBtn {
@@ -189,6 +198,10 @@
             color: var(--accent-color);
             font-weight: bold;
         }
+
+        .titleCategory{
+            background-color: #f0f0f0;
+        }
     </style>
     <template>
         <div class="horizontal layout">
@@ -220,6 +233,82 @@
                             </div>
                             <div class="stv-btn stv-btn-shdw flex" on-click="submitForm">Search</div>
                         </div>
+
+                        <stv-form-box>
+                            <div class="header horizontal layout flex">
+                                <div>Highlights</div>
+                                <div class="flex"></div>
+                                <div on-click="selectAllHighlights" >
+                                    <i class="fa fa-check-square-o check"></i>
+                                </div>
+                                <div on-click="deselectAllHighlights">
+                                    <i class="fa fa-square-o check"></i>
+                                </div>
+                            </div>
+                            <div class="container">
+                                <div id="highlights_div">
+                                    <template is="dom-repeat" items="{{highlights}}" as="highlightGroup">
+                                        <div>
+                                            <label class="stv-control">
+                                                <label class="stv"><span>{{highlightGroup.group}}:</span></label>
+                                                <template is="dom-repeat" items="{{highlightGroup.groupValues}}" as="item">
+                                                       <div style="padding-left: 15px; display:inline-block">
+                                                            <span style="display:inline-block; width: 60px">{{item.title}}:</span>
+                                                            <select class="highlightsOp stv stv-btn" style="display:inline-flex;" name="highlightOp" id="opc_{{item.name}}" key="{{item.name}}" value="{{item.op}}"  />
+                                                                <template is="dom-repeat" items="{{item.ops}}" as="itemOp">
+                                                                    <option value="{{itemOp}}"> {{itemOp}} </option>
+                                                                </template>
+                                                            </select>
+                                                            <input type="text" class="highlightsName stv" style="width: auto; display:inline" name="highlight"  id="highlight_{{item.name}}" key="{{item.name}}" value="{{item.value}}" size="5" />
+                                                       </div>
+                                                </template>
+                                            </label>
+                                        </div>
+                                    </template>
+
+                                    <div>
+
+                                        <label class="stv"><span>{{highlightsSO.group}}:</span></label>
+                                        <div style="padding-left: 15px">
+                                            <template is="dom-repeat" items="{{highlightsSO.groupValues}}" as="itemHighlightsSO">
+                                                <template is="dom-if" if="{{itemHighlightsSO.category}}">
+                                                    <div class="stv-control titleCategory" >
+                                                        <div style="display:inline-block; min-width:140px">
+                                                            <label class="stv" ><span>{{itemHighlightsSO.category}}</span></label>
+                                                        </div>
+                                                        <div on-click="selectAllHighlights"  style="display:inline">
+                                                            <i class="fa fa-check-square-o check" name="{{itemHighlightsSO.category}}"></i>
+                                                        </div>
+                                                        <div on-click="deselectAllHighlights" style="display:inline">
+                                                            <i class="fa fa-square-o check " name="{{itemHighlightsSO.category}}"></i>
+                                                        </div>
+                                                    </div>
+                                                    <template is="dom-repeat" items="{{itemHighlightsSO.ops}}" as="ops">
+                                                        <div style="padding-left: 15px">
+                                                            <label class="stv-control">
+                                                                <input type="checkbox" class="highlightSOName" name="{{itemHighlightsSO.category}}" id="{{ops.name}}" value="{{ops.name}}" checked="{{ops.checked}}" />
+                                                                <span style="width: 250px; word-break:break-all">{{ops.name}}</span>
+                                                            </label>
+                                                        </div>
+                                                    </template>
+                                                </template>
+
+                                                <template is="dom-if" if="{{!itemHighlightsSO.category}}">
+                                                    <template is="dom-repeat" items="{{itemHighlightsSO.ops}}" as="ops" >
+                                                        <label class="stv-control">
+                                                            <input type="checkbox" class="highlightSOName" name="highlightSOName" id="{{ops.name}}" value="{{ops.name}}"  checked="{{ops.checked}}" />
+                                                            <span>{{ops.name}}</span>
+                                                        </label>
+                                                    </template>
+                                                </template>
+
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </stv-form-box>
 
                         <stv-filter-position id="filterPosition"></stv-filter-position>
                         <stv-form-box>
@@ -270,6 +359,9 @@
                                 </div>
                             </div>
                         </stv-form-box>
+
+
+
                     </div>
                 </form>
             </div>
@@ -324,6 +416,109 @@
                 value: function() {
                     return [];
                 }
+            },
+            highlights: {
+                type: Array,
+                value: function () {
+                    return [{
+                        group: "Deleteriousness",
+                        groupValues: [
+                            {
+                                name: "sift",
+                                title: "SIFT",
+                                op: "<",
+                                value: "0.05",
+                                defaultValue: "0.05",
+                                defaultOp: "<",
+                                ops :["<","<="]
+                            },
+                            {
+                                name: "polyphen",
+                                title: "Polyphen",
+                                op: ">",
+                                value: "0.91",
+                                defaultValue: "0.91",
+                                defaultOp: ">",
+                                ops :[">", ">="]
+                            },
+                            {
+                                name: "cadd",
+                                title: "CADD",
+                                op: ">",
+                                value: "15",
+                                defaultValue: "15",
+                                defaultOp: ">",
+                                ops :[">",">="]
+                            }
+                        ]
+                    },
+                        {
+                            group: "Conservacion",
+                            groupValues: [
+                                {
+                                    name: "gerp",
+                                    title: "GERP",
+                                    op: ">",
+                                    value: "2",
+                                    defaultValue: "2",
+                                    defaultOp: ">",
+                                    ops :[">", ">="]
+                                }]
+                        },
+                    ]
+                }
+            },
+            highlightsSO: {
+                type: Object,
+                value: function() {
+                    return {
+                            group:"SO terms",
+                            name: "ct",
+                            values:[],
+                            groupValues:[
+                                { category: "Integenic", ops: [ 	{ name: "upstream_gene_variant", impact: "MODIFIER"},
+                                    { name: "2KB_upstream_variant", impact: "MODIFIER"},
+                                    { name: "downstream_gene_variant", impact: "MODIFIER"},
+                                    { name: "2KB_downstream_variant", impact: "MODIFIER"},
+                                    { name: "intergenic_variant", impact: "MODIFIER"},
+                                    { name: "downstream_variant", impact: "MODIFIER"}] },
+                                { category: "Regulatory", ops: [{ name: "mature_miRNA_variant", impact: "MODIFIER"},
+                                    { name: "regulatory_region_ablation", impact: "MODIFIER"},
+                                    { name: "regulatory_region_amplification", impact: "MODIFIER"},
+                                    { name: "regulatory_region_variant", impact: "MODIFIER"},
+                                    { name: "TF_binding_site_variant", impact: "MODIFIER"},
+                                    { name: "TFBS_ablation",	impact: "MODIFIER"},
+                                    { name: "TFBS_amplification",	impact: "MODIFIER" }] },
+                                { category: "Coding", ops: [ { name: "coding_sequence_variant", impact: "MODIFIER"},
+                                    { name: "feature_elongation",	impact: "MODIFIER"},
+                                    { name: "feature_truncation",	impact: "MODIFIER" },
+                                    { name: "frameshift_variant",	impact: "HIGH" , checked: true, defaultChecked: true},
+                                    { name: "incomplete_terminal_codon_variant",	impact: "LOW"},
+                                    { name: "inframe_deletion", impact: "MODERATE"},
+                                    { name: "inframe_insertion",	impact: "MODERATE"},
+                                    { name: "missense_variant", impact: "MODERATE" },
+                                    { name: "NMD_transcript_variant", impact: "MODIFIER"},
+                                    { name: "protein_altering_variant", impact: "MODERATE"},
+                                    { name: "synonymous_variant",	impact: "LOW"},
+                                    { name: "start_lost", impact: "HIGH", checked: true, defaultChecked: true},
+                                    { name: "stop_retained_variant", impact: "LOW" },
+                                    { name: "stop_gained", impact: "HIGH", checked: true, defaultChecked: true},
+                                    { name: "stop_lost", impact: "HIGH", checked: true, defaultChecked: true},
+                                    { name: "stop_retained_variant", impact: "LOW"},
+                                    { name: "start_retained_variant",	impact: "LOW"}] },
+                                { category: "No coding", ops: [{ name: "3_prime_UTR_variant", impact: "MODIFIER"},
+                                    { name: "5_prime_UTR_variant", impact: "MODIFIER"},
+                                    { name: "intron_variant", impact: "MODIFIER"},
+                                    { name: "non_coding_transcript_exon_variant", impact: "MODIFIER"},
+                                    { name: "non_coding_transcript_variant", impact: "MODIFIER"}] },
+                                { category: "Slice", ops: [ { name: "splice_acceptor_variant", impact: "HIGH", checked: true, defaultChecked: true},
+                                    { name: "splice_donor_variant", impact: "HIGH", checked: true, defaultChecked: true},
+                                    { name: "splice_region_variant", impact: "LOW"}]},
+                                { ops: [ {name: "transcript_ablation" , impact: "HIGH", checked: true, defaultChecked: true}]},
+                                { ops: [ {name: "transcript_amplification" , impact: "HIGH", checked: true, defaultChecked: true}]},
+                            ]
+                        }
+                },
             },
             regionValue: {
                 type: String,
@@ -485,6 +680,119 @@
         created: function() {
             this.selectedSpecies = DEFAULT_SPECIES;
         },
+
+        _getStyleFormula: function(row, field) {
+            var style = {};
+
+            var obj = null;
+            if (row != undefined && row != null) {
+                for (var i = 0; i < this.highlights.length && obj == null; i++) {
+                    obj = !!this.highlights[i].groupValues && this.highlights[i].groupValues.find(h  => h.name === field);
+                }
+
+                if (obj != null && obj != undefined && !!row && !!obj.value) {
+                    console.log(field, row + " " + obj.op + " " + obj.value, eval(row + " " + obj.op + " " + obj.value))
+                    if (eval(row + " " + obj.op + " " + obj.value)) {
+                        style.color = '#fff';
+                        style.backgroundColor = '#f47070';
+                    }
+                }
+            }
+            return style;
+        },
+
+        getColor: function(impact){
+
+            switch(impact){
+                case "HIGH":
+                    return  "red";
+
+                case "MODERATE":
+                    return "#ED760E";
+
+                case "LOW":
+                    return "blue";
+
+                case "MODIFIER":
+                    return "green";
+
+
+                default:
+                    return "grey";
+            }
+        },
+
+        _getStyleFormulaConsecuence: function(row, field){
+            var style = {};
+
+            var obj = null;
+
+            for (var i = 0; i < this.highlightsSO.groupValues.length && obj == null ; i++) {
+                if ("category" in this.highlightsSO.groupValues[i]) {
+                    obj = this.highlightsSO.groupValues[i].ops.find(h => h.name === row && h.checked);
+                } else {
+                     obj = this.highlightsSO.groupValues[i].ops.find(h => h.name === row && h.checked);
+                }
+            }
+
+            if (obj != null && obj!= undefined && !!row){
+                style.color = this.getColor(obj.impact);
+            }
+            return style;
+        },
+
+        handleHighlights: function(){
+            var highlightsNameValue = this.$.highlights_div.querySelectorAll(".highlightsName");
+            var highlightsOpValue = this.$.highlights_div.querySelectorAll(".highlightsOp");
+
+            var  pos = 0;
+            for (var i = 0; i < this.highlights.length && highlightsNameValue.length ; i++) {
+                for (var j = 0; j < this.highlights[i].groupValues.length ; j++) {
+                        this.highlights[i].groupValues[j].value = highlightsNameValue[pos].value;
+                        this.highlights[i].groupValues[j].op = highlightsOpValue[pos].value;
+                        pos++;
+                }
+            }
+
+            var highlightsSOChecked = this.$.highlights_div.querySelectorAll(".highlightSOName");
+
+            var pos = 0
+            for (var i = 0; i < this.highlightsSO.groupValues.length && highlightsSOChecked.length; i++) {
+                for (var j = 0; j < this.highlightsSO.groupValues[i].ops.length ; j++) {
+                    this.highlightsSO.groupValues[i].ops[j].checked = highlightsSOChecked[pos].checked;
+                    pos++;
+                }
+
+            }
+        },
+
+        highlightsDefault: function(){
+            var highlightsNameValue = this.$.highlights_div.querySelectorAll(".highlightsName");
+            var highlightsOpValue = this.$.highlights_div.querySelectorAll(".highlightsOp");
+
+            var  pos = 0;
+            for (var i = 0; i < this.highlights.length ; i++) {
+                for (var j = 0; j < this.highlights[i].groupValues.length ; j++) {
+                    highlightsNameValue[pos].value = this.highlights[i].groupValues[j].defaultValue;
+                    highlightsOpValue[pos].value = this.highlights[i].groupValues[j].defaultOp;
+                    pos++;
+                }
+            }
+
+            var highlightsSOChecked = this.$.highlights_div.querySelectorAll(".highlightSOName");
+
+            var pos = 0
+            for (var i = 0; i < this.highlightsSO.groupValues.length ; i++) {
+                for (var j = 0; j < this.highlightsSO.groupValues[i].ops.length ; j++) {
+                    highlightsSOChecked[pos].checked = this.highlightsSO.groupValues[i].ops[j].defaultChecked;
+                    console.log(this.highlightsSO.groupValues[i].ops[j].defaultChecked, this.highlightsSO.groupValues[i].ops[j].name);
+                    pos++;
+                }
+
+            }
+
+        },
+
         ready: function() {
             if (localStorage.csvs_filter_history) {
                 this.historyFilters = JSON.parse(localStorage.csvs_filter_history);
@@ -687,7 +995,7 @@
                                 } else {
                                     return ".";
                                 }
-                            }
+                            },
                         }, {
                             name: "maf1000G_PHASE_3_AMR",
                             title: "AME",
@@ -699,7 +1007,8 @@
                                 } else {
                                     return ".";
                                 }
-                            }
+                            },
+
                         }, {
                             name: "maf1000G_PHASE_3_SAS",
                             title: "South ASI",
@@ -746,7 +1055,7 @@
                                 } else {
                                     return ".";
                                 }
-                            }
+                            },
                         } ]
 
                     }, {
@@ -804,6 +1113,9 @@
                         } else {
                             return ".";
                         }
+                    },
+                    styleFormula: function(row) {
+                        return me._getStyleFormula(row.sift, 'sift')
                     }
                 }, {
                     name: 'polyphen',
@@ -815,10 +1127,14 @@
                         } else {
                             return ".";
                         }
+                    },
+                    styleFormula: function(row) {
+                        return me._getStyleFormula(row.polyphen, 'polyphen')
                     }
                 }, {
                     name: 'phastcons',
                     title: 'PhastCons',
+                    visible: false,
                     width: 60,
                     formula: function(row) {
                         if (row.phastcons !== null  && typeof row.phastcons !== 'undefined') {
@@ -826,10 +1142,11 @@
                         } else {
                             return ".";
                         }
-                    }
+                    },
                 }, {
                     name: 'phylop',
                     title: 'phyloP',
+                    visible: false,
                     width: 50,
                     formula: function(row) {
                         if (row.phylop !== null  && typeof row.phylop !== 'undefined') {
@@ -848,6 +1165,9 @@
                         } else {
                             return ".";
                         }
+                    },
+                    styleFormula: function(row) {
+                        return me._getStyleFormula(row.gerp,"gerp")
                     }
                 }, {
                     name: 'cadd',
@@ -859,6 +1179,9 @@
                         } else {
                             return ".";
                         }
+                    },
+                    styleFormula: function(row) {
+                        return me._getStyleFormula(row.cadd, 'cadd')
                     }
                 }, {
                     name: 'ct',
@@ -866,6 +1189,9 @@
                     width: 150,
                     formula: function (row) {
                         return row.annots.displayConsequenceType;
+                    },
+                    styleFormula: function(row) {
+                        return me._getStyleFormulaConsecuence(row.annots.displayConsequenceType, 'ct')
                     }
                 }, {
                     name: 'phenotypes',
@@ -987,7 +1313,7 @@
             var me = this;
             var query = {};
 
-
+            this.handleHighlights();
             var regionValue = this.$.filterPosition.checkRegion();
             if (regionValue == -1) {
                 return;
@@ -1121,6 +1447,11 @@
                         }
                     });
 
+                    // url == formURl no search but reload data
+                    if (url == this.formURL){
+                        this.urlChanged(url, this.formURL);
+                    }
+
                     this.formURL = url;
                 }
             }
@@ -1142,7 +1473,7 @@
 
             this.$.filter_form.reset();
             this.$.filterPosition.clear();
-
+            this.highlightsDefault();
         },
         loadForm: function(hf) {
             var filterName = [];
@@ -1211,6 +1542,15 @@
             }
 
         },
+        selectAllHighlights: function(e, d, s) {
+            var checkboxes = this.$.filter_form.getElementsByClassName("highlightSOName");
+            for (var i = 0; i < checkboxes.length; i++) {
+                var elem = checkboxes[i];
+                if (e.target.name == undefined ||  e.target.name != undefined && elem.name == e.target.name )
+                    elem.checked = true;
+            }
+            e.stopPropagation();
+        },
         deselectAllDiseases: function(e, d, s) {
             var checkboxes = this.$.filter_form.getElementsByClassName("diseaseName");
             for (var i = 0; i < checkboxes.length; i++) {
@@ -1224,6 +1564,16 @@
                 var elem = checkboxes[i];
                 elem.checked = false;
             }
+        },
+
+        deselectAllHighlights: function(e, d, s) {
+            var checkboxes = this.$.filter_form.getElementsByClassName("highlightSOName");
+            for (var i = 0; i < checkboxes.length; i++) {
+                var elem = checkboxes[i];
+                if ( e.target.name == undefined ||  e.target.name != undefined && elem.name == e.target.name )
+                    elem.checked = false;
+            }
+
         },
         urlChanged: function(neo, old) {
 
@@ -1751,7 +2101,7 @@
                     var allZero = true;
 
                     for (var i = 0; i < auxTable.length && allZero; i++) {
-                        if (auxTable[i][j].count != 0) {
+                        if (auxTable[i][j] != undefined &&  auxTable[i][j].count != 0) {
                             allZero = false;
                         }
 
@@ -1858,6 +2208,7 @@
 
 
             }
+
             me.$.tvSaturation.dataSaturation=chartData;
 
             var chart = new Highcharts.Chart({

@@ -151,10 +151,10 @@ public class CSVSMain {
             String chromGender = c.chromGender;
 
             if(c.filter){
-                if(c.panelFile == null) {
+                /*if(c.panelFile == null) {
                     System.out.println("Add param --panelFile");
                     System.exit(0);
-                }
+                }*/
                 CSVSUtil.filterFile(inputFile, panelFile, chromGender, datastore);
             } else {
 

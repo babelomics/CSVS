@@ -158,8 +158,7 @@ public class CSVSVariantVcfReader implements VariantReader {
 
                             //Create new a line by alternate alleles
                             variants = splitLines(fields, alternateAlleles, chromGender, cParRegions);
-                            // } else
-                            //   variants = factory.create(source, cParRegions ? checkParRegions(fields) : line);
+                           //    variants = factory.create(source, cParRegions ? checkParRegions(fields) : line);
 
                             isReference = false;
                         }else{
@@ -345,7 +344,6 @@ public class CSVSVariantVcfReader implements VariantReader {
                         }
                         searchLine = searchReader.readLine();
                     }
-
                     if (!find)
                         fieldGT[0] = "0/1";
 

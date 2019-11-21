@@ -526,7 +526,6 @@ public class CSVSUtil {
         VariantReader reader = new CSVSVariantVcfReader(source, input.toAbsolutePath().toString(), replaceAF, chromGender, parRegions);
         VariantWriter writer = new CSVSVariantCountsCSVDataWriter(output.toAbsolutePath().toString());
 
-
         List<Task<org.opencb.biodata.models.variant.Variant>> taskList = new SortedList<>();
         List<VariantWriter> writers = new ArrayList<>();
 
@@ -779,12 +778,12 @@ public class CSVSUtil {
 
                                                 // Case XX
                                                 if ("X".equals(c)) {
-                                                    if (calculateSampleRegions.get(d + "_" + t+ "_XX").containsKey(cursorStart.get("pid")))
+                                                    if (calculateSampleRegions.get(d + "_" + t+ "_XX") != null && calculateSampleRegions.get(d + "_" + t+ "_XX").containsKey(cursorStart.get("pid")))
                                                         reg_pidXX.put(cursorStart.get("pid"), calculateSampleRegions.get(d + "_" + t + "_XX").get(cursorStart.get("pid")));
                                                     else
                                                         reg_pidXX.put(cursorStart.get("pid"), 0);
 
-                                                    if (calculateSampleRegions.get(d + "_" + t+ "_XY").containsKey(cursorStart.get("pid")))
+                                                    if (calculateSampleRegions.get(d + "_" + t+ "_XY") != null && calculateSampleRegions.get(d + "_" + t+ "_XY").containsKey(cursorStart.get("pid")))
                                                         reg_pidXY.put(cursorStart.get("pid"), calculateSampleRegions.get(d + "_" + t + "_XY").get(cursorStart.get("pid")));
                                                     else
                                                         reg_pidXY.put(cursorStart.get("pid"), 0);
@@ -792,7 +791,7 @@ public class CSVSUtil {
 
                                                 // Case XY
                                                 if ("Y".equals(c)) {
-                                                    if (calculateSampleRegions.get(d + "_" + t+ "_XY").containsKey(cursorStart.get("pid")))
+                                                    if (calculateSampleRegions.get(d + "_" + t+ "_XY") != null && calculateSampleRegions.get(d + "_" + t+ "_XY").containsKey(cursorStart.get("pid")))
                                                         reg_pidXY.put(cursorStart.get("pid"), calculateSampleRegions.get(d + "_" + t + "_XY").get(cursorStart.get("pid")));
                                                     else
                                                         reg_pidXY.put(cursorStart.get("pid"), 0);
@@ -982,30 +981,29 @@ public class CSVSUtil {
      * @throws NoSuchAlgorithmException
      */
     public static void filterFile(Path variantsPath, Path panelFilePath, String chromGender, Datastore datastore  ) throws IOException, NoSuchAlgorithmException {
-        if (panelFilePath != null){
-            Panel p = loadPanel(datastore, panelFilePath);
-            List<Region> regions = new ArrayList<>();
-            if(p != null)
-                regions = datastore.createQuery(Region.class).field("pid").equal((ObjectId) p.getId()).asList();
+        Panel p = panelFilePath != null ? loadPanel(datastore, panelFilePath) : null;
+        List<Region> regions = new ArrayList<>();
+        if(p != null)
+            regions = datastore.createQuery(Region.class).field("pid").equal((ObjectId) p.getId()).asList();
 
-            DataReader<Variant> readerFilter = new CSVSVariantFilterCSVDataReader(variantsPath.toAbsolutePath().toString(), p, regions, chromGender);
-            List<DataWriter<Variant>> writersRegions = new ArrayList<>();
+        DataReader<Variant> readerFilter = new CSVSVariantFilterCSVDataReader(variantsPath.toAbsolutePath().toString(), p, regions, chromGender);
+        List<DataWriter<Variant>> writersRegions = new ArrayList<>();
 
-            Runner<Variant> pvsRunner = new CSVSRunner(readerFilter, writersRegions,  new SortedList<>(), 100);
-            System.out.println("Filter variant...");
-            pvsRunner.run();
-            System.out.println("Variant Filter!.");
-            System.out.println("Generated file: " + "Filter_" + variantsPath.getFileName() );
+        Runner<Variant> pvsRunner = new CSVSRunner(readerFilter, writersRegions,  new SortedList<>(), 100);
+        System.out.println("Filter variant...");
+        pvsRunner.run();
+        System.out.println("Variant Filter!.");
+        System.out.println("Generated file: " + "Filter_" + variantsPath.getFileName() );
 
-            // Delete panel and regions if not used
+        // Delete panel and regions if not used
+        if (p!= null) {
             long numUsed = datastore.createQuery(File.class).field("pid").equal(p.getId()).countAll();
-            if (numUsed == 0 ) {
+            if (numUsed == 0) {
                 for (Region r : regions)
                     datastore.delete(r);
                 datastore.delete(p);
             }
         }
-
     }
 
 }
