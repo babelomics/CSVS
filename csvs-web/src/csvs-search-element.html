@@ -749,7 +749,7 @@
             var  pos = 0;
             for (var i = 0; i < this.highlights.length && highlightsNameValue.length ; i++) {
                 for (var j = 0; j < this.highlights[i].groupValues.length ; j++) {
-                        if (highlightsNameValue[pos].value != "" && !/^-?\d{1,9}(\.\d{1,2})?$/.test(highlightsNameValue[pos].value))
+                        if (highlightsNameValue[pos].value!/^-?\d{1,9}(\.\d{1,2})?$/.test(highlightsNameValue[pos].value))
                             msj = msj + "Format incorrect " + this.highlights[i].groupValues[j].title + ": " + highlightsNameValue[pos].value + "\n";
                         this.highlights[i].groupValues[j].value = highlightsNameValue[pos].value;
                         this.highlights[i].groupValues[j].op = highlightsOpValue[pos].value;
@@ -1336,15 +1336,7 @@
                     return
                 }
             }
-
-
-            if (regionValue != null) {
-                regions = regionValue.split(",");
-                if (regions.length > this.maxLength && !this.isLogged) {
-                    alert("The total size of all provided regions can't exceed " + this.maxLength + " positions");
-                    return
-                }
-            }
+            
             if (!this.handleHighlights())
                 return
 
