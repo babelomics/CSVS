@@ -283,7 +283,7 @@
                                 </div>
                             </div>
                         </stv-form-box>
-                        <stv-form-box>
+                        <stv-form-box hidden$="{{saturation}}">
                             <div class="header horizontal layout flex">
                                 <div>Highlights</div>
                                 <div class="flex"></div>
@@ -476,44 +476,44 @@
                             name: "ct",
                             values:[],
                             groupValues:[
-                                { category: "Integenic", ops: [ 	{ name: "upstream_gene_variant", impact: "MODIFIER"},
-                                    { name: "2KB_upstream_variant", impact: "MODIFIER"},
-                                    { name: "downstream_gene_variant", impact: "MODIFIER"},
-                                    { name: "2KB_downstream_variant", impact: "MODIFIER"},
-                                    { name: "intergenic_variant", impact: "MODIFIER"},
-                                    { name: "downstream_variant", impact: "MODIFIER"}] },
-                                { category: "Regulatory", ops: [{ name: "mature_miRNA_variant", impact: "MODIFIER"},
-                                    { name: "regulatory_region_ablation", impact: "MODIFIER"},
-                                    { name: "regulatory_region_amplification", impact: "MODIFIER"},
-                                    { name: "regulatory_region_variant", impact: "MODIFIER"},
-                                    { name: "TF_binding_site_variant", impact: "MODIFIER"},
-                                    { name: "TFBS_ablation",	impact: "MODIFIER"},
-                                    { name: "TFBS_amplification",	impact: "MODIFIER" }] },
-                                { category: "Coding", ops: [ { name: "coding_sequence_variant", impact: "MODIFIER"},
-                                    { name: "feature_elongation",	impact: "MODIFIER"},
-                                    { name: "feature_truncation",	impact: "MODIFIER" },
+                                { category: "Integenic", ops: [ 	{ name: "upstream_gene_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "2KB_upstream_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "downstream_gene_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "2KB_downstream_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "intergenic_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "downstream_variant", impact: "MODIFIER", checked: true, defaultChecked: true}] },
+                                { category: "Regulatory", ops: [{ name: "mature_miRNA_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "regulatory_region_ablation", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "regulatory_region_amplification", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "regulatory_region_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "TF_binding_site_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "TFBS_ablation",	impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "TFBS_amplification",	impact: "MODIFIER", checked: true, defaultChecked: true }] },
+                                { category: "Coding", ops: [ { name: "coding_sequence_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "feature_elongation",	impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "feature_truncation",	impact: "MODIFIER",checked: true,  defaultChecked: true },
                                     { name: "frameshift_variant",	impact: "HIGH" , checked: true, defaultChecked: true},
-                                    { name: "incomplete_terminal_codon_variant",	impact: "LOW"},
-                                    { name: "inframe_deletion", impact: "MODERATE"},
-                                    { name: "inframe_insertion",	impact: "MODERATE"},
-                                    { name: "missense_variant", impact: "MODERATE" },
-                                    { name: "NMD_transcript_variant", impact: "MODIFIER"},
-                                    { name: "protein_altering_variant", impact: "MODERATE"},
-                                    { name: "synonymous_variant",	impact: "LOW"},
+                                    { name: "incomplete_terminal_codon_variant",	impact: "LOW", checked: true, defaultChecked: true},
+                                    { name: "inframe_deletion", impact: "MODERATE", checked: true, defaultChecked: true},
+                                    { name: "inframe_insertion",	impact: "MODERATE", checked: true, defaultChecked: true},
+                                    { name: "missense_variant", impact: "MODERATE", checked: true, defaultChecked: true },
+                                    { name: "NMD_transcript_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "protein_altering_variant", impact: "MODERATE", checked: true, defaultChecked: true},
+                                    { name: "synonymous_variant",	impact: "LOW", checked: true, defaultChecked: true},
                                     { name: "start_lost", impact: "HIGH", checked: true, defaultChecked: true},
-                                    { name: "stop_retained_variant", impact: "LOW" },
+                                    { name: "stop_retained_variant", impact: "LOW", checked: true, defaultChecked: true },
                                     { name: "stop_gained", impact: "HIGH", checked: true, defaultChecked: true},
                                     { name: "stop_lost", impact: "HIGH", checked: true, defaultChecked: true},
-                                    { name: "stop_retained_variant", impact: "LOW"},
-                                    { name: "start_retained_variant",	impact: "LOW"}] },
-                                { category: "No coding", ops: [{ name: "3_prime_UTR_variant", impact: "MODIFIER"},
-                                    { name: "5_prime_UTR_variant", impact: "MODIFIER"},
-                                    { name: "intron_variant", impact: "MODIFIER"},
-                                    { name: "non_coding_transcript_exon_variant", impact: "MODIFIER"},
-                                    { name: "non_coding_transcript_variant", impact: "MODIFIER"}] },
+                                    { name: "stop_retained_variant", impact: "LOW", checked: true, defaultChecked: true},
+                                    { name: "start_retained_variant",	impact: "LOW", checked: true, defaultChecked: true}] },
+                                { category: "No coding", ops: [{ name: "3_prime_UTR_variant", impact: "MODIFIER",checked: true, defaultChecked: true},
+                                    { name: "5_prime_UTR_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "intron_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "non_coding_transcript_exon_variant", impact: "MODIFIER",checked: true, defaultChecked: true},
+                                    { name: "non_coding_transcript_variant", impact: "MODIFIER", checked: true, defaultChecked: true}] },
                                 { category: "Slice", ops: [ { name: "splice_acceptor_variant", impact: "HIGH", checked: true, defaultChecked: true},
                                     { name: "splice_donor_variant", impact: "HIGH", checked: true, defaultChecked: true},
-                                    { name: "splice_region_variant", impact: "LOW"}]},
+                                    { name: "splice_region_variant", impact: "LOW", checked: true, defaultChecked: true}]},
                                 { ops: [ {name: "transcript_ablation" , impact: "HIGH", checked: true, defaultChecked: true}]},
                                 { ops: [ {name: "transcript_amplification" , impact: "HIGH", checked: true, defaultChecked: true}]},
                             ]
@@ -757,7 +757,7 @@
                 }
             }
             if (msj != ""){
-                alert(msj);
+                alert("Highlights: \n" + msj);
                 return
             }
 
@@ -1337,7 +1337,7 @@
                 }
             }
 
-            if (!this.handleHighlights())
+            if (!this.saturation && !this.handleHighlights())
                 return
 
 
