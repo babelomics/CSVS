@@ -71,26 +71,37 @@
             padding-bottom: 10px;
             text-shadow: 3px 3px 5px #444;
         }
+        div.disabled {
+            color: #CCC;
+            opacity: 0.5;
+        }
 
     </style>
     <template>
         <div class="main">
             <br>
-
             <div class="horizontal layout">
-                <div style="text-align: right; width: 300px;">
-                    <img src='../images/logo-fundacion_3.png' style="width:220px; background-color: white; border-radius: 22px">
+                <div style="text-align: center; width: 300px;">
+                    <br>
+                    <br>
+                    <div class="megatitle">{{acronym}}</div>
                 </div>
                 <div class="vertical layout center" style="text-align: left; margin-left: 30px;">
                     <br>
-                    <br>
+                    <template is="dom-if" if="{{is-not-accept}}">
+                        <div id="atcId" class="megabutton disabled" on-click="handleMsjAccept">
+                            <i class="fa fa-sign-in">&nbsp;&nbsp;&nbsp;Start</i>
+                        </div>
+                    </template>
+                    <template is="dom-if" if="{{is-accept}}">
+                        <div class="megabutton" on-click="tryItNow">
+                            <i class="fa fa-sign-in">&nbsp;&nbsp;&nbsp;Start</i>
+                        </div>
+                    </template>
 
-                    <div class="megatitle">{{acronym}}</div>
-                    <br>
-
-                    <div class="megabutton" on-click="tryItNow">
-                        <i class="fa fa-sign-in">&nbsp;&nbsp;&nbsp;Start</i>
-                    </div>
+                    <label class="paragraph2">
+                        <csvs-terms-conditions atc="{{atc}}"></csvs-terms-conditions>
+                    </label>
                 </div>
             </div>
 
@@ -146,9 +157,40 @@
         },
         tryItNow: function () {
             this.fire('try');
+        },
+        handleMsjAccept: function(){
+            this.fire('msj-accept');
         }
     });
 </script>
+
+<dom-module id="csvs-terms-conditions">
+    <template>
+        <div title="Check here to indicate that you have read agree with the terms and conditions of use of this data.">
+            <input  on-click="handleAcceptTC" type="checkbox"  name="acceptTermsCond" id="acceptTermsCond" value="true" checked="{{atc}}"/>
+            <label for="acceptTermsCond">
+                I agree the <a class="csvs-downloads-element" href="/downloads/GPVSTermsAndConditions_use.pdf" alt="Terms and conditions of use"> terms and conditions in order to use this data</a>.
+            </label><br>
+        </div>
+    </template>
+
+    <script>
+        Polymer({
+            is: "csvs-terms-conditions",
+            properties: {
+                acceptTermsCond: {
+                    type: Boolean
+                },
+            },
+            ready: function() {
+            },
+            handleAcceptTC: function(e) {
+                this.fire('checket-accept', this.$.acceptTermsCond.checked);
+            }
+        });
+    </script>
+</dom-module>
+
 <dom-module id="csvs-samples">
     <template>{{samples}}
     </template>
@@ -160,7 +202,7 @@
                 samples: {
                     type: Number,
                     value: 0
-                }
+                },
             },
             ready: function() {
                 this.getSamples();

@@ -3,6 +3,7 @@
 
 <script src="bower_components/stevia-elements/src/manager/stevia-manager.js"></script>
 <script src="bower_components/stevia-elements/src/utils/utils.js"></script>
+<link rel="import" href="bower_components/stevia-elements/src/stv-dialog/stv-dialog.html">
 
 
 
@@ -66,6 +67,8 @@
         stv-footer {
             position: absolute;
             bottom: 0;
+            height: auto;
+            padding-bottom: 1.5rem;
         }
 
         csvs-search-element,
@@ -98,11 +101,18 @@
             min-width: 600px;
             min-height: 400px;
         }
+
+        div.disabled {
+            color: #CCC;
+            opacity: 0.5;
+        }
     </style>
     <template>
 
         <div class="content" menu-option="home">
-            <csvs-home on-try="handleTry" title="{{title}}" acronym="{{acronym}}" phenotype="{{phenotype}}"></csvs-home>
+            <csvs-home on-try="handleTry" title="{{title}}" acronym="{{acronym}}" phenotype="{{phenotype}}"
+                       atc="{{acceptTermsCond}}" on-checket-accept="handleAcceptTermsCond" on-msj-accept="handleMsjAccept"
+                       is-not-accept="{{_isNotAccept(acceptTermsCond)}}" is-accept="{{_isAccept(acceptTermsCond)}}"></csvs-home>
         </div>
 
         <div class="content" menu-option="search,saturation">
@@ -151,12 +161,20 @@
             <span class="title">{{title}}</span>
             <span class="description"></span>
 
-            <div-- id="menu" class="menu horizontal layout center flex">
-                <div title="Search" class="option" on-click="handleMenuOption" data-option="search">
-                    <i class="fa fa-search"></i>
-                    <span class="option-text">Search</span>
-                </div>
 
+            <div id="menu" class="menu horizontal layout center flex">
+                <template is="dom-if" if="{{_isAccept(acceptTermsCond)}}">
+                    <div title="Search" class="option" on-click="handleMenuOption" data-option="search">
+                        <i class="fa fa-search"></i>
+                        <span class="option-text">Search</span>
+                    </div>
+                </template>
+                <template is="dom-if" if="{{_isNotAccept(acceptTermsCond)}}">
+                    <div title="Checked I agree terms and conditions to search" class="option disabled" on-click="handleMsjAccept" data-option="search">
+                        <i class="fa fa-search"></i>
+                        <span class="option-text">Search</span>
+                    </div>
+                </template>
                 <!--div title="Stats" class="option" on-click="handleMenuOption" data-option="stats">
                     <i class="fa fa-pie-chart"></i>
                     <span class="option-text">Stats</span>
@@ -214,7 +232,7 @@
         <stv-footer menu-option="home,login,singup,profile,remember">
             {{acronym}}: created by Clinical Bioinformatics Area
             <br> Fundación Progreso y Salud
-            <br> 2018
+            <br> 2015-2019
         </stv-footer>
     </template>
 </dom-module>
@@ -271,7 +289,10 @@
             },
             phenotype: {
                 type: String
-            }
+            },
+            acceptTermsCond: {
+                type: Boolean
+            },
         },
         ready: function() {
             this.isLogged = this.$.stvHeader.isLogged;
@@ -279,6 +300,7 @@
             this.getTechnologies();
             this.checkShowMenuOnLogin();
             this.selectedOption = "home";
+            this.acceptTermsCond = this.getAcceptTermsCond() == 'true'? true : false;
         },
         getDiseases: function() {
             var me = this;
@@ -295,11 +317,7 @@
 
                             for (var i = 0; i < response.result.length; i++) {
                                 var elem = response.result[i];
-                                if (elem.name === "IBS (107 Spanish individuals from 1000genomes)") {
-                                    ibsPos = i;
-                                } else if (elem.name === "MGP (267 healthy controls)") {
-                                    mgpPos = i;
-                                } else if (elem.name === "Healthy controls") {
+                                if (elem.name === "Healthy controls") {
                                     healthyPos = i;
                                 } else {
                                     diseases.push(elem);
@@ -307,12 +325,6 @@
                             }
                             if (healthyPos != -1) {
                                 diseases.unshift(response.result[healthyPos]);
-                            }
-                            if (ibsPos != -1) {
-                                diseases.unshift(response.result[ibsPos]);
-                            }
-                            if (mgpPos != -1) {
-                                diseases.unshift(response.result[mgpPos]);
                             }
 
                             me.diseases = diseases;
@@ -419,7 +431,37 @@
 
             this.selectedOption = "annot";
             this.$.annotationForm.relaunch(job);
-        }
+        },
 
+
+        handleAcceptTermsCond: function(e, isAccept) {
+            document.cookie = "GPVS_AcceptTermsCond" + "=" + isAccept  + ";path=/";
+            this.acceptTermsCond = isAccept;
+        },
+
+        getAcceptTermsCond: function() {
+            var name = "GPVS_AcceptTermsCond" + "=";
+            var decodedCookie = decodeURIComponent(document.cookie);
+            var ca = decodedCookie.split(';');
+            for(var i = 0; i <ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+        },
+        _isAccept: function(atc) {
+            return !!atc;
+        },
+        _isNotAccept: function(atc) {
+            return !atc;
+        },
+        handleMsjAccept: function() {
+            new StvDialog().alert("Check I agree terms and conditions to Start.");
+        }
     });
 </script>

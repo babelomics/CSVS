@@ -22,10 +22,24 @@
             height: 100%;
             overflow-y:auto;
             overflow-x:auto;
+
+            font-size: 22px;
+            /*  line-height: 25px;
+              font-weight: 300;*/
         }
         .paragraph {
             font-size: 14px;
+            text-align:justify;
+            padding-bottom: 10px;
         }
+
+        .paragraph2 {
+            font-size: 20px;
+            padding-top: 10px;
+            padding-bottom: 30px;
+            text-align: center;
+        }
+
         .label_downloads{
             width: 20%;
             padding-left:2.5em;
@@ -48,11 +62,17 @@
         .ok {
             color: green;
         }
+        .title {
+            padding-top: 30px;
+            padding-bottom: 10px;
+            text-align: center;
+        }
 
     </style>
     <template>
         <div class="vertical layout center-justified">
             <div  class="vertical main">
+                <!--
                 <div class="paragraph">
                     Here you can download data corresponding to phenotypically healthy controls.<br/>
                     Datasets are downloaded as tab-delimited text files.
@@ -87,14 +107,43 @@
                     <div class="version_file"> <label class="stv">Version: {{version_file}}</label></div>
                     <div class="horizontal layout center end-justified " >
                         <div id="Sending_disease" hidden$="{{!sending}}">
-                            <i class="fa fa-circle-o-notch fa-spin"></i> Downloading ...
+                            <i class="fa fa-circle-o-notch fa-spin"></i> Sending request...
                         </div>
                         <div id="message_donwload" class="ok">{{message_donwload}} &nbsp;</div>
-                        <div class="stv-btn stv-btn-shdw stv-btn-big" on-click="email_disease_file">&nbsp; Download</div>
+                        <div class="stv-btn stv-btn-shdw stv-btn-big" on-click="email_disease_file">&nbsp; Request</div>
+                    </div>
+                </div>-->
+                <div class="title">CSVS data download</div>
+
+                <div class="paragraph">
+                    <p>
+                        Here you can download aggregated data corresponding to phenotypically healthy controls of
+                        MGP as well as the pseudo-controls for each ICD10 category, containing all the samples except
+                        each specific ICD10 disease category selected.
+                    </p>
+                    <p>
+                        Datasets are provided as tab-delimited text files
+                    </p>
+                    <p>
+                        Access to the CSVS data will be granted upon signature of the corresponding agreement.
+                    </p>
+                    <p>
+                        Please, download the agreement here, sign it, scan it and send it back to <a href="mailto:csvs@clinbioinfosspa.es?Subject=Donwload file">csvs@clinbioinfosspa.es</a>. In a few days
+                        you will receive a temporal link to download the data.
+                    </p>
+
+
+                    <div class="paragraph2">
+                        <a href="/downloads/CSVSTermsAndConditions_v2.pdf" target="_blank">download agreement</a>
+                    </div>
+
+
+                    <div class="paragraph">
+                        In addition, individual VCF files MGP controls are available at EGA under request. Follow the
+                        link: <a href="https://www.ebi.ac.uk/ega/dacs/EGAC00001000222" target="_blank">https://www.ebi.ac.uk/ega/dacs/EGAC00001000222</a>
                     </div>
                 </div>
             </div>
-        </div>
 
     </template>
 </dom-module>
@@ -133,7 +182,7 @@
             }
         },
         ready:function(){
-          this.version_file = window.VERSION_FILE;
+            this.version_file = window.VERSION_FILE;
         },
         email_disease_file: function () {
             var me = this;
@@ -219,10 +268,11 @@
                             } else {
                                 // Donwload  url
                                 if (dataJSON['data']['url'] != undefined) {
-                                    window.open('/downloads/' + dataJSON["data"]["url"], "_blank");
+                                    //window.open('/downloads/' + dataJSON["data"]["url"], "_blank");
 
                                     me.sending = false;
-                                    me.message_donwload = 'Download done!';
+                                    //me.message_donwload = 'Download done!';
+                                    me.message_donwload = 'Request send!';
                                     document.getElementById("message_donwload").style = "color:green";
                                 } else {
                                     // Error to download
