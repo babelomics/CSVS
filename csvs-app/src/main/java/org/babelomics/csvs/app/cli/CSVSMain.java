@@ -9,6 +9,7 @@ import org.babelomics.csvs.lib.models.DiseaseCount;
 import org.babelomics.csvs.lib.models.DiseaseGroup;
 import org.babelomics.csvs.lib.models.Technology;
 import org.babelomics.csvs.lib.models.Variant;
+import org.babelomics.csvs.lib.config.CSVSConfiguration;
 import org.mongodb.morphia.Datastore;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.client.CellBaseClient;
@@ -106,15 +107,18 @@ public class CSVSMain {
 
             Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName);
 
+            if(c.populateDiseases || c.populateDiseases) {
+                new CSVSConfiguration();
+                CSVSConfiguration configuration = CSVSConfiguration.load("configuration.json");
 
-            if (c.populateDiseases) {
-                CSVSUtil.populateDiseases(datastore);
+                if (c.populateDiseases) {
+                    CSVSUtil.populateDiseases(datastore, configuration);
+                }
+
+                if (c.populateTechnologies) {
+                    CSVSUtil.populateTechnologies(datastore, configuration);
+                }
             }
-
-            if (c.populateTechnologies) {
-                CSVSUtil.populateTechnologies(datastore);
-            }
-
 
             if (c.newDisease != null && c.newDisease.length() > 0) {
                 CSVSUtil.addNewDisease(datastore, c.newDisease);
@@ -175,7 +179,8 @@ public class CSVSMain {
             Path input = Paths.get(c.input);
             Path output = Paths.get(c.output);
 
-            CSVSUtil.compressVariants(input, output);
+            CSVSUtil.compressVariants(input, output, c.replaceAF);
+
         } else if (command instanceof OptionsParser.CommandAnnot) {
 
             OptionsParser.CommandAnnot c = (OptionsParser.CommandAnnot) command;

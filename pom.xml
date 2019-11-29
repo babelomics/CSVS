@@ -20,7 +20,7 @@
         <cellbase.version>3.1.1</cellbase.version>
         <jcl.version>3.0.0</jcl.version>
         <compileSource>1.8</compileSource>
-        <csvs.version>1.1.0</csvs.version>
+        <csvs.version>1.1.0-gpvs</csvs.version>
     </properties>
 
     <dependencyManagement>

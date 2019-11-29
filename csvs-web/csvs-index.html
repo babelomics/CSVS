@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Collaborative Spanish Variant Server</title>
+    <title>Variant Server</title>
 
 
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
@@ -101,6 +101,11 @@
                 AVAILABLE_SPECIES = s;
                 DEFAULT_SPECIES = AVAILABLE_SPECIES.vertebrates[0];
                 csvs = document.createElement('csvs-element');
+                csvs.setAttribute("title", window.TITLE_APP || "Collaborative Spanish Variant Server");
+                csvs.setAttribute("acronym", window.ACRONYM_APP || "CSVS");
+                csvs.setAttribute("phenotype", window.PHENOTYPE  || "Spanish");
+                console.log(document.head);
+                document.head.getElementsByTagName("title")[0].innerHTML = window.TITLE_APP || "Collaborative Spanish Variant Server";
                 document.body.appendChild(csvs);
             });
         });

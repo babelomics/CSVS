@@ -146,14 +146,14 @@
                 var emailType = me.$.emailType.selectedOptionText;
                 var email = me.email;
                 var text = me.text.trim();
-
+                var acronym = "("+ window.ACRONYM_APP + ")" || '';
                 me.sending = true;
                 me.message = "";
 
                 $.ajax({
                     url: window.URL_MAIL,
                     data: {
-                        subject: emailType + ':' + subject,
+                        subject: emailType + acronym +':' + subject,
                         text: text,
                         html: '<pre>'+text+'</pre>',
                         from: email || window.FROM_EMAIL || '',

@@ -14,7 +14,8 @@ import java.util.List;
 @Indexes({
         @Index(name = "index_file_c", fields = {@Field("c") }),
         @Index(name = "index_file_s", fields = {@Field("s") }),
-        @Index(name = "index_file_e", fields = {@Field("e") })
+        @Index(name = "index_file_e", fields = {@Field("e") }),
+        @Index(name = "index_file_c_s_e", fields = {@Field("c"),@Field("s"),@Field("e")}),
 })
 public class Region {
     @Id

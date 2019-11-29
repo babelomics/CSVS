@@ -1,6 +1,7 @@
 package org.babelomics.csvs.lib;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import com.mongodb.*;
 import htsjdk.variant.variantcontext.Allele;
 import htsjdk.variant.variantcontext.VariantContext;
@@ -9,6 +10,7 @@ import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import htsjdk.variant.vcf.*;
 import org.babelomics.csvs.lib.annot.CellBaseAnnotator;
+import org.babelomics.csvs.lib.config.CSVSConfiguration;
 import org.babelomics.csvs.lib.io.*;
 import org.babelomics.csvs.lib.models.*;
 import org.babelomics.csvs.lib.models.Region;
@@ -63,43 +65,20 @@ public class CSVSUtil {
     }
 
 
-    public static void populateDiseases(Datastore datastore) {
-        List<DiseaseGroup> diseaseGroups = new ArrayList<>();
-
-        diseaseGroups.add(new DiseaseGroup(1, "I Certain infectious and parasitic diseases"));
-        diseaseGroups.add(new DiseaseGroup(2, "II Neoplasms"));
-        diseaseGroups.add(new DiseaseGroup(3, "III Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism"));
-        diseaseGroups.add(new DiseaseGroup(4, "IV Endocrine, nutritional and metabolic diseases"));
-        diseaseGroups.add(new DiseaseGroup(5, "V Mental and behavioural disorders"));
-        diseaseGroups.add(new DiseaseGroup(6, "VI Diseases of the nervous system"));
-        diseaseGroups.add(new DiseaseGroup(7, "VII Diseases of the eye and adnexa"));
-        diseaseGroups.add(new DiseaseGroup(8, "VIII Diseases of the ear and mastoid process"));
-        diseaseGroups.add(new DiseaseGroup(9, "IX Diseases of the circulatory system"));
-        diseaseGroups.add(new DiseaseGroup(10, "X Diseases of the respiratory system"));
-        diseaseGroups.add(new DiseaseGroup(11, "XI Diseases of the digestive system"));
-        diseaseGroups.add(new DiseaseGroup(12, "XII Diseases of the skin and subcutaneous tissue"));
-        diseaseGroups.add(new DiseaseGroup(13, "XIII Diseases of the musculoskeletal system and connective tissue"));
-        diseaseGroups.add(new DiseaseGroup(14, "XIV Diseases of the genitourinary system"));
-        diseaseGroups.add(new DiseaseGroup(15, "XV Pregnancy, childbirth and the puerperium"));
-        diseaseGroups.add(new DiseaseGroup(16, "XVI Certain conditions originating in the perinatal period"));
-        diseaseGroups.add(new DiseaseGroup(17, "XVII Congenital malformations, deformations and chromosomal abnormalities"));
-        diseaseGroups.add(new DiseaseGroup(18, "XVIII Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified"));
-        diseaseGroups.add(new DiseaseGroup(19, "XIX Injury, poisoning and certain other consequences of external causes"));
-        diseaseGroups.add(new DiseaseGroup(20, "XX External causes of morbidity and mortality"));
-        diseaseGroups.add(new DiseaseGroup(21, "XXI Factors influencing health status and contact with health services"));
-        diseaseGroups.add(new DiseaseGroup(22, "XXII Codes for special purposes"));
-        diseaseGroups.add(new DiseaseGroup(23, "MGP (267 healthy controls)"));
-        diseaseGroups.add(new DiseaseGroup(24, "IBS (107 Spanish individuals from 1000genomes)"));
-        diseaseGroups.add(new DiseaseGroup(25, "V Mental and behavioural disorders(controls)"));
-        diseaseGroups.add(new DiseaseGroup(26, "Healthy controls"));
-
-        for (DiseaseGroup dg : diseaseGroups) {
-            try {
-                datastore.save(dg);
-            } catch (DuplicateKeyException e) {
-                System.err.println("Duplicated Disease Group: " + dg);
+    public static void populateDiseases(Datastore datastore, CSVSConfiguration configuration) {
+        List<DiseaseGroup> diseaseGroups = configuration.getDiseasesGroups();
+        int numLoader = 0;
+        // 1-22 reserved for icd10
+        if (diseaseGroups != null && !diseaseGroups.isEmpty())
+            for (DiseaseGroup dg : diseaseGroups) {
+                try {
+                    datastore.save(dg);
+                    numLoader ++;
+                } catch (DuplicateKeyException e) {
+                    System.err.println("Duplicated Disease Group: " + dg);
+                }
             }
-        }
+        System.out.println(numLoader + " diseaseGroups loaders!");
     }
 
     public static void addNewDisease(Datastore datastore, String disease) {
@@ -113,22 +92,20 @@ public class CSVSUtil {
         }
     }
 
-    public static void populateTechnologies(Datastore datastore) {
-        List<Technology> technologies = new ArrayList<>();
+    public static void populateTechnologies(Datastore datastore, CSVSConfiguration configuration) {
+        List<Technology> technologies = configuration.getTechnologies();
 
-        technologies.add(new Technology(1, "Illumina"));
-        technologies.add(new Technology(2, "SOLiD"));
-        technologies.add(new Technology(3, "Roche 454"));
-        technologies.add(new Technology(4, "IonTorrent"));
-        technologies.add(new Technology(5, "Nanopore"));
-
-        for (Technology t : technologies) {
-            try {
-                datastore.save(t);
-            } catch (DuplicateKeyException e) {
-                System.err.println("Duplicated Technology: " + t);
+        int numLoader = 0;
+        if (technologies != null && !technologies.isEmpty())
+            for (Technology t : technologies) {
+                try {
+                    datastore.save(t);
+                    numLoader ++;
+                } catch (DuplicateKeyException e) {
+                    System.err.println("Duplicated Technology: " + t);
+                }
             }
-        }
+        System.out.println(numLoader + " technologies loaders!");
     }
 
     /**
@@ -403,64 +380,74 @@ public class CSVSUtil {
     }
 
     /**
-     * Recalcualte examples of a variant studied in a region after unload.
+     * Recalculate examples of a variant studied in a region after unload.
+     * @param file
      * @param datastore
      */
-    public static void recalculateUnload(  File file, Datastore datastore) {
+    public static void recalculateUnload (File file, Datastore datastore) {
         CSVSQueryManager qm = new CSVSQueryManager(datastore);
 
-        Query<Variant> query = datastore.createQuery(Variant.class);
-        System.out.println("All variants = "  + query.countAll());
+        System.out.println("All variants = "  + datastore.createQuery(Variant.class).countAll());
         System.out.println("INI  =" +  new Date());
 
         Panel p =  datastore.createQuery(Panel.class).field("_id").equal(file.getIdPanel()).get();
         // Get regions
-        List<Region> regionList =  datastore.createQuery(Region.class).field("pid").equal(file.getIdPanel()).asList();
+        // List<Region> regionList =  datastore.createQuery(Region.class).field("pid").equal(file.getIdPanel()).asList();
+        if (p != null) {
+            long num_regions =  datastore.createQuery(Region.class).field("pid").equal(p.getId()).countAll();
+            int limit = 1000;
+            long pages = num_regions/limit;
+            long numVAr = 0;
+            for ( int skip = 0 ; skip <= pages; skip++) {
+                Iterator<Region> regions_iterator = datastore.createQuery(Region.class).field("pid").equal(p.getId()).offset(skip*limit).limit(limit).iterator();
+                System.out.println("Start REGIONS");
+                List<Region> regions = Lists.newArrayList(regions_iterator);
+                Query<Variant> query = datastore.createQuery(Variant.class);
+                query.or(criteriaSearchVariant(regions, datastore));
+                System.out.println("Variants banch in regions = " + skip + ": " +  query.countAll());
+                if (query.countAll() > 0) {
+                    // Calculate Sample Count
+                    int varModify = 0;
+                    DiseaseGroup dg = file.getDisease();
+                    Technology tg = file.getTechnology();
+                    int d = dg.getGroupId();
+                    int t = tg.getTechnologyId();
 
-        query.or(criteriaSearchVariant(regionList , datastore));
-        System.out.println("Variants in regions = " + query.countAll());
+                    List<Integer> diseaseId = new ArrayList<>();
+                    diseaseId.add(d);
+                    List<Integer> technologyId= new ArrayList<>();
+                    technologyId.add(t);
 
-        // Calculate Sample Count
-        int varModify = 0;
-        int numVAr = 0;
-        DiseaseGroup dg = file.getDisease();
-        Technology tg = file.getTechnology();
-        int d = dg.getGroupId();
-        int t = tg.getTechnologyId();
+                    Iterator<Variant> it = query.batchSize(100).iterator();
+                    while (it.hasNext()) {
+                        varModify++;
+                        List<Variant> batch = new ArrayList<>();
 
-        List<Integer> diseaseId = new ArrayList<>();
-        diseaseId.add(d);
-        List<Integer> technologyId= new ArrayList<>();
-        technologyId.add(t);
+                        for (int i = 0; i < 100 && it.hasNext(); i++) {
+                            Variant v = it.next();
 
+                            // Get sum all file
+                            boolean withRegions = false;
+                            int sumSampleRegion =  qm.initialCalculateSampleCount(v,d, t, datastore);
+                            if(sumSampleRegion  > 0)
+                                withRegions = true;
 
-        Iterator<Variant> it = query.batchSize(100).iterator();
-        while (it.hasNext()) {
-            varModify++;
-            List<Variant> batch = new ArrayList<>();
+                            v.decSumSampleRegion(file.getSamples(), dg, tg, withRegions);
 
-            for (int i = 0; i < 100 && it.hasNext(); i++) {
-                Variant v = it.next();
+                            batch.add(v);
+                            System.out.println("VARIANTE: " + v.getChromosome() + ":" + v.getPosition() );
+                        }
 
-                // Get sum all file
-                boolean withRegions = false;
-                int sumSampleRegion =  qm.initialCalculateSampleCount(v,d, t, datastore);
-                if(sumSampleRegion  > 0)
-                   withRegions = true;
+                        datastore.save(batch);
+                        System.out.println(varModify);
+                        batch.clear();
+                        System.out.println("Total: " +  numVAr + "      " +  new Date());
+                    }
 
-                v.decSumSampleRegion(file.getSamples(), dg, tg, withRegions);
-
-                batch.add(v);
-                System.out.println("VARIANTE: " + v.getChromosome() + ":" + v.getPosition() );
+                    System.out.println("END  =" +  new Date());
+                }
             }
-
-            datastore.save(batch);
-            System.out.println(varModify);
-            batch.clear();
-            System.out.println("Total: " +  numVAr + "      " +  new Date());
         }
-
-        System.out.println("END  =" +  new Date());
     }
 
 
@@ -540,11 +527,11 @@ public class CSVSUtil {
         vcfWriter.close();
     }
 
-    public static void compressVariants(Path input, Path output) throws IOException {
+    public static void compressVariants(Path input, Path output, boolean replaceAF) throws IOException {
 
         VariantSource source = new VariantSource("file", "file", "file", "file");
         //VariantReader reader = new VariantVcfReader(source, input.toAbsolutePath().toString());
-        VariantReader reader = new CSVSVariantVcfReader(source, input.toAbsolutePath().toString());
+        VariantReader reader = new CSVSVariantVcfReader(source, input.toAbsolutePath().toString(), replaceAF);
         VariantWriter writer = new CSVSVariantCountsCSVDataWriter(output.toAbsolutePath().toString());
 
 
@@ -580,51 +567,75 @@ public class CSVSUtil {
             technologies = qm.getAllTechnologieIds();
         }
 
-        Query<Variant> query = datastore.createQuery(Variant.class);
-        System.out.println("All variants = "  + query.countAll());
+        System.out.println("All variants = "  + datastore.createQuery(Variant.class).countAll());
         System.out.println("INI  =" +  new Date());
 
         // Search file with regions
         Query<Panel> queryFile = datastore.createQuery(Panel.class);
         queryFile.field("panelName").equal(panelName);
         Panel p = queryFile.get();
-        List<Region> regions = new ArrayList<>();
+
+        // Basch regions  regions.addAll(datastore.createQuery(Region.class).field("pid").equal(p.getId()).asList());
         if (p != null) {
-            regions.addAll(datastore.createQuery(Region.class).field("pid").equal(p.getId()).asList());
-        }
-
-        query.or(criteriaSearchVariant(regions, datastore));
-        System.out.println("Variants in regions = " + query.countAll());
-
-        // Calculate Sample Count
-        int numVAr = 0;
-        Iterator<Variant> it = query.batchSize(100).iterator();
-        System.out.println("Start");
-        while (it.hasNext()) {
-            List<Variant> batch = new ArrayList<>();
-
-            for (int i = 0; i < 100 && it.hasNext(); i++) {
-                Variant v = it.next();
-                numVAr++;
-                for (int d : diseases){
-                    for (int t : technologies){
-                        int sumSampleRegion =  qm.initialCalculateSampleCount(v, d, t, datastore);
-                        v.setSumSampleRegion(new DiseaseSum(d, t, sumSampleRegion));
-                        System.out.println("VARIANTE: " + v.getChromosome() + ":" + v.getPosition()  +  "  Samples: " + sumSampleRegion);
-                    }
-                }
-                batch.add(v);
-
+            long num_regions =  datastore.createQuery(Region.class).field("pid").equal(p.getId()).countAll();
+            int limit = 1000;
+            long pages = num_regions/limit;
+            long numVAr = 0;
+            for ( int skip = 0 ; skip <= pages; skip++) {
+                System.out.println("Skip: " + skip);
+                Iterator<Region> regions_iterator = datastore.createQuery(Region.class).field("pid").equal(p.getId()).offset(skip*limit).limit(limit).iterator();
+                Query<Variant> query = datastore.createQuery(Variant.class);
+                numVAr = recalc_regions(numVAr, qm, diseases, technologies, query, regions_iterator, datastore);
             }
-
-            datastore.save(batch);
-            batch.clear();
-            System.out.println("Total: " +  numVAr + "      " +  new Date());
         }
-
-        System.out.println("END  =" +  new Date());
     }
 
+    /**
+     * Recalculate only a group of regions
+     * @param numVAr
+     * @param diseases
+     * @param technologies
+     * @param query
+     * @param regions_iterator
+     * @param datastore
+     * @return
+     */
+    private static long recalc_regions(long numVAr, CSVSQueryManager qm, List<Integer> diseases , List<Integer> technologies, Query<Variant> query , Iterator<Region> regions_iterator, Datastore datastore){
+        System.out.println("Start REGIONS");
+        List<Region> regions = Lists.newArrayList(regions_iterator);
+
+        query.or(criteriaSearchVariant(regions, datastore));
+        System.out.println("Variants banch in regions = " + query.countAll());
+        if (query.countAll() > 0) {
+
+            // Calculate Sample Count
+            Iterator<Variant> it = query.batchSize(100).iterator();
+            System.out.println("Start");
+            while (it.hasNext()) {
+                List<Variant> batch = new ArrayList<>();
+
+                for (int i = 0; i < 100 && it.hasNext(); i++) {
+                    Variant v = it.next();
+                    numVAr++;
+                    for (int d : diseases) {
+                        for (int t : technologies) {
+                            int sumSampleRegion = qm.initialCalculateSampleCount(v, d, t, datastore);
+                            v.setSumSampleRegion(new DiseaseSum(d, t, sumSampleRegion));
+                            System.out.println("VARIANTE: " + v.getChromosome() + ":" + v.getPosition() + "  Samples: " + sumSampleRegion);
+                        }
+                    }
+                    batch.add(v);
+
+                }
+
+                datastore.save(batch);
+                batch.clear();
+                System.out.println("Total: " + numVAr + "      " + new Date());
+            }
+            System.out.println("END  =" + new Date());
+        }
+        return numVAr;
+    }
 
     /**
      * Calculate examples of a variant for a new file
@@ -648,51 +659,37 @@ public class CSVSUtil {
                 // Search variant in the file
                 Query<FileVariant> querFileVariant = datastore.createQuery(FileVariant.class);
                 List<FileVariant> fvquery = querFileVariant.field("fid").equal(fDb.getId()).asList();
-                System.out.println("All variants file = "  + fvquery.size());
+                System.out.println("All variants file = " + fvquery.size());
                 List<ObjectId> variantObjId = new ArrayList<>();
-                for (FileVariant fv : fvquery){
+                for (FileVariant fv : fvquery) {
                     variantObjId.add(fv.getIdVariant());
                 }
 
-                // Serach variant without examples calculate
-                Query<Variant> query = datastore.createQuery(Variant.class);
-                query.field("_id").in(variantObjId);
-
                 // Calculate    List<Region> regions = new ArrayList<>();
                 List<ObjectId> panelObjectIds = new ArrayList<>();
-                for (File f : files){
+                for (File f : files) {
                     panelObjectIds.add(f.getIdPanel());
                 }
-                List<Region> regions = datastore.createQuery(Region.class).field("pid").in(panelObjectIds).asList();
 
-                query.or(criteriaSearchVariant(regions, datastore));
-                System.out.println("Variants in regions = " + query.countAll());
-
-                // Calculate Sample Count
-                int numVAr = 0;
-                Iterator<Variant> it = query.batchSize(100).iterator();
-                System.out.println("Start");
-                while (it.hasNext()) {
-                    List<Variant> batch = new ArrayList<>();
-
-                    for (int i = 0; i < 100 && it.hasNext(); i++) {
-                        Variant v = it.next();
-                        numVAr++;
-                        int sumSampleRegion =  qm.initialCalculateSampleCount(v, diseaseGroupId, technologyId, datastore);
-                        v.setSumSampleRegion(new DiseaseSum(diseaseGroupId, technologyId, sumSampleRegion));
-                        System.out.println("VARIANTE: " + v.getChromosome() + ":" + v.getPosition()  +  "  Samples: " + sumSampleRegion);
-
-                        batch.add(v);
+                if (panelObjectIds != null && panelObjectIds.size() > 0) {
+                    List<Integer> diseases = new ArrayList<>();
+                    List<Integer> technologies = new ArrayList<>();
+                    diseases.add(diseaseGroupId);
+                    technologies.add(technologyId);
+                    long num_regions = datastore.createQuery(Region.class).field("pid").in(panelObjectIds).countAll();
+                    int limit = 1000;
+                    long pages = num_regions / limit;
+                    long numVAr = 0;
+                    for (int skip = 0; skip <= pages; skip++) {
+                        System.out.println("Skip: " + skip);
+                        Iterator<Region> regions_iterator = datastore.createQuery(Region.class).field("pid").in(panelObjectIds).offset(skip * limit).limit(limit).iterator();
+                        Query<Variant> query = datastore.createQuery(Variant.class);
+                        query.field("_id").in(variantObjId);
+                        numVAr = recalc_regions(numVAr, qm, diseases, technologies, query, regions_iterator, datastore);
                     }
-
-                    datastore.save(batch);
-                    batch.clear();
-                    System.out.println("Total: " +  numVAr + "      " +  new Date());
                 }
-
-                System.out.println("END  =" +  new Date());
-
             }
+
         }
     }
 

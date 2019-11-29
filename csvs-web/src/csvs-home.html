@@ -79,13 +79,13 @@
 
             <div class="horizontal layout">
                 <div style="text-align: right; width: 300px;">
-                    <img src='../images/bier-text.svg' style="width:220px;">
+                    <img src='../images/logo-fundacion_3.png' style="width:220px; background-color: white; border-radius: 22px">
                 </div>
                 <div class="vertical layout center" style="text-align: left; margin-left: 30px;">
                     <br>
                     <br>
 
-                    <div class="megatitle">CSVS</div>
+                    <div class="megatitle">{{acronym}}</div>
                     <br>
 
                     <div class="megabutton" on-click="tryItNow">
@@ -96,12 +96,11 @@
 
             <div class="title">Overview</div>
             <div class="paragraph">
-                Welcome to the Collaborative Spanish Variant Server. CSVS was created to provide information about the
+                Welcome to the {{title}}. {{acronym}} was created to provide information about the
                 variability
-                of the Spanish population to the scientific/medical community.
+                of the {{phenotype}} population to the scientific/medical community.
                 It is useful for filtering polymorphisms and local variations in the process of prioritizing candidate
-                disease genes. CSVS currently stores information on <csvs-samples></csvs-samples> unrelated Spanish individuals.
-                We accept submissions from WES or WGS.
+                disease genes. {{acronym}} currently stores information on <csvs-samples></csvs-samples> unrelated {{phenotype}} individuals.
             </div>
 
             <div class="title2">Supported by</div>
@@ -116,7 +115,7 @@
 
             <div class="title2">Note:</div>
             <div class="paragraph2">
-                CSVS web application makes an intensive use of the HTML5 standard and other cutting-edge web
+                {{acronym}} web application makes an intensive use of the HTML5 standard and other cutting-edge web
                 technologies such as
                 Web Components, so only modern web browsers are fully supported, these include Chrome 36+, Firefox 32+,
                 IE
@@ -129,6 +128,20 @@
 <script>
     Polymer({
         is: "csvs-home",
+        properties:{
+            title:{
+                type: String,
+                value: "Collaborative Spanish Variant Server"
+            },
+            acronym:{
+                type: String,
+                value: "CSVS"
+            },
+            phenotype: {
+                type: String,
+                value: "Spanish"
+            }
+        },
         ready: function(){
         },
         tryItNow: function () {
@@ -147,7 +160,7 @@
                 samples: {
                     type: Number,
                     value: 0
-                },
+                }
             },
             ready: function() {
                 this.getSamples();

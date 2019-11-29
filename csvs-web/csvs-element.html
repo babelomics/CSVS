@@ -102,7 +102,7 @@
     <template>
 
         <div class="content" menu-option="home">
-            <csvs-home on-try="handleTry"></csvs-home>
+            <csvs-home on-try="handleTry" title="{{title}}" acronym="{{acronym}}" phenotype="{{phenotype}}"></csvs-home>
         </div>
 
         <div class="content" menu-option="search,saturation">
@@ -114,7 +114,7 @@
         </div>
 
         <div class="content" menu-option="downloads">
-            <csvs-downloads-element  id="csvsDownloadsElement"></csvs-downloads-element>
+            <csvs-downloads-element   file_conditions="{{acronym}}TermsAndConditions.pdf" id="csvsDownloadsElement"></csvs-downloads-element>
         </div>
 
         <div class="content" menu-option="annot">
@@ -140,37 +140,37 @@
             </stv-panel>
             <csvs-feedback id="feedback" hidden on-feedbackend="handleFeedback"></csvs-feedback>
 
-            <csvs-how-to-cite id="howToCite" hidden on-how-to-cite-end="handleHowToCite"></csvs-how-to-cite>
+            <csvs-how-to-cite id="howToCite" acronym="{{acronym}}" url="http://gpvs.clinbioinfosspa.es/" hidden on-how-to-cite-end="handleHowToCite"></csvs-how-to-cite>
         </div>
 
         <stv-header id="stvHeader" user-data="{{userData}}" on-login="handleLogin" on-logout="handleLogout" selected-option="{{selectedOption}}" hide-jbos hide-browse isLogged="{{isLogged}}" hide-login hide
                     -signup>
             <div class="icon">
-                <img src="images/bier-text.svg" style="height: 50px;margin: 5px 0px 0 0;">
+                <img src="images/logo-fundacion_3.png" style="height: 50px;margin: 5px 0px 0 0; background-color: white; border-radius: 6px">
             </div>
-            <span class="title">Collaborative Spanish Variant Server</span>
+            <span class="title">{{title}}</span>
             <span class="description"></span>
 
-            <div id="menu" class="menu horizontal layout center flex">
+            <div-- id="menu" class="menu horizontal layout center flex">
                 <div title="Search" class="option" on-click="handleMenuOption" data-option="search">
                     <i class="fa fa-search"></i>
                     <span class="option-text">Search</span>
                 </div>
 
-                <div title="Stats" class="option" on-click="handleMenuOption" data-option="stats">
+                <!--div title="Stats" class="option" on-click="handleMenuOption" data-option="stats">
                     <i class="fa fa-pie-chart"></i>
                     <span class="option-text">Stats</span>
-                </div>
+                </div-->
 
-                <div title="Saturation" class="option" on-click="handleMenuOption" data-option="saturation">
+                <!--div title="Saturation" class="option" on-click="handleMenuOption" data-option="saturation">
                     <i class="fa fa-line-chart"></i>
                     <span class="option-text">Saturation</span>
-                </div>
+                </div-->
 
-                <div title="Downloads" class="option" on-click="handleMenuOption" data-option="downloads">
+                <!--div title="Downloads" class="option" on-click="handleMenuOption" data-option="downloads">
                     <i class="fa fa-download"></i>
                     <span class="option-text">Downloads</span>
-                </div>
+                </div-->
 
                 <div title="Annotate VCF file" class="option" on-click="handleLoggedOnlyMenuOption" login-required data-option="annot" hidden>
                     <i class="fa fa-pencil-square-o"></i>
@@ -212,9 +212,9 @@
         </stv-header>
 
         <stv-footer menu-option="home,login,singup,profile,remember">
-            CSVS: created by Clinical Bioinformatics Area
+            {{acronym}}: created by Clinical Bioinformatics Area
             <br> Fundación Progreso y Salud
-            <br> 2015-2017
+            <br> 2018
         </stv-footer>
     </template>
 </dom-module>
@@ -263,6 +263,15 @@
                 type:Boolean,
                 value: false
             },
+            title:{
+                type: String
+            },
+            acronym:{
+                type: String
+            },
+            phenotype: {
+                type: String
+            }
         },
         ready: function() {
             this.isLogged = this.$.stvHeader.isLogged;

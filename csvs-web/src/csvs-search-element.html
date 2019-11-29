@@ -219,7 +219,7 @@
                         </div>
 
                         <stv-filter-position id="filterPosition"></stv-filter-position>
-                        <stv-form-box>
+                        <stv-form-box style="display:none" >
                             <div class="header horizontal layout flex">
                                 <div>Subpopulations</div>
                                 <div class="flex"></div>
@@ -241,7 +241,7 @@
                                 </div>
                             </div>
                         </stv-form-box>
-                        <stv-form-box>
+                        <stv-form-box style="display:none">
                             <div class="header horizontal layout flex">
                                 <div>Technologies</div>
                                 <div class="flex"></div>
@@ -1659,8 +1659,8 @@
             }
 
             var track = new FeatureTrack({
-                title: 'CSVS',
-                featureType: 'csvs',
+                title: window.ACRONYM_APP ||'CSVS',
+                featureType: window.ACRONYM_APP || 'csvs',
                 minHistogramRegionSize: 12000,
                 maxLabelRegionSize: 3000,
                 height: 120,

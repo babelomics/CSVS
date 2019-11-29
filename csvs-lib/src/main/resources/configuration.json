@@ -1,0 +1,14 @@
+{
+  "diseasesGroups": [
+    {
+      "groupId": 23,
+      "name": "Healthy controls"
+    }
+  ],
+  "technologies":[
+    {
+      "technologyId": 1,
+      "name": "Illumina"
+    }
+  ]
+}

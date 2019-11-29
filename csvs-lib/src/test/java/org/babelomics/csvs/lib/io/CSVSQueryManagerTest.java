@@ -12,6 +12,7 @@ import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.process.runtime.Network;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.babelomics.csvs.lib.CSVSUtil;
+import org.babelomics.csvs.lib.config.CSVSConfiguration;
 import org.babelomics.csvs.lib.models.*;
 import org.junit.*;
 import org.mongodb.morphia.Datastore;
@@ -40,7 +41,7 @@ public class CSVSQueryManagerTest {
     static CSVSQueryManager qm;
     static int port = 12345;
     static MongodExecutable mongodExecutable;
-    static String dbName = "csvs-query-manager-test-db";
+    static String dbName = "gpvs-query-manager-test-db";
 
 
     @BeforeClass
@@ -65,41 +66,45 @@ public class CSVSQueryManagerTest {
         datastore.ensureIndexes();
 
         qm = new CSVSQueryManager(datastore);
-        CSVSUtil.populateDiseases(datastore);
-        CSVSUtil.populateTechnologies(datastore);
+        new CSVSConfiguration();
+        CSVSConfiguration configuration = CSVSConfiguration.load("configuration.json");
+        CSVSUtil.populateDiseases(datastore, configuration);
+        CSVSUtil.populateTechnologies(datastore, configuration);
 
-        URL url_d1_t1 = CSVSQueryManagerTest.class.getClassLoader().getResource("d1_t1.csv");
-        File file_d1_t1 = new File(url_d1_t1.toURI());
-        CSVSUtil.loadVariants(file_d1_t1.toPath(), 1, 1, datastore);
 
-        URL url_d1_t2 = CSVSQueryManagerTest.class.getClassLoader().getResource("d1_t2.csv");
-        File file_d1_t2 = new File(url_d1_t2.toURI());
-        CSVSUtil.loadVariants(file_d1_t2.toPath(), 1, 2, datastore);
-
-        URL url_d2_t1 = CSVSQueryManagerTest.class.getClassLoader().getResource("d2_t1.csv");
-        File file_d2_t1 = new File(url_d2_t1.toURI());
-        CSVSUtil.loadVariants(file_d2_t1.toPath(), 2, 1, datastore);
-
-        URL url_d2_t2 = CSVSQueryManagerTest.class.getClassLoader().getResource("d2_t2.csv");
-        File file_d2_t2 = new File(url_d2_t2.toURI());
-
-        URL url_fileRegions = CSVSQueryManagerTest.class.getClassLoader().getResource("TruSight_One_v1.1.bed");
+        URL url_fileRegions = CSVSQueryManagerTest.class.getClassLoader().getResource("xgen-exome-research-panel-targets.processed.bed");
         File file_regions = new File(url_fileRegions.toURI());
-        //CSVSUtil.loadVariants(file_d2_t2.toPath(), 2, 2, datastore, null, "Nombre Apellido1 Apellido2");
-        CSVSUtil.loadVariants(file_d2_t2.toPath(), 2, 2, datastore, file_regions.toPath(), "Nombre Apellido1 Apellido2", true);
+
+
+        URL url_1= CSVSQueryManagerTest.class.getClassLoader().getResource("d23_t1.csv");
+        File file_1 = new File(url_1.toURI());
+        //CSVSUtil.loadVariants(file_d1_t1.toPath(), 23, 1, datastore);
+        CSVSUtil.loadVariants(file_1.toPath(), 23, 1, datastore, file_regions.toPath(), "Nombre Apellido1 Apellido2", true);
+
+        URL url_2 = CSVSQueryManagerTest.class.getClassLoader().getResource("d23_t1-2.csv");
+        File file_2 = new File(url_2.toURI());
+        CSVSUtil.loadVariants(file_2.toPath(), 23, 1, datastore, file_regions.toPath(), "Nombre Apellido1 Apellido2", true);
+
 
         List<Integer> diseases = new ArrayList<>();
-        diseases.add(2);
+        diseases.add(23);
         List<Integer> technologies = new ArrayList<>();
-        technologies.add(2);
-        CSVSUtil.recalculate(diseases, technologies, "TruSight_One_v1.1.bed", datastore);
+        technologies.add(1);
+        CSVSUtil.recalculate(diseases, technologies, "xgen-exome-research-panel-targets.processed.bed", datastore);
 
+
+        URL url_3 = CSVSQueryManagerTest.class.getClassLoader().getResource("d23_t1-3.csv");
+        File file_3 = new File(url_3.toURI());
+        CSVSUtil.loadVariants(file_3.toPath(), 23, 1, datastore);
+
+        //CSVSUtil.unloadVariants(file_1.toPath(), 23, 1, datastore);
+        //CSVSUtil.unloadVariants(file_3.toPath(), 23, 1, datastore);
     }
 
     @AfterClass
     public static void closeDB() {
 
-//        mongoclient.dropDatabase(dbName);
+     //   mongoclient.dropDatabase(dbName);
         mongodExecutable.stop();
     }
 
@@ -113,6 +118,7 @@ public class CSVSQueryManagerTest {
     public void tearDown() throws Exception {
 
     }
+    /*
 
     @Test
     public void checkDiseaseGroupSize() {
@@ -274,6 +280,7 @@ public class CSVSQueryManagerTest {
         assertNull(v6);
 
     }
+    */
 
     @Test
     public void testGetVariant1() throws Exception {
@@ -294,7 +301,7 @@ public class CSVSQueryManagerTest {
     public void testGetIntervalFrequencies() throws Exception {
 
     }
-
+/*
     @Test
     public void testGetVariantsByRegionList1() throws Exception {
 
@@ -364,10 +371,11 @@ public class CSVSQueryManagerTest {
         assertEquals(list2.size(), 3);
 
     }
-
+*/
     @Test
     public void testGetChunkId() throws Exception {
 
     }
+
 
 }

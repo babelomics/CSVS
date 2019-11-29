@@ -110,7 +110,8 @@ public class OptionsParser {
         @Parameter(names = {"-o", "--output"}, description = "Output File", required = true, arity = 1)
         String output;
 
-
+        @Parameter(names = {"-r", "--replace_AF"}, description = "Replace AF when is distinct 'Allele Frequency'", arity = 1)
+        boolean replaceAF = false;
     }
 
     @Parameters(commandNames = {"query"}, commandDescription = "Query")

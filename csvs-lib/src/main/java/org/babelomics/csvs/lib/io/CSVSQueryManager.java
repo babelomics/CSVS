@@ -313,11 +313,11 @@ public class CSVSQueryManager {
 
         int i = 0;
         for (Region r : regions) {
-            List<String> chunkIds = getChunkIds(r);
+         //   List<String> chunkIds = getChunkIds(r);
             Query<Variant> auxQuery = this.datastore.createQuery(Variant.class);
 
             List<Criteria> and = new ArrayList<>();
-            and.add(auxQuery.criteria("_at.chIds").in(chunkIds));
+            //and.add(auxQuery.criteria("_at.chIds").in(chunkIds));
             and.add(auxQuery.criteria("chromosome").equal(r.getChromosome()));
             and.add(auxQuery.criteria("position").greaterThanOrEq(r.getStart()));
             and.add(auxQuery.criteria("position").lessThanOrEq(r.getEnd()));

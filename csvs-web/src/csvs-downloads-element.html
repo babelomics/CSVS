@@ -54,115 +54,14 @@
         <div class="vertical layout center-justified">
             <div  class="vertical main">
                 <div class="paragraph">
-                    Here you can download aggregated data corresponding to phenotypically healthy controls
-                    of MGP and the IBS population of 1000 genomes phase 3 as well as the pseudo-controls for each ICD10 category made with
-                    all the samples except each specific ICD10 disease category.<br/>
-                    Datasets are downloaded as tab-delimited text files. Select dataset to download:
+                    Here you can download data corresponding to phenotypically healthy controls.<br/>
+                    Datasets are downloaded as tab-delimited text files.
                 </div>
                 <br/>
                 <label class="stv-control">
-                    <input type="radio" id="all" name="fileDownload" on-change="changeRadio" value="all">
-                    <span>All</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="MGP" name="fileDownload" on-change="changeRadio" value="MGP">
-                    <span>MGP controls (VCF available at EGA under request <a href="https://www.ebi.ac.uk/ega/dacs/EGAC00001000222" target="_blank">https://www.ebi.ac.uk/ega/dacs/EGAC00001000222</a>)</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="Healthy" name="fileDownload" on-change="changeRadio" value="Healthy">
+                    <input type="radio" id="Healthy" name="fileDownload" on-change="changeRadio" checked="checked" value="Healthy">
                     <span>Healthy controls</span>
                 </label>
-                <label class="stv-control">
-                    <input type="radio" id="MGPandIBSandHealthy" name="fileDownload" on-change="changeRadio" value="MGPandIBSandHealthy">
-                    <span>MGP + IBS controls + Healthy controls</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="all_less_group1" name="fileDownload" on-change="changeRadio" value="all_less_group1">
-                    <span>All individual except ICD10 group I: Certain infectious and parasitic diseases</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="all_less_group2" name="fileDownload" on-change="changeRadio" value="all_less_group2">
-                    <span>All individual except ICD10 group II: Neoplasms</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="all_less_group3" name="fileDownload" on-change="changeRadio" value="all_less_group3">
-                    <span>All individual except ICD10 group III: Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="all_less_group4" name="fileDownload" on-change="changeRadio" value="all_less_group4">
-                    <span>All individual except ICD10 group IV: Endocrine, nutritional and metabolic diseases</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="all_less_group5and25" name="fileDownload" on-change="changeRadio" value="all_less_group5and25">
-                    <span>All individual except ICD10 group V: Mental and behavioural disorders</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="all_less_group6" name="fileDownload" on-change="changeRadio" value="all_less_group6">
-                    <span>All individual except ICD10 group VI: Diseases of the nervous system</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="all_less_group7" name="fileDownload" on-change="changeRadio" value="all_less_group7">
-                    <span>All individual except ICD10 group VII: Diseases of the eye and adnexa</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="all_less_group8" name="fileDownload" on-change="changeRadio" value="all_less_group8">
-                    <span>All individual except ICD10 group VIII: Diseases of the ear and mastoid process</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="all_less_group9" name="fileDownload" on-change="changeRadio" value="all_less_group9">
-                    <span>All individual except ICD10 group IX: Diseases of the circulatory system</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="all_less_group10" name="fileDownload" on-change="changeRadio" value="all_less_group10">
-                    <span>All individual except ICD10 group X: Diseases of the respiratory system</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="all_less_group11" name="fileDownload" on-change="changeRadio" value="all_less_group11">
-                    <span>All individual except ICD10 group XI: Diseases of the digestive system</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="all_less_group12" name="fileDownload" on-change="changeRadio" value="all_less_group12">
-                    <span>All individual except ICD10 group XII: Diseases of the skin and subcutaneous tissue</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="all_less_group13" name="fileDownload" on-change="changeRadio" value="all_less_group13">
-                    <span>All individual except ICD10 group XIII: Diseases of the musculoskeletal system and connective tissue</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="all_less_group14" name="fileDownload" on-change="changeRadio" value="all_less_group14">
-                    <span>All individual except ICD10 group XIV: Diseases of the genitourinary system</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="all_less_group15" name="fileDownload" on-change="changeRadio" value="all_less_group15">
-                    <span>All individual except ICD10 group XV: Pregnancy, childbirth and the puerperium</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="all_less_group16" name="fileDownload" on-change="changeRadio" value="all_less_group16">
-                    <span>All individual except ICD10 group XVI: Certain conditions originating in the perinatal period</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="all_less_group17" name="fileDownload" on-change="changeRadio" value="all_less_group17">
-                    <span>All individual except ICD10 group XVII: Congenital malformations, deformations and chromosomal abnormalities</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="all_less_group18" name="fileDownload" on-change="changeRadio" value="all_less_group18">
-                    <span>All individual except ICD10 group XVIII: Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="all_less_group19" name="fileDownload" on-change="changeRadio" value="all_less_group19">
-                    <span>All individual except ICD10 group XIX: Injury, poisoning and certain other consequences of external causes</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="all_less_group20" name="fileDownload" on-change="changeRadio" value="all_less_group20">
-                    <span>All individual except ICD10 group XX: External causes of morbidity and mortality</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="all_less_group21" name="fileDownload" on-change="changeRadio" value="all_less_group21">
-                    <span>All individual except ICD10 group XXI: Factors influencing health status and contact with health services</span>
-                </label>
-                <label class="stv-control">
-                    <input type="radio" id="all_less_group22" name="fileDownload" on-change="changeRadio" value="all_less_group22">
-                    <span>All individual except ICD10 group XXII: Codes for special purposes</span>
                 </label>
                 <div class="vertical layout block_email"  >
                     <div class="flex block_label" >
@@ -181,7 +80,7 @@
                 <br/>
                 <label class="stv-control">
                     <input type="checkbox" id="conditions">
-                    <span>Check here to indicate that you have read agree with the terms and conditions of use of this data described <a href="/downloads/CSVSTermsAndConditions.pdf" target="_blank">here</a>.</span>
+                    <span>Check here to indicate that you have read agree with the terms and conditions of use of this data described <a href="/downloads/{{file_conditions}}" target="_blank">here</a>.</span>
                 </label>
                 <br/>
                 <div>
@@ -227,6 +126,10 @@
             version_file:{
                 type: String,
                 value: ""
+            },
+            file_conditions:{
+                type:String,
+                value: "TermsAndConditions.pdf"
             }
         },
         ready:function(){
@@ -273,11 +176,12 @@
                     ' Email: ' + me.$.email_downloads.value + '<br/>' +
                     ' File Download: ' + $.trim($('[name="fileDownload"]:checked').parent().text());
 
+                var acronym = "(" + window.ACRONYM_APP + ")" || '';
                 $.ajax({
                     url: url,
                     data: {
                         disease: disease,
-                        subject: 'Download file: ' + $('[name="fileDownload"]:checked').val(),
+                        subject: 'Download file '+ acronym+ ': ' + $('[name="fileDownload"]:checked').val(),
                         text: text,
                         html: '<pre>' + text + '</pre>',
                         from: window.FROM_EMAIL || '',

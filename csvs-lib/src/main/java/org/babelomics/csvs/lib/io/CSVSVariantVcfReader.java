@@ -40,14 +40,17 @@ public class CSVSVariantVcfReader implements VariantReader {
     private VariantSource source;
     private VariantFactory factory;
 
-    public CSVSVariantVcfReader(VariantSource source, String filePath) {
-        this(source, filePath, new VariantVcfFactory());
+    private boolean replaceAF;
+
+    public CSVSVariantVcfReader(VariantSource source, String filePath, boolean replaceAF) {
+        this(source, filePath, new VariantVcfFactory(), replaceAF);
     }
 
-    public CSVSVariantVcfReader(VariantSource source, String filePath, VariantFactory factory) {
+    public CSVSVariantVcfReader(VariantSource source, String filePath, VariantFactory factory, boolean replaceAF) {
         this.source = source;
         this.filePath = filePath;
         this.factory = factory;
+        this.replaceAF = replaceAF;
     }
 
     @Override
@@ -128,7 +131,9 @@ public class CSVSVariantVcfReader implements VariantReader {
                     String alternate = fields[4];
                     String[] alternateAlleles = alternate.split(",");
                     if (alternateAlleles.length > 1){
-                        if (line.contains(";AF=")) {
+                        System.out.println("replaceAF:");
+                        System.out.println(replaceAF);
+                        if (replaceAF && line.contains(";AF=")) {
                             System.out.println("  Replaced: \"AF=[0-9]*\" --> \"\" ");
                             System.out.println("   Before:  " + line);
                             Pattern pattern = Pattern.compile(";AF=[0-9.]*;");
