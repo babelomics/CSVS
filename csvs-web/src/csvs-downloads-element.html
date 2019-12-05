@@ -24,8 +24,6 @@
             overflow-x:auto;
 
             font-size: 22px;
-            /*  line-height: 25px;
-              font-weight: 300;*/
         }
         .paragraph {
             font-size: 14px;
@@ -44,24 +42,12 @@
             width: 20%;
             padding-left:2.5em;
         }
-        .version_file{
-            float:left;
-        }
-        .block_label{
-            margin-top: 15px;
-        }
-        .block_email{
-            margin-left: 5%;
-        }
-        .input_downloads{
-            width: 60%;
-        }
+
+
         a{
             text-decoration: underline;
         }
-        .ok {
-            color: green;
-        }
+
         .title {
             padding-top: 30px;
             padding-bottom: 10px;
@@ -113,7 +99,7 @@
                         <div class="stv-btn stv-btn-shdw stv-btn-big" on-click="email_disease_file">&nbsp; Request</div>
                     </div>
                 </div>-->
-                <div class="title">CSVS data download</div>
+                <div class="title">GPVS data download</div>
 
                 <div class="paragraph">
                     <p>
@@ -122,28 +108,32 @@
                         each specific ICD10 disease category selected.
                     </p>
                     <p>
-                        Datasets are provided as tab-delimited text files
+                    Datasets are provided as tab-delimited text files
                     </p>
                     <p>
-                        Access to the CSVS data will be granted upon signature of the corresponding agreement.
+                    Access to the GPVS data will be granted upon signature of the corresponding agreement.
                     </p>
                     <p>
-                        Please, download the agreement here, sign it, scan it and send it back to <a href="mailto:csvs@clinbioinfosspa.es?Subject=Donwload file">csvs@clinbioinfosspa.es</a>. In a few days
-                        you will receive a temporal link to download the data.
+                    Please, download the agreement here, sign it, scan it and send it back to <a href="mailto:{{to}}?Subject=Donwload file">{{to}}</a>. In a few days
+                    you will receive a temporal link to download the data.
                     </p>
 
 
                     <div class="paragraph2">
-                        <a href="/downloads/CSVSTermsAndConditions_v2.pdf" target="_blank">download agreement</a>
+                        <a href="/downloads/GPVSTermsAndConditions_v2.pdf" target="_blank">download agreement</a>
                     </div>
-
 
                     <div class="paragraph">
                         In addition, individual VCF files MGP controls are available at EGA under request. Follow the
                         link: <a href="https://www.ebi.ac.uk/ega/dacs/EGAC00001000222" target="_blank">https://www.ebi.ac.uk/ega/dacs/EGAC00001000222</a>
                     </div>
                 </div>
+                <div>
+                    <p class="paragraph"><label class="stv">Version: {{version_file}}</label></div>
+                </div>
             </div>
+
+        </div>
 
     </template>
 </dom-module>
@@ -152,153 +142,14 @@
     Polymer({
         is: 'csvs-downloads-element',
         properties: {
-            sending: {
-                type: Boolean,
-                value: false
-            },
-            name_downloads:{
-                type: String,
-                value: ""
-            },
-            affiliation_downloads:{
-                type: String,
-                value: ""
-            },
-            email_downloads: {
-                type: String,
-                value: ""
-            },
-            message_donwload:{
-                type: String,
-                value: ""
-            },
             version_file:{
                 type: String,
-                value: ""
+                value: window.VERSION_FILE || ""
             },
-            file_conditions:{
-                type:String,
-                value: "TermsAndConditions.pdf"
+            to:{
+                type: String,
+                value: window.CSVS_EMAIL || ""
             }
-        },
-        ready:function(){
-            this.version_file = window.VERSION_FILE;
-        },
-        email_disease_file: function () {
-            var me = this;
-            var msj = "";
-            me.message_donwload = "";
-
-            // Check empty and format
-            if ($('[name="fileDownload"]:checked').length == 0) {
-                msj = 'Please, selected a dataset to download. ';
-            }
-            if (_.isEmpty(me.$.name_downloads.value)) {
-                msj = msj + 'Please, add your name. ';
-            }
-
-            if (_.isEmpty(me.$.affiliation_downloads.value)) {
-                msj = msj + 'Please, add your affiliation. ';
-            }
-            if (!_.isEmpty(me.$.email_downloads.value)) {
-                if (!/^(?:[^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*|"[^\n"]+")@(?:[^<>()[\].,;:\s@"]+\.)+[^<>()[\]\.,;:\s@"]{2,63}$/i.test(me.$.email_downloads.value)) {
-                    msj = msj + 'Invalid email format. ';
-                }
-            } else {
-                msj = msj + 'Please, add your email. '
-            }
-            if (!$('#conditions').is(':checked')) {
-                msj = msj + 'Please, check to indicate that you have read your agree with the terms and conditions. ';
-            }
-
-
-            if (msj != "") {
-                new StvDialog().alert(msj);
-            } else {
-                // Downloads
-                me.sending = true;
-                var disease = $('[name="fileDownload"]:checked').val();
-                var url = window.CSVS_HOST + "/download/" +  disease || "";
-
-                var text = ' Name: ' + me.$.name_downloads.value + '<br/>' +
-                    ' Affiliation: ' + me.$.affiliation_downloads.value + '<br/>' +
-                    ' Email: ' + me.$.email_downloads.value + '<br/>' +
-                    ' File Download: ' + $.trim($('[name="fileDownload"]:checked').parent().text());
-
-                var acronym = "(" + window.ACRONYM_APP + ")" || '';
-                $.ajax({
-                    url: url,
-                    data: {
-                        disease: disease,
-                        subject: 'Download file '+ acronym+ ': ' + $('[name="fileDownload"]:checked').val(),
-                        text: text,
-                        html: '<pre>' + text + '</pre>',
-                        from: window.FROM_EMAIL || '',
-                        to: window.TO_EMAIL || '',
-                        host: window.HOST || '',
-                        port: window.PORT || '',
-                        secure: window.SECURE,
-                        debug: window.DEBUG,
-                        ignoreTLS: window.IGNORE_TLS,
-                        user: window.USER,
-                        pass: window.PASS
-                    },
-                    crossDomain: true,
-                    success: function (data) {
-                        if (data) {
-                            var dataJSON;
-                            if (/^{"data":{/.test(data)) {
-                                dataJSON = JSON.parse(data);
-                            }
-
-                            // Download datas from file
-                            if (dataJSON == undefined) {
-                                var link = document.createElement('a');
-                                link.name="tmpDownload";
-                                document.body.appendChild(link);
-                                var blob = new Blob([data], {type: 'application/csv'});
-                                link.href = window.URL.createObjectURL(blob);
-                                link.download = $('[name="fileDownload"]:checked').val() + ".csv";
-                                link.click();
-                                document.body.removeChild(link);
-
-                                me.sending = false;
-                                me.message_donwload = 'Download done!';
-                                document.getElementById("message_donwload").style = "color:green";
-                            } else {
-                                // Donwload  url
-                                if (dataJSON['data']['url'] != undefined) {
-                                    //window.open('/downloads/' + dataJSON["data"]["url"], "_blank");
-
-                                    me.sending = false;
-                                    //me.message_donwload = 'Download done!';
-                                    me.message_donwload = 'Request send!';
-                                    document.getElementById("message_donwload").style = "color:green";
-                                } else {
-                                    // Error to download
-                                    me.sending = false;
-                                    new StvDialog().alert('There has been a problem with the server, try again later');
-                                    console.log("CSVS: Problems with file download");
-                                }
-                            }
-                        } else {
-                            me.sending = false;
-                            new StvDialog().alert('There has been a problem with the server, try again later');
-                            console.log('CSVS: Problems with the server when send info');
-                        }
-                    },
-                    error: function (jqXHR, exception) {
-                        me.sending = false;
-                        new StvDialog().alert('There has been a problem with the server, try again later');
-                        console.log('CSVS: Fail download ' + disease + ' from ' + url + '   ');
-                    },
-                    type: "POST"
-                }); // End ajax
-
-            }
-        },
-        changeRadio: function (){
-            this.message_donwload = "";
         }
     });
 </script>

@@ -51,19 +51,23 @@
                     <div class="flex">
                         <label class="stv" for="">Subject:</label>
                         <input class="stv" type="text" value="{{subject::input}}" />
+                        <br>
+                        <label class="stv" for="">From:</label>
+                        <input class="stv" type="email" id="email" value="{{email::input}}" placeholder="name@example.com">
                     </div>
                     <div style="margin-left:15px;">
-                        <label class="data" for="">Type:</label>
-                        <stv-select id="emailType" style="width:150px; margin-top:5px">
+                        <label class="stv" for="">Type:</label>
+                        <stv-select id="emailType"  style="width:150px; margin-top:5px">
                             <stv-option value="suggest">Suggest</stv-option>
                             <stv-option value="question">Question</stv-option>
                             <stv-option value="error">Error</stv-option>
                         </stv-select>
+                        <br>
+                        <label class="stv" for="">To:</label>
+                        <br/>
+                        <label class="data" for="">{{to}}</label>
                     </div>
                 </div>
-                 <br>
-                 <label class="stv" for="">From:</label>
-                 <input class="stv" type="email" id="email" value="{{email::input}}" placeholder="name@example.com">
                  <br>
                 <label class="stv" for="">Text:</label>
                 <textarea class="stv flex" name="" id="" cols="30" rows="10" value="{{text::input}}" required></textarea>
@@ -92,6 +96,10 @@
                 email: {
                     type: String,
                     value: ''
+                },
+                to:{
+                    type: String,
+                    value: window.CSVS_EMAIL || ""
                 },
                 text: {
                     type: String,

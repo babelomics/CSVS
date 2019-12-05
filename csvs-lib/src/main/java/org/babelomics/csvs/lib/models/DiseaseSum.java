@@ -4,6 +4,7 @@ import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.*;
 
 /**
+ * Contains info about samples number (in case there are panels)
  * @author Gema Roldán González <gema.roldan@juntadeandalucia.es>
  */
 
@@ -23,6 +24,13 @@ public class DiseaseSum {
     @Property("sr")
     private int sumSampleRegions;
 
+    @Property("srXX")
+    private int sumSampleRegionsXX;
+
+
+    @Property("srXY")
+    private int sumSampleRegionsXY;
+
     public DiseaseSum() {
     }
 
@@ -37,7 +45,13 @@ public class DiseaseSum {
         this.sumSampleRegions = sumSampleRegions;
     }
 
-
+    public DiseaseSum(int diseaseGroupId, int technologyId, int sumSampleRegions, int sumSampleRegionsXX, int sumSampleRegionsXY) {
+        this.diseaseGroupId = diseaseGroupId;
+        this.technologyId = technologyId;
+        this.sumSampleRegions = sumSampleRegions;
+        this.sumSampleRegionsXX = sumSampleRegionsXX;
+        this.sumSampleRegionsXY = sumSampleRegionsXY;
+    }
 
     public int getTechnologyId() {
         return technologyId;
@@ -59,6 +73,21 @@ public class DiseaseSum {
         this.sumSampleRegions = sumSampleRegions;
     }
 
+    public int getSumSampleRegionsXX() {
+        return sumSampleRegionsXX;
+    }
+
+    public void setSumSampleRegionsXX(int sumSampleRegionsXX) {
+        this.sumSampleRegionsXX = sumSampleRegionsXX;
+    }
+
+    public int getSumSampleRegionsXY() {
+        return sumSampleRegionsXY;
+    }
+
+    public void setSumSampleRegionsXY(int sumSampleRegionsXY) {
+        this.sumSampleRegionsXY = sumSampleRegionsXY;
+    }
 
     @Override
     public boolean equals(Object object) {
@@ -77,6 +106,8 @@ public class DiseaseSum {
                 ", diseaseGroupId=" + diseaseGroupId +
                 ", technologyId=" + technologyId +
                 ", sumSampleRegions=" + sumSampleRegions +
+                ", sumSampleRegionsXX=" + sumSampleRegionsXX +
+                ", sumSampleRegionsXY=" + sumSampleRegionsXY +
                 '}';
     }
 }

@@ -107,7 +107,7 @@ public class RegionWSServer extends CSVSWSServer {
             }
         }
 
-        Map<Region, List<SaturationElement>> res = qm.getSaturation(regionList, diseaseList, technologyList);
+        Map<Region, List<SaturationElement>> res = qm.getSaturationOrderIncrement(regionList, diseaseList, technologyList);
 
         QueryResponse qr = createQueryResponse(res);
         qr.setNumTotalResults(res.size());

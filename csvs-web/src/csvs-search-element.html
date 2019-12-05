@@ -8,6 +8,8 @@
 
 <script src="../bower_components/stevia-elements/src/manager/cellbase-manager.js"></script>
 
+<link rel="import" href="./csvs-table-saturation.html">
+
 <link rel="import" href="csvs-saturation-element.html">
 
 <dom-module id="csvs-search-element">
@@ -45,7 +47,8 @@
         #saturationDiv {
             margin: 20px 20px 20px 0px;
             background-color: #FFFFFF;
-            width: calc(100% - 290px);
+            width: calc(100% - 29em);
+            padding: 0em 4em;
         }
 
         .container> span {
@@ -57,15 +60,24 @@
             ;
         }
 
-        #diseases_div,
-        #technologies_div {
+        #diseases_div
+        {
             height: 300px;
             max-height: 300px;
             overflow-y: auto;
         }
 
         #technologies_div {
-            height: 150px;
+            height: 50px;
+            max-height: 50px;
+            width: 230px;
+            overflow-y: auto;
+        }
+        #highlights_div{
+            height: 550px;
+            max-height: 550px;
+            width: 230px;
+            overflow-y: auto;
         }
 
         #exportBtn {
@@ -186,6 +198,10 @@
             color: var(--accent-color);
             font-weight: bold;
         }
+
+        .titleCategory{
+            background-color: #f0f0f0;
+        }
     </style>
     <template>
         <div class="horizontal layout">
@@ -233,10 +249,12 @@
                             <div class="container">
                                 <div id="diseases_div">
                                     <template is="dom-repeat" items="{{diseases}}">
-                                        <label class="stv-control">
-                                            <input type="checkbox" class="diseaseName" name="disease" id="disease" value="{{item.groupId}}" checked/>
-                                            <span>{{item.name}}</span>
-                                        </label>
+                                        <template is="dom-if" if="{{item.samples}}">
+                                            <label class="stv-control">
+                                                <input type="checkbox" class="diseaseName" name="disease" id="disease" value="{{item.groupId}}" checked/>
+                                                <span>{{item.name}}</span>
+                                            </label>
+                                        </template>
                                     </template>
                                 </div>
                             </div>
@@ -255,14 +273,95 @@
                             <div class="container">
                                 <div id="technologies_div">
                                     <template is="dom-repeat" items="{{technologies}}">
-                                        <label class="stv-control">
-                                            <input type="checkbox" class="technologyName" name="technology" id="technology" value="{{item.technologyId}}" checked/>
-                                            <span>{{item.name}}</span>
-                                        </label>
+                                        <template is="dom-if" if="{{item.samples}}">
+                                            <label class="stv-control">
+                                                <input type="checkbox" class="technologyName" name="technology" id="technology" value="{{item.technologyId}}" checked/>
+                                                <span>{{item.name}}</span>
+                                            </label>
+                                        </template>
                                     </template>
                                 </div>
                             </div>
                         </stv-form-box>
+                        <stv-form-box hidden$="{{saturation}}">
+                            <div class="header horizontal layout flex">
+                                <div>Highlights</div>
+                                <div class="flex"></div>
+                                <div on-click="selectAllHighlights" >
+                                    <i class="fa fa-check-square-o check"></i>
+                                </div>
+                                <div on-click="deselectAllHighlights">
+                                    <i class="fa fa-square-o check"></i>
+                                </div>
+                            </div>
+                            <div class="container">
+                                <div id="highlights_div">
+                                    <template is="dom-repeat" items="{{highlights}}" as="highlightGroup">
+                                        <div>
+                                            <label class="stv-control">
+                                                <label class="stv"><span>{{highlightGroup.group}}:</span></label>
+                                                <template is="dom-repeat" items="{{highlightGroup.groupValues}}" as="item">
+                                                    <div style="padding-left: 15px; display:inline-block">
+                                                        <span style="display:inline-block; width: 60px">{{item.title}}:</span>
+                                                        <select class="highlightsOp stv stv-btn" style="display:inline-flex;"
+                                                                name="highlightOp" id="opc_{{item.name}}" key="{{item.name}}" value="{{item.op}}"  />
+                                                        <template is="dom-repeat" items="{{item.ops}}" as="itemOp">
+                                                            <option value="{{itemOp}}"> {{itemOp}} </option>
+                                                        </template>
+                                                        </select>
+                                                        <input type="text" class="highlightsName stv" style="width: auto; display:inline"
+                                                               name="highlight"  id="highlight_{{item.name}}" key="{{item.name}}" value="{{item.value}}" size="5"/>
+                                                    </div>
+                                                </template>
+                                            </label>
+                                        </div>
+                                    </template>
+
+                                    <div>
+
+                                        <label class="stv"><span>{{highlightsSO.group}}:</span></label>
+                                        <div style="padding-left: 15px">
+                                            <template is="dom-repeat" items="{{highlightsSO.groupValues}}" as="itemHighlightsSO">
+                                                <template is="dom-if" if="{{itemHighlightsSO.category}}">
+                                                    <div class="stv-control titleCategory" >
+                                                        <div style="display:inline-block; min-width:140px">
+                                                            <label class="stv" ><span>{{itemHighlightsSO.category}}</span></label>
+                                                        </div>
+                                                        <div on-click="selectAllHighlights"  style="display:inline">
+                                                            <i class="fa fa-check-square-o check" name="{{itemHighlightsSO.category}}"></i>
+                                                        </div>
+                                                        <div on-click="deselectAllHighlights" style="display:inline">
+                                                            <i class="fa fa-square-o check " name="{{itemHighlightsSO.category}}"></i>
+                                                        </div>
+                                                    </div>
+                                                    <template is="dom-repeat" items="{{itemHighlightsSO.ops}}" as="ops">
+                                                        <div style="padding-left: 15px">
+                                                            <label class="stv-control">
+                                                                <input type="checkbox" class="highlightSOName" name="{{itemHighlightsSO.category}}" id="{{ops.name}}" value="{{ops.name}}" checked="{{ops.checked}}" />
+                                                                <span style="width: 250px; word-break:break-all">{{ops.name}}</span>
+                                                            </label>
+                                                        </div>
+                                                    </template>
+                                                </template>
+
+                                                <template is="dom-if" if="{{!itemHighlightsSO.category}}">
+                                                    <template is="dom-repeat" items="{{itemHighlightsSO.ops}}" as="ops" >
+                                                        <label class="stv-control">
+                                                            <input type="checkbox" class="highlightSOName" name="highlightSOName" id="{{ops.name}}" value="{{ops.name}}"  checked="{{ops.checked}}" />
+                                                            <span>{{ops.name}}</span>
+                                                        </label>
+                                                    </template>
+                                                </template>
+
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </stv-form-box>
+
+
                     </div>
                 </form>
             </div>
@@ -288,7 +387,14 @@
                 </div>
             </div>
             <div id="saturationDiv" hidden$="{{!saturation}}" class="vertical layout">
-                <div id="chart" class="horizontal layout center-justified"></div>
+
+                <div id="chart" class="horizontal layout center-justified" ></div>
+                <div id="loading" hidden$="{{!loadingSaturation}}">
+                    <i class="fa fa-circle-o-notch fa-spin"></i> Loading...
+                </div>
+                <div id=saturationDivTable" class="horizontal layout flex center-justified">
+                    <csvs-table-saturation id="tvSaturation" ></csvs-table-saturation>
+                </div>
             </div>
         </div>
 
@@ -310,6 +416,109 @@
                 value: function() {
                     return [];
                 }
+            },
+            highlights: {
+                type: Array,
+                value: function () {
+                    return [{
+                        group: "Deleteriousness",
+                        groupValues: [
+                            {
+                                name: "sift",
+                                title: "SIFT",
+                                op: "<",
+                                value: "0.05",
+                                defaultValue: "0.05",
+                                defaultOp: "<",
+                                ops :["<","<="]
+                            },
+                            {
+                                name: "polyphen",
+                                title: "Polyphen",
+                                op: ">",
+                                value: "0.91",
+                                defaultValue: "0.91",
+                                defaultOp: ">",
+                                ops :[">", ">="]
+                            },
+                            {
+                                name: "cadd",
+                                title: "CADD",
+                                op: ">",
+                                value: "15",
+                                defaultValue: "15",
+                                defaultOp: ">",
+                                ops :[">",">="]
+                            }
+                        ]
+                    },
+                        {
+                            group: "Conservacion",
+                            groupValues: [
+                                {
+                                    name: "gerp",
+                                    title: "GERP",
+                                    op: ">",
+                                    value: "2",
+                                    defaultValue: "2",
+                                    defaultOp: ">",
+                                    ops :[">", ">="]
+                                }]
+                        },
+                    ]
+                }
+            },
+            highlightsSO: {
+                type: Object,
+                value: function() {
+                    return {
+                            group:"SO terms",
+                            name: "ct",
+                            values:[],
+                            groupValues:[
+                                { category: "Integenic", ops: [ 	{ name: "upstream_gene_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "2KB_upstream_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "downstream_gene_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "2KB_downstream_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "intergenic_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "downstream_variant", impact: "MODIFIER", checked: true, defaultChecked: true}] },
+                                { category: "Regulatory", ops: [{ name: "mature_miRNA_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "regulatory_region_ablation", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "regulatory_region_amplification", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "regulatory_region_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "TF_binding_site_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "TFBS_ablation",	impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "TFBS_amplification",	impact: "MODIFIER", checked: true, defaultChecked: true }] },
+                                { category: "Coding", ops: [ { name: "coding_sequence_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "feature_elongation",	impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "feature_truncation",	impact: "MODIFIER",checked: true,  defaultChecked: true },
+                                    { name: "frameshift_variant",	impact: "HIGH" , checked: true, defaultChecked: true},
+                                    { name: "incomplete_terminal_codon_variant",	impact: "LOW", checked: true, defaultChecked: true},
+                                    { name: "inframe_deletion", impact: "MODERATE", checked: true, defaultChecked: true},
+                                    { name: "inframe_insertion",	impact: "MODERATE", checked: true, defaultChecked: true},
+                                    { name: "missense_variant", impact: "MODERATE", checked: true, defaultChecked: true },
+                                    { name: "NMD_transcript_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "protein_altering_variant", impact: "MODERATE", checked: true, defaultChecked: true},
+                                    { name: "synonymous_variant",	impact: "LOW", checked: true, defaultChecked: true},
+                                    { name: "start_lost", impact: "HIGH", checked: true, defaultChecked: true},
+                                    { name: "stop_retained_variant", impact: "LOW", checked: true, defaultChecked: true },
+                                    { name: "stop_gained", impact: "HIGH", checked: true, defaultChecked: true},
+                                    { name: "stop_lost", impact: "HIGH", checked: true, defaultChecked: true},
+                                    { name: "stop_retained_variant", impact: "LOW", checked: true, defaultChecked: true},
+                                    { name: "start_retained_variant",	impact: "LOW", checked: true, defaultChecked: true}] },
+                                { category: "No coding", ops: [{ name: "3_prime_UTR_variant", impact: "MODIFIER",checked: true, defaultChecked: true},
+                                    { name: "5_prime_UTR_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "intron_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                    { name: "non_coding_transcript_exon_variant", impact: "MODIFIER",checked: true, defaultChecked: true},
+                                    { name: "non_coding_transcript_variant", impact: "MODIFIER", checked: true, defaultChecked: true}] },
+                                { category: "Slice", ops: [ { name: "splice_acceptor_variant", impact: "HIGH", checked: true, defaultChecked: true},
+                                    { name: "splice_donor_variant", impact: "HIGH", checked: true, defaultChecked: true},
+                                    { name: "splice_region_variant", impact: "LOW", checked: true, defaultChecked: true}]},
+                                { ops: [ {name: "transcript_ablation" , impact: "HIGH", checked: true, defaultChecked: true}]},
+                                { ops: [ {name: "transcript_amplification" , impact: "HIGH", checked: true, defaultChecked: true}]},
+                            ]
+                        }
+                },
             },
             regionValue: {
                 type: String,
@@ -373,10 +582,19 @@
             },
             saturation: {
                 type: Boolean,
+                value: false,
+                observer: "saturationChanged"
+            },
+            loadingSaturation:{
+                type: Boolean,
                 value: false
             }
         },
 
+        saturationChanged: function(){
+            // Check if tab is changed and reload info
+            this.submitForm();
+        },
         resultsChanged: function(neo, old) {
             return;
             if (neo != -1) {
@@ -462,6 +680,127 @@
         created: function() {
             this.selectedSpecies = DEFAULT_SPECIES;
         },
+
+        _getStyleFormula: function(row, field) {
+            var style = {};
+
+            var obj = null;
+            if (row != undefined && row != null) {
+                for (var i = 0; i < this.highlights.length && obj == null; i++) {
+                    obj = !!this.highlights[i].groupValues && this.highlights[i].groupValues.find(h  => h.name === field);
+                }
+
+                if (obj != null && obj != undefined && !!row && !!obj.value) {
+                    console.log(field, row + " " + obj.op + " " + obj.value, eval(row + " " + obj.op + " " + obj.value))
+                    if (eval(row + " " + obj.op + " " + obj.value)) {
+                        style.color = '#fff';
+                        style.backgroundColor = '#f47070';
+                    }
+                }
+            }
+            return style;
+        },
+
+        getColor: function(impact){
+
+            switch(impact){
+                case "HIGH":
+                    return  "red";
+
+                case "MODERATE":
+                    return "#ED760E";
+
+                case "LOW":
+                    return "blue";
+
+                case "MODIFIER":
+                    return "green";
+
+
+                default:
+                    return "grey";
+            }
+        },
+
+        _getStyleFormulaConsecuence: function(row, field){
+            var style = {};
+
+            var obj = null;
+
+            for (var i = 0; i < this.highlightsSO.groupValues.length && obj == null ; i++) {
+                if ("category" in this.highlightsSO.groupValues[i]) {
+                    obj = this.highlightsSO.groupValues[i].ops.find(h => h.name === row && h.checked);
+                } else {
+                     obj = this.highlightsSO.groupValues[i].ops.find(h => h.name === row && h.checked);
+                }
+            }
+
+            if (obj != null && obj!= undefined && !!row){
+                style.color = this.getColor(obj.impact);
+            }
+            return style;
+        },
+
+        handleHighlights: function(){
+            var msj = "";
+            var highlightsNameValue = this.$.highlights_div.querySelectorAll(".highlightsName");
+            var highlightsOpValue = this.$.highlights_div.querySelectorAll(".highlightsOp");
+
+            var  pos = 0;
+            for (var i = 0; i < this.highlights.length && highlightsNameValue.length ; i++) {
+                for (var j = 0; j < this.highlights[i].groupValues.length ; j++) {
+                        if (highlightsNameValue[pos].value !="" && !/^-?\d{1,9}(\.\d{1,2})?$/.test(highlightsNameValue[pos].value))
+                            msj = msj + "Format incorrect " + this.highlights[i].groupValues[j].title + ": " + highlightsNameValue[pos].value + "\n";
+                        this.highlights[i].groupValues[j].value = highlightsNameValue[pos].value;
+                        this.highlights[i].groupValues[j].op = highlightsOpValue[pos].value;
+                        pos++;
+                }
+            }
+            if (msj != ""){
+                alert("Highlights: \n" + msj);
+                return
+            }
+
+            var highlightsSOChecked = this.$.highlights_div.querySelectorAll(".highlightSOName");
+
+            var pos = 0
+            for (var i = 0; i < this.highlightsSO.groupValues.length && highlightsSOChecked.length; i++) {
+                for (var j = 0; j < this.highlightsSO.groupValues[i].ops.length ; j++) {
+                    this.highlightsSO.groupValues[i].ops[j].checked = highlightsSOChecked[pos].checked;
+                    pos++;
+                }
+
+            }
+            return true;
+        },
+
+        highlightsDefault: function(){
+            var highlightsNameValue = this.$.highlights_div.querySelectorAll(".highlightsName");
+            var highlightsOpValue = this.$.highlights_div.querySelectorAll(".highlightsOp");
+
+            var  pos = 0;
+            for (var i = 0; i < this.highlights.length ; i++) {
+                for (var j = 0; j < this.highlights[i].groupValues.length ; j++) {
+                    highlightsNameValue[pos].value = this.highlights[i].groupValues[j].defaultValue;
+                    highlightsOpValue[pos].value = this.highlights[i].groupValues[j].defaultOp;
+                    pos++;
+                }
+            }
+
+            var highlightsSOChecked = this.$.highlights_div.querySelectorAll(".highlightSOName");
+
+            var pos = 0
+            for (var i = 0; i < this.highlightsSO.groupValues.length ; i++) {
+                for (var j = 0; j < this.highlightsSO.groupValues[i].ops.length ; j++) {
+                    highlightsSOChecked[pos].checked = this.highlightsSO.groupValues[i].ops[j].defaultChecked;
+                    console.log(this.highlightsSO.groupValues[i].ops[j].defaultChecked, this.highlightsSO.groupValues[i].ops[j].name);
+                    pos++;
+                }
+
+            }
+
+        },
+
         ready: function() {
             if (localStorage.csvs_filter_history) {
                 this.historyFilters = JSON.parse(localStorage.csvs_filter_history);
@@ -506,89 +845,84 @@
                     width: 90,
                     defaultValue: "."
                 },{
-                    title: 'MAF',
-                    name: 'maf',
-                    width: 350,
+                    title: "Genotypes",
+                    name: 'genotypes',
+                    width: 200,
                     columns: [{
-                        title: "Genotypes",
-                        name: 'genotypes',
-                        width: 200,
-                        columns: [{
-                            name: "gt00",
-                            width: 50,
-                            title: "0/0",
-                            formula: function(row) {
-                                if (row.stats != null && row.stats.gt00 != null)
-                                    return row.stats.gt00;
-                                else
-                                    return ".";
+                        name: "gt00",
+                        width: 50,
+                        title: "0/0",
+                        formula: function(row) {
+                            if (row.stats != null && row.stats.gt00 != null)
+                                return row.stats.gt00;
+                            else
+                                return ".";
                             }
-                        }, {
-                            name: "gt01",
-                            width: 50,
-                            title: "0/1",
-                            formula: function(row) {
-                                if (row.stats != null && row.stats.gt01 != null)
-                                    return row.stats.gt01;
-                                else
-                                    return ".";
-                            }
-                        }, {
-                            name: "gt11",
-                            width: 50,
-                            title: "1/1",
-                            formula: function(row) {
-                                if (row.stats != null && row.stats.gt11 != null)
-                                    return row.stats.gt11;
-                                else
-                                    return ".";
-                            }
-                        }, {
-                            name: "gtmissing",
-                            width: 50,
-                            title: "./.",
-                            formula: function(row) {
-                                if (row.stats != null && row.stats.gtmissing != null)
-                                    return row.stats.gtmissing;
-                                else
-                                    return ".";
-                            }
-                        }]
                     }, {
-                        title: "Freq.",
-                        name: "freq",
-                        width: 150,
-                        columns: [{
-                            name: "refFreq",
-                            width: 50,
-                            title: "0 Freq",
-                            formula: function(row) {
-                                if (row.stats != null && row.stats.refFreq != null)
-                                    return row.stats.refFreq;
-                                else
-                                    return ".";
+                        name: "gt01",
+                        width: 50,
+                        title: "0/1",
+                        formula: function(row) {
+                            if (row.stats != null && row.stats.gt01 != null)
+                                return row.stats.gt01;
+                            else
+                                return ".";
                             }
-                        }, {
-                            name: "altFreq",
-                            width: 50,
-                            title: "1 Freq",
-                            formula: function(row) {
-                                if (row.stats != null && row.stats.altFreq != null)
-                                    return row.stats.altFreq;
-                                else
-                                    return ".";
+                    }, {
+                        name: "gt11",
+                        width: 50,
+                        title: "1/1",
+                        formula: function(row) {
+                            if (row.stats != null && row.stats.gt11 != null)
+                                return row.stats.gt11;
+                            else
+                                return ".";
                             }
-                        }, {
-                            name: "maf",
-                            width: 50,
-                            title: "MAF",
-                            formula: function(row) {
-                                if (row.stats != null && row.stats.maf != null)
-                                    return row.stats.maf;
-                                else
-                                    return ".";
-                            }
-                        }]
+                    }, {
+                        name: "gtmissing",
+                        width: 50,
+                        title: "./.",
+                        formula: function(row) {
+                            if (row.stats != null && row.stats.gtmissing != null)
+                                return row.stats.gtmissing;
+                            else
+                                return ".";
+                        }
+                    }]
+                }, {
+                    title: "Freq.",
+                    name: "freq",
+                    width: 150,
+                    columns: [{
+                        name: "refFreq",
+                        width: 50,
+                        title: "0 Freq",
+                        formula: function(row) {
+                            if (row.stats != null && row.stats.refFreq != null)
+                                return row.stats.refFreq;
+                            else
+                                return ".";
+                        }
+                    }, {
+                        name: "altFreq",
+                        width: 50,
+                        title: "1 Freq",
+                        formula: function(row) {
+                            if (row.stats != null && row.stats.altFreq != null)
+                                return row.stats.altFreq;
+                            else
+                                return ".";
+                        }
+                    }, {
+                        name: "maf",
+                        width: 50,
+                        title: "MAF",
+                        formula: function(row) {
+                            if (row.stats != null && row.stats.maf != null)
+                                return row.stats.maf;
+                            else
+                                return ".";
+                        }
                     }]
                 }, {
                     title: "1000G MAF (phase 1)",
@@ -650,132 +984,133 @@
                                     return ".";
                                 }
                             }
-                        }
-
-                    ]
+                        }]
                 }, {
-                    title: "1000G MAF (phase 3)",
-                    width: 150,
-                    name: 'maf1000G3',
+                    title: 'Alt. Allele Freq.',
+                    name: 'aaf',
+                    width: 300,
                     columns: [{
-                        name: "maf1000G_PHASE_3_ALL",
-                        title: "ALL",
-                        defaultValue: ".",
-                        formula: function(row) {
-                            if (row.maf1000G_PHASE_3_ALL != null) {
-                                return row.maf1000G_PHASE_3_ALL;
-                            } else {
-                                return ".";
-                            }
-                        }
-                    }, {
-                        name: "maf1000G_PHASE_3_AMR",
-                        title: "AME",
-                        defaultValue: ".",
-                        visible: false,
-                        formula: function(row) {
-                            if (row.maf1000G_PHASE_3_AMR != null) {
-                                return row.maf1000G_PHASE_3_AMR;
-                            } else {
-                                return ".";
-                            }
-                        }
-                    }, {
-                        name: "maf1000G_PHASE_3_SAS",
-                        title: "South ASI",
-                        defaultValue: ".",
-                        visible: false,
-                        formula: function(row) {
-                            if (row.maf1000G_PHASE_3_SAS != null) {
-                                return row.maf1000G_PHASE_3_SAS;
-                            } else {
-                                return ".";
-                            }
-                        }
-                    }, {
-                        name: "maf1000G_PHASE_3_EAS",
-                        title: "East ASI",
-                        defaultValue: ".",
-                        visible: false,
-                        formula: function(row) {
-                            if (row.maf1000G_PHASE_3_EAS != null) {
-                                return row.maf1000G_PHASE_3_EAS;
-                            } else {
-                                return ".";
-                            }
-                        }
-                    }, {
-                        name: "maf1000G_PHASE_3_AFR",
-                        title: "AFR",
-                        defaultValue: ".",
-                        visible: false,
-                        formula: function(row) {
-                            if (row.maf1000G_PHASE_3_AFR != null) {
-                                return row.maf1000G_PHASE_3_AFR;
-                            } else {
-                                return ".";
-                            }
-                        }
-                    }, {
-                        name: "maf1000G_PHASE_3_EUR",
-                        title: "EUR",
-                        defaultValue: ".",
-                        formula: function(row) {
-                            if (row.maf1000G_PHASE_3_EUR != null) {
-                                return row.maf1000G_PHASE_3_EUR;
-                            } else {
-                                return ".";
-                            }
-                        }
-                    } ]
-
-                }, {
-                    title: "ExAC",
-                    width: 50,
-                    name: 'mafexac',
-                    columns: [{
-                            name: "mafexac_ALL",
+                        title: "1000G (phase 3)",
+                        width: 150,
+                        name: 'aaf1000G3',
+                        columns: [{
+                            name: "aaf1000G_PHASE_3_ALL",
                             title: "ALL",
                             defaultValue: ".",
                             formula: function(row) {
-                                if (row.mafexac_ALL != null) {
-                                    return row.mafexac_ALL;
+                                if (row.aaf1000G_PHASE_3_ALL != null) {
+                                    return row.aaf1000G_PHASE_3_ALL;
                                 } else {
                                     return ".";
                                 }
-                            }
-                        }
-                    ]
-                },
-
-                {
-                    title: "ESP 6500",
-                    width: 100,
-                    name: 'maf6500',
-                    columns: [{
-                            name: "mafESP_ALL",
-                            title: "ALL",
+                            },
+                        }, {
+                            name: "maf1000G_PHASE_3_AMR",
+                            title: "AME",
                             defaultValue: ".",
+                            visible: false,
                             formula: function(row) {
-                                if (row.mafESP_ALL != null) {
-                                    return row.mafESP_ALL;
+                                if (row.maf1000G_PHASE_3_AMR != null) {
+                                    return row.maf1000G_PHASE_3_AMR;
+                                } else {
+                                    return ".";
+                                }
+                            },
+
+                        }, {
+                            name: "maf1000G_PHASE_3_SAS",
+                            title: "South ASI",
+                            defaultValue: ".",
+                            visible: false,
+                            formula: function(row) {
+                                if (row.maf1000G_PHASE_3_SAS != null) {
+                                    return row.maf1000G_PHASE_3_SAS;
                                 } else {
                                     return ".";
                                 }
                             }
                         }, {
-                            name: "mafESP_EA",
-                            title: "Eur. Ame.",
+                            name: "maf1000G_PHASE_3_EAS",
+                            title: "East ASI",
                             defaultValue: ".",
+                            visible: false,
                             formula: function(row) {
-                                if (row.mafESP_EA != null) {
-                                    return row.mafESP_EA;
+                                if (row.maf1000G_PHASE_3_EAS != null) {
+                                    return row.maf1000G_PHASE_3_EAS;
                                 } else {
                                     return ".";
                                 }
                             }
-                        }
-                    ]
+                        }, {
+                            name: "maf1000G_PHASE_3_AFR",
+                            title: "AFR",
+                            defaultValue: ".",
+                            visible: false,
+                            formula: function(row) {
+                                if (row.maf1000G_PHASE_3_AFR != null) {
+                                    return row.maf1000G_PHASE_3_AFR;
+                                } else {
+                                    return ".";
+                                }
+                            }
+                        }, {
+                            name: "aaf1000G_PHASE_3_EUR",
+                            title: "EUR",
+                            defaultValue: ".",
+                            formula: function(row) {
+                                if (row.aaf1000G_PHASE_3_EUR != null) {
+                                    return row.aaf1000G_PHASE_3_EUR;
+                                } else {
+                                    return ".";
+                                }
+                            },
+                        } ]
+
+                    }, {
+                        title: "ExAC",
+                        width: 50,
+                        name: 'aafexac',
+                        columns: [{
+                                name: "aafexac_ALL",
+                                title: "ALL",
+                                defaultValue: ".",
+                                formula: function(row) {
+                                    if (row.aafexac_ALL != null) {
+                                        return row.aafexac_ALL;
+                                    } else {
+                                        return ".";
+                                    }
+                                }
+                            }
+                        ]
+                    }, {
+                        title: "ESP 6500",
+                        width: 100,
+                        name: 'aaf6500',
+                        columns: [{
+                            name: "aafESP_ALL",
+                            title: "ALL",
+                            defaultValue: ".",
+                            formula: function (row) {
+                                if (row.aafESP_ALL != null) {
+                                    return row.aafESP_ALL;
+                                } else {
+                                    return ".";
+                                }
+                            }
+                        }, {
+                            name: "aafESP_EA",
+                            title: "Eur. Ame.",
+                            defaultValue: ".",
+                            formula: function (row) {
+                                if (row.aafESP_EA != null) {
+                                    return row.aafESP_EA;
+                                } else {
+                                    return ".";
+                                }
+                            }
+                        }]
+                    }]
                 }, {
                     name: 'sift',
                     title: 'SIFT',
@@ -786,6 +1121,9 @@
                         } else {
                             return ".";
                         }
+                    },
+                    styleFormula: function(row) {
+                        return me._getStyleFormula(row.sift, 'sift')
                     }
                 }, {
                     name: 'polyphen',
@@ -797,10 +1135,14 @@
                         } else {
                             return ".";
                         }
+                    },
+                    styleFormula: function(row) {
+                        return me._getStyleFormula(row.polyphen, 'polyphen')
                     }
                 }, {
                     name: 'phastcons',
                     title: 'PhastCons',
+                    visible: false,
                     width: 60,
                     formula: function(row) {
                         if (row.phastcons !== null  && typeof row.phastcons !== 'undefined') {
@@ -808,10 +1150,11 @@
                         } else {
                             return ".";
                         }
-                    }
+                    },
                 }, {
                     name: 'phylop',
                     title: 'phyloP',
+                    visible: false,
                     width: 50,
                     formula: function(row) {
                         if (row.phylop !== null  && typeof row.phylop !== 'undefined') {
@@ -830,6 +1173,9 @@
                         } else {
                             return ".";
                         }
+                    },
+                    styleFormula: function(row) {
+                        return me._getStyleFormula(row.gerp,"gerp")
                     }
                 }, {
                     name: 'cadd',
@@ -841,6 +1187,9 @@
                         } else {
                             return ".";
                         }
+                    },
+                    styleFormula: function(row) {
+                        return me._getStyleFormula(row.cadd, 'cadd')
                     }
                 }, {
                     name: 'ct',
@@ -848,6 +1197,9 @@
                     width: 150,
                     formula: function (row) {
                         return row.annots.displayConsequenceType;
+                    },
+                    styleFormula: function(row) {
+                        return me._getStyleFormulaConsecuence(row.annots.displayConsequenceType, 'ct')
                     }
                 }, {
                     name: 'phenotypes',
@@ -964,12 +1316,10 @@
             });
             return results;
         },
-        submitForm: function() {
+        submitForm: function(e) {
 
             var me = this;
             var query = {};
-
-
             var regionValue = this.$.filterPosition.checkRegion();
             if (regionValue == -1) {
                 return;
@@ -980,13 +1330,16 @@
 
             var regions = [];
             if (regionValue != null) {
-
                 regions = regionValue.split(",");
                 if (regions.length > this.maxLength && !this.isLogged) {
                     alert("The total size of all provided regions can't exceed " + this.maxLength + " positions");
                     return
                 }
             }
+
+            if (!this.saturation && !this.handleHighlights())
+                return
+
 
             var genes = [];
             if (geneValue != null) {
@@ -1043,7 +1396,6 @@
                 }
             }
 
-
             var technologyEls = this.$.technologies_div.querySelectorAll(".technologyName");
             var technologyIds = [];
 
@@ -1061,42 +1413,59 @@
                 query.technologies = technologyIds.join(",");
                 query.skipCount = false;
 
-                CSVSManager.regions.saturation({
-                    id: regionQuery,
-                    query: query,
-                    request: {
-                        success: function(response) {
+                // Select tab saturation
+                if (this.saturation){
+                    // show msj loading
+                    this.loadingSaturation = true;
+                    // remove data chart
+                    this.reloadChart({});
+                    CSVSManager.regions.saturation({
+                        id: regionQuery,
+                        query: query,
+                        request: {
+                            success: function(response) {
 
-                            var data = response.result[0];
+                                var data = response.result[0];
 
-                            for (var region in regionGene) {
-                                if (region in data) {
-                                    var newKey = regionGene[region];
-                                    data[newKey] = data[region];
-                                    delete data[region];
+                                for (var region in regionGene) {
+                                    if (region in data) {
+                                        var newKey = regionGene[region];
+                                        data[newKey] = data[region];
+                                        delete data[region];
+                                    }
                                 }
-                            }
-                            try {
+                                try {
+                                    me.reloadChart(data);
+                                    // remove msj loading
+                                    me.loadingSaturation = false;
+                                } catch (e) {
+                                    me.reloadChart({});
+                                    // remove msj loading
+                                    me.loadingSaturation = false
+                                }
 
-                                me.reloadChart(data);
-                            } catch (e) {
-                                me.reloadChart({});
                             }
-
                         }
-                    }
-                });
+                    });
+                } else {
+                    // Select tab saturation search
+                    var url = CSVSManager.variants.fetch({
+                        query: query,
+                        request: {
+                            url: true
+                        }
+                    });
 
-                var url = CSVSManager.variants.fetch({
-                    query: query,
-                    request: {
-                        url: true
+                    // url == formURl no search but reload data
+                    if (url == this.formURL){
+                        this.urlChanged(url, this.formURL);
                     }
-                });
 
-                this.formURL = url;
+                    this.formURL = url;
+                }
             }
-            if (regions.length == 0 && genes.length == 0) {
+            // e -> If event is click check region/gene
+            if (regions.length == 0 && genes.length == 0 && e != undefined) {
                 alert("Please add a region/gene and check any subpopulation/technology");
             }
 
@@ -1113,7 +1482,7 @@
 
             this.$.filter_form.reset();
             this.$.filterPosition.clear();
-
+            this.highlightsDefault();
         },
         loadForm: function(hf) {
             var filterName = [];
@@ -1182,6 +1551,15 @@
             }
 
         },
+        selectAllHighlights: function(e, d, s) {
+            var checkboxes = this.$.filter_form.getElementsByClassName("highlightSOName");
+            for (var i = 0; i < checkboxes.length; i++) {
+                var elem = checkboxes[i];
+                if (e.target.name == undefined ||  e.target.name != undefined && elem.name == e.target.name )
+                    elem.checked = true;
+            }
+            e.stopPropagation();
+        },
         deselectAllDiseases: function(e, d, s) {
             var checkboxes = this.$.filter_form.getElementsByClassName("diseaseName");
             for (var i = 0; i < checkboxes.length; i++) {
@@ -1196,6 +1574,17 @@
                 elem.checked = false;
             }
         },
+
+        deselectAllHighlights: function(e, d, s) {
+            var checkboxes = this.$.filter_form.getElementsByClassName("highlightSOName");
+            for (var i = 0; i < checkboxes.length; i++) {
+                var elem = checkboxes[i];
+                if ( e.target.name == undefined ||  e.target.name != undefined && elem.name == e.target.name )
+                    elem.checked = false;
+            }
+
+        },
+
         urlChanged: function(neo, old) {
 
             var me = this;
@@ -1492,7 +1881,7 @@
                             switch (pfreq.population) {
                                 case "ALL":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000G = Number(maf).toFixed(3)
+                                    variant.maf1000G = Number(maf).toFixed(3);
                                     break;
 
                                 case "AMR":
@@ -1519,7 +1908,8 @@
                             switch (pfreq.population) {
                                 case "ALL":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000G_PHASE_3_ALL = Number(maf).toFixed(3)
+                                    variant.maf1000G_PHASE_3_ALL = Number(maf).toFixed(3);
+                                    variant.aaf1000G_PHASE_3_ALL = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
                                 case "SAS":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
@@ -1539,7 +1929,8 @@
                                     break;
                                 case "EUR":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000G_PHASE_3_EUR = Number(maf).toFixed(3)
+                                    variant.maf1000G_PHASE_3_EUR = Number(maf).toFixed(3);
+                                    variant.aaf1000G_PHASE_3_EUR = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
 
                             }
@@ -1547,15 +1938,17 @@
                             switch (pfreq.population) {
                                 case "EA":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.mafESP_EA = Number(maf).toFixed(3)
+                                    variant.mafESP_EA = Number(maf).toFixed(3);
+                                    variant.aafESP_EA = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
                                 case "AA":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.mafESP_AA = Number(maf).toFixed(3)
+                                    variant.mafESP_AA = Number(maf).toFixed(3);
                                     break;
                                 case "ALL":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.mafESP_ALL = Number(maf).toFixed(3)
+                                    variant.mafESP_ALL = Number(maf).toFixed(3);
+                                    variant.aafESP_ALL = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
 
 
@@ -1565,6 +1958,7 @@
                                 case "ALL":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
                                     variant.mafexac_ALL = Number(maf).toFixed(3)
+                                    variant.aafexac_ALL = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
                                 case "EUR":
                                     var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
@@ -1717,7 +2111,7 @@
                     var allZero = true;
 
                     for (var i = 0; i < auxTable.length && allZero; i++) {
-                        if (auxTable[i][j].count != 0) {
+                        if (auxTable[i][j] != undefined &&  auxTable[i][j].count != 0) {
                             allZero = false;
                         }
 
@@ -1738,7 +2132,6 @@
             }
         },
         reloadChart: function(data) {
-
             var me = this;
             var chartData = [];
 
@@ -1781,15 +2174,14 @@
                 for (var i = 0; i < diseaseData.length; i++) {
                     var elem = diseaseData[i];
                     var dis = this.diseaseMap[elem.diseaseId];
-                    if (dis.samples == 0) {
-                        continue;
-                    }
 
                     labels.push(dis.name);
                     counts.push({
+                        x: elem.samples,
                         y: elem.count,
                         _count: elem.count,
-                        _samples: dis.samples
+                        _samples: elem.samples,
+                        _disease: dis.name
                     });
 
                     total += elem.count;
@@ -1797,24 +2189,37 @@
 
                 for (var i = 1; i < counts.length; i++) {
                     counts[i].y += counts[i - 1].y;
+                    counts[i].x += counts[i - 1].x;
                 }
                 for (var i = 0; i < counts.length; i++) {
-                    counts[i].radius = counts[i]._count / 5; //1/(counts[i]._count)
+
+                    counts[i].radius = counts[i]._count / 5; //1/(counts[i]._count);
+                    counts[i].fillColor = Highcharts.Color(Highcharts.getOptions().colors[chartData.length]).setOpacity(0.7).get('rgba');
+                    if (counts[i].radius > 120) {
+                        counts[i].radius = 120;
+                        counts[i].lineWidth = 5;
+                        counts[i].lineColor = Highcharts.Color('#dddddd').setOpacity(0.7).get('rgba');
+                    }
                 }
 
                 labels.unshift(
                     ""
                 );
                 counts.unshift({
-                    y: 0
+                    y: 0,
+                    x:0
                 });
+
 
                 chartData.push({
                     name: key,
                     data: counts
                 });
-                console.log(chartData);
+
+
             }
+
+            me.$.tvSaturation.dataSaturation=chartData;
 
             var chart = new Highcharts.Chart({
                 _me: me,
@@ -1825,7 +2230,7 @@
                     plotShadow: false,
                     renderTo: this.$.chart,
                     borderRadius: 10,
-                    width: 1000,
+                   // width: 1000,
                     height: 700,
                     pointStart: 0,
                     _me: me
@@ -1839,7 +2244,12 @@
                     formatter: function() {
                         //                        debugger
                         var point = this.point;
-                        return ' Disease Group: <b>' + this.x + '</b><br> New Variants: <b>' + point._count + '</b> <br> Acum. Variants: <b>' + this.y + '</b></br>Samples: <b>' + point._samples + '</b>';
+                        if(point._samples != undefined)
+                            return ' Disease Group: <b>' + point._disease + '</b><br> New Variants: <b>' + point._count + '</b> <br> Acum. Variants: <b>' + this.y + '</b></br>Samples: <b>' + point._samples + '</b>' +
+                                '</br>Acum. Samples: <b>' + this.x + '</b>'
+                                ;
+                        else
+                            return ' Disease Group: <b> </b><br> New Variants: <b>0 </b> <br> Acum. Variants: <b>0 </b></br>Samples: <b> 0</b>';
 
                     }
                 },
@@ -1847,20 +2257,30 @@
                     enabled: false
                 },
                 xAxis: {
-                    categories: labels,
-                    tickInterval: 1,
-                    breaks: diseaseBreaks,
                     labels: {
                         rotation: 335
                     },
+                    crosshair: {
+                        width: 2,
+                        color: 'gray',
+                        dashStyle: 'shortdot'
+                    },
+                    title: {
+                        text: 'Num. samples'
+                    },
                 },
+
                 yAxis: {
                     title: {
                         text: 'Num. variants'
                     },
                     min: 0,
-                    startOnTick: true
-                },
+                    startOnTick: true,
+                    crosshair: {
+                        width: 2,
+                        color: 'gray',
+                        dashStyle: 'shortdot'
+                    }                },
                 plotOptions: {
                     line: {
                         dataLabels: {
@@ -1870,6 +2290,7 @@
                 },
                 series: chartData
             });
+
         }
     });
 </script>

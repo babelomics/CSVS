@@ -7,6 +7,9 @@
 CSVS_HOST = "http://192.168.150.147:9799/rest";
 
 CELLBASE_VERSION = "v4";
+//CELLBASE_HOST = "http://bioinfo.hpc.cam.ac.uk/cellbase";
+//CELLBASE_HOST = "http://bioinfodev.hpc.cam.ac.uk/cellbase-dev-v4.0";
+//CELLBASE_HOST = "http://ws.babelomics.org/cellbase";
 CELLBASE_HOST = "http://cellbase.clinbioinfosspa.es/cb";
 
 OPENCGA_HOST = "http://test.babelomics.org/opencga-0.7-dev";
@@ -16,6 +19,7 @@ STV_APP="CSVS";
 
 // Version file download
 VERSION_FILE = "July 4, 2018";
+CSVS_EMAIL='csvs@clinbioinfosspa.es';
 
 // Mail
 // PRO

@@ -20,6 +20,7 @@ public class CSVSVariantStatsTask extends Task<Variant> {
     private VariantSource source;
     private VariantSourceStats stats;
     private static final String PASS = "PASS";
+    private static final String PASS_INDETERMIATE = ".";
     private static final String FILTER = "FILTER";
     private static final String GT = "GT";
     private static final String NOT_SEQ = "./.";
@@ -50,9 +51,12 @@ public class CSVSVariantStatsTask extends Task<Variant> {
                     Object key = it.next();
 
                     // Replace value GT when FILTER distinct PASS
-                    if (file.getAttributes() != null && file.getAttributes().containsKey(FILTER) && !PASS.equals(file.getAttributes().get(FILTER))) {
-                      System.out.println(variant.getChromosome() + ":" + variant.getStart() + " " + variant.getReference() + "-> " + variant.getAlternate() + "  FILTER = " + file.getAttributes().get(FILTER) + "   Replaced: GT = "+ linkedHashMap.get(key).get(GT) +"-> " +NOT_SEQ);
-                      linkedHashMap.get(key).put(GT, NOT_SEQ);
+                    if (file.getAttributes() != null && file.getAttributes().containsKey(FILTER) && !(PASS.equals(file.getAttributes().get(FILTER)) || PASS_INDETERMIATE.equals(file.getAttributes().get(FILTER)))) {
+                        if (!NOT_SEQ.equals(linkedHashMap.get(key).get(GT))) {
+                        // TODO: Remove comment FILTER
+                            //    System.out.println(variant.getChromosome() + ":" + variant.getStart() + " " + variant.getReference() + "-> " + variant.getAlternate() + "  FILTER = " + file.getAttributes().get(FILTER) + "   Replaced: GT = " + linkedHashMap.get(key).get(GT) + "-> " + NOT_SEQ);
+                            linkedHashMap.get(key).put(GT, NOT_SEQ);
+                        }
                     }
                 }
 

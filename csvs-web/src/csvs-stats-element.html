@@ -168,18 +168,23 @@
             }
 
             Object.keys(auxVariants).forEach(function (key) {
-                variants.push({
-                    name: key,
-                    y: auxVariants[key]
-                })
+                if (auxSamples[key] > 0) {
+                    variants.push({
+                        name: key,
+                        y: auxVariants[key]
+                    })
+                }
             });
 
             Object.keys(auxSamples).forEach(function (key) {
-                samples.push({
-                    name: key,
-                    y: auxSamples[key]
-                })
+                if (auxSamples[key] > 0) {
+                    samples.push({
+                        name: key,
+                        y: auxSamples[key]
+                    })
+                }
             });
+
 
 
             this._createCharts(variants, "Variants per Disease", samples, "Samples per Disease", this.$.chartContainer);
@@ -210,17 +215,21 @@
             }
 
             Object.keys(auxVariants).forEach(function (key) {
-                variants.push({
-                    name: key,
-                    y: auxVariants[key]
-                })
+                if (auxSamples[key] > 0) {
+                    variants.push({
+                        name: key,
+                        y: auxVariants[key]
+                    })
+                }
             });
 
             Object.keys(auxSamples).forEach(function (key) {
-                samples.push({
-                    name: key,
-                    y: auxSamples[key]
-                })
+                if (auxSamples[key] > 0) {
+                    samples.push({
+                        name: key,
+                        y: auxSamples[key]
+                    })
+                }
             });
 
             this._createCharts(variants, "Variants per Technology", samples, "Samples per Technology", this.$.techChartContainer);

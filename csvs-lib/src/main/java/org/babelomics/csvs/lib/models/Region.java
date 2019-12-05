@@ -118,6 +118,8 @@ public class Region {
         return regions;
     }
 
+    public ObjectId getId() { return id; }
+
     public String getChromosome() {
         return chromosome;
     }
@@ -141,6 +143,11 @@ public class Region {
     public void setEnd(int end) {
         this.end = end;
     }
+
+    public ObjectId getIdPanel() {
+        return idPanel;
+    }
+
 
     @Override
     public boolean equals(Object o) {

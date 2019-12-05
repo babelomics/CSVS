@@ -100,10 +100,15 @@ public class CSVSVariantCountsCSVDataWriter implements VariantWriter {
                     if (g.getAllelesIdx().length == 2) {
                         if (g.getAllele(0) == 0 && g.getAllele(1) == 0) {
                             gt00 += count;
-                        } else if (g.getAllele(0) == -1 || g.getAllele(1) == -1) {
-                            gtmissing += count;
                         } else {
-                            gt11 += count;
+                            // Region par permit 0/1
+                            if ((g.getAllele(0) == 0 && g.getAllele(1) == 1) || (g.getAllele(0) == 1 && g.getAllele(1) == 0)){
+                                gt01 += count;
+                            } else if (g.getAllele(0) == -1 || g.getAllele(1) == -1) {
+                                gtmissing += count;
+                            } else {
+                                gt11 += count;
+                            }
                         }
                     } else if (g.getAllelesIdx().length == 1) {
                         if (g.getAllele(0) == 0) {

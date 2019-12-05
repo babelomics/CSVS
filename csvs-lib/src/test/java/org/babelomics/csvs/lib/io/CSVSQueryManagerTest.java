@@ -79,13 +79,14 @@ public class CSVSQueryManagerTest {
         URL url_1= CSVSQueryManagerTest.class.getClassLoader().getResource("d23_t1.csv");
         File file_1 = new File(url_1.toURI());
         //CSVSUtil.loadVariants(file_d1_t1.toPath(), 23, 1, datastore);
-        CSVSUtil.loadVariants(file_1.toPath(), 23, 1, datastore, file_regions.toPath(), "Nombre Apellido1 Apellido2", true);
+        CSVSUtil.loadVariants(file_1.toPath(), 23, 1, datastore, file_regions.toPath(), "Nombre Apellido1 Apellido2", true, "XX");
 
         URL url_2 = CSVSQueryManagerTest.class.getClassLoader().getResource("d23_t1-2.csv");
         File file_2 = new File(url_2.toURI());
-        CSVSUtil.loadVariants(file_2.toPath(), 23, 1, datastore, file_regions.toPath(), "Nombre Apellido1 Apellido2", true);
+        CSVSUtil.loadVariants(file_2.toPath(), 23, 1, datastore, file_regions.toPath(), "Nombre Apellido1 Apellido2", true, "XX");
 
 
+        // Recalculate panel
         List<Integer> diseases = new ArrayList<>();
         diseases.add(23);
         List<Integer> technologies = new ArrayList<>();
@@ -95,7 +96,7 @@ public class CSVSQueryManagerTest {
 
         URL url_3 = CSVSQueryManagerTest.class.getClassLoader().getResource("d23_t1-3.csv");
         File file_3 = new File(url_3.toURI());
-        CSVSUtil.loadVariants(file_3.toPath(), 23, 1, datastore);
+        CSVSUtil.loadVariants(file_3.toPath(), 23, 1, datastore, true, "XY");
 
         //CSVSUtil.unloadVariants(file_1.toPath(), 23, 1, datastore);
         //CSVSUtil.unloadVariants(file_3.toPath(), 23, 1, datastore);
@@ -103,8 +104,7 @@ public class CSVSQueryManagerTest {
 
     @AfterClass
     public static void closeDB() {
-
-     //   mongoclient.dropDatabase(dbName);
+//        mongoclient.dropDatabase(dbName);
         mongodExecutable.stop();
     }
 
@@ -228,6 +228,33 @@ public class CSVSQueryManagerTest {
         assertEquals(dc2.getGt11(), 0);
         assertEquals(dc2.getGtmissing(), 0);
 
+    }
+
+
+    @Test
+    public void testGetVariantsByRegionListGender() throws Exception {
+
+
+        List<Region> list = new ArrayList<>();
+        list.add(new Region("X", 1, 10));
+        list.add(new Region("Y", 1, 10));
+
+        List<Integer> d3= Arrays.asList(3);
+        List<Integer> t1 = Arrays.asList(1);
+
+
+        List<Variant> variants = Lists.newArrayList(qm.getVariantsByRegionList(list, d3, t1, 0, 100, false, new MutableLong(-1)));
+
+        //assertEquals(variants.size(), 1);
+        System.out.println("CSVS (testGetVariantsByRegionListGender): variants.size() = " + variants.size());
+        for(Variant v: variants) {
+            DiseaseCount dc1 = v.getStats();
+            System.out.println("CSVS (testGetVariantsByRegionListGender): dc1 = " + dc1 + "  Var:" + v.getChromosome() + ":" + v.getPosition()+ ":" + v.getReference() + ":" + v.getAlternate());
+        }
+       // assertEquals(dc1.getGt00(), 2);
+        //assertEquals(dc1.getGt01(), 2);
+        //assertEquals(dc1.getGt11(), 0);
+        //assertEquals(dc1.getGtmissing(), 0);
     }
 
     @Test
