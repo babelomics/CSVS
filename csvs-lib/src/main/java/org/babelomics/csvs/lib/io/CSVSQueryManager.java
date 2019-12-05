@@ -876,13 +876,13 @@ public class CSVSQueryManager {
 
         dc = new DiseaseCount(null, null, gt00, gt01, gt11, gtmissing);
  
-        if (!Float.isNaN(refFreq)) {
+        if (!Float.isNaN(refFreq) && !Float.isInfinite(refFreq)) {
             dc.setRefFreq(round(refFreq, DECIMAL_POSITIONS));
         }
-        if (!Float.isNaN(altFreq)) {
+        if (!Float.isNaN(altFreq) && !Float.isInfinite(altFreq)) {
             dc.setAltFreq(round(altFreq, DECIMAL_POSITIONS));
         }
-        if (!Float.isNaN(maf)) {
+        if (!Float.isNaN(maf) && !Float.isInfinite(maf)) {
             dc.setMaf(round(maf, DECIMAL_POSITIONS));
         }
 

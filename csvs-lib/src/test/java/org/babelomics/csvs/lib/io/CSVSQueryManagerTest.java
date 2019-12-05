@@ -96,7 +96,7 @@ public class CSVSQueryManagerTest {
 
         URL url_3 = CSVSQueryManagerTest.class.getClassLoader().getResource("d23_t1-3.csv");
         File file_3 = new File(url_3.toURI());
-        CSVSUtil.loadVariants(file_3.toPath(), 23, 1, datastore, true, "XY");
+        CSVSUtil.loadVariants(file_3.toPath(), 23, 1, datastore, null, "Person", true, "XY");
 
         //CSVSUtil.unloadVariants(file_1.toPath(), 23, 1, datastore);
         //CSVSUtil.unloadVariants(file_3.toPath(), 23, 1, datastore);

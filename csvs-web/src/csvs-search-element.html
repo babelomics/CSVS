@@ -7,6 +7,7 @@
 <link rel="import" href="../bower_components/stevia-elements/src/stv-tooltip.html">
 
 <script src="../bower_components/stevia-elements/src/manager/cellbase-manager.js"></script>
+<script src="./manager/csvs-manager.js"></script>
 
 <link rel="import" href="./csvs-table-saturation.html">
 
@@ -60,7 +61,7 @@
             ;
         }
 
-        #diseases_div
+        #diseases_div, #diseasesCSVS_div
         {
             height: 300px;
             max-height: 300px;
@@ -76,7 +77,7 @@
         #highlights_div{
             height: 550px;
             max-height: 550px;
-            width: 230px;
+            width: 225px;
             overflow-y: auto;
         }
 
@@ -127,7 +128,7 @@
         }
 
         .tool {
-            min-height: 800px;
+            min-height: 1000px;
             width: 100%;
         }
 
@@ -137,7 +138,7 @@
         }
 
         stv-form-box {
-            min-width: 250px;
+            min-width: 240px;
         }
 
         #dataTable {
@@ -235,7 +236,7 @@
                         </div>
 
                         <stv-filter-position id="filterPosition"></stv-filter-position>
-                        <stv-form-box style="display:none" >
+                        <stv-form-box style="display: none">
                             <div class="header horizontal layout flex">
                                 <div>Subpopulations</div>
                                 <div class="flex"></div>
@@ -251,7 +252,7 @@
                                     <template is="dom-repeat" items="{{diseases}}">
                                         <template is="dom-if" if="{{item.samples}}">
                                             <label class="stv-control">
-                                                <input type="checkbox" class="diseaseName" name="disease" id="disease" value="{{item.groupId}}" checked/>
+                                                <input type="checkbox" class="diseaseName" name="disease" id="disease{{item.groupId}}" value="{{item.groupId}}" checked/>
                                                 <span>{{item.name}}</span>
                                             </label>
                                         </template>
@@ -259,6 +260,32 @@
                                 </div>
                             </div>
                         </stv-form-box>
+
+                        <stv-form-box hidden$="{{!isVisibleCSVS}}" >
+                            <div class="header horizontal layout flex">
+                                <div>Subpopulations  <a class="csvs-downloads-element" title="Collaborative Spanish Variant Server" href="{{csvsQueryUrl}}" alt="Collaborative Spanish Variant Server" target="_blank" > CSVS </a></div>
+                                <div class="flex"></div>
+                                <div on-click="selectAllDiseases">
+                                    <i class="fa fa-check-square-o check" name="CSVS"></i>
+                                </div>
+                                <div on-click="deselectAllDiseases">
+                                    <i class="fa fa-square-o check" name="CSVS"></i>
+                                </div>
+                            </div>
+                            <div class="container">
+                                <div id="diseasesCSVS_div">
+                                    <template is="dom-repeat" items="{{diseasesCSVS}}">
+                                        <template is="dom-if" if="{{item.samples}}">
+                                            <label class="stv-control">
+                                                <input type="checkbox" class="diseaseNameCSVS" name="diseaseCSVS" id="diseaseCSVS{{item.groupId}}" value="{{item.groupId}}" checked/>
+                                                <span>{{item.name}}</span>
+                                            </label>
+                                        </template>
+                                    </template>
+                                </div>
+                            </div>
+                        </stv-form-box>
+
                         <stv-form-box style="display:none">
                             <div class="header horizontal layout flex">
                                 <div>Technologies</div>
@@ -275,7 +302,7 @@
                                     <template is="dom-repeat" items="{{technologies}}">
                                         <template is="dom-if" if="{{item.samples}}">
                                             <label class="stv-control">
-                                                <input type="checkbox" class="technologyName" name="technology" id="technology" value="{{item.technologyId}}" checked/>
+                                                <input type="checkbox" class="technologyName" name="technology" id="technology{{item.technologyId}}" value="{{item.technologyId}}" checked/>
                                                 <span>{{item.name}}</span>
                                             </label>
                                         </template>
@@ -366,7 +393,8 @@
                 </form>
             </div>
             <div id="dataGridElement" class="vertical layout" hidden$="{{saturation}}">
-                <stv-table id="dataTable" enable-loading enable-paging enable-remote enable-select enable-resize request="{{request}}" columns="{{columns}}" on-rowclick="handleRowClick">
+                <stv-table id="dataTable" enable-loading enable-paging enable-remote enable-select enable-resize request="{{request}}" columns="{{columns}}" on-rowclick="handleRowClick"
+                           on-column-visibility-change="handleColumnVisible">
                     <div class="custom-buttons horizontal layout">
                         <button style="margin-right: 10px; color: #006699" id="saveTable" class="stv-btn down" on-click="downloadFiles" data-file="{{cnv}}"><i class="fa fa-cloud-download"></i> save</button>
                     </div>
@@ -416,6 +444,16 @@
                 value: function() {
                     return [];
                 }
+            },
+            diseasesCSVS: {
+                type: Array,
+                value: function() {
+                    return [];
+                },
+            },
+            isVisibleCSVS:{
+                type: Boolean,
+                value: false
             },
             highlights: {
                 type: Array,
@@ -504,7 +542,6 @@
                                     { name: "stop_retained_variant", impact: "LOW", checked: true, defaultChecked: true },
                                     { name: "stop_gained", impact: "HIGH", checked: true, defaultChecked: true},
                                     { name: "stop_lost", impact: "HIGH", checked: true, defaultChecked: true},
-                                    { name: "stop_retained_variant", impact: "LOW", checked: true, defaultChecked: true},
                                     { name: "start_retained_variant",	impact: "LOW", checked: true, defaultChecked: true}] },
                                 { category: "No coding", ops: [{ name: "3_prime_UTR_variant", impact: "MODIFIER",checked: true, defaultChecked: true},
                                     { name: "5_prime_UTR_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
@@ -528,7 +565,7 @@
                 type: Array,
                 value: function() {
                     return [];
-                }
+                },
             },
             formURL: {
                 type: String,
@@ -588,6 +625,10 @@
             loadingSaturation:{
                 type: Boolean,
                 value: false
+            },
+            csvsQueryUrl:{
+                type: String,
+                vale: CSVS_QUERY_URL
             }
         },
 
@@ -691,7 +732,6 @@
                 }
 
                 if (obj != null && obj != undefined && !!row && !!obj.value) {
-                    console.log(field, row + " " + obj.op + " " + obj.value, eval(row + " " + obj.op + " " + obj.value))
                     if (eval(row + " " + obj.op + " " + obj.value)) {
                         style.color = '#fff';
                         style.backgroundColor = '#f47070';
@@ -801,11 +841,56 @@
 
         },
 
+
+        ready: function() {
+            this.isLogged = this.$.stvHeader.isLogged;
+
+            this.getTechnologies();
+            this.checkShowMenuOnLogin();
+            this.selectedOption = "home";
+            this.acceptTermsCond = this.getAcceptTermsCond() == 'true'? true : false;
+        },
+
+        getDiseasesCSVS: function() {
+            var me = this;
+            try {
+                CSVSManager.diseases.list({
+                    request: {
+                        async: false,
+                        host: CSVS_QUERY_HOST,
+                        success: function(response) {
+                            try {
+                                var diseases = [];
+
+                                for (var i = 0; i < response.result.length; i++) {
+                                    var elem = response.result[i];
+                                    diseases.push(elem);
+                                }
+                                me.diseasesCSVS = diseases;
+                            } catch (err) {
+                                console.log("Error loading diseases: " + err);
+                                me.diseasesCSVS = [];
+                            }
+                        },
+                        error: function(response) {
+                            console.log("ERROR downloading diseases");
+                            console.log(response);
+                        }
+                    }
+                });
+            } catch(e) {
+                console.log("CSVSManager.diseases", e);
+            }
+        },
+
         ready: function() {
             if (localStorage.csvs_filter_history) {
                 this.historyFilters = JSON.parse(localStorage.csvs_filter_history);
 
             }
+            // load Diseases CSVS
+            this.getDiseasesCSVS();
+            this.csvsQueryUrl = CSVS_QUERY_URL;
 
             var me = this;
             this.species = 'Homo sapiens';
@@ -822,15 +907,18 @@
             this.columns = [{
                     name: 'chromosome',
                     title: "Chr",
+                    disableSort: true,
                     width: 40
                 }, {
                     name: 'position',
                     title: 'Position',
+                    disableSort: true,
                     width: 70
                 }, {
                     name: 'alleles',
                     title: 'Alleles',
                     width: 50,
+                    disableSort: true,
                     formula: function(row) {
                         return row.reference + ">" + row.alternate;
                     }
@@ -838,12 +926,14 @@
                     name: 'genes',
                     title: 'Gene',
                     width: 90,
-                    defaultValue: "."
+                    defaultValue: ".",
+                    disableSort: true
                 }, {
                     name: 'id',
                     title: 'Id',
                     width: 90,
-                    defaultValue: "."
+                    defaultValue: ".",
+                    disableSort: true,
                 },{
                     title: "Genotypes",
                     name: 'genotypes',
@@ -852,6 +942,7 @@
                         name: "gt00",
                         width: 50,
                         title: "0/0",
+                        disableSort: true,
                         formula: function(row) {
                             if (row.stats != null && row.stats.gt00 != null)
                                 return row.stats.gt00;
@@ -862,6 +953,7 @@
                         name: "gt01",
                         width: 50,
                         title: "0/1",
+                        disableSort: true,
                         formula: function(row) {
                             if (row.stats != null && row.stats.gt01 != null)
                                 return row.stats.gt01;
@@ -882,6 +974,7 @@
                         name: "gtmissing",
                         width: 50,
                         title: "./.",
+                        disableSort: true,
                         formula: function(row) {
                             if (row.stats != null && row.stats.gtmissing != null)
                                 return row.stats.gtmissing;
@@ -893,6 +986,7 @@
                     title: "Freq.",
                     name: "freq",
                     width: 150,
+                    disableSort: true,
                     columns: [{
                         name: "refFreq",
                         width: 50,
@@ -907,6 +1001,7 @@
                         name: "altFreq",
                         width: 50,
                         title: "1 Freq",
+                        disableSort: true,
                         formula: function(row) {
                             if (row.stats != null && row.stats.altFreq != null)
                                 return row.stats.altFreq;
@@ -917,6 +1012,7 @@
                         name: "maf",
                         width: 50,
                         title: "MAF",
+                        disableSort: true,
                         formula: function(row) {
                             if (row.stats != null && row.stats.maf != null)
                                 return row.stats.maf;
@@ -925,78 +1021,80 @@
                         }
                     }]
                 }, {
-                    title: "1000G MAF (phase 1)",
+                    title: "<span title='Alternate Allele Frequency 1000G AAF (phase 1)'>1000G AAF (phase 1)</span>",
                     width: 250,
-                    name: 'maf1000g',
+                    name: 'aaf1000g',
                     visible: false,
                     columns: [{
-                            name: "maf1000G",
+                            name: "aaf1000G",
                             title: "ALL",
                             defaultValue: ".",
+                            disableSort: true,
                             formula: function(row) {
-                                if (row.maf1000G != null) {
-                                    return row.maf1000G;
+                                if (row.aaf1000G != null) {
+                                    return row.aaf1000G;
                                 } else {
                                     return ".";
                                 }
                             }
                         }, {
-                            name: "maf1000GAME",
+                            name: "aaf1000GAME",
                             title: "AME",
                             defaultValue: ".",
+                            disableSort: true,
                             formula: function(row) {
-                                if (row.maf1000GAME != null) {
-                                    return row.maf1000GAME;
+                                if (row.aaf1000GAME != null) {
+                                    return row.aaf1000GAME;
                                 } else {
                                     return ".";
                                 }
                             }
                         }, {
-                            name: "maf1000GASI",
+                            name: "aaf1000GASI",
                             title: "ASI",
                             defaultValue: ".",
+                            disableSort: true,
                             formula: function(row) {
-                                if (row.maf1000GASI != null) {
-                                    return row.maf1000GASI;
+                                if (row.aaf1000GASI != null) {
+                                    return row.aaf1000GASI;
                                 } else {
                                     return ".";
                                 }
                             }
                         }, {
-                            name: "maf1000GAFR",
+                            name: "aaf1000GAFR",
                             title: "AFR",
                             defaultValue: ".",
+                            disableSort: true,
                             formula: function(row) {
-                                if (row.maf1000GAFR != null) {
-                                    return row.maf1000GAFR;
+                                if (row.aaf1000GAFR != null) {
+                                    return row.aaf1000GAFR;
                                 } else {
                                     return ".";
                                 }
                             }
                         }, {
-                            name: "maf1000GEUR",
+                            name: "aaf1000GEUR",
                             title: "EUR",
                             defaultValue: ".",
+                            disableSort: true,
                             formula: function(row) {
-                                if (row.maf1000GEUR != null) {
-                                    return row.maf1000GEUR;
+                                if (row.aaf1000GEUR != null) {
+                                    return row.aaf1000GEUR;
                                 } else {
                                     return ".";
                                 }
                             }
                         }]
-                }, {
-                    title: 'Alt. Allele Freq.',
-                    name: 'aaf',
-                    width: 300,
-                    columns: [{
-                        title: "1000G (phase 3)",
+                     }, {
+                        title: "<span title='Alternate Allele Frequency 1000G AAF (phase 3)'>1000G AAF (phase 3)</span>",
                         width: 150,
                         name: 'aaf1000G3',
                         columns: [{
                             name: "aaf1000G_PHASE_3_ALL",
                             title: "ALL",
                             defaultValue: ".",
+                            disableSort: true,
                             formula: function(row) {
                                 if (row.aaf1000G_PHASE_3_ALL != null) {
                                     return row.aaf1000G_PHASE_3_ALL;
@@ -1005,50 +1103,53 @@
                                 }
                             },
                         }, {
-                            name: "maf1000G_PHASE_3_AMR",
+                            name: "aaf1000G_PHASE_3_AMR",
                             title: "AME",
                             defaultValue: ".",
                             visible: false,
+                            disableSort: true,
                             formula: function(row) {
-                                if (row.maf1000G_PHASE_3_AMR != null) {
-                                    return row.maf1000G_PHASE_3_AMR;
+                                if (row.aaf1000G_PHASE_3_AMR != null) {
+                                    return row.aaf1000G_PHASE_3_AMR;
                                 } else {
                                     return ".";
                                 }
                             },
 
                         }, {
-                            name: "maf1000G_PHASE_3_SAS",
+                            name: "aaf1000G_PHASE_3_SAS",
                             title: "South ASI",
                             defaultValue: ".",
                             visible: false,
                             formula: function(row) {
-                                if (row.maf1000G_PHASE_3_SAS != null) {
-                                    return row.maf1000G_PHASE_3_SAS;
+                                if (row.aaf1000G_PHASE_3_SAS != null) {
+                                    return row.aaf1000G_PHASE_3_SAS;
                                 } else {
                                     return ".";
                                 }
                             }
                         }, {
-                            name: "maf1000G_PHASE_3_EAS",
+                            name: "aaf1000G_PHASE_3_EAS",
                             title: "East ASI",
                             defaultValue: ".",
                             visible: false,
+                            disableSort: true,
                             formula: function(row) {
-                                if (row.maf1000G_PHASE_3_EAS != null) {
-                                    return row.maf1000G_PHASE_3_EAS;
+                                if (row.aaf1000G_PHASE_3_EAS != null) {
+                                    return row.aaf1000G_PHASE_3_EAS;
                                 } else {
                                     return ".";
                                 }
                             }
                         }, {
-                            name: "maf1000G_PHASE_3_AFR",
+                            name: "aaf1000G_PHASE_3_AFR",
                             title: "AFR",
                             defaultValue: ".",
                             visible: false,
+                            disableSort: true,
                             formula: function(row) {
-                                if (row.maf1000G_PHASE_3_AFR != null) {
-                                    return row.maf1000G_PHASE_3_AFR;
+                                if (row.aaf1000G_PHASE_3_AFR != null) {
+                                    return row.aaf1000G_PHASE_3_AFR;
                                 } else {
                                     return ".";
                                 }
@@ -1057,6 +1158,7 @@
                             name: "aaf1000G_PHASE_3_EUR",
                             title: "EUR",
                             defaultValue: ".",
+                            disableSort: true,
                             formula: function(row) {
                                 if (row.aaf1000G_PHASE_3_EUR != null) {
                                     return row.aaf1000G_PHASE_3_EUR;
@@ -1067,13 +1169,14 @@
                         } ]
 
                     }, {
-                        title: "ExAC",
-                        width: 50,
+                        title: "<span title='Alternate Allele Frequency ExAC'>ExAC AAF</span>",
+                        width: 60,
                         name: 'aafexac',
                         columns: [{
                                 name: "aafexac_ALL",
                                 title: "ALL",
                                 defaultValue: ".",
+                                disableSort: true,
                                 formula: function(row) {
                                     if (row.aafexac_ALL != null) {
                                         return row.aafexac_ALL;
@@ -1084,13 +1187,14 @@
                             }
                         ]
                     }, {
-                        title: "ESP 6500",
+                        title: "<span title='Alternate Allele Frequency ESP 6500'>ESP 6500 AAF</span>",
                         width: 100,
                         name: 'aaf6500',
                         columns: [{
                             name: "aafESP_ALL",
                             title: "ALL",
                             defaultValue: ".",
+                            disableSort: true,
                             formula: function (row) {
                                 if (row.aafESP_ALL != null) {
                                     return row.aafESP_ALL;
@@ -1102,6 +1206,7 @@
                             name: "aafESP_EA",
                             title: "Eur. Ame.",
                             defaultValue: ".",
+                            disableSort: true,
                             formula: function (row) {
                                 if (row.aafESP_EA != null) {
                                     return row.aafESP_EA;
@@ -1109,12 +1214,46 @@
                                     return ".";
                                 }
                             }
-                        }]
                     }]
+                },  {
+                    name: 'csvsAll',
+                    title: '<a class="csvs-downloads-element" href="' + CSVS_QUERY_URL+ '" title="Collaborative Spanish Variant Server" target="_blank">CSVS</a> <span title=\'Alternate Allele Frequency CSVS\'>AAF</span>',
+                    //width: 150,
+                    columns: [{
+                            name: 'csvsHealthy',
+                            title: 'Control <br/> (MGP+IBIS)',
+                            disableSort: true,
+                            formula: function(row) {
+                                if (row.csvsHealthy !== null  && typeof row.csvsHealthy !== 'undefined') {
+                                    return row.csvsHealthy;
+                                } else {
+                                    return ".";
+                                }
+                            },
+                            styleFormula: function(row) {
+                                return me._getStyleFormula(row.csvsHealthy, 'csvsHealthy')
+                            }
+                        }, {
+                            name: 'csvs',
+                            title: 'ALL',
+                            visible: false,
+                            disableSort: true,
+                            formula: function(row) {
+                                if (row.csvs !== null  && typeof row.csvs !== 'undefined') {
+                                    return row.csvs;
+                                } else {
+                                    return ".";
+                                }
+                            },
+                            styleFormula: function(row) {
+                                return me._getStyleFormula(row.csvs, 'csvs')
+                            }
+                        }]
                 }, {
                     name: 'sift',
                     title: 'SIFT',
                     width: 50,
+                    disableSort: true,
                     formula: function(row) {
                         if (row.sift !== null && typeof row.sift !== 'undefined') {
                             return row.sift;
@@ -1125,10 +1264,11 @@
                     styleFormula: function(row) {
                         return me._getStyleFormula(row.sift, 'sift')
                     }
-                }, {
+                },  {
                     name: 'polyphen',
                     title: 'Polyphen',
                     width: 60,
+                    disableSort: true,
                     formula: function(row) {
                         if (row.polyphen !== null  && typeof row.polyphen !== 'undefined') {
                             return row.polyphen;
@@ -1144,6 +1284,7 @@
                     title: 'PhastCons',
                     visible: false,
                     width: 60,
+                    disableSort: true,
                     formula: function(row) {
                         if (row.phastcons !== null  && typeof row.phastcons !== 'undefined') {
                             return row.phastcons;
@@ -1156,6 +1297,7 @@
                     title: 'phyloP',
                     visible: false,
                     width: 50,
+                    disableSort: true,
                     formula: function(row) {
                         if (row.phylop !== null  && typeof row.phylop !== 'undefined') {
                             return row.phylop;
@@ -1167,6 +1309,7 @@
                     name: 'gerp',
                     title: 'GERP',
                     width: 50,
+                    disableSort: true,
                     formula: function(row) {
                         if (row.gerp !== null  && typeof row.gerp !== 'undefined') {
                             return row.gerp;
@@ -1181,6 +1324,7 @@
                     name: 'cadd',
                     title: 'CADD',
                     width: 50,
+                    disableSort: true,
                     formula: function(row) {
                         if (row.cadd !== null  && typeof row.cadd !== 'undefined') {
                             return row.cadd;
@@ -1195,6 +1339,7 @@
                     name: 'ct',
                     title: 'Consequence type',
                     width: 150,
+                    disableSort: true,
                     formula: function (row) {
                         return row.annots.displayConsequenceType;
                     },
@@ -1209,6 +1354,7 @@
                         name: 'clinvar',
                         title: 'Clinvar',
                         width: 150,
+                        disableSort: true,
                         formula: function(row) {
                             try {
                                 return row.phenotypes.clinvar;
@@ -1220,6 +1366,7 @@
                         name: 'cosmic',
                         title: 'Cosmic',
                         width: 150,
+                        disableSort: true,
                         formula: function(row) {
                             try {
                                 return row.phenotypes.cosmic;
@@ -1232,6 +1379,7 @@
                         name: 'gwas',
                         title: 'GWas',
                         width: 150,
+                        disableSort: true,
                         formula: function(row) {
                             try {
                                 return row.phenotypes.gwas;
@@ -1466,7 +1614,7 @@
             }
             // e -> If event is click check region/gene
             if (regions.length == 0 && genes.length == 0 && e != undefined) {
-                alert("Please add a region/gene and check any subpopulation/technology");
+                alert("Please add a region/gene");
             }
 
             query.gene = geneValue;
@@ -1536,7 +1684,8 @@
         },
 
         selectAllDiseases: function(e, d, s) {
-            var checkboxes = this.$.filter_form.getElementsByClassName("diseaseName");
+            var name = (e.target != undefined && e.target.getAttribute("name") == "CSVS") ? "diseaseNameCSVS": "diseaseName";
+            var checkboxes = this.$.filter_form.getElementsByClassName(name);
             for (var i = 0; i < checkboxes.length; i++) {
                 var elem = checkboxes[i];
                 elem.checked = true;
@@ -1561,7 +1710,8 @@
             e.stopPropagation();
         },
         deselectAllDiseases: function(e, d, s) {
-            var checkboxes = this.$.filter_form.getElementsByClassName("diseaseName");
+            var name = (e.target != undefined && e.target.getAttribute("name") == "CSVS") ? "diseaseNameCSVS": "diseaseName";
+            var checkboxes = this.$.filter_form.getElementsByClassName(name);
             for (var i = 0; i < checkboxes.length; i++) {
                 var elem = checkboxes[i];
                 elem.checked = false;
@@ -1626,12 +1776,16 @@
             var me = this;
             var data = response.result;
             var positions = [];
+            var positionsCSVS = [];
             var positionsDoubleVariant = [];
             var doubleVariant = [];
             var referencePosition = [];
             //Cellbase use - never * o nothing, we need change, annotate and change
             for (var i = 0; i < data.length; i++) {
                 var row = data[i];
+
+                positionsCSVS.push(row.chromosome + ":" + row.position + "-" + row.position);
+
                 if(row.alternate == "" || row.alternate =="*"){
                     positionsDoubleVariant.push(i);
                     doubleVariant.push(row.alternate);
@@ -1687,6 +1841,77 @@
                     }
                 });
             }
+
+            // CSVS
+            if (positions.length > 0) {
+
+                var diseaseCSVSEls = this.$.diseasesCSVS_div.querySelectorAll(".diseaseNameCSVS");
+                var diseaseCSVSIds = [];
+
+                for (var i = 0; i < diseaseCSVSEls.length; i++) {
+                    var el = diseaseCSVSEls[i];
+                    if (el.checked) {
+                        diseaseCSVSIds.push(el.getAttribute("value"));
+                    }
+                }
+
+                var listQuery = [
+                                { type: "csvsHealthy",
+                                  query: {
+                                      regions: positionsCSVS.join(","),
+                                      diseases: CSVS_QUERY_HEALTHY,
+                                      //technologies :technologyIds.join(","),
+                                      skipCount: false
+                              }} ,
+                              { type: "csvs",
+                                   query: {
+                                       regions: positionsCSVS.join(","),
+                                       diseases: diseaseCSVSIds.join(","),
+                                       skipCount: false
+                                   }}
+                             ];
+                listQuery.forEach(
+                    function (csvsQuery) {
+                        try {
+                            var csvsData = CSVSManager.variants.fetch({
+                                query: csvsQuery.query,
+                                request: {
+                                    host: CSVS_QUERY_HOST,
+                                    async: false,
+                                    success: function (response) {
+                                        try {
+                                            var csvsData = response.result;
+                                            for (var i = 0; i < data.length; i++) {
+                                                for (var j = 0; j < csvsData.length; j++) {
+                                                    // Search variant
+                                                    if (data[i].chromosome == csvsData[j].chromosome &&
+                                                        data[i].position == csvsData[j].position &&
+                                                        data[i].reference == csvsData[j].reference &&
+                                                        data[i].alternate == csvsData[j].alternate &&
+                                                        !!csvsData[j].stats && !!csvsData[j].stats.altFreq
+                                                    ) {
+                                                        data[i][csvsQuery.type] = csvsData[j].stats.altFreq;
+                                                        continue;
+                                                    }
+                                                }
+                                            }
+                                        } catch (e) {
+                                            console.log("error", e);
+                                        }
+                                    },
+                                    error: function (r) {
+                                        console.log("error in send");
+                                    }
+                                },
+                            });
+                        } catch(e){
+                            console.log("CSVSManager.variants", e);
+                        }
+                    }
+                )
+            }
+
+
 
             for (var z = 0; z < positionsDoubleVariant.length; z++) {
                 data[positionsDoubleVariant[z]].alternate = doubleVariant[z];
@@ -1880,56 +2105,65 @@
                         if (pfreq.study.toLowerCase() === "1000genomes_phase_1") {
                             switch (pfreq.population) {
                                 case "ALL":
-                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000G = Number(maf).toFixed(3);
+                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    //variant.maf1000G = Number(maf).toFixed(3);
+                                    variant.aaf1000G = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
 
                                 case "AMR":
-                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000GAME = Number(maf).toFixed(3)
+                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    //variant.maf1000GAME = Number(maf).toFixed(3)
+                                    variant.maf1000GAME = Number(pfreq.altAlleleFreq).toFixed(3)
                                     break;
 
                                 case "ASN":
-                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000GASI = Number(maf).toFixed(3)
+                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    //variant.maf1000GASI = Number(maf).toFixed(3)
+                                    variant.maf1000GASI = Number(pfreq.altAlleleFreq).toFixed(3)
                                     break;
 
                                 case "AFR":
-                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000GAFR = Number(maf).toFixed(3)
+                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    //variant.maf1000GAFR = Number(maf).toFixed(3)
+                                    variant.aaf1000GAFR = Number(pfreq.altAlleleFreq).toFixed(3)
                                     break;
 
                                 case "EUR":
-                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000GEUR = Number(maf).toFixed(3)
+                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    //variant.maf1000GEUR = Number(maf).toFixed(3)
+                                    variant.aaf1000GEUR = Number(maf).toFixed(3)
                                     break;
                             }
                         } else if (pfreq.study.toLowerCase() === "1kg_phase3") {
                             switch (pfreq.population) {
                                 case "ALL":
-                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000G_PHASE_3_ALL = Number(maf).toFixed(3);
+                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    //variant.maf1000G_PHASE_3_ALL = Number(maf).toFixed(3);
                                     variant.aaf1000G_PHASE_3_ALL = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
                                 case "SAS":
-                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000G_PHASE_3_SAS = Number(maf).toFixed(3)
+                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                   // variant.maf1000G_PHASE_3_SAS = Number(maf).toFixed(3)
+                                    variant.aaf1000G_PHASE_3_SAS = Number(pfreq.altAlleleFreq).toFixed(3)
                                     break;
                                 case "EAS":
-                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000G_PHASE_3_EAS = Number(maf).toFixed(3)
+                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    //variant.maf1000G_PHASE_3_EAS = Number(maf).toFixed(3)
+                                    variant.aaf1000G_PHASE_3_EAS = Number(pfreq.altAlleleFreq).toFixed(3)
                                     break;
                                 case "AMR":
-                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000G_PHASE_3_AMR = Number(maf).toFixed(3)
+                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    //variant.maf1000G_PHASE_3_AMR = Number(maf).toFixed(3)
+                                    variant.aaf1000G_PHASE_3_AMR = Number(pfreq.altAlleleFreq).toFixed(3)
                                     break;
                                 case "AFR":
-                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000G_PHASE_3_AFR = Number(maf).toFixed(3)
+                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    //variant.maf1000G_PHASE_3_AFR = Number(maf).toFixed(3)
+                                    variant.aaf1000G_PHASE_3_AFR = Number(pfreq.altAlleleFreq).toFixed(3)
                                     break;
                                 case "EUR":
-                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.maf1000G_PHASE_3_EUR = Number(maf).toFixed(3);
+                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    //variant.maf1000G_PHASE_3_EUR = Number(maf).toFixed(3);
                                     variant.aaf1000G_PHASE_3_EUR = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
 
@@ -1937,17 +2171,18 @@
                         } else if (pfreq.study.toLowerCase() === "esp6500") {
                             switch (pfreq.population) {
                                 case "EA":
-                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.mafESP_EA = Number(maf).toFixed(3);
+                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    //variant.mafESP_EA = Number(maf).toFixed(3);
                                     variant.aafESP_EA = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
                                 case "AA":
-                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.mafESP_AA = Number(maf).toFixed(3);
+                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    //variant.mafESP_AA = Number(maf).toFixed(3);
+                                    variant.aafESP_AA = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
                                 case "ALL":
-                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.mafESP_ALL = Number(maf).toFixed(3);
+                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    //variant.mafESP_ALL = Number(maf).toFixed(3);
                                     variant.aafESP_ALL = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
 
@@ -1956,13 +2191,14 @@
                         } else if (pfreq.study.toLowerCase() === "exac") {
                             switch (pfreq.population) {
                                 case "ALL":
-                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.mafexac_ALL = Number(maf).toFixed(3)
+                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    //variant.mafexac_ALL = Number(maf).toFixed(3)
                                     variant.aafexac_ALL = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
                                 case "EUR":
-                                    var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    variant.mafexac_EUR = Number(maf).toFixed(3)
+                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
+                                    //variant.mafexac_EUR = Number(maf).toFixed(3)
+                                    variant.aafexac_EUR = Number(pfreq.altAlleleFreq).toFixed(3)
                                     break;
                             }
                         }
@@ -2291,6 +2527,14 @@
                 series: chartData
             });
 
-        }
+        },
+
+        // show Subpopulation CSVS
+        handleColumnVisible: function(e) {
+            if (e.detail.detail.name == "csvsAll")
+                var elto = e.detail.detail.columns.find(function(c){ return c.name === "csvs"})
+                this.isVisibleCSVS= elto != undefined ? elto.visible && e.detail.detail.visible : false;
+        },
+
     });
 </script>

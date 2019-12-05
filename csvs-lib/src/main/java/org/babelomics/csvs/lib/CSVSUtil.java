@@ -71,23 +71,6 @@ public class CSVSUtil {
         return datastore;
     }
 
-
-    public static void populateDiseases(Datastore datastore) {
-        List<DiseaseGroup> diseaseGroups = configuration.getDiseasesGroups();
-        int numLoader = 0;
-        // 1-22 reserved for icd10
-        if (diseaseGroups != null && !diseaseGroups.isEmpty())
-            for (DiseaseGroup dg : diseaseGroups) {
-                try {
-                    datastore.save(dg);
-                    numLoader ++;
-                } catch (DuplicateKeyException e) {
-                    System.err.println("Duplicated Disease Group: " + dg);
-                }
-            }
-        System.out.println(numLoader + " diseaseGroups loaders!");
-    }
-
     public static void populateDiseases(Datastore datastore, CSVSConfiguration configuration) {
         List<DiseaseGroup> diseaseGroups = configuration.getDiseasesGroups();
         int numLoader = 0;

@@ -17,6 +17,19 @@ STEVIA_SERVER_HOST = "http://ws.babelomics.org/teststv02";
 
 STV_APP="CSVS";
 
+
+//DES
+//CSVS_QUERY_HOST="http://192.168.150.147:8585/rest";
+CSVS_QUERY_HOST="http://csvs.clinbioinfosspa.es:8080/csvs/rest";
+CSVS_QUERY_URL="http://csvs.clinbioinfosspa.es/";
+//23, "MGP (267 healthy controls, Solid 5500)"
+//24, "MGP (healthy controls, Solid 4
+//25, "IBS (107 Spanish individuals from 1000genomes)"
+CSVS_QUERY_HEALTHY="23,24,25";
+CSVS_QUERY_LOG=true;
+//CSVS_QUERY_LIMIT=-1;
+
+
 // Version file download
 VERSION_FILE = "July 4, 2018";
 CSVS_EMAIL='csvs@clinbioinfosspa.es';

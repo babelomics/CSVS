@@ -116,7 +116,7 @@
         </div>
 
         <div class="content" menu-option="search,saturation">
-            <csvs-search-element diseases="{{diseases}}" technologies="{{technologies}}" id="csvsSearchElement" is-logged="{{isLogged}}" saturation="{{saturation}}"></csvs-search-element>
+            <csvs-search-element diseases="{{diseases}}"  technologies="{{technologies}}" id="csvsSearchElement" is-logged="{{isLogged}}" saturation="{{saturation}}"></csvs-search-element>
         </div>
 
         <div class="content" menu-option="stats">
@@ -311,22 +311,10 @@
                         try {
                             var diseases = [];
 
-                            var ibsPos = -1;
-                            var mgpPos = -1;
-                            var healthyPos = -1;
-
                             for (var i = 0; i < response.result.length; i++) {
                                 var elem = response.result[i];
-                                if (elem.name === "Healthy controls") {
-                                    healthyPos = i;
-                                } else {
                                     diseases.push(elem);
                                 }
-                            }
-                            if (healthyPos != -1) {
-                                diseases.unshift(response.result[healthyPos]);
-                            }
-
                             me.diseases = diseases;
                         } catch (err) {
                             console.log("Error loading diseases: " + err);
@@ -339,7 +327,6 @@
                     }
                 }
             });
-
         },
         getTechnologies: function() {
             var me = this;
