@@ -108,7 +108,7 @@
                         <div id="diseases_div" class="container">
                             <template is="dom-repeat" items="{{diseases}}">
                                 <label class="stv-control">
-                                    <input type="checkbox" class="diseaseName" name="disease" id="disease" value="{{item.groupId}}" checked/>
+                                    <input type="checkbox" class="diseaseName" name="disease" id="diseaseAnn{{item.groupId}}" value="{{item.groupId}}" checked/>
                                     <span>{{item.name}}</span>
                                 </label>
                             </template>
@@ -128,7 +128,7 @@
                         <div id="technologies_div" class="container">
                             <template is="dom-repeat" items="{{technologies}}">
                                 <label class="stv-control">
-                                    <input type="checkbox" class="technologyName" name="technology" id="technology" value="{{item.technologyId}}" checked/>
+                                    <input type="checkbox" class="technologyName" name="technology" id="technologyAnn{{item.technologyId}}" value="{{item.technologyId}}" checked/>
                                     <span>{{item.name}}</span>
                                 </label>
                             </template>
