@@ -855,8 +855,10 @@ public class CSVSQueryManager {
         float altFreq;
         switch (v.getChromosome()) {
             case "X":
-                refFreq = (float) (gt01 + gt00*2 + gt01) / ( 2*(gt00+gt01+gt11) + gt00 + gt01);
+                //(mujeres01+mujeres00*2+hombres01+hombres00)/(mujeres totales * 2 + hombres totales)
+                //refFreq = (float) (gt01 + gt00*2 + gt01) / ( 2*(gt00+gt01+gt11) + gt00 + gt01);
                 altFreq = (float) (gt01 + gt11*2 + gt01) / ( 2*(gt00+gt01+gt11) + gt00 + gt01);
+                refFreq = (float) 1 - altFreq;
                 break;
 
             case "Y":

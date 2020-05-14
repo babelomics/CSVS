@@ -44,7 +44,7 @@
             width: calc(100% - 290px);
         }
 
-        #saturationDiv {
+        #saturationDiv, .saturatDiv {
             margin: 20px 20px 20px 0px;
             background-color: #FFFFFF;
             width: calc(100% - 29em);
@@ -387,10 +387,7 @@
                 </div>
             </div>
             <div id="saturationDiv" hidden$="{{!saturation}}" class="vertical layout">
-
-                <div id="chart" class="horizontal layout center-justified" ></div>
-                <div id="loading" hidden$="{{!loadingSaturation}}">
-                    <i class="fa fa-circle-o-notch fa-spin"></i> Loading...
+                <div id="chart" class="horizontal layout center-justified"  >
                 </div>
                 <div id=saturationDivTable" class="horizontal layout flex center-justified">
                     <csvs-table-saturation id="tvSaturation" ></csvs-table-saturation>
@@ -1660,7 +1657,7 @@
             //Cellbase use - never * o nothing, we need change, annotate and change
             for (var i = 0; i < data.length; i++) {
                 var row = data[i];
-                if(row.alternate == "" || row.alternate =="*"){
+                if(row.alternate == ""){
                     positionsDoubleVariant.push(i);
                     doubleVariant.push(row.alternate);
                     row.alternate = "-";
@@ -1670,12 +1667,12 @@
                     positionsDoubleVariant.push(i);
                     doubleVariant.push(row.alternate);
                     row.alternate = row.alternate.split(",")[0];
-                    if(row.alternate == "" || row.alternate =="*"){
+                    if(row.alternate == ""){
                         row.alternate = "-";
                     }
                 }
 
-                if(row.reference == "" || row.reference =="*"){
+                if(row.reference == ""){
                     referencePosition.push(i);
                     referenceVariant.push(row.reference);
                     row.reference = "-";
@@ -2265,6 +2262,16 @@
 
             var chart = new Highcharts.Chart({
                 _me: me,
+
+                loading: {
+                    labelStyle: {
+                        color: '#445D76',
+                        fontSize: "18px"
+                    },
+                    style: {
+                        backgroundColor:'rgba(150,150,150,0.2)'
+                    }
+                },
                 chart: {
                     type: 'line',
                     plotBackgroundColor: null,
@@ -2274,6 +2281,7 @@
                     borderRadius: 10,
                    // width: 1000,
                     height: 700,
+                    minWidth:900,
                     pointStart: 0,
                     _me: me
                 },
@@ -2332,6 +2340,11 @@
                 },
                 series: chartData
             });
+
+            if (this.loadingSaturation && Object.entries(data).length == 0)
+                chart.showLoading('<i class="fa fa-circle-o-notch fa-spin"></i> Loading... ');
+            else
+                chart.hideLoading();
 
         }
     });
