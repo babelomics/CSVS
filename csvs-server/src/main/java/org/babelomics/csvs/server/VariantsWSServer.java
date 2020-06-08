@@ -5,20 +5,22 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.mutable.MutableLong;
+import org.babelomics.csvs.lib.models.DiseaseGroup;
+import org.babelomics.csvs.lib.models.File;
+import org.babelomics.csvs.lib.models.Technology;
 import org.babelomics.csvs.lib.models.Variant;
 import org.babelomics.csvs.lib.ws.QueryResponse;
 import org.opencb.biodata.models.feature.Region;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
+import java.util.*;
 
 @Path("/variants")
 @Api(value = "variants", description = "Variants")
@@ -48,8 +50,8 @@ public class VariantsWSServer extends CSVSWSServer {
         List<Integer> diseaseList = new ArrayList<>();
         List<Integer> technologyList = new ArrayList<>();
 
-        System.out.println("diseases = " + diseases);
-        System.out.println("technologies = " + technologies);
+        //System.out.println("diseases = " + diseases);
+        //System.out.println("technologies = " + technologies);
 
         int regionsSize = 0;
 
@@ -90,7 +92,7 @@ public class VariantsWSServer extends CSVSWSServer {
         Iterable<Variant> variants = qm.getVariantsByRegionList(regionList, diseaseList, technologyList, skip, limit, skipCount, count);
         long end = System.currentTimeMillis();
 
-        System.out.println("(end-start) = " + (end - start));
+        //System.out.println("(end-start) = " + (end - start));
 
         QueryResponse qr = createQueryResponse(variants);
         qr.setNumTotalResults(count.getValue());
@@ -150,8 +152,8 @@ public class VariantsWSServer extends CSVSWSServer {
             }
         }
 
-        System.out.println("diseaseList = " + diseaseList);
-        System.out.println("technologyList = " + technologyList);
+        //System.out.println("diseaseList = " + diseaseList);
+        //System.out.println("technologyList = " + technologyList);
 
         List<Variant> variantRes = qm.getVariants(variantList, diseaseList, technologyList);
 
@@ -169,5 +171,176 @@ public class VariantsWSServer extends CSVSWSServer {
         return createOkResponse(qr);
     }
 
+    @POST
+    @Path("/{variant}/contact")
+    @Produces("application/json")
+    @ApiOperation(value = "Contact request")
+    public Response getVariants(@ApiParam(value = "variant") @PathParam("variant") String variant,
+                                @ApiParam(value = "name", required = true) @NotNull @FormParam("name") String name,
+                                @ApiParam(value = "institution", required = true) @NotNull @FormParam("institution") String institution,
+                                @ApiParam(value = "email", required = true) @NotNull @FormParam("email") String email,
+                                @ApiParam(value = "reason", required = true) @NotNull @FormParam("reason") String reason,
+                                @ApiParam(value = "regionsSearch") @FormParam("regionsSearch") @DefaultValue("") String regionsSearch,
+                                @ApiParam(value = "geneSearch") @FormParam("geneSearch") @DefaultValue("") String geneSearch,
+                                @ApiParam(value = "diseasesSearch") @FormParam("diseasesSearch") @DefaultValue("") String diseasesSearch,
+                                @ApiParam(value = "technologiesSearch") @FormParam("technologiesSearch") @DefaultValue("") String technologiesSearch
+    ) {
+        Map<String, Object> contact = new HashMap<String, Object>();
+        contact.put("variant",variant);
+        contact.put("name",name);
+        contact.put("institution", institution);
+        contact.put("email", email);
+        contact.put("reason", reason);
+
+        List<DiseaseGroup> d = qm.getAllDiseaseGroups();
+        List<Technology> t = qm.getAllTechnologies();
+        Map<String, Object> search = new HashMap<String, Object>();
+        search.put("regionsSearch", regionsSearch);
+        search.put("geneSearch", geneSearch);
+        search.put("diseasesSearch", diseasesSearch);
+        search.put("technologiesSearch", technologiesSearch);
+        contact.put("search", search);
+
+        List<File> f = qm.getInfoFile(variant);
+
+        if (!f.isEmpty() ) {
+            contact.put("file", f);
+
+            // Add diseases group
+            Map<Integer, String> diseasesGroup = new HashMap<Integer, String>();
+            if (d != null){
+                d.forEach(item->diseasesGroup.put(item.getGroupId(), item.getName()));
+            }
+            contact.put("diseasesGroup", diseasesGroup);
+
+            // Add technology
+            Map<Integer, String> technologies = new HashMap<Integer, String>();
+            if (t != null) {
+                t.forEach(item -> technologies.put(item.getTechnologyId(), item.getName()));
+            }
+            contact.put("technologies", technologies);
+
+            String urlParameters = preSendMail(contact);
+            if(!sendMail(urlParameters))
+                return createErrorResponse("PROBLEM_SERVER");
+       } else {
+            return createErrorResponse("No exist reporter for " + variant);
+        }
+
+        QueryResponse qr = createQueryResponse(contact);
+        qr.setNumResults(qr.getNumTotalResults());
+
+        return createOkResponse(qr);
+    }
+
+
+    /**
+     * Method to preparate params to send mail.
+     *
+     * @param contact
+     * @return
+     */
+    private String preSendMail(Map<String, Object> contact) {
+        Map<String, String> map = new HashMap<String, String>();
+        map.putAll(configMail);
+        map.put(CSVSWSServer.FROM, configMail.get(CSVSWSServer.TO));
+
+        StringBuffer text = new StringBuffer();
+        text.append("CSVS contact: ");
+        text.append(" Request information ");
+        text.append(contact.get("variant"));
+
+        map.put(CSVSWSServer.SUBJECT, text.toString());
+
+        text = new StringBuffer();
+        text.append("- Contact request: \n");
+        text.append("\n   * Variant: ");
+        text.append(contact.get("variant"));
+        text.append("\n   * Name: ");
+        text.append(contact.get("name"));
+        text.append("\n   * Institution: ");
+        text.append(contact.get("institution"));
+        text.append("\n   * Email: ");
+        text.append(contact.get("email"));
+        text.append("\n   * Petition: ");
+        text.append(contact.get("reason"));
+
+        java.text.SimpleDateFormat DATE_FORMAT = new java.text.SimpleDateFormat("MMM dd, yyyy");
+
+        text.append("\n\n- Summary variant information (variant reporters): ");
+        List<String> summaryPR = new ArrayList<String>();
+
+        StringBuffer textDetail = new StringBuffer();
+        textDetail.append("\n\n- Variant information detailed:\n");
+        List<File> files = (List<File>) contact.get("file");
+        Map<Integer, String> diseasesGroup = (HashMap<Integer, String>) contact.get("diseasesGroup");
+        Map<Integer, String> technologies = (HashMap<Integer, String>) contact.get("technologies");
+
+        if (files != null) {
+            for(File f : files ) {
+                textDetail.append("\n   * File name: ");
+                textDetail.append(f.getNameFile());
+                textDetail.append("\n     Variant reporter: ");
+                textDetail.append(f.getPersonReference());
+                if( ! summaryPR.contains(f.getPersonReference()))
+                    summaryPR.add(f.getPersonReference());
+                textDetail.append("\n     Disease group: ");
+                textDetail.append(diseasesGroup.get(f.getDiseaseGroupId()));
+                textDetail.append("\n     Technology: ");
+                textDetail.append(technologies.get(f.getTechnologyId()));
+                textDetail.append("\n     Create date in CSVS: ");
+                textDetail.append(DATE_FORMAT.format(f.getDate()));
+                textDetail.append("\n");
+            }
+        }
+
+        text.append(String.join(", ", summaryPR));
+        text.append(textDetail);
+
+        text.append("\n\n- Filters selected when submitting request:\n");
+        Map<String, Object> search = (Map<String, Object>) contact.get("search");
+        text.append("\n   * Region: ");
+        text.append(search.get("regionsSearch"));
+        text.append("\n   * Gene: ");
+        text.append(search.get("geneSearch"));
+        text.append("\n   * Subpopulations: ");
+        text.append( this.getDescriptionDetail((String)search.get("diseasesSearch"),diseasesGroup));
+        text.append("\n   * Technologies: ");
+        text.append( this.getDescriptionDetail((String) search.get("technologiesSearch"),technologies));
+
+        map.put(CSVSWSServer.TEXT, text.toString());
+        map.put(CSVSWSServer.HTML, "<pre>" + text + "<pre>");
+
+        return mapToString(map);
+    }
+
+    /**
+     * Get description disease o technology
+     * @param dt  Disease o Technology
+     * @param data Map with diseases o technologies
+     * @return
+     */
+    private StringBuffer getDescriptionDetail(String dt, Map data){
+        StringBuffer textDetail = new StringBuffer();
+
+        if ( dt!= null) {
+
+            if("".equals(dt)) {
+                textDetail.append("All");
+            }
+            else {
+                for (String elto : dt.toString().split(",")) {
+                    textDetail.append("\n        ");
+                    try {
+                        textDetail.append(data.get(Integer.parseInt(elto)));
+                    } catch (Exception e){
+                        textDetail.append(elto);
+                    }
+                }
+            }
+        }
+
+        return textDetail;
+    }
 
 }

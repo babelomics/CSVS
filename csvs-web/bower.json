@@ -27,6 +27,8 @@
         "pako": "~0.2.6",
         "uri.js": "~1.16.0",
         "stevia-elements": "https://github.com/babelomics/stevia-elements.git#steviaCSVS",
-        "jsorolla": "https://github.com/opencb/jsorolla.git#release-1.1.x"
+        "jsorolla": "https://github.com/opencb/jsorolla.git#release-1.1.x",
+        "paper-dialog": "PolymerElements/paper-dialog#^1.0.4",
+        "paper-input": "PolymerElements/paper-input#^1.1.25"
     }
 }

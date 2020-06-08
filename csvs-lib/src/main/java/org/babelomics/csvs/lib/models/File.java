@@ -152,6 +152,21 @@ public class File {
         this.date = date;
     }
 
+    public int getDiseaseGroupId() {
+        return diseaseGroupId;
+    }
+
+    public void setDiseaseGroupId(int diseaseGroupId) {
+        this.diseaseGroupId = diseaseGroupId;
+    }
+
+    public int getTechnologyId() {
+        return technologyId;
+    }
+
+    public void setTechnologyId(int technologyId) {
+        this.technologyId = technologyId;
+    }
 
     public ObjectId getIdPanel() {
         return this.idPanel;

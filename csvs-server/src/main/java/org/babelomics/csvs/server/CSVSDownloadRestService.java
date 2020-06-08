@@ -10,16 +10,26 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Properties;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
 
 @Path("/")
-public class CSVSDownloadRestService {
+public class CSVSDownloadRestService extends CSVSWSServer {
+    public CSVSDownloadRestService(@DefaultValue("") @PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
+            throws IOException {
+        super(version, uriInfo, hsr);
+    }
 
     private static final long serialVersionUID = 1L;
 
@@ -35,7 +45,7 @@ public class CSVSDownloadRestService {
     static String URL_MAIL_DEFAULT;
     static String SENT = "sent"; // Value received from send mail
 
-    static {
+  /*  static {
 
         InputStream is = CSVSWSServer.class.getClassLoader().getResourceAsStream(PROPERTIES);
         properties = new Properties();
@@ -55,7 +65,7 @@ public class CSVSDownloadRestService {
         URL_MAIL_DEFAULT = properties.getProperty("CSVS.URL_MAIL_DEFAULT", "http://localhost:8081");
     }
 
-
+*/
     @POST
     @Path("/download/{disease}")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
@@ -188,7 +198,7 @@ public class CSVSDownloadRestService {
      *
      * @param urlParameters
      * @return
-     */
+     *
     private boolean sendMail(String urlParameters) {
 
         try {
@@ -243,7 +253,7 @@ public class CSVSDownloadRestService {
             logger.error("CSVS: " + e);
         }
         return false;
-    }
+    }*/
 
 
     /**
@@ -251,7 +261,7 @@ public class CSVSDownloadRestService {
      *
      * @param map
      * @return
-     */
+     *
     private static String mapToString(Map<String, String> map) {
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -270,6 +280,18 @@ public class CSVSDownloadRestService {
         }
 
         return stringBuilder.toString();
-    }
+    }*/
 
+    /**
+     * Method to preparate params to send mail.
+     *
+     * @param map params to send mail
+     * @return
+     */
+    private String preSendMail(Map<String, String> map, String action) {
+        map.putAll(configMail);
+        map.put(CSVSWSServer.FROM, configMail.get(CSVSWSServer.TO));
+
+        return mapToString(map);
+    }
 }

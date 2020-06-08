@@ -12,6 +12,9 @@
 
 <link rel="import" href="csvs-saturation-element.html">
 
+
+<link rel="import" href="csvs-contact-request.html">
+
 <dom-module id="csvs-search-element">
     <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
         :host {
@@ -586,6 +589,11 @@
                 value: false
             }
         },
+        listeners: {  // when open popup
+            "disablescroll": 'disableScroll',
+            "enablescroll": 'enableScroll',
+            "getDataSearch": 'getDataSearch'
+        },
 
         saturationChanged: function(){
             // Check if tab is changed and reload info
@@ -796,6 +804,19 @@
 
         },
 
+        initTitleMenu: function() {
+            var list = document.getElementById('columnsMenu').getElementsByTagName("span");
+            // Num colums to modify
+            var num_search = 2;
+            for (var i = list.length-1; i>0 && num_search>0; i--) {
+                var title = list[i].innerText;             
+                if (title.indexOf('Address') != -1) {
+                    list[i].innerText = "Address Book";
+                    num_search --;
+                }
+            }
+        },
+
         ready: function() {
             if (localStorage.csvs_filter_history) {
                 this.historyFilters = JSON.parse(localStorage.csvs_filter_history);
@@ -812,6 +833,7 @@
                 me.$.gv.createGenomeViewer();
                 me.$.gv.genomeViewer.draw();
 
+                this.initTitleMenu();
             }, 50);
 
             this.columns = [{
@@ -1265,6 +1287,16 @@
 
                         }
                     }]
+                },
+                {
+                    name: 'addressBook',
+                    title: 'Address<br/>Book',
+                    width: 50,
+                    disableSort: true,
+                    formula: function (row) {
+                        var variant = row.chromosome + ":" + row.position + " " + row.reference + ">" + row.alternate;
+                    return "<csvs-address-book variant='"+ variant + "'></csvs-address-book>";
+                    }
                 }
             ];
             this.reloadChart({});
@@ -2018,13 +2050,63 @@
             }
             return total;
         },
+
+        // Get data search to conctact
+        getDataSearch: function(e){
+            var data_search = {};
+            data_search.regionsSearch = this.$.filterPosition.checkRegion();
+            data_search.geneSearch = this.$.filterPosition.checkGene();
+
+
+            var diseaseEls = this.$.diseases_div.querySelectorAll(".diseaseName");
+            var diseaseIds = [];
+            diseaseEls.forEach(function(d){
+                if (d.checked)
+                    diseaseIds.push(d.getAttribute("value"));
+            });
+
+            var technologyEls = this.$.technologies_div.querySelectorAll(".technologyName");
+            var technologyIds = [];
+            technologyEls.forEach(function(t){
+                if (t.checked)
+                    technologyIds.push(t.getAttribute("value"));
+            });
+            data_search.diseasesSearch = diseaseIds.join(",");
+            data_search.technologiesSearch = technologyIds.join(",");
+            e.target.search = data_search;
+         },
+
+        // enable scroll when popup is closed
+        enableScroll: function(e){
+            this.$.dataTable.handleScroll = function(e) {
+                if (this.enablePaging == true) {
+                    e.preventDefault();
+                    if (e.deltaY > 0) {
+                        this.handleNextClick();
+                    }
+                    if (e.deltaY < 0) {
+                        this.handlePreviousClick();
+                    }
+                }
+            }
+        },
+        // disable scroll when popup is closed
+        disableScroll: function(e){
+            this.$.dataTable.handleScroll =  function(e) { }
+        },
+
+
         handleRowClick: function(e) {
             var row = e.detail.row;
 
-            this.$.gv.genomeViewer.setRegion(row);
-            this.$.effect.row = row;
-            this.$.frequency.row = row;
-            this.$.phenotype.row = row;
+
+            // Call if change row
+            if (this.$.effect.row != row){
+                this.$.gv.genomeViewer.setRegion(row);
+                this.$.effect.row = row;
+                this.$.frequency.row = row;
+                this.$.phenotype.row = row;
+            }
 
         },
         handleMenuClick: function(e) {

@@ -4,6 +4,7 @@ import com.mongodb.*;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.babelomics.csvs.lib.models.*;
+import org.bson.types.ObjectId;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 import org.mongodb.morphia.query.Criteria;
@@ -928,6 +929,37 @@ public class CSVSQueryManager {
         return (id * chunksize) + chunksize - 1;
     }
 
+    /**
+     * ContactRequest: Get file.
+     * @param variant Id variant
+     * @return
+     */
+    public List<File> getInfoFile(String variant) {
+        // Gets ids variants
+        Variant v = getVariant(new Variant(variant) , null, null);
+
+        // Get ids files
+        DBCollection myCol =  this.datastore.getCollection(FileVariant.class);
+        BasicDBObject project = new BasicDBObject();
+        project.put("fid", 1);
+        project.put("_id", 0);
+
+        List<ObjectId> ids_file = new ArrayList<>();
+        DBCursor myCursor = myCol.find(new BasicDBObject("$query", new BasicDBObject("vid",v.getId())), project);
+        while (myCursor.hasNext()) {
+            DBObject obj = myCursor.next();
+            ids_file.add((ObjectId) obj.get("fid"));
+        }
+
+        // Get files
+        Query<File> queryFile = this.datastore.createQuery(File.class);
+        queryFile.field("_id").in(ids_file);
+        queryFile.order("pr");
+        // Get info
+        System.out.println(queryFile);
+
+        return queryFile.asList();
+    }
 
     class AllVariantsIterable implements Iterable<Variant> {
 
