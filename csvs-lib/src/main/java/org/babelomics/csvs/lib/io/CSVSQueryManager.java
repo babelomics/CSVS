@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
  */
 public class CSVSQueryManager {
 
+    private static final String EMPTY_TERM = "EMPTY SO TERMS" ;
     final Datastore datastore;
     static final int DECIMAL_POSITIONS = 3;
 
@@ -323,8 +324,57 @@ public class CSVSQueryManager {
     }
 
     public Iterable<Variant> getVariantsByRegionList(List<Region> regions, List<Integer> diseaseIds, List<Integer> technologyIds, Integer skip, Integer limit, boolean skipCount, MutableLong count) {
+        return getVariantsByRegionList(regions,diseaseIds,technologyIds,skip,limit,skipCount,count, null, null, null);
+    }
 
-        Criteria[] or = new Criteria[regions.size()];
+    public Iterable<Variant> getVariantsByRegionList(List<Region> regions, List<Integer> diseaseIds, List<Integer> technologyIds, Integer skip, Integer limit, boolean skipCount, MutableLong count,
+                                                     List<String> cdnas, List<String> proteins, List<String> consequenceTypes) {
+
+        int numCriteria = regions.size();
+
+        List<String> listP = new ArrayList<>();
+        List<String> listC = new ArrayList<>();
+
+        List<Criteria> hgvs = new ArrayList<Criteria>();
+        List<String> ann_c_p = new ArrayList<String>();
+        // Add new filters cdnas and aa
+        if (cdnas != null && !cdnas.isEmpty()) {
+
+            listC = cdnas.stream().filter(c -> c.startsWith("ENS")).collect(Collectors.toList());
+            if (listC != null && listC.size() > 0) {
+                numCriteria++;
+                //hgvs.add(query.criteria("annot-s.hgvsc").in(listC));
+            }
+
+            List<String> ann_c = cdnas.stream().filter(c -> !c.startsWith("ENS")).collect(Collectors.toList());
+            if (ann_c != null && ann_c.size() > 0) {
+                ann_c_p.addAll(ann_c);
+            }
+        }
+        if (proteins != null && !proteins.isEmpty()) {
+            //hgvs.add(query.criteria("annots.hgvsp").in(proteins));
+            listP = proteins.stream().filter(p -> p.startsWith("ENS")).collect(Collectors.toList());
+            if (listP != null && listP.size() > 0) {
+                //hgvs.add(query.criteria("annots.hgvsc").in(listP));
+                numCriteria++;
+            }
+
+            List<String> ann_p = proteins.stream().filter(p -> !p.startsWith("ENS")).collect(Collectors.toList());
+            if (ann_p != null && ann_p.size() > 0) {
+                ann_c_p.addAll(ann_p);
+            }
+        }
+
+        //if (hgvs.size()  > 0) {
+            //if (hgvs.size()  == 1)
+            //    query.and(hgvs.get(0));
+           // else
+          //      query.or((Criteria[])hgvs.toArray());
+        //}
+
+
+
+        Criteria[] or = new Criteria[numCriteria];
 
         int i = 0;
         for (Region r : regions) {
@@ -340,9 +390,18 @@ public class CSVSQueryManager {
             or[i++] = auxQuery.and(and.toArray(new Criteria[and.size()]));
         }
 
+
         Query<Variant> query = this.datastore.createQuery(Variant.class);
 
-        query.or(or);
+        if (listC != null && listC.size() > 0) {
+            or[i++] = query.criteria("annots.hgvsc").in(listC);
+        }
+        if (listP != null && listP.size() > 0) {
+            or[i++] = query.criteria("annots.hgvsp").in(listP);
+        }
+
+        if (or.length > 0)
+            query.or(or);
 
 
         boolean disTechCheck = false;
@@ -364,12 +423,29 @@ public class CSVSQueryManager {
             query.filter("diseases elem", new BasicDBObject("$and", listDBObjects));
         }
 
+
+
+        if (ann_c_p != null && !ann_c_p.isEmpty()) {
+            query.filter("annots.ann_c_p", new BasicDBObject("$in", ann_c_p));
+        }
+
+        if (consequenceTypes != null && !consequenceTypes.isEmpty()) {
+            Optional op = consequenceTypes.stream()
+                    .filter(c -> EMPTY_TERM.contains(c.toUpperCase()))
+                    .findFirst();
+            if (op.isPresent()){
+                query.or(query.criteria("annots.ct").doesNotExist(), query.criteria("annots.ct").in(consequenceTypes) );
+            } else {
+                query.filter("annots.ct", new BasicDBObject("$in", consequenceTypes));
+            }
+        }
+
         if (skip != null && limit != null) {
             query.offset(skip).limit(limit);
         }
 
 
-        // System.out.println("query = " + query);
+        System.out.println("query = " + query);
 
         Iterable<Variant> aux = query.fetch();
 
@@ -855,8 +931,10 @@ public class CSVSQueryManager {
         float altFreq;
         switch (v.getChromosome()) {
             case "X":
-                refFreq = (float) (gt01 + gt00*2 + gt01) / ( 2*(gt00+gt01+gt11) + gt00 + gt01);
+                //(mujeres01+mujeres00*2+hombres01+hombres00)/(mujeres totales * 2 + hombres totales)
+                //refFreq = (float) (gt01 + gt00*2 + gt01) / ( 2*(gt00+gt01+gt11) + gt00 + gt01);
                 altFreq = (float) (gt01 + gt11*2 + gt01) / ( 2*(gt00+gt01+gt11) + gt00 + gt01);
+                refFreq = (float) 1 - altFreq;
                 break;
 
             case "Y":

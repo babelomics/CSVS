@@ -81,11 +81,24 @@
         <div class="main">
             <br>
             <div class="horizontal layout">
+                <div style="text-align: right; width: 160px;">
+                    <img src='../images/logo_GPVS.png' style="width:160px;">
+                </div>
+                <div class="vertical layout center" style="text-align: left; margin-left: 30px;">
+                    <div style="text-align: center; width: 200px;">
+                        <br>
+                        <br>
+
+                        <div class="megatitle">{{acronym}}</div>
+                    </div>
+                </div>
+<!--
                 <div style="text-align: center; width: 300px;">
                     <br>
                     <br>
                     <div class="megatitle">{{acronym}}</div>
                 </div>
+-->
                 <div class="vertical layout center" style="text-align: left; margin-left: 30px;">
                     <br>
                     <template is="dom-if" if="{{is-not-accept}}">
@@ -94,7 +107,7 @@
                         </div>
                     </template>
                     <template is="dom-if" if="{{is-accept}}">
-                        <div class="megabutton" on-click="tryItNow">
+                        <div class="megabutton" on-click="tryItNow" login-required data-option="search">
                             <i class="fa fa-sign-in">&nbsp;&nbsp;&nbsp;Start</i>
                         </div>
                     </template>
@@ -107,7 +120,7 @@
 
             <div class="title">Overview</div>
             <div class="paragraph">
-                Welcome to the {{title}}. {{acronym}} was created to provide information about the
+                Welcome to the {{titleApp}}. {{acronym}} was created to provide information about the
                 variability
                 of the {{phenotype}} population to the scientific/medical community.
                 It is useful for filtering polymorphisms and local variations in the process of prioritizing candidate
@@ -116,12 +129,20 @@
 
             <div class="title2">Supported by</div>
             <div class="paragraph">
-                <img style="margin:3px;height:40px;" src="../images/logobier.jpg"/>
+                <a title="ciberer BIER" href="http://bier.ciberer.es/" target="_blank"><img style="margin:3px;height:40px;" src="../images/logobier.jpg"/></a>
+                <a title="ciberer" href="https://www.ciberer.es/" target="_blank"><img style="margin:3px;height:40px;" src="../images/logo_Ciberer.jpg"/></a>
+                <a title="FPS" href="https://www.sspa.juntadeandalucia.es/fundacionprogresoysalud/es" target="_blank"><img style="margin:3px;height:40px;background-color: #05723A" src="../images/logo_FPS.png"/></a>
+                <a title="babelomics" href="http://babelomics.bioinfo.cipf.es/" target="_blank"><img style="margin:3px;height:40px;" src="../images/logoBabelomics_positive_trans.svg"/></a>
+                <img style="margin:3px;height:40px;" src="../images/LOGO_Micinn_Isciii.jpg"/>
+                <a title="ELIXIR SPAIN" href="https://elixir-europe.org/about-us/who-we-are/nodes/spain"  target="_blank"><img style="margin:3px;height:40px;background-color:white;" src="../images/logo_ELIXIR_spain.png"/></a>
+
+<!--                <img style="margin:3px;height:40px;" src="../images/logobier.jpg"/>
                 <img style="margin:3px;height:40px;" src="../images/logo_Ciberer.jpg"/>
-                <img style="margin:3px;height:40px;" src="../images/logo_FPS.png"/>
+                <img style="margin:3px;height:40px;background-color: #05723A"  src="../images/logo_FPS.png"/>
                 <img style="margin:3px;height:40px;" src="../images/logoBabelomics_positive_trans.svg"/>
                 <img style="margin:3px;height:40px;" src="../images/LOGO_Micinn_Isciii.jpg"/>
                 <img style="margin:3px;height:40px;background-color:white;" src="../images/logo_ELIXIR_spain.png"/>
+-->
             </div>
 
             <div class="title2">Note:</div>
@@ -140,7 +161,7 @@
     Polymer({
         is: "csvs-home",
         properties:{
-            title:{
+            titleApp:{
                 type: String,
                 value: "Collaborative Spanish Variant Server"
             },

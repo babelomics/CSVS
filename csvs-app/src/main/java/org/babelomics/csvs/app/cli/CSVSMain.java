@@ -40,6 +40,7 @@ public class CSVSMain {
     protected static InputStream is = CSVSMain.class.getClassLoader().getResourceAsStream("csvs.properties");
     protected static Properties properties = new Properties();
     static String CELLBASE_HOST, CELLBASE_VERSION;
+    static String HGVS_HOST;
     static List<ParRegions> PAR_REGIONS = new ArrayList<>();
     static {
         try {
@@ -54,6 +55,9 @@ public class CSVSMain {
         CELLBASE_VERSION = properties.getProperty("CELLBASE.VERSION", "v3");
         // Para regions 37
         PAR_REGIONS =  iniParRegions(properties.getProperty("PAR_REGIONS", "X:60001-2699520;Y:10001-2649520,X:154931044-155260560;Y:59034050-59363566"));
+
+
+        HGVS_HOST  = properties.getProperty("HGVS.HOST", "");
     }
 
     private static List<ParRegions> iniParRegions(String parPegions) {
@@ -210,13 +214,12 @@ public class CSVSMain {
             OptionsParser.CommandAnnot c = (OptionsParser.CommandAnnot) command;
 
             boolean ct = c.ct;
+            boolean hgvs = c.hgvs;
             boolean remove = c.remove;
-            boolean override = c.override;
-            boolean gene = c.gene;
 
             Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName);
 
-            CSVSUtil.annot(ct, remove, override, gene, datastore, CELLBASE_HOST, CELLBASE_VERSION);
+            CSVSUtil.annot(ct, hgvs ,remove,  datastore, CELLBASE_HOST, CELLBASE_VERSION, HGVS_HOST);
 
         } else if (command instanceof OptionsParser.CommandQuery) {
             OptionsParser.CommandQuery c = (OptionsParser.CommandQuery) command;
@@ -260,6 +263,7 @@ public class CSVSMain {
 
                 if (c.geneList.size() > 0) {
                     URI cellbaseUri = new URI(CELLBASE_HOST);
+
                     CellBaseClient cbc = new CellBaseClient(cellbaseUri, CELLBASE_VERSION, "hsapiens");
                     String id = Joiner.on(",").join(c.geneList).toUpperCase();
                     QueryOptions qo = new QueryOptions();

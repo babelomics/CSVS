@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -40,13 +41,22 @@ public class VariantsWSServer extends CSVSWSServer {
                                         @ApiParam(value = "skipCount") @QueryParam("skipCount") @DefaultValue("false") boolean skipCount,
                                         @ApiParam(value = "diseases") @QueryParam("diseases") @DefaultValue("") String diseases,
                                         @ApiParam(value = "technologies") @QueryParam("technologies") @DefaultValue("") String technologies,
+                                        @ApiParam(value = "cdnas") @QueryParam("cdnas") @DefaultValue("") String cdnas,
+                                        @ApiParam(value = "proteins") @QueryParam("proteins") @DefaultValue("") String proteins,
+                                        @ApiParam(value = "consequencesTypes") @QueryParam("consequencesTypes") @DefaultValue("") String consequencesTypes,
                                         @ApiParam(value = "csv") @QueryParam("csv") @DefaultValue("false") boolean csv
     ) {
 
+        String errorAuthentication = checkAuthentication();
+        if (!errorAuthentication.isEmpty())
+            return createErrorResponse(errorAuthentication);
 
         List<Region> regionList = new ArrayList<>();
         List<Integer> diseaseList = new ArrayList<>();
         List<Integer> technologyList = new ArrayList<>();
+        List<String> cdnasList = new ArrayList<>();
+        List<String> proteinsList = new ArrayList<>();
+        List<String> consequencesTypesList = new ArrayList<>();
 
         System.out.println("diseases = " + diseases);
         System.out.println("technologies = " + technologies);
@@ -79,6 +89,18 @@ public class VariantsWSServer extends CSVSWSServer {
             }
         }
 
+
+        if (cdnas.length() > 0) {
+            cdnasList =  Arrays.asList(cdnas.split(","));
+        }
+        if (proteins.length() > 0) {
+            proteinsList = Arrays.asList(proteins.split(","));
+        }
+        if (consequencesTypes.length() > 0) {
+            consequencesTypesList =  Arrays.asList(consequencesTypes.split(","));
+        }
+
+
         MutableLong count = new MutableLong(-1);
 
         if (csv) {
@@ -86,8 +108,12 @@ public class VariantsWSServer extends CSVSWSServer {
             limit = 200;
         }
 
+        if (LIMIT_MAX != 0 && (limit > LIMIT_MAX || limit == 0 )){
+            limit=LIMIT_MAX;
+        }
+
         long start = System.currentTimeMillis();
-        Iterable<Variant> variants = qm.getVariantsByRegionList(regionList, diseaseList, technologyList, skip, limit, skipCount, count);
+        Iterable<Variant> variants = qm.getVariantsByRegionList(regionList, diseaseList, technologyList, skip, limit, skipCount, count, cdnasList, proteinsList, consequencesTypesList);
         long end = System.currentTimeMillis();
 
         System.out.println("(end-start) = " + (end - start));
@@ -122,6 +148,9 @@ public class VariantsWSServer extends CSVSWSServer {
                                 @ApiParam(value = "technologies") @QueryParam("technologies") @DefaultValue("") String technologies
 
     ) {
+        String errorAuthentication = checkAuthentication();
+        if (!errorAuthentication.isEmpty())
+            return createErrorResponse(errorAuthentication);
 
         List<Variant> variantList = new ArrayList<>();
         List<Integer> diseaseList = new ArrayList<>();

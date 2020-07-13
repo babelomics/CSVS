@@ -17,7 +17,6 @@ import org.babelomics.csvs.lib.models.*;
 import org.junit.*;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
-import org.opencb.biodata.models.feature.Region;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,7 +40,7 @@ public class CSVSQueryManagerTest {
     static CSVSQueryManager qm;
     static int port = 12345;
     static MongodExecutable mongodExecutable;
-    static String dbName = "gpvs-query-manager-test-db";
+    static String dbName = "gpvs-query-manager-test-db_2";
 
 
     @BeforeClass
@@ -76,6 +75,11 @@ public class CSVSQueryManagerTest {
         File file_regions = new File(url_fileRegions.toURI());
 
 
+        URL url_4 = CSVSQueryManagerTest.class.getClassLoader().getResource("GPrueba.csv");
+        File file_4 = new File(url_4.toURI());
+        CSVSUtil.loadVariants(file_4.toPath(), 49, 1, datastore, null, "Person", true, "XY");
+
+/*
         URL url_1= CSVSQueryManagerTest.class.getClassLoader().getResource("d23_t1.csv");
         File file_1 = new File(url_1.toURI());
         //CSVSUtil.loadVariants(file_d1_t1.toPath(), 23, 1, datastore);
@@ -97,7 +101,7 @@ public class CSVSQueryManagerTest {
         URL url_3 = CSVSQueryManagerTest.class.getClassLoader().getResource("d23_t1-3.csv");
         File file_3 = new File(url_3.toURI());
         CSVSUtil.loadVariants(file_3.toPath(), 23, 1, datastore, null, "Person", true, "XY");
-
+*/
         //CSVSUtil.unloadVariants(file_1.toPath(), 23, 1, datastore);
         //CSVSUtil.unloadVariants(file_3.toPath(), 23, 1, datastore);
     }

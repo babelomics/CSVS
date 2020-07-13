@@ -39,6 +39,10 @@ var CSVSManager = {
 
         var url = host + '/' + api + id + '/' + action;
         url = Utils.addQueryParamtersToUrl(args.query, url);
+
+        if (Cookies("bioinfo_user") && Cookies("bioinfo_sid"))
+            url = Utils.addQueryParamtersToUrl({"user":Cookies("bioinfo_user"), "sid":Cookies("bioinfo_sid")}, url);
+
         return url;
     },
 
@@ -56,7 +60,7 @@ var CSVSManager = {
                 async = args.request.async;
             }
 
-            console.log(url);
+            //console.log(url);
             var request = new XMLHttpRequest();
             request.onload = function () {
                 var contentType = this.getResponseHeader('Content-Type');

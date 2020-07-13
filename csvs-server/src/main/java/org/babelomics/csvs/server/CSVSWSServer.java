@@ -7,12 +7,14 @@ import com.google.common.collect.Lists;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
+import org.babelomics.csvs.lib.connect.ClientOpencga;
 import org.babelomics.csvs.lib.io.CSVSQueryManager;
 import org.babelomics.csvs.lib.ws.QueryResponse;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
-import org.opencb.datastore.core.ObjectMap;
-import org.opencb.datastore.core.QueryResult;
+import org.opencb.commons.datastore.core.ObjectMap;
+import org.opencb.commons.datastore.core.QueryResult;
+import org.opencb.opencga.client.exceptions.ClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,10 +30,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 @Path("/")
 public class CSVSWSServer {
@@ -51,9 +50,18 @@ public class CSVSWSServer {
     @QueryParam("of")
     protected String outputFormat;
 
+    @QueryParam("sid")
+    protected String sid;
+    @QueryParam("user")
+    protected String user;
+
     static final CSVSQueryManager qm;
 
     static final Datastore datastore;
+
+    private static final boolean autentication;
+
+    protected static int LIMIT_MAX;
 
     static {
 
@@ -80,8 +88,11 @@ public class CSVSWSServer {
         String host = properties.getProperty("CSVS.DB.HOST", "localhost");
         String database = properties.getProperty("CSVS.DB.DATABASE", "csvs");
         int port = Integer.parseInt(properties.getProperty("CSVS.DB.PORT", "27017"));
+        LIMIT_MAX= Integer.parseInt(properties.getProperty("CSVS.LIMIT_MAX", "0"));
 
-        System.out.println(properties);
+        autentication = Boolean.parseBoolean(properties.getProperty("CSVS.AUTENTICATION", "false"));
+
+        //System.out.println(properties);
 
         MongoClient mongoClient;
         if (user.equals("") && pass.equals("")) {
@@ -101,19 +112,46 @@ public class CSVSWSServer {
 
         this.version = version;
         this.uriInfo = uriInfo;
-        logger.debug(uriInfo.getRequestUri().toString());
+        this.sid = httpServletRequest.getParameter("sid");
+        this.user = httpServletRequest.getParameter("user");
 
+        logger.debug(uriInfo.getRequestUri().toString());
         this.sessionIp = httpServletRequest.getRemoteAddr();
     }
 
+    protected String checkAuthentication(){
+        String result = "";
+        //if (false) {
+        if (autentication) {
+            if (sid == null || user == null) {
+                result = "Empty user or token";
+            } else {
+                ClientOpencga clientOpenca = new ClientOpencga();
+                try {
+                    Map<String, String> info = clientOpenca.info(this.user, this.sid);
+                    if (info.containsKey("error"))
+                        result = info.get("error");
+                    if (!info.containsKey("email") || info.get("email").isEmpty())
+                        result = "User not logged";
+                } catch (ClientException e) {
+                    e.printStackTrace();
+                    result = e.getMessage();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    result = e.getMessage();
+                }
+            }
+        }
+        return result;
+    }
 
     protected Response createErrorResponse(Object o) {
         System.out.println("ERROR");
         System.out.println("o.toString() = " + o.toString());
         QueryResult<ObjectMap> result = new QueryResult();
         result.setErrorMsg(o.toString());
-//        QueryResponse qr = createQueryResponse(result);
-        return createOkResponse(null);
+        QueryResponse qr = createQueryResponse(result);
+        return createOkResponse(qr);
     }
 
     protected Response createOkResponse(QueryResponse qr) {

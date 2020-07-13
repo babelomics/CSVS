@@ -1,0 +1,455 @@
+<!--<link rel="import" href="../../../polymer/polymer.html">
+<link rel="import" href="../../../iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../stv-form-box.html">
+<link rel="import" href="../stv-panel.html">
+-->
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/stevia-elements/src/stv-form-box.html">
+<link rel="import" href="../bower_components/stevia-elements/src/stv-panel.html">
+
+
+<dom-module id="csvs-filter-consequencetypes">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .inputValue {
+            width: 170px;
+            margin-left: 4px;
+        }
+
+        .popus {
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .numFilter {
+            /*padding: 1px 7px;*/
+            background-color: #445D76;
+            border-radius: 50%;
+            color: #fff;
+            font-weight: bold;
+            font-size: 12px;
+            margin-left: 10px;
+            margin-top: 2px;
+            line-height: 20px;
+            height: 20px;
+            width: 20px;
+            text-align: center;
+        }
+
+        #highlights_div{
+            height: 550px;
+            max-height: 550px;
+            width: 225px;
+            overflow-y: auto;
+        }
+
+        .check {
+            cursor: pointer;
+            color: var(--secondary-text-color);
+            padding-right: 2px;
+        }
+
+        .check:hover {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .titleCategory{
+            background-color: #f0f0f0;
+        }
+    </style>
+    <template>
+        <stv-form-box collapsible$="{{collapsible}}" collapsed$="{{collapsed}}">
+            <div class="header horizontal layout flex">
+                <div> Consequence Type</div>
+                <div class="flex"></div>
+                <div on-click="selectAllHighlights" >
+                    <i class="fa fa-check-square-o check"></i>
+                </div>
+                <div on-click="deselectAllHighlights">
+                    <i class="fa fa-square-o check"></i>
+                </div>
+                <div class="flex"></div>
+            </div>
+            <div id="consequenceTypes" class="container vertical layout">
+                <div id="highlights_div">
+                    <csvs-consequencetypes id="filterConsequenceTypes" ></csvs-consequencetypes>
+                </div>
+
+
+            </div>
+        </stv-form-box>
+    </template>
+    <script>
+        Polymer({
+            is: "csvs-filter-consequencetypes",
+            properties: {
+                collapsible: {
+                    type: Boolean,
+                    reflectToAttribute: true,
+                    value: false
+                },
+                collapsed: {
+                    type: Boolean,
+                    reflectToAttribute: true,
+                    value: false
+                },
+            },
+
+            selectAllHighlights: function (e, d, s) {
+                var checkboxes = this.getElementsByClassName("highlightSOName");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    if (e.target.name == undefined || e.target.name != undefined && elem.name == e.target.name)
+                        elem.checked = true;
+                }
+                e.stopPropagation();
+
+
+            },
+
+            deselectAllHighlights: function (e, d, s) {
+                var checkboxes = this.getElementsByClassName("highlightSOName");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    if (e.target.name == undefined || e.target.name != undefined && elem.name == e.target.name)
+                        elem.checked = false;
+                }
+                e.stopPropagation();
+
+            }
+
+        });
+    </script>
+</dom-module>
+
+<dom-module id="csvs-consequencetypes">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .inputValue {
+            width: 170px;
+            margin-left: 4px;
+        }
+
+        .popus {
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .numFilter {
+            /*padding: 1px 7px;*/
+            background-color: #445D76;
+            border-radius: 50%;
+            color: #fff;
+            font-weight: bold;
+            font-size: 12px;
+            margin-left: 10px;
+            margin-top: 2px;
+            line-height: 20px;
+            height: 20px;
+            width: 20px;
+            text-align: center;
+        }
+
+
+
+        .check {
+            cursor: pointer;
+            color: var(--secondary-text-color);
+            padding-right: 2px;
+        }
+
+        .check:hover {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .titleCategory{
+            background-color: #f0f0f0;
+        }
+    </style>
+    <template>
+        <div class="horizontal layout">
+            <label class="stv"><span>{{highlightsSO.group}}:</span></label>
+        </div>
+        <div class="horizontal layout">
+            <div style="padding-left: 15px">
+                <template is="dom-repeat" items="{{highlightsSO.groupValues}}" as="itemHighlightsSO">
+                    <template is="dom-if" if="{{itemHighlightsSO.category}}">
+                        <div class="stv-control titleCategory" >
+                            <div style="display:inline-block; min-width:140px">
+                                <label class="stv" ><span>{{itemHighlightsSO.category}}</span></label>
+                            </div>
+                            <div on-click="selectAllHighlights"  style="display:inline">
+                                <i class="fa fa-check-square-o check" name="{{itemHighlightsSO.category}}"></i>
+                            </div>
+                            <div on-click="deselectAllHighlights" style="display:inline">
+                                <i class="fa fa-square-o check " name="{{itemHighlightsSO.category}}"></i>
+                            </div>
+                        </div>
+                        <template is="dom-repeat" items="{{itemHighlightsSO.ops}}" as="ops">
+                            <div style="padding-left: 15px">
+                                <label class="stv-control">
+                                    <input type="checkbox" class="highlightSOName" name="{{itemHighlightsSO.category}}"  value="{{ops.name}}" checked="{{ops.checked}}" />
+                                    <span style="width: 250px; word-break:break-all">{{ops.name}}</span>
+                                </label>
+                            </div>
+                        </template>
+                    </template>
+
+                    <template is="dom-if" if="{{!itemHighlightsSO.category}}">
+                        <template is="dom-repeat" items="{{itemHighlightsSO.ops}}" as="ops" >
+                            <label class="stv-control">
+                                <input type="checkbox" class="highlightSOName" name="highlightSOName"  value="{{ops.name}}"  checked="{{ops.checked}}" />
+                                <span>{{ops.name}}</span>
+                            </label>
+                        </template>
+                    </template>
+
+                </template>
+            </div>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: "csvs-consequencetypes",
+            properties: {
+                highlightsSO: {
+                    type: Object,
+                    value: function () {
+                        return {
+                            group: "SO terms",
+                            name: "ct",
+                            values: [],
+                            groupValues: [
+                                {
+                                    category: "Integenic",
+                                    ops: [{
+                                        name: "upstream_gene_variant",
+                                        impact: "MODIFIER",
+                                        checked: true,
+                                        defaultChecked: true
+                                        },
+                                        {
+                                            name: "2KB_upstream_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true
+                                        },
+                                        {
+                                            name: "downstream_gene_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true
+                                        },
+                                        {
+                                            name: "2KB_downstream_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true
+                                        },
+                                        {
+                                            name: "intergenic_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true
+                                        },
+                                        {
+                                            name: "downstream_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true
+                                        }]
+                                },
+                                {
+                                    category: "Regulatory",
+                                    ops: [{
+                                        name: "mature_miRNA_variant",
+                                        impact: "MODIFIER",
+                                        checked: true,
+                                        defaultChecked: true
+                                    },
+                                        {
+                                            name: "regulatory_region_ablation",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true
+                                        },
+                                        {
+                                            name: "regulatory_region_amplification",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true
+                                        },
+                                        {
+                                            name: "regulatory_region_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true
+                                        },
+                                        {
+                                            name: "TF_binding_site_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true
+                                        },
+                                        {name: "TFBS_ablation", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                        {
+                                            name: "TFBS_amplification",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true
+                                        }]
+                                },
+                                {
+                                    category: "Coding",
+                                    ops: [{
+                                        name: "coding_sequence_variant",
+                                        impact: "MODIFIER",
+                                        checked: true,
+                                        defaultChecked: true
+                                        },
+                                        {
+                                            name: "feature_elongation",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true
+                                        },
+                                        {
+                                            name: "feature_truncation",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true
+                                        },
+                                        {name: "frameshift_variant", impact: "HIGH", checked: true, defaultChecked: true},
+                                        {
+                                            name: "incomplete_terminal_codon_variant",
+                                            impact: "LOW",
+                                            checked: true,
+                                            defaultChecked: true
+                                        },
+                                        {name: "inframe_deletion", impact: "MODERATE", checked: true, defaultChecked: true},
+                                        {
+                                            name: "inframe_insertion",
+                                            impact: "MODERATE",
+                                            checked: true,
+                                            defaultChecked: true
+                                        },
+                                        {name: "missense_variant", impact: "MODERATE", checked: true, defaultChecked: true},
+                                        {
+                                            name: "NMD_transcript_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true
+                                        },
+                                        {
+                                            name: "protein_altering_variant",
+                                            impact: "MODERATE",
+                                            checked: true,
+                                            defaultChecked: true
+                                        },
+                                        {name: "synonymous_variant", impact: "LOW", checked: true, defaultChecked: true},
+                                        {name: "start_lost", impact: "HIGH", checked: true, defaultChecked: true},
+                                        {name: "stop_retained_variant", impact: "LOW", checked: true, defaultChecked: true},
+                                        {name: "stop_gained", impact: "HIGH", checked: true, defaultChecked: true},
+                                        {name: "stop_lost", impact: "HIGH", checked: true, defaultChecked: true},
+                                        {
+                                            name: "start_retained_variant",
+                                            impact: "LOW",
+                                            checked: true,
+                                            defaultChecked: true
+                                        }]
+                                },
+                                {
+                                    category: "No coding",
+                                    ops: [{
+                                        name: "3_prime_UTR_variant",
+                                        impact: "MODIFIER",
+                                        checked: true,
+                                        defaultChecked: true
+                                    },
+                                        {
+                                            name: "5_prime_UTR_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true
+                                        },
+                                        {name: "intron_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
+                                        {
+                                            name: "non_coding_transcript_exon_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true
+                                        },
+                                        {
+                                            name: "non_coding_transcript_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true
+                                        }]
+                                },
+                                {
+                                    category: "Slice",
+                                    ops: [{
+                                        name: "splice_acceptor_variant",
+                                        impact: "HIGH",
+                                        checked: true,
+                                        defaultChecked: true
+                                    },
+                                        {name: "splice_donor_variant", impact: "HIGH", checked: true, defaultChecked: true},
+                                        {name: "splice_region_variant", impact: "LOW", checked: true, defaultChecked: true}]
+                                },
+                                {ops: [{name: "transcript_ablation", impact: "high", checked: true, defaultChecked: true}]},
+                                {
+                                    ops: [{
+                                        name: "transcript_amplification",
+                                        impact: "high",
+                                        checked: true,
+                                        defaultChecked: true
+                                    }]
+                                },
+                                {ops: [{name: "Empty SO term", impact: "", checked: true, defaultChecked: true}]},
+                            ]
+                        }
+                    },
+                },
+            },
+
+            selectAllHighlights: function (e, d, s) {
+                var checkboxes = this.getElementsByClassName("highlightSOName");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    if (e.target.name == undefined || e.target.name != undefined && elem.name == e.target.name)
+                        elem.checked = true;
+                }
+                e.stopPropagation();
+
+
+            },
+
+            deselectAllHighlights: function (e, d, s) {
+                var checkboxes = this.getElementsByClassName("highlightSOName");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    if (e.target.name == undefined || e.target.name != undefined && elem.name == e.target.name)
+                        elem.checked = false;
+                }
+                e.stopPropagation();
+
+            }
+
+        });
+    </script>
+</dom-module>

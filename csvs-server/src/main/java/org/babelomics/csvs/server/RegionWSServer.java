@@ -42,6 +42,9 @@ public class RegionWSServer extends CSVSWSServer {
             @ApiParam(value = "histogramMax") @QueryParam("histogramMax") @DefaultValue("500") int histogramMax,
             @ApiParam(value = "interval") @QueryParam("interval") @DefaultValue("280") int interval
     ) {
+        String errorAuthentication = checkAuthentication();
+        if (!errorAuthentication.isEmpty())
+            return createErrorResponse(errorAuthentication);
 
         List<Region> regionList = Region.parseRegions(regions);
         if (histogram) {
@@ -80,6 +83,9 @@ public class RegionWSServer extends CSVSWSServer {
                                         @ApiParam(value = "technologies") @QueryParam("technologies") @DefaultValue("") String technologies
     ) {
 
+        String errorAuthentication = checkAuthentication();
+        if (!errorAuthentication.isEmpty())
+            return createErrorResponse(errorAuthentication);
 
         List<Region> regionList = new ArrayList<>();
         List<Integer> diseaseList = new ArrayList<>();

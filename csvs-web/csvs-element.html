@@ -25,7 +25,7 @@
 <script src="bower_components/stevia-elements/src/validator/bed-validator.js"></script>
 <script src="src/FilterHistory.js"></script>
 
-<script src="src/csvs-manager.js"></script>
+<script src="src/manager/csvs-manager.js"></script>
 <link rel="import" href="src/csvs-home.html">
 <link rel="import" href="src/csvs-search-element.html">
 <link rel="import" href="src/csvs-feedback.html">
@@ -110,7 +110,7 @@
     <template>
 
         <div class="content" menu-option="home">
-            <csvs-home on-try="handleTry" title="{{title}}" acronym="{{acronym}}" phenotype="{{phenotype}}"
+            <csvs-home on-try="handleTry" titleApp="{{titleApp}}" acronym="{{acronym}}" phenotype="{{phenotype}}"
                        atc="{{acceptTermsCond}}" on-checket-accept="handleAcceptTermsCond" on-msj-accept="handleMsjAccept"
                        is-not-accept="{{_isNotAccept(acceptTermsCond)}}" is-accept="{{_isAccept(acceptTermsCond)}}"></csvs-home>
         </div>
@@ -136,7 +136,7 @@
         </div>
 
 
-        <div class="content" menu-option="home,search,stats,downloads,annot,result,saturation">
+        <div class="content" menu-option="home,search,stats,downloads,annot,result,saturation,login">
             <stv-panel hidden collapsible closable movable id="fileBrowserPanel" on-hidden="handlePanelHidden">
                 <div class="header">
                     <i class="fa fa-folder-open-o"></i> File Browser
@@ -153,18 +153,18 @@
             <csvs-how-to-cite id="howToCite" acronym="{{acronym}}" url="http://gpvs.clinbioinfosspa.es/" hidden on-how-to-cite-end="handleHowToCite"></csvs-how-to-cite>
         </div>
 
-        <stv-header id="stvHeader" user-data="{{userData}}" on-login="handleLogin" on-logout="handleLogout" selected-option="{{selectedOption}}" hide-jbos hide-browse isLogged="{{isLogged}}" hide-login hide
-                    -signup>
+        <stv-header id="stvHeader" user-data="{{userData}}" on-login="handleLogin" on-logout="handleLogout" selected-option="{{selectedOption}}" hide-jbos hide-browse isLogged="{{isLogged}}"
+                    hide-anonymous="true" hide-request-account="true"  hide-signup>
             <div class="icon">
-                <img src="images/logo-fundacion_3.png" style="height: 50px;margin: 5px 0px 0 0; background-color: white; border-radius: 6px">
+                <img src="images/logo-gpvs.png" style="height: 50px;margin: 5px 0px 0 0; background-color: white; border-radius: 6px">
             </div>
-            <span class="title">{{title}}</span>
+            <span class="title">{{titleApp}}</span>
             <span class="description"></span>
 
 
             <div id="menu" class="menu horizontal layout center flex">
                 <template is="dom-if" if="{{_isAccept(acceptTermsCond)}}">
-                    <div title="Search" class="option" on-click="handleMenuOption" data-option="search">
+                    <div title="Search" class="option" on-click="handleMenuOption" login-required  data-option="search">
                         <i class="fa fa-search"></i>
                         <span class="option-text">Search</span>
                     </div>
@@ -232,7 +232,7 @@
         <stv-footer menu-option="home,login,singup,profile,remember">
             {{acronym}}: created by Clinical Bioinformatics Area
             <br> Fundación Progreso y Salud
-            <br> 2015-2019
+            <br> 2015-2020
         </stv-footer>
     </template>
 </dom-module>
@@ -281,7 +281,7 @@
                 type:Boolean,
                 value: false
             },
-            title:{
+            titleApp:{
                 type: String
             },
             acronym:{
@@ -357,13 +357,19 @@
             });
 
         },
+
+
+
         _swap: function(array, x, y) {
             var b = array[y];
             array[y] = array[x];
             array[x] = b;
         },
         handleTry: function() {
-            this.setMenu("search");
+            if (this.isLogged || this.$.stvHeader.hideLogin)
+                this.setMenu("search");
+            else
+                this.setMenu("login");
         },
         handleLogin: function() {
             this.isLogged = this.$.stvHeader.isLogged;

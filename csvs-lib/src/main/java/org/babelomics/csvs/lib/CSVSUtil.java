@@ -36,6 +36,7 @@ import org.opencb.commons.run.Task;
 import java.awt.*;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -901,26 +902,37 @@ public class CSVSUtil {
         return res;
     }
 
-    public static void annot(boolean ct, boolean remove, boolean override, boolean gene, Datastore datastore, String host, String version) throws IOException {
+    public static void annot(boolean ct, boolean hgvs, boolean remove ,Datastore datastore, String host, String version, String hostHgvs) throws IOException {
         CellBaseAnnotator cba = new CellBaseAnnotator(host, version);
-
+        cba.setUriHgvs(hostHgvs);
         cba.setCt(ct);
-        cba.setRemove(remove);
-        cba.setOverride(override);
-        cba.setGene(gene);
+        cba.setHgvs(hgvs);
 
-        Iterator<Variant> it = datastore.createQuery(Variant.class).batchSize(10).iterator();
+        if (remove){
+                BasicDBObject query = new BasicDBObject();
+                BasicDBObject unset = new BasicDBObject("$unset", new BasicDBObject("an", 1));
+                WriteResult update = datastore.getCollection(Variant.class).updateMulti(query, unset);
+                System.out.println("Num variants remove annotations: " + update.getN());
 
-        while (it.hasNext()) {
-            List<Variant> batch = new ArrayList<>();
+        } else {
+            // Iterator<Variant> it = datastore.createQuery(Variant.class).filter("position",984442).batchSize(10).iterator();
+            Iterator<Variant> it = datastore.createQuery(Variant.class).batchSize(50).iterator();
 
-            for (int i = 0; i < 10 && it.hasNext(); i++) {
-                batch.add(it.next());
+            int num = 0;
+            while (it.hasNext()) {
+                List<Variant> batch = new ArrayList<>();
+
+                for (int i = 0; i < 50 && it.hasNext(); i++) {
+                    batch.add(it.next());
+                }
+
+                cba.annot(batch);
+
+                datastore.save(batch);
+                batch.clear();
+                num = num + 1;
+                System.out.println("---  " + num * 50);
             }
-
-            cba.annot(batch);
-            datastore.save(batch);
-            batch.clear();
         }
     }
 

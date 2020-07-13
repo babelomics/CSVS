@@ -203,14 +203,11 @@ public class OptionsParser {
         @Parameter(names = {"--ct"}, description = "Annot consequence Type", arity = 0)
         boolean ct;
 
-        @Parameter(names = {"--gene"}, description = "Annot Gene", arity = 0)
-        boolean gene;
+        @Parameter(names = {"--hgvs"}, description = "Annot HGVS", arity = 0)
+        boolean hgvs;
 
         @Parameter(names = {"--remove"}, description = "Remove selected annotations", arity = 0)
         boolean remove;
-
-        @Parameter(names = {"--override"}, description = "Oerride selected annotations", arity = 0)
-        boolean override;
 
         @Parameter(names = {"--host"}, description = "DB host", arity = 1)
         String host = "localhost";
