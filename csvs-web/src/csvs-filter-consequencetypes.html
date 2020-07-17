@@ -1,0 +1,498 @@
+<!--<link rel="import" href="../../../polymer/polymer.html">
+<link rel="import" href="../../../iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../stv-form-box.html">
+<link rel="import" href="../stv-panel.html">
+-->
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/stevia-elements/src/stv-form-box.html">
+<link rel="import" href="../bower_components/stevia-elements/src/stv-panel.html">
+
+
+<dom-module id="csvs-filter-consequencetypes">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .inputValue {
+            width: 170px;
+            margin-left: 4px;
+        }
+
+        .popus {
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .numFilter {
+            /*padding: 1px 7px;*/
+            background-color: #445D76;
+            border-radius: 50%;
+            color: #fff;
+            font-weight: bold;
+            font-size: 12px;
+            margin-left: 10px;
+            margin-top: 2px;
+            line-height: 20px;
+            height: 20px;
+            width: 20px;
+            text-align: center;
+        }
+
+        #highlights_div{
+            height: 550px;
+            max-height: 550px;
+            width: 225px;
+            overflow-y: auto;
+        }
+
+        .check {
+            cursor: pointer;
+            color: var(--secondary-text-color);
+            padding-right: 2px;
+        }
+
+        .check:hover {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .titleCategory{
+            background-color: #f0f0f0;
+        }
+    </style>
+    <template>
+        <stv-form-box collapsible$="{{collapsible}}" collapsed$="{{collapsed}}">
+            <div class="header horizontal layout flex">
+                <div> Consequence Type</div>
+                <div class="flex"></div>
+                <div on-click="selectAllHighlights" title="Select all">
+                    <i class="fa fa-check-square-o check"></i>
+                </div>
+                <div on-click="deselectAllHighlights" title="Deselect all">
+                    <i class="fa fa-square-o check"></i>
+                </div>
+                <div class="flex"></div>
+            </div>
+            <div id="consequenceTypes" class="container vertical layout">
+                <div id="highlights_div">
+                    <csvs-consequencetypes id="filterConsequenceTypes" ></csvs-consequencetypes>
+                </div>
+
+
+            </div>
+        </stv-form-box>
+    </template>
+    <script>
+        Polymer({
+            is: "csvs-filter-consequencetypes",
+            properties: {
+                collapsible: {
+                    type: Boolean,
+                    reflectToAttribute: true,
+                    value: false
+                },
+                collapsed: {
+                    type: Boolean,
+                    reflectToAttribute: true,
+                    value: false
+                },
+            },
+
+            selectAllHighlights: function (e, d, s) {
+                var checkboxes = this.getElementsByClassName("highlightSOName");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    if (e.target.name == undefined || e.target.name != undefined && elem.name == e.target.name)
+                        elem.checked = true;
+                }
+                e.stopPropagation();
+
+
+            },
+
+            deselectAllHighlights: function (e, d, s) {
+                var checkboxes = this.getElementsByClassName("highlightSOName");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    if (e.target.name == undefined || e.target.name != undefined && elem.name == e.target.name)
+                        elem.checked = false;
+                }
+                e.stopPropagation();
+
+            }
+
+        });
+    </script>
+</dom-module>
+
+<dom-module id="csvs-consequencetypes">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .inputValue {
+            width: 170px;
+            margin-left: 4px;
+        }
+
+        .popus {
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .numFilter {
+            /*padding: 1px 7px;*/
+            background-color: #445D76;
+            border-radius: 50%;
+            color: #fff;
+            font-weight: bold;
+            font-size: 12px;
+            margin-left: 10px;
+            margin-top: 2px;
+            line-height: 20px;
+            height: 20px;
+            width: 20px;
+            text-align: center;
+        }
+
+
+
+        .check {
+            cursor: pointer;
+            color: var(--secondary-text-color);
+            padding-right: 2px;
+        }
+
+        .check:hover {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .titleCategory{
+            background-color: #f0f0f0;
+        }
+    </style>
+    <template>
+        <div class="horizontal layout">
+            <label class="stv"><span>{{highlightsSO.group}}:</span></label>
+        </div>
+        <div class="horizontal layout">
+            <div style="padding-left: 15px">
+                <template is="dom-repeat" items="{{highlightsSO.groupValues}}" as="itemHighlightsSO">
+                    <template is="dom-if" if="{{itemHighlightsSO.category}}">
+                        <div class="stv-control titleCategory" >
+                            <div style="display:inline-block; min-width:140px">
+                                <label class="stv" ><span>{{itemHighlightsSO.category}}</span></label>
+                            </div>
+                            <div on-click="selectAllHighlights"  style="display:inline" title="Select all">
+                                <i class="fa fa-check-square-o check" name="{{itemHighlightsSO.category}}"></i>
+                            </div>
+                            <div on-click="deselectAllHighlights" style="display:inline" title="Deselect all">
+                                <i class="fa fa-square-o check " name="{{itemHighlightsSO.category}}"></i>
+                            </div>
+                        </div>
+                        <template is="dom-repeat" items="{{itemHighlightsSO.ops}}" as="ops">
+                            <div style="padding-left: 15px">
+                                <label class="stv-control">
+                                    <input type="checkbox" class="highlightSOName" name="{{itemHighlightsSO.category}}"  value="{{ops.name}}" checked="{{ops.checked}}" />
+                                    <span style="width: 250px; word-break:break-all" title="{{ops.def}}">{{ops.name}}</span>
+                                </label>
+                            </div>
+                        </template>
+                    </template>
+
+                    <template is="dom-if" if="{{!itemHighlightsSO.category}}">
+                        <template is="dom-repeat" items="{{itemHighlightsSO.ops}}" as="ops" >
+                            <label class="stv-control">
+                                <input type="checkbox" class="highlightSOName" name="highlightSOName"  value="{{ops.name}}"  checked="{{ops.checked}}" />
+                                <span title="{{ops.def}}">{{ops.name}}</span>
+                            </label>
+                        </template>
+                    </template>
+
+                </template>
+            </div>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: "csvs-consequencetypes",
+            properties: {
+                highlightsSO: {
+                    type: Object,
+                    value: function () {
+                        return {
+                            group: "SO terms",
+                            name: "ct",
+                            values: [],
+                            groupValues: [
+                                {
+                                    category: "Integenic",
+                                    ops: [{
+                                            name: "upstream_gene_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true,
+                                            def: 'A sequence variant located 5\' of a gene'
+                                        },
+                                        {
+                                            name: "2KB_upstream_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true,
+                                            def: 'A sequence variant located within 2KB 5\' of a gene'
+                                        },
+                                        {
+                                            name: "downstream_gene_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true,
+                                            def: 'A sequence variant located 3\' of a gene'
+                                        },
+                                        {
+                                            name: "2KB_downstream_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true,
+                                            def: 'A sequence variant located within 2KB 3\' of a gene'
+                                        },
+                                        {
+                                            name: "intergenic_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true,
+                                            def: 'A sequence variant located in the intergenic region, between genes'
+                                        },
+                                        {
+                                            name: "downstream_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true,
+                                            def: 'downstream_variant'
+                                        }]
+                                },
+                                {
+                                    category: "Regulatory",
+                                    ops: [{
+                                        name: "mature_miRNA_variant",
+                                        impact: "MODIFIER",
+                                        checked: true,
+                                        defaultChecked: true,
+                                        def: 'A transcript variant located with the sequence of the mature miRNA'
+                                    },
+                                        {
+                                            name: "regulatory_region_ablation",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true,
+                                            def: 'A feature ablation whereby the deleted region includes a regulatory region'
+                                        },
+                                        {
+                                            name: "regulatory_region_amplification",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true,
+                                            def: 'A feature amplification of a region containing a regulatory region'
+                                        },
+                                        {
+                                            name: "regulatory_region_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true,
+                                            def: 'A sequence variant located within a regulatory region'
+                                        },
+                                        {
+                                            name: "TF_binding_site_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true,
+                                            def: 'A sequence variant located within a transcription factor binding site'
+                                        },
+                                        {name: "TFBS_ablation", impact: "MODIFIER", checked: true, defaultChecked: true, def: 'A feature ablation whereby the deleted region includes a transcription factor binding site'},
+                                        {
+                                            name: "TFBS_amplification",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true,
+                                            def: 'A feature amplification of a region containing a transcription factor binding site'
+                                        }]
+                                },
+                                {
+                                    category: "Coding",
+                                    ops: [{
+                                            name: "coding_sequence_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                             defaultChecked: true,
+                                             def: 'A sequence variant that changes the coding sequence'
+                                        },
+                                        {
+                                            name: "feature_elongation",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true,
+                                            def: 'A sequence variant that causes the extension of a genomic feature, with regard to the reference sequence'
+                                        },
+                                        {
+                                            name: "feature_truncation",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true,
+                                            def: 'A sequence variant that causes the reduction of a genomic feature, with regard to the reference sequence'
+                                        },
+                                        {   name: "frameshift_variant",
+                                            impact: "HIGH",
+                                            checked: true,
+                                            defaultChecked: true,
+                                            def: 'A sequence variant which causes a disruption of the translational reading frame, because the number of nucleotides inserted or deleted is not a multiple of three'
+                                        },
+                                        {
+                                            name: "incomplete_terminal_codon_variant",
+                                            impact: "LOW",
+                                            checked: true,
+                                            defaultChecked: true,
+                                            def: 'A sequence variant where at least one base of the final codon of an incompletely annotated transcript is changed'
+                                        },
+                                        {name: "inframe_deletion", impact: "MODERATE", checked: true, defaultChecked: true,
+                                            def: 'An inframe non synonymous variant that deletes bases from the coding sequence'},
+                                        {
+                                            name: "inframe_insertion",
+                                            impact: "MODERATE",
+                                            checked: true,
+                                            defaultChecked: true,
+                                            def: 'A sequence variant where at least one base of the final codon of an incompletely annotated transcript is changed'
+                                        },
+                                        {name: "missense_variant", impact: "MODERATE", checked: true, defaultChecked: true,
+                                            def: 'A sequence variant, that changes one or more bases, resulting in a different amino acid sequence but where the length is preserved'},
+                                        {
+                                            name: "NMD_transcript_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true,
+                                            def: 'A variant in a transcript that is the target of nonsense-mediated mRNA decay'
+                                        },
+                                        {
+                                            name: "protein_altering_variant",
+                                            impact: "MODERATE",
+                                            checked: true,
+                                            defaultChecked: true,
+                                            def: 'A sequence_variant which is predicted to change the protein encoded in the coding sequence'
+                                        },
+                                        {name: "synonymous_variant", impact: "LOW", checked: true, defaultChecked: true,
+                                            def: 'A sequence variant where there is no resulting change to the encoded amino acid'},
+                                        {name: "start_lost", impact: "HIGH", checked: true, defaultChecked: true,
+                                            def: 'A codon variant that changes at least one base of the canonical start codon'},
+                                        {name: "stop_retained_variant", impact: "LOW", checked: true, defaultChecked: true,
+                                            def: 'A sequence variant where at least one base in the terminator codon is changed, but the terminator remains'},
+                                        {name: "stop_gained", impact: "HIGH", checked: true, defaultChecked: true,
+                                            def: 'A sequence variant whereby at least one base of a codon is changed, resulting in a premature stop codon, leading to a shortened polypeptide'},
+                                        {name: "stop_lost", impact: "HIGH", checked: true, defaultChecked: true,
+                                            def: 'A sequence variant where at least one base of the terminator codon (stop) is changed, resulting in an elongated transcript'},
+                                        {
+                                            name: "start_retained_variant",
+                                            impact: "LOW",
+                                            checked: true,
+                                            defaultChecked: true,
+                                            def: 'A sequence variant where at least one base in the start codon is changed, but the start remains'
+                                        }]
+                                },
+                                {
+                                    category: "No coding",
+                                    ops: [{
+                                        name: "3_prime_UTR_variant",
+                                        impact: "MODIFIER",
+                                        checked: true,
+                                        defaultChecked: true,
+                                        def: 'A UTR variant of the 3\' UTR'
+                                    },
+                                        {
+                                            name: "5_prime_UTR_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true,
+                                            def: 'A UTR variant of the 5\' UTR'
+                                        },
+                                        {name: "intron_variant", impact: "MODIFIER", checked: true, defaultChecked: true,
+                                            def: 'A transcript variant occurring within an intron'},
+                                        {
+                                            name: "non_coding_transcript_exon_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true,
+                                            def: 'A sequence variant that changes non-coding exon sequence in a non-coding transcript'
+                                        },
+                                        {
+                                            name: "non_coding_transcript_variant",
+                                            impact: "MODIFIER",
+                                            checked: true,
+                                            defaultChecked: true,
+                                            def: 'A transcript variant of a non coding RNA gene'
+                                        }]
+                                },
+                                {
+                                    category: "Slice",
+                                    ops: [{
+                                        name: "splice_acceptor_variant",
+                                        impact: "HIGH",
+                                        checked: true,
+                                        defaultChecked: true,
+                                        def: 'A splice variant that changes the 2 base region at the 3\' end of an intron'
+                                    },
+                                        {name: "splice_donor_variant", impact: "HIGH", checked: true, defaultChecked: true,
+                                            def: 'A splice variant that changes the 2 base pair region at the 5\' end of an intron'},
+                                        {name: "splice_region_variant", impact: "LOW", checked: true, defaultChecked: true,
+                                            def: ' \tA sequence variant in which a change has occurred within the region of the splice site, either within 1-3 bases of the exon or 3-8 bases of the intron'}]
+                                },
+                                {ops: [{name: "transcript_ablation", impact: "high", checked: true, defaultChecked: true,
+                                    def: 'A feature ablation whereby the deleted region includes a transcript feature'}]},
+                                {
+                                    ops: [{
+                                        name: "transcript_amplification",
+                                        impact: "high",
+                                        checked: true,
+                                        defaultChecked: true,
+                                        def: 'A feature amplification of a region containing a transcript'
+                                    }]
+                                },
+                                {ops: [{name: "Empty SO term", impact: "", checked: true, defaultChecked: true,
+                                    def: 'Empty sequence ontology term'}]},
+                            ]
+                        }
+                    },
+                },
+            },
+
+            selectAllHighlights: function (e, d, s) {
+                var checkboxes = this.getElementsByClassName("highlightSOName");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    if (e.target.name == undefined || e.target.name != undefined && elem.name == e.target.name)
+                        elem.checked = true;
+                }
+                e.stopPropagation();
+
+
+            },
+
+            deselectAllHighlights: function (e, d, s) {
+                var checkboxes = this.getElementsByClassName("highlightSOName");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    if (e.target.name == undefined || e.target.name != undefined && elem.name == e.target.name)
+                        elem.checked = false;
+                }
+                e.stopPropagation();
+
+            }
+
+        });
+    </script>
+</dom-module>

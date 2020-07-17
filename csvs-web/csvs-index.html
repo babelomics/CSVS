@@ -101,6 +101,10 @@
                 AVAILABLE_SPECIES = s;
                 DEFAULT_SPECIES = AVAILABLE_SPECIES.vertebrates[0];
                 csvs = document.createElement('csvs-element');
+                csvs.setAttribute("title-app", window.TITLE_APP || "Collaborative Spanish Variant Server");
+                csvs.setAttribute("acronym", window.ACRONYM_APP || "CSVS");
+                csvs.setAttribute("phenotype", window.PHENOTYPE  || "Spanish");
+                document.head.getElementsByTagName("title")[0].innerHTML = window.TITLE_APP || "Collaborative Spanish Variant Server";
                 document.body.appendChild(csvs);
             });
         });

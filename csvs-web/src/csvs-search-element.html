@@ -4,9 +4,11 @@
 <link rel="import" href="../bower_components/jsorolla/src/lib/components/jso-genome-viewer-element.html">
 
 <link rel="import" href="../bower_components/stevia-elements/src/filter/stv-filter-position.html">
+<link rel="import" href="./csvs-filter-consequencetypes.html">
 <link rel="import" href="../bower_components/stevia-elements/src/stv-tooltip.html">
 
 <script src="../bower_components/stevia-elements/src/manager/cellbase-manager.js"></script>
+<script src="./manager/csvs-manager.js"></script>
 
 <link rel="import" href="./csvs-table-saturation.html">
 
@@ -242,10 +244,10 @@
                             <div class="header horizontal layout flex">
                                 <div>Subpopulations</div>
                                 <div class="flex"></div>
-                                <div on-click="selectAllDiseases">
+                                <div on-click="selectAllDiseases" title="Select all subpopulations">
                                     <i class="fa fa-check-square-o check"></i>
                                 </div>
-                                <div on-click="deselectAllDiseases">
+                                <div on-click="deselectAllDiseases" title="Deselect all subpopulations">
                                     <i class="fa fa-square-o check"></i>
                                 </div>
                             </div>
@@ -266,10 +268,10 @@
                             <div class="header horizontal layout flex">
                                 <div>Technologies</div>
                                 <div class="flex"></div>
-                                <div on-click="selectAllTechnologies">
+                                <div on-click="selectAllTechnologies" title="Deselect all technologies">
                                     <i class="fa fa-check-square-o check"></i>
                                 </div>
-                                <div on-click="deselectAllTechnologies">
+                                <div on-click="deselectAllTechnologies" title="Select all technologies">
                                     <i class="fa fa-square-o check"></i>
                                 </div>
                             </div>
@@ -290,10 +292,10 @@
                             <div class="header horizontal layout flex">
                                 <div>Highlights</div>
                                 <div class="flex"></div>
-                                <div on-click="selectAllHighlights" >
+                                <div on-click="selectAllHighlights" title="Select all Sequence Ontology terms">
                                     <i class="fa fa-check-square-o check"></i>
                                 </div>
-                                <div on-click="deselectAllHighlights">
+                                <div on-click="deselectAllHighlights" title="Deselect all Sequence Ontology terms">
                                     <i class="fa fa-square-o check"></i>
                                 </div>
                             </div>
@@ -321,43 +323,7 @@
                                     </template>
 
                                     <div>
-
-                                        <label class="stv"><span>{{highlightsSO.group}}:</span></label>
-                                        <div style="padding-left: 15px">
-                                            <template is="dom-repeat" items="{{highlightsSO.groupValues}}" as="itemHighlightsSO">
-                                                <template is="dom-if" if="{{itemHighlightsSO.category}}">
-                                                    <div class="stv-control titleCategory" >
-                                                        <div style="display:inline-block; min-width:140px">
-                                                            <label class="stv" ><span>{{itemHighlightsSO.category}}</span></label>
-                                                        </div>
-                                                        <div on-click="selectAllHighlights"  style="display:inline">
-                                                            <i class="fa fa-check-square-o check" name="{{itemHighlightsSO.category}}"></i>
-                                                        </div>
-                                                        <div on-click="deselectAllHighlights" style="display:inline">
-                                                            <i class="fa fa-square-o check " name="{{itemHighlightsSO.category}}"></i>
-                                                        </div>
-                                                    </div>
-                                                    <template is="dom-repeat" items="{{itemHighlightsSO.ops}}" as="ops">
-                                                        <div style="padding-left: 15px">
-                                                            <label class="stv-control">
-                                                                <input type="checkbox" class="highlightSOName" name="{{itemHighlightsSO.category}}" id="{{ops.name}}" value="{{ops.name}}" checked="{{ops.checked}}" />
-                                                                <span style="width: 250px; word-break:break-all">{{ops.name}}</span>
-                                                            </label>
-                                                        </div>
-                                                    </template>
-                                                </template>
-
-                                                <template is="dom-if" if="{{!itemHighlightsSO.category}}">
-                                                    <template is="dom-repeat" items="{{itemHighlightsSO.ops}}" as="ops" >
-                                                        <label class="stv-control">
-                                                            <input type="checkbox" class="highlightSOName" name="highlightSOName" id="{{ops.name}}" value="{{ops.name}}"  checked="{{ops.checked}}" />
-                                                            <span>{{ops.name}}</span>
-                                                        </label>
-                                                    </template>
-                                                </template>
-
-                                            </template>
-                                        </div>
+                                        <csvs-consequencetypes id="highlightsConsequenceTypes" ></csvs-consequencetypes>
                                     </div>
 
                                 </div>
@@ -476,45 +442,51 @@
                             name: "ct",
                             values:[],
                             groupValues:[
-                                { category: "Integenic", ops: [ 	{ name: "upstream_gene_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
-                                    { name: "2KB_upstream_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
-                                    { name: "downstream_gene_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
-                                    { name: "2KB_downstream_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
-                                    { name: "intergenic_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
-                                    { name: "downstream_variant", impact: "MODIFIER", checked: true, defaultChecked: true}] },
-                                { category: "Regulatory", ops: [{ name: "mature_miRNA_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
-                                    { name: "regulatory_region_ablation", impact: "MODIFIER", checked: true, defaultChecked: true},
-                                    { name: "regulatory_region_amplification", impact: "MODIFIER", checked: true, defaultChecked: true},
-                                    { name: "regulatory_region_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
-                                    { name: "TF_binding_site_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
-                                    { name: "TFBS_ablation",	impact: "MODIFIER", checked: true, defaultChecked: true},
-                                    { name: "TFBS_amplification",	impact: "MODIFIER", checked: true, defaultChecked: true }] },
-                                { category: "Coding", ops: [ { name: "coding_sequence_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
-                                    { name: "feature_elongation",	impact: "MODIFIER", checked: true, defaultChecked: true},
-                                    { name: "feature_truncation",	impact: "MODIFIER",checked: true,  defaultChecked: true },
-                                    { name: "frameshift_variant",	impact: "HIGH" , checked: true, defaultChecked: true},
-                                    { name: "incomplete_terminal_codon_variant",	impact: "LOW", checked: true, defaultChecked: true},
-                                    { name: "inframe_deletion", impact: "MODERATE", checked: true, defaultChecked: true},
-                                    { name: "inframe_insertion",	impact: "MODERATE", checked: true, defaultChecked: true},
-                                    { name: "missense_variant", impact: "MODERATE", checked: true, defaultChecked: true },
-                                    { name: "NMD_transcript_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
-                                    { name: "protein_altering_variant", impact: "MODERATE", checked: true, defaultChecked: true},
-                                    { name: "synonymous_variant",	impact: "LOW", checked: true, defaultChecked: true},
-                                    { name: "start_lost", impact: "HIGH", checked: true, defaultChecked: true},
-                                    { name: "stop_retained_variant", impact: "LOW", checked: true, defaultChecked: true },
-                                    { name: "stop_gained", impact: "HIGH", checked: true, defaultChecked: true},
-                                    { name: "stop_lost", impact: "HIGH", checked: true, defaultChecked: true},
-                                    { name: "start_retained_variant",	impact: "LOW", checked: true, defaultChecked: true}] },
-                                { category: "No coding", ops: [{ name: "3_prime_UTR_variant", impact: "MODIFIER",checked: true, defaultChecked: true},
-                                    { name: "5_prime_UTR_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
-                                    { name: "intron_variant", impact: "MODIFIER", checked: true, defaultChecked: true},
-                                    { name: "non_coding_transcript_exon_variant", impact: "MODIFIER",checked: true, defaultChecked: true},
-                                    { name: "non_coding_transcript_variant", impact: "MODIFIER", checked: true, defaultChecked: true}] },
-                                { category: "Slice", ops: [ { name: "splice_acceptor_variant", impact: "HIGH", checked: true, defaultChecked: true},
-                                    { name: "splice_donor_variant", impact: "HIGH", checked: true, defaultChecked: true},
-                                    { name: "splice_region_variant", impact: "LOW", checked: true, defaultChecked: true}]},
-                                { ops: [ {name: "transcript_ablation" , impact: "HIGH", checked: true, defaultChecked: true}]},
-                                { ops: [ {name: "transcript_amplification" , impact: "HIGH", checked: true, defaultChecked: true}]},
+                                { category: "Integenic", ops: [
+                                    { name: "upstream_gene_variant", impact: "MODIFIER", checked: true, defaultChecked: true, order:28},
+                                    { name: "2KB_upstream_variant", impact: "MODIFIER", checked: true, defaultChecked: true, order:26},
+                                    { name: "downstream_gene_variant", impact: "MODIFIER", checked: true, defaultChecked: true, order:29},
+                                    { name: "2KB_downstream_variant", impact: "MODIFIER", checked: true, defaultChecked: true, order:27},
+                                    { name: "intergenic_variant", impact: "MODIFIER", checked: true, defaultChecked: true, order:38},
+                                    { name: "downstream_variant", impact: "MODIFIER", checked: true, defaultChecked: true, order:29},
+                                    { name: "upstream_variant", impact: "MODIFIER", checked: true, defaultChecked: true, order:28} ]},
+                                { category: "Regulatory", ops: [
+                                    { name: "mature_miRNA_variant", impact: "MODIFIER", checked: true, defaultChecked: true, order:19},
+                                    { name: "regulatory_region_ablation", impact: "MODIFIER", checked: true, defaultChecked: true, order:33},
+                                    { name: "regulatory_region_amplification", impact: "MODIFIER", checked: true, defaultChecked: true, order:34},
+                                    { name: "regulatory_region_variant", impact: "MODIFIER", checked: true, defaultChecked: true, order:36},
+                                    { name: "TF_binding_site_variant", impact: "MODIFIER", checked: true, defaultChecked: true, order:32},
+                                    { name: "TFBS_ablation",	impact: "MODIFIER", checked: true, defaultChecked: true, order:30},
+                                    { name: "TFBS_amplification",	impact: "MODIFIER", checked: true, defaultChecked: true, order:31}] },
+                                { category: "Coding", ops: [
+                                    { name: "coding_sequence_variant", impact: "MODIFIER", checked: true, defaultChecked: true, order:18},
+                                    { name: "feature_elongation",	impact: "MODIFIER", checked: true, defaultChecked: true, order:35},
+                                    { name: "feature_truncation",	impact: "MODIFIER",checked: true,  defaultChecked: true, order:37},
+                                    { name: "frameshift_variant",	impact: "HIGH" , checked: true, defaultChecked: true, order:5},
+                                    { name: "incomplete_terminal_codon_variant",	impact: "LOW", checked: true, defaultChecked: true, order:14},
+                                    { name: "inframe_deletion", impact: "MODERATE", checked: true, defaultChecked: true, order:10},
+                                    { name: "inframe_insertion",	impact: "MODERATE", checked: true, defaultChecked: true, order:9},
+                                    { name: "missense_variant", impact: "MODERATE", checked: true, defaultChecked: true, order:11 },
+                                    { name: "NMD_transcript_variant", impact: "MODIFIER", checked: true, defaultChecked: true, order:24},
+                                    { name: "protein_altering_variant", impact: "MODERATE", checked: true, defaultChecked: true, order:12},
+                                    { name: "synonymous_variant",	impact: "LOW", checked: true, defaultChecked: true, order:17},
+                                    { name: "start_lost", impact: "HIGH", checked: true, defaultChecked: true, order:7},
+                                    { name: "stop_retained_variant", impact: "LOW", checked: true, defaultChecked: true, order:16 },
+                                    { name: "stop_gained", impact: "HIGH", checked: true, defaultChecked: true, order:4},
+                                    { name: "stop_lost", impact: "HIGH", checked: true, defaultChecked: true, order:6},
+                                    { name: "start_retained_variant",	impact: "LOW", checked: true, defaultChecked: true, order:15}] },
+                                { category: "No coding", ops: [
+                                    { name: "3_prime_UTR_variant", impact: "MODIFIER",checked: true, defaultChecked: true, order:21},
+                                    { name: "5_prime_UTR_variant", impact: "MODIFIER", checked: true, defaultChecked: true, order:20},
+                                    { name: "intron_variant", impact: "MODIFIER", checked: true, defaultChecked: true, order:23},
+                                    { name: "non_coding_transcript_exon_variant", impact: "MODIFIER",checked: true, defaultChecked: true, order:22},
+                                    { name: "non_coding_transcript_variant", impact: "MODIFIER", checked: true, defaultChecked: true, order:25}] },
+                                { category: "Slice", ops: [
+                                    { name: "splice_acceptor_variant", impact: "HIGH", checked: true, defaultChecked: true, order:2},
+                                    { name: "splice_donor_variant", impact: "HIGH", checked: true, defaultChecked: true, order:3},
+                                    { name: "splice_region_variant", impact: "LOW", checked: true, defaultChecked: true, order:13}]},
+                                { ops: [ {name: "transcript_ablation" , impact: "HIGH", checked: true, defaultChecked: true, order:1}]},
+                                { ops: [ {name: "transcript_amplification" , impact: "HIGH", checked: true, defaultChecked: true, order:8}]},
                             ]
                         }
                 },
@@ -527,7 +499,7 @@
                 type: Array,
                 value: function() {
                     return [];
-                }
+                },
             },
             formURL: {
                 type: String,
@@ -719,13 +691,12 @@
                 case "MODIFIER":
                     return "green";
 
-
                 default:
                     return "grey";
             }
         },
 
-        _getStyleFormulaConsecuence: function(row, field){
+        _getStyleFormulaConsequence: function(row, field){
             var style = {};
 
             var obj = null;
@@ -766,14 +737,19 @@
 
             var highlightsSOChecked = this.$.highlights_div.querySelectorAll(".highlightSOName");
 
-            var pos = 0
-            for (var i = 0; i < this.highlightsSO.groupValues.length && highlightsSOChecked.length; i++) {
-                for (var j = 0; j < this.highlightsSO.groupValues[i].ops.length ; j++) {
-                    this.highlightsSO.groupValues[i].ops[j].checked = highlightsSOChecked[pos].checked;
-                    pos++;
-                }
+            highlightsSOChecked.forEach(
+                hc =>{
 
+                for (var i = 0; i < this.highlightsSO.groupValues.length; i++) {
+                obj = this.highlightsSO.groupValues[i].ops.find(h => h.name === hc.value) ;
+                    if (!!obj ) {
+                        obj.checked = hc.checked;
             }
+                }
+            })
+
+
+
             return true;
         },
 
@@ -796,7 +772,7 @@
             for (var i = 0; i < this.highlightsSO.groupValues.length ; i++) {
                 for (var j = 0; j < this.highlightsSO.groupValues[i].ops.length ; j++) {
                     highlightsSOChecked[pos].checked = this.highlightsSO.groupValues[i].ops[j].defaultChecked;
-                    console.log(this.highlightsSO.groupValues[i].ops[j].defaultChecked, this.highlightsSO.groupValues[i].ops[j].name);
+                    //console.log(this.highlightsSO.groupValues[i].ops[j].defaultChecked, this.highlightsSO.groupValues[i].ops[j].name);
                     pos++;
                 }
 
@@ -859,13 +835,39 @@
                     title: 'Gene',
                     width: 90,
                     defaultValue: ".",
-                    disableSort: true
+                    disableSort: true,
+                    disableTooltip: true,
+                    formula: function(row){
+                        if (row.genes != "" && row.genes != "." && row.genes !=  undefined) {
+                            var genes = row.genes.split(',');
+                            var result=[];
+                            genes.forEach(
+                                function(g) {
+                                    result.push("<a class='link' href='https://www.genecards.org/cgi-bin/carddisp.pl?gene=" + g  +"' target='_blank' " +
+                                        "title=" + g + ">"+g+"</a>");
+                                }
+                            );
+                            return result.join(",");
+                        } else
+                            return row.genes;
+                }
                 }, {
                     name: 'id',
                     title: 'Id',
                     width: 90,
                     defaultValue: ".",
                     disableSort: true,
+                    disableTooltip: true,
+                    formula: function(row){
+                        if (row.id != undefined) {
+                            if (row.id != "" && row.id != ".")
+                                return "<a class='link' href='https://www.ncbi.nlm.nih.gov/snp/" + row.id + "' target='_blank' " +
+                                    "title=" + row.id + ">" + row.id + "</a>";
+                            else
+                                return row.id;
+                        } else
+                            return ".";
+                    }
                 },{
                     title: "Genotypes",
                     name: 'genotypes',
@@ -953,7 +955,7 @@
                         }
                     }]
                 }, {
-                    title: "<span title='Alternate Allele Frequency 1000G AAF (phase 1)'>1000G AAF (phase 1)</span>",
+                    title: "<span title='Alternate Allele Frequency 1000G AAF (phase 1)'>1000G AAF (phase 1) <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                     width: 250,
                     name: 'aaf1000g',
                     visible: false,
@@ -971,7 +973,7 @@
                             }
                         }, {
                             name: "aaf1000GAME",
-                            title: "AME",
+                            title:  "<span title='AMR: American'>AMR <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                             defaultValue: ".",
                             disableSort: true,
                             formula: function(row) {
@@ -983,7 +985,7 @@
                             }
                         }, {
                             name: "aaf1000GASI",
-                            title: "ASI",
+                            title: "<span title='ASN: Asian'>ASN <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                             defaultValue: ".",
                             disableSort: true,
                             formula: function(row) {
@@ -995,7 +997,7 @@
                             }
                         }, {
                             name: "aaf1000GAFR",
-                            title: "AFR",
+                            title: "<span title='AFR: African'>AFR <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                             defaultValue: ".",
                             disableSort: true,
                             formula: function(row) {
@@ -1007,7 +1009,7 @@
                             }
                         }, {
                             name: "aaf1000GEUR",
-                            title: "EUR",
+                            title:  "<span title='EUR: European'>EUR <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                             defaultValue: ".",
                             disableSort: true,
                             formula: function(row) {
@@ -1019,7 +1021,7 @@
                             }
                         }]
                      }, {
-                        title: "<span title='Alternate Allele Frequency 1000G AAF (phase 3)'>1000G AAF (phase 3)</span>",
+                        title: "<span title='Alternate Allele Frequency 1000G AAF (phase 3)'>1000G AAF (phase 3) <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                         width: 150,
                         name: 'aaf1000G3',
                         columns: [{
@@ -1036,7 +1038,7 @@
                             },
                         }, {
                             name: "aaf1000G_PHASE_3_AMR",
-                            title: "AME",
+                            title:  "<span title='AMR: American '>AMR <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                             defaultValue: ".",
                             visible: false,
                             disableSort: true,
@@ -1050,7 +1052,7 @@
 
                         }, {
                             name: "aaf1000G_PHASE_3_SAS",
-                            title: "South ASI",
+                            title:  "<span title='SAS: South Asian'>SAS <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                             defaultValue: ".",
                             visible: false,
                             formula: function(row) {
@@ -1062,7 +1064,7 @@
                             }
                         }, {
                             name: "aaf1000G_PHASE_3_EAS",
-                            title: "East ASI",
+                            title:  "<span title='EAS: East Asian'>EAS <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                             defaultValue: ".",
                             visible: false,
                             disableSort: true,
@@ -1075,7 +1077,7 @@
                             }
                         }, {
                             name: "aaf1000G_PHASE_3_AFR",
-                            title: "AFR",
+                            title: "<span title='AFR: African'>AFR <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                             defaultValue: ".",
                             visible: false,
                             disableSort: true,
@@ -1088,7 +1090,7 @@
                             }
                         }, {
                             name: "aaf1000G_PHASE_3_EUR",
-                            title: "EUR",
+                            title: "<span title='EUR: European'>EUR <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                             defaultValue: ".",
                             disableSort: true,
                             formula: function(row) {
@@ -1101,8 +1103,8 @@
                         } ]
 
                     }, {
-                        title: "<span title='Alternate Allele Frequency ExAC'>ExAC AAF</span>",
-                        width: 60,
+                        title: "<span title='Alternate Allele Frequency ExAC (Exome Aggregation Consortium)'>ExAC AAF <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
+                        width: 65,
                         name: 'aafexac',
                         columns: [{
                                 name: "aafexac_ALL",
@@ -1119,7 +1121,7 @@
                             }
                         ]
                     }, {
-                        title: "<span title='Alternate Allele Frequency ESP 6500'>ESP 6500 AAF</span>",
+                        title: "<span title='Alternate Allele Frequency ESP 6500 (Populations from the NHLBI Exome Sequencing Project)'>ESP 6500 AAF <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                         width: 100,
                         name: 'aaf6500',
                         columns: [{
@@ -1136,7 +1138,7 @@
                             }
                         }, {
                             name: "aafESP_EA",
-                            title: "Eur. Ame.",
+                            title: "<span title='EA: European American'>EA <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                             defaultValue: ".",
                             disableSort: true,
                             formula: function (row) {
@@ -1149,7 +1151,7 @@
                     }]
                 }, {
                     name: 'sift',
-                    title: 'SIFT',
+                    title: '<span title="SIFT predicts whether an amino acid substitution affects protein function. The lower the values, the more damaging the prediction">SIFT <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
                     width: 50,
                     disableSort: true,
                     formula: function(row) {
@@ -1164,7 +1166,7 @@
                     }
                 },  {
                     name: 'polyphen',
-                    title: 'Polyphen',
+                    title: '<span title="Polyphen predicts the possible impact of an amino acid substitution on the structure and function of a protein. The higher the values, the more damaging the prediction">Polyphen <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
                     width: 60,
                     disableSort: true,
                     formula: function(row) {
@@ -1205,7 +1207,7 @@
                     }
                 }, {
                     name: 'gerp',
-                    title: 'GERP',
+                    title: '<span title="GERP score estimates the level of conservation of positions. Scores ≥ 2 indicate evolutionary constraint to and ≥ 3 indicate purifying selection">GERP <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
                     width: 50,
                     disableSort: true,
                     formula: function(row) {
@@ -1220,7 +1222,7 @@
                     }
                 }, {
                     name: 'cadd',
-                    title: 'CADD',
+                    title: '<span title="CADD scores the deleteriousness of snvs and indels. Higher values indicate more likely to have deleterious effects">CADD <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
                     width: 50,
                     disableSort: true,
                     formula: function(row) {
@@ -1235,14 +1237,14 @@
                     }
                 }, {
                     name: 'ct',
-                    title: 'Consequence type',
+                    title: '<span title="Worst consequence type found among all transcripts">Worst consequence type <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
                     width: 150,
                     disableSort: true,
                     formula: function (row) {
                         return row.annots.displayConsequenceType;
                     },
                     styleFormula: function(row) {
-                        return me._getStyleFormulaConsecuence(row.annots.displayConsequenceType, 'ct')
+                        return me._getStyleFormulaConsequence(row.annots.displayConsequenceType, 'ct')
                     }
                 }, {
                     name: 'phenotypes',
@@ -1290,8 +1292,8 @@
                 },
                 {
                     name: 'addressBook',
-                    title: 'Address<br/>Book',
-                    width: 50,
+                    title: '<span title="Send a request to the reference person informed of your interest in this variant">Request<br/>contact <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
+                    width: 60,
                     disableSort: true,
                     formula: function (row) {
                         var variant = row.chromosome + ":" + row.position + " " + row.reference + ">" + row.alternate;
@@ -1302,14 +1304,21 @@
             this.reloadChart({});
         },
         downloadFiles: function(e) {
-            this.query.limit = 0;
+            //this.query.limit = 0;
+            var newQuery = this.query;
+            newQuery.skip=(this.$.dataTable.currentPage -1) * this.$.dataTable.pageSize;
+            newQuery.enableSkip=true;
+
             var me = this;
             var url = CSVSManager.variants.fetch({
-                query: this.query,
+                query: newQuery,
                 request: {
                     success: function(r) {
                         var stringToSave = "Chr"+ "\t"+"Position"+ "\t"+"alleles"+ "\t"+"0/0"+ "\t"+"0/1"+ "\t"+"1/1"
                                 + "\t"+"./,"+ "\t"+"0Freq"+ "\t"+ "1Freq"+ "\t"+ "MAF"+"\n";
+
+                        if (!!window.CSVS_LIMIT_MAX && r.numTotalResults > window.CSVS_LIMIT_MAX)
+                            alert('Only a maximum of '+ CSVS_LIMIT_MAX + ' variants is downloaded.');
 
                         for( var i = 0; i < r.result.length; i++){
                             stringToSave = stringToSave + me._csvToString(r.result[i]);
@@ -1373,6 +1382,17 @@
             return results;
         },
         submitForm: function(e) {
+
+            if (!!this.$.frequency) {
+                this.$.frequency.isEmpty = true;
+            }
+            if (!!this.$.phenotype){
+                this.$.phenotype.isCosmicEmpty = true;
+                this.$.phenotype.isGwasEmpty = true;
+                this.$.phenotype.isClinvarEmpty = true;
+            }
+            if (!!this.$.effect)
+                this.$.effect.isEmpty = true;
 
             var me = this;
             var query = {};
@@ -1592,7 +1612,8 @@
         },
 
         selectAllDiseases: function(e, d, s) {
-            var checkboxes = this.$.filter_form.getElementsByClassName("diseaseName");
+            var name = (e.target != undefined && e.target.getAttribute("name") == "CSVS") ? "diseaseNameCSVS": "diseaseName";
+            var checkboxes = this.$.filter_form.getElementsByClassName(name);
             for (var i = 0; i < checkboxes.length; i++) {
                 var elem = checkboxes[i];
                 elem.checked = true;
@@ -1608,16 +1629,12 @@
 
         },
         selectAllHighlights: function(e, d, s) {
-            var checkboxes = this.$.filter_form.getElementsByClassName("highlightSOName");
-            for (var i = 0; i < checkboxes.length; i++) {
-                var elem = checkboxes[i];
-                if (e.target.name == undefined ||  e.target.name != undefined && elem.name == e.target.name )
-                    elem.checked = true;
-            }
+           this.$.highlightsConsequenceTypes.selectAllHighlights(e,d,s);
             e.stopPropagation();
         },
         deselectAllDiseases: function(e, d, s) {
-            var checkboxes = this.$.filter_form.getElementsByClassName("diseaseName");
+            var name = (e.target != undefined && e.target.getAttribute("name") == "CSVS") ? "diseaseNameCSVS": "diseaseName";
+            var checkboxes = this.$.filter_form.getElementsByClassName(name);
             for (var i = 0; i < checkboxes.length; i++) {
                 var elem = checkboxes[i];
                 elem.checked = false;
@@ -1632,13 +1649,8 @@
         },
 
         deselectAllHighlights: function(e, d, s) {
-            var checkboxes = this.$.filter_form.getElementsByClassName("highlightSOName");
-            for (var i = 0; i < checkboxes.length; i++) {
-                var elem = checkboxes[i];
-                if ( e.target.name == undefined ||  e.target.name != undefined && elem.name == e.target.name )
-                    elem.checked = false;
-            }
-
+            this.$.highlightsConsequenceTypes.deselectAllHighlights(e,d,s);
+            e.stopPropagation();
         },
 
         urlChanged: function(neo, old) {
@@ -1677,8 +1689,25 @@
             };
 
         },
-        _parse: function(response) {
 
+        _getWorst: function(listConsType) {
+            var worst = {};
+
+            listConsType.forEach(ct => {
+                var obj;
+                for (var i = 0; i < this.highlightsSO.groupValues.length; i++) {
+                    obj = this.highlightsSO.groupValues[i].ops.find(h => h.name === ct) ;
+                    if (!!obj && !!obj.order && (worst.order == undefined || obj.order < worst.order)) {
+                        worst.ct = ct;
+                        worst.order = obj.order;
+                    }
+                }
+              return worst;
+            });
+            return worst.ct;
+        },
+
+        _parse: function(response) {
             var me = this;
             var data = response.result;
             var positions = [];
@@ -1695,7 +1724,7 @@
                     row.alternate = "-";
                 }
 
-                if((row.alternate).indexOf(",") != -1){
+                if(row.alternate != undefined && (row.alternate).indexOf(",") != -1){
                     positionsDoubleVariant.push(i);
                     doubleVariant.push(row.alternate);
                     row.alternate = row.alternate.split(",")[0];
@@ -1712,7 +1741,6 @@
 
                 var variant = row.chromosome + ":" + row.position + ":" + row.reference + ":" + row.alternate;
                 positions.push(variant);
-
             }
 
             // Annotate
@@ -1749,7 +1777,6 @@
             for (var z = 0; z < positionsDoubleVariant.length; z++) {
                 data[positionsDoubleVariant[z]].alternate = doubleVariant[z];
             }
-
             // Get value "" or "*" from CSVS
             for (var z = 0; z < referencePosition.length; z++) {
                 data[referencePosition[z]].reference =  referenceVariant[z];
@@ -1757,7 +1784,6 @@
 
             for (var i = 0; i < data.length; i++) {
                 var variant = data[i];
-
 
                 if (variant.annots == null) {
                     continue;
@@ -1803,6 +1829,7 @@
 
                     for (var j = 0, l = variant.annots.consequenceTypes.length; j < l; j++) {
                         var ct = variant.annots.consequenceTypes[j];
+
                         if (ct != null && ct != "undefined") {
                             if (ct.geneName != null && ct.geneName.length > 0 && genes.indexOf(ct.geneName) < 0) {
                                 genes.push(ct.geneName);
@@ -1811,8 +1838,7 @@
                             if (ct.proteinVariantAnnotation != null && ct.proteinVariantAnnotation.substitutionScores != null && ct.proteinVariantAnnotation.substitutionScores.length > 0) {
                                 var auxSift = null;
                                 var auxPoly = null;
-                                for (var k = 0, l = ct.proteinVariantAnnotation.substitutionScores.length; k < l; k++) {
-
+                                for (var k = 0, lP = ct.proteinVariantAnnotation.substitutionScores.length; k < lP; k++) {
                                     var pss = ct.proteinVariantAnnotation.substitutionScores[k];
                                     switch (pss.source.toLowerCase()) {
                                         case 'sift':
@@ -1847,7 +1873,6 @@
                         variant.genes = genes.join(",");
                     }
                 }
-
 
                 // Functional Score
                 if (variant.annots.functionalScore != null && variant.annots.functionalScore.length > 0) {
@@ -1940,65 +1965,43 @@
                         if (pfreq.study.toLowerCase() === "1000genomes_phase_1") {
                             switch (pfreq.population) {
                                 case "ALL":
-                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    //variant.maf1000G = Number(maf).toFixed(3);
                                     variant.aaf1000G = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
 
                                 case "AMR":
-                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    //variant.maf1000GAME = Number(maf).toFixed(3)
                                     variant.maf1000GAME = Number(pfreq.altAlleleFreq).toFixed(3)
                                     break;
 
                                 case "ASN":
-                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    //variant.maf1000GASI = Number(maf).toFixed(3)
                                     variant.maf1000GASI = Number(pfreq.altAlleleFreq).toFixed(3)
                                     break;
 
                                 case "AFR":
-                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    //variant.maf1000GAFR = Number(maf).toFixed(3)
                                     variant.aaf1000GAFR = Number(pfreq.altAlleleFreq).toFixed(3)
                                     break;
 
                                 case "EUR":
-                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    //variant.maf1000GEUR = Number(maf).toFixed(3)
                                     variant.aaf1000GEUR = Number(maf).toFixed(3)
                                     break;
                             }
                         } else if (pfreq.study.toLowerCase() === "1kg_phase3") {
                             switch (pfreq.population) {
                                 case "ALL":
-                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    //variant.maf1000G_PHASE_3_ALL = Number(maf).toFixed(3);
                                     variant.aaf1000G_PHASE_3_ALL = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
                                 case "SAS":
-                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                   // variant.maf1000G_PHASE_3_SAS = Number(maf).toFixed(3)
                                     variant.aaf1000G_PHASE_3_SAS = Number(pfreq.altAlleleFreq).toFixed(3)
                                     break;
                                 case "EAS":
-                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    //variant.maf1000G_PHASE_3_EAS = Number(maf).toFixed(3)
                                     variant.aaf1000G_PHASE_3_EAS = Number(pfreq.altAlleleFreq).toFixed(3)
                                     break;
                                 case "AMR":
-                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    //variant.maf1000G_PHASE_3_AMR = Number(maf).toFixed(3)
                                     variant.aaf1000G_PHASE_3_AMR = Number(pfreq.altAlleleFreq).toFixed(3)
                                     break;
                                 case "AFR":
-                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    //variant.maf1000G_PHASE_3_AFR = Number(maf).toFixed(3)
                                     variant.aaf1000G_PHASE_3_AFR = Number(pfreq.altAlleleFreq).toFixed(3)
                                     break;
                                 case "EUR":
-                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    //variant.maf1000G_PHASE_3_EUR = Number(maf).toFixed(3);
                                     variant.aaf1000G_PHASE_3_EUR = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
 
@@ -2006,18 +2009,12 @@
                         } else if (pfreq.study.toLowerCase() === "esp6500") {
                             switch (pfreq.population) {
                                 case "EA":
-                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    //variant.mafESP_EA = Number(maf).toFixed(3);
                                     variant.aafESP_EA = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
                                 case "AA":
-                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    //variant.mafESP_AA = Number(maf).toFixed(3);
                                     variant.aafESP_AA = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
                                 case "ALL":
-                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    //variant.mafESP_ALL = Number(maf).toFixed(3);
                                     variant.aafESP_ALL = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
 
@@ -2026,13 +2023,9 @@
                         } else if (pfreq.study.toLowerCase() === "exac") {
                             switch (pfreq.population) {
                                 case "ALL":
-                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    //variant.mafexac_ALL = Number(maf).toFixed(3)
                                     variant.aafexac_ALL = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
                                 case "EUR":
-                                    //var maf = Math.min(pfreq.refAlleleFreq, pfreq.altAlleleFreq);
-                                    //variant.mafexac_EUR = Number(maf).toFixed(3)
                                     variant.aafexac_EUR = Number(pfreq.altAlleleFreq).toFixed(3)
                                     break;
                             }
@@ -2174,8 +2167,8 @@
             }
 
             var track = new FeatureTrack({
-                title: 'CSVS',
-                featureType: 'csvs',
+                title: window.ACRONYM_APP ||'CSVS',
+                featureType: window.ACRONYM_APP || 'csvs',
                 minHistogramRegionSize: 12000,
                 maxLabelRegionSize: 3000,
                 height: 120,

@@ -25,7 +25,7 @@
 <script src="bower_components/stevia-elements/src/validator/bed-validator.js"></script>
 <script src="src/FilterHistory.js"></script>
 
-<script src="src/csvs-manager.js"></script>
+<script src="src/manager/csvs-manager.js"></script>
 <link rel="import" href="src/csvs-home.html">
 <link rel="import" href="src/csvs-search-element.html">
 <link rel="import" href="src/csvs-feedback.html">
@@ -110,7 +110,8 @@
     <template>
 
         <div class="content" menu-option="home">
-            <csvs-home on-try="handleTry" atc="{{acceptTermsCond}}" on-checket-accept="handleAcceptTermsCond" on-msj-accept="handleMsjAccept"
+            <csvs-home on-try="handleTry" title-app="{{titleApp}}" acronym="{{acronym}}" phenotype="{{phenotype}}"
+                       atc="{{acceptTermsCond}}" on-checket-accept="handleAcceptTermsCond" on-msj-accept="handleMsjAccept"
                        is-not-accept="{{_isNotAccept(acceptTermsCond)}}" is-accept="{{_isAccept(acceptTermsCond)}}"></csvs-home>
         </div>
 
@@ -123,7 +124,7 @@
         </div>
 
         <div class="content" menu-option="downloads">
-            <csvs-downloads-element  id="csvsDownloadsElement"></csvs-downloads-element>
+            <csvs-downloads-element   file_conditions="{{acronym}}TermsAndConditions.pdf" id="csvsDownloadsElement"></csvs-downloads-element>
         </div>
 
         <div class="content" menu-option="annot">
@@ -149,7 +150,7 @@
             </stv-panel>
             <csvs-feedback id="feedback" hidden on-feedbackend="handleFeedback"></csvs-feedback>
 
-            <csvs-how-to-cite id="howToCite" hidden on-how-to-cite-end="handleHowToCite"></csvs-how-to-cite>
+            <csvs-how-to-cite id="howToCite" acronym="{{acronym}}"  hidden on-how-to-cite-end="handleHowToCite"></csvs-how-to-cite>
         </div>
 
         <stv-header id="stvHeader" user-data="{{userData}}" on-login="handleLogin" on-logout="handleLogout" selected-option="{{selectedOption}}" hide-jbos hide-browse isLogged="{{isLogged}}" hide-login hide
@@ -157,7 +158,7 @@
             <div class="icon">
                 <img src="images/logo_CSVS.png" style="height: 50px;margin: 5px 0px 0 0;">
             </div>
-            <span class="title">Collaborative Spanish Variant Server</span>
+            <span class="title">{{titleApp}}</span>
             <span class="description"></span>
 
             <div id="menu" class="menu horizontal layout center flex">
@@ -244,7 +245,7 @@
         </stv-header>
 
         <stv-footer menu-option="home,login,singup,profile,remember">
-            CSVS: created by Clinical Bioinformatics Area
+            {{acronym}}: created by Clinical Bioinformatics Area
             <br> Fundación Progreso y Salud
             <br> 2015-2020
         </stv-footer>
@@ -294,6 +295,15 @@
             howToCite:{
                 type:Boolean,
                 value: false
+            },
+            titleApp:{
+                type: String
+            },
+            acronym:{
+                type: String
+            },
+            phenotype: {
+                type: String
             },
             acceptTermsCond: {
                 type: Boolean
@@ -354,7 +364,6 @@
                     }
                 }
             });
-
         },
         getTechnologies: function() {
             var me = this;
