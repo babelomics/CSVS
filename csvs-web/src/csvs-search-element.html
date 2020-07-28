@@ -9,6 +9,7 @@
 
 <script src="../bower_components/stevia-elements/src/manager/cellbase-manager.js"></script>
 <script src="./manager/csvs-manager.js"></script>
+<script src="./manager/ws-manager.js"></script>
 
 <link rel="import" href="./csvs-table-saturation.html">
 
@@ -307,15 +308,17 @@
                                                 <label class="stv"><span>{{highlightGroup.group}}:</span></label>
                                                 <template is="dom-repeat" items="{{highlightGroup.groupValues}}" as="item">
                                                     <div style="padding-left: 15px; display:inline-block">
-                                                        <span style="display:inline-block; width: 60px">{{item.title}}:</span>
+                                                        <span style="display:inline-block; width: 70px" title="{{item.description}}">{{item.title}} <sup><i class="fa fa-info-circle" style="color:#666" aria-hidden="true"></i></sup>:</span>
                                                         <select class="highlightsOp stv stv-btn" style="display:inline-flex;"
                                                                 name="highlightOp" id="opc_{{item.name}}" key="{{item.name}}" value="{{item.op}}"  />
                                                         <template is="dom-repeat" items="{{item.ops}}" as="itemOp">
                                                             <option value="{{itemOp}}"> {{itemOp}} </option>
                                                         </template>
                                                         </select>
-                                                        <input type="text" class="highlightsName stv" style="width: auto; display:inline"
-                                                               name="highlight"  id="highlight_{{item.name}}" key="{{item.name}}" value="{{item.value}}" size="5"/>
+                                                        <input type="text" class="highlightsName stv" style="width: auto; display:inline" label="{{item.title}}"
+                                                               name="highlight"  id="highlight_{{item.name}}" key="{{item.name}}" value="{{item.value}}" size="5" min="{{item.limit.min}}" max="{{item.limit.max}}"
+                                                               inputmode="numeric" pattern="-?(0|([1-9]\d*))(\.\d+)?"
+                                                        />
                                                     </div>
                                                 </template>
                                             </label>
@@ -392,24 +395,35 @@
                             {
                                 name: "sift",
                                 title: "SIFT",
+                                description: "SIFT score predicts whether an amino acid substitution affects protein function. SIFT value less than 0.05 represents a 'deleterious' prediction. SIFT value greater than or equal to 0.05 represents a 'tolerated' prediction.",
                                 op: "<",
                                 value: "0.05",
                                 defaultValue: "0.05",
                                 defaultOp: "<",
-                                ops :["<","<="]
+                                ops :["<","<="],
+                                limit:{
+                                    min: 0,
+                                    max: 1
+                                }
                             },
                             {
                                 name: "polyphen",
                                 title: "Polyphen",
+                                description: "Polyphen score predicts the possible impact of an aninoacid subsitution on the structure and function of a protein. Polyphen scores can be benign (<0.446), possibly damaging (0.446-0.908) or probably damaging (>0.908).",
                                 op: ">",
                                 value: "0.91",
                                 defaultValue: "0.91",
                                 defaultOp: ">",
-                                ops :[">", ">="]
+                                ops :[">", ">="],
+                                limit:{
+                                    min: 0,
+                                    max: 1
+                                }
                             },
                             {
                                 name: "cadd",
                                 title: "CADD",
+                                description: "CADD tool scores the deleteriousness of snvs and indels. Higher values indicate more likely to have deleterious effects.",
                                 op: ">",
                                 value: "15",
                                 defaultValue: "15",
@@ -419,16 +433,21 @@
                         ]
                     },
                         {
-                            group: "Conservacion",
+                            group: "Conservation",
                             groupValues: [
                                 {
                                     name: "gerp",
                                     title: "GERP",
+                                    description: "GERP score estimates the level of conservation of positions. Positive scores represents a substitution deficit and this indicate that a site may be under evolutionary constraint. Negative scores indicate that a site is probably evolving neutrally. Some author suggest that scores >=2 indicate evolutionary constraint and >=3 indicate purifying selection.",
                                     op: ">",
                                     value: "2",
                                     defaultValue: "2",
                                     defaultOp: ">",
-                                    ops :[">", ">="]
+                                    ops :[">", ">="],
+                                    limit:{
+                                        min: -15,
+                                        max: 7
+                                    }
                                 }]
                         },
                     ]
@@ -644,7 +663,7 @@
             var value = target.value;
             var splits = value.split(",");
             if (splits.length > 3 && !this.isLogged) {
-                alert("The maximum number of genes is 3");
+                new StvDialog().alert("The maximum number of genes is 3");
             }
         },
         hiddenChanged: function(neo, old) {
@@ -723,15 +742,27 @@
             var  pos = 0;
             for (var i = 0; i < this.highlights.length && highlightsNameValue.length ; i++) {
                 for (var j = 0; j < this.highlights[i].groupValues.length ; j++) {
-                        if (highlightsNameValue[pos].value !="" && !/^-?\d{1,9}(\.\d{1,2})?$/.test(highlightsNameValue[pos].value))
-                            msj = msj + "Format incorrect " + this.highlights[i].groupValues[j].title + ": " + highlightsNameValue[pos].value + "\n";
+                        if (highlightsNameValue[pos].value !=""){
+                            if (!/^-?\d{1,9}(\.\d{1,2})?$/.test(highlightsNameValue[pos].value)) {
+                                msj = msj + "Format incorrect: '" +  this.highlights[i].groupValues[j].title + " " +  highlightsOpValue[pos].value + " " + highlightsNameValue[pos].value + "'\n";
+                            } else {
+                                if (!!this.highlights[i].groupValues[j].limit)
+                                    if ((this.highlights[i].groupValues[j].limit.min != undefined && this.highlights[i].groupValues[j].limit.min > parseFloat(highlightsNameValue[pos].value)) ||
+                                        (this.highlights[i].groupValues[j].limit.max != undefined  && this.highlights[i].groupValues[j].limit.max < parseFloat(highlightsNameValue[pos].value)))
+                                        {
+                                            msj = msj + "Out of range in '" + this.highlights[i].groupValues[j].title + " " +  highlightsOpValue[pos].value + " " + highlightsNameValue[pos].value + "'"
+                                                + ": Allowed values are between '"+this.highlights[i].groupValues[j].limit.min+"' and '"+this.highlights[i].groupValues[j].limit.max+"'\n";
+                                        }
+                            }
+                        }
+
                         this.highlights[i].groupValues[j].value = highlightsNameValue[pos].value;
                         this.highlights[i].groupValues[j].op = highlightsOpValue[pos].value;
                         pos++;
                 }
             }
             if (msj != ""){
-                alert("Highlights: \n" + msj);
+                new StvDialog().alert("Highlights: \n" + msj);
                 return
             }
 
@@ -798,6 +829,25 @@
                 this.historyFilters = JSON.parse(localStorage.csvs_filter_history);
 
             }
+            /*this.async(function () {
+                this.getElementsByClassName('highlights_div').addEventListener("blur", function (event) {
+                   // event.target.style.background = "pink";
+                    alert('entra');
+                }, true);
+            })*/
+           /* console.log(eltos);
+            eltos.forEach(
+                function(e){
+                    e.addEventListener("blur", function( event ) {
+                        event.target.style.background = "pink";
+                        alert('entra');
+                    }, true);
+                }
+            )*/
+            //.addEventListener("blur", function( event ) {
+            //this.$.highlights_div.querySelectorAll(".highlightsName").addEventListener("blur", function( event ) {
+//                event.target.style.background = "pink";
+            //}, true);
 
             var me = this;
             this.species = 'Homo sapiens';
@@ -869,13 +919,13 @@
                             return ".";
                     }
                 },{
-                    title: "Genotypes",
+                    title: '<span title="Genotype counts:\n 0/0: homozygous reference\n 0/1: heterozygous\n 1/1: homozygous alterntive\n ./.: missing">Genotypes <sup><i class="fa fa-info-circle aria-hidden="true"></i></sup></span>',
                     name: 'genotypes',
                     width: 200,
                     columns: [{
                         name: "gt00",
                         width: 50,
-                        title: "0/0",
+                        title: '0/0',
                         disableSort: true,
                         formula: function(row) {
                             if (row.stats != null && row.stats.gt00 != null)
@@ -886,7 +936,7 @@
                     }, {
                         name: "gt01",
                         width: 50,
-                        title: "0/1",
+                        title: '0/1',
                         disableSort: true,
                         formula: function(row) {
                             if (row.stats != null && row.stats.gt01 != null)
@@ -897,7 +947,7 @@
                     }, {
                         name: "gt11",
                         width: 50,
-                        title: "1/1",
+                        title: '1/1',
                         formula: function(row) {
                             if (row.stats != null && row.stats.gt11 != null)
                                 return row.stats.gt11;
@@ -907,7 +957,7 @@
                     }, {
                         name: "gtmissing",
                         width: 50,
-                        title: "./.",
+                        title: './.',
                         disableSort: true,
                         formula: function(row) {
                             if (row.stats != null && row.stats.gtmissing != null)
@@ -917,14 +967,14 @@
                         }
                     }]
                 }, {
-                    title: "Freq.",
+                    title: '<span title="Allele Frequency:\n 0 Freq: allele frequency for reference\n 1 Freq: allele frequency for alternative\n MAF: Minor Allele Frequency, the lowest value between 0 Freq and 1 Freq">Freq. <sup><i class="fa fa-info-circle aria-hidden="true"></i></sup></span>',
                     name: "freq",
                     width: 150,
                     disableSort: true,
                     columns: [{
                         name: "refFreq",
                         width: 50,
-                        title: "0 Freq",
+                        title:   '0 Freq',
                         formula: function(row) {
                             if (row.stats != null && row.stats.refFreq != null)
                                 return row.stats.refFreq;
@@ -934,7 +984,7 @@
                     }, {
                         name: "altFreq",
                         width: 50,
-                        title: "1 Freq",
+                        title: '1 Freq',
                         disableSort: true,
                         formula: function(row) {
                             if (row.stats != null && row.stats.altFreq != null)
@@ -945,7 +995,7 @@
                     }, {
                         name: "maf",
                         width: 50,
-                        title: "MAF",
+                        title: 'MAF',
                         disableSort: true,
                         formula: function(row) {
                             if (row.stats != null && row.stats.maf != null)
@@ -954,8 +1004,9 @@
                                 return ".";
                         }
                     }]
+                /* Remove CSVS
                 }, {
-                    title: "<span title='Alternate Allele Frequency 1000G AAF (phase 1)'>1000G AAF (phase 1) <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
+                    title: "<span title='Alternate Allele Frequency in 1000 genomes project database (phase 1)'>1000G AAF (phase 1) <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                     width: 250,
                     name: 'aaf1000g',
                     visible: false,
@@ -1019,9 +1070,9 @@
                                     return ".";
                                 }
                             }
-                        }]
+                        }]*/
                      }, {
-                        title: "<span title='Alternate Allele Frequency 1000G AAF (phase 3)'>1000G AAF (phase 3) <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
+                        title: "<span title='Alternate Allele Frequency in 1000 genomes project database (phase 3)'>1000G AAF (phase 3) <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                         width: 150,
                         name: 'aaf1000G3',
                         columns: [{
@@ -1103,7 +1154,7 @@
                         } ]
 
                     }, {
-                        title: "<span title='Alternate Allele Frequency ExAC (Exome Aggregation Consortium)'>ExAC AAF <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
+                        title: "<span title='Alternate Allele Frequency in Exome Aggregation Consortium (ExAC) database'>ExAC AAF <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                         width: 65,
                         name: 'aafexac',
                         columns: [{
@@ -1121,7 +1172,7 @@
                             }
                         ]
                     }, {
-                        title: "<span title='Alternate Allele Frequency ESP 6500 (Populations from the NHLBI Exome Sequencing Project)'>ESP 6500 AAF <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
+                        title: "<span title='Alternate Allele Frequency in Exome Sequencing Project (ESP) database'>ESP6500 AAF <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                         width: 100,
                         name: 'aaf6500',
                         columns: [{
@@ -1151,7 +1202,7 @@
                     }]
                 }, {
                     name: 'sift',
-                    title: '<span title="SIFT predicts whether an amino acid substitution affects protein function. The lower the values, the more damaging the prediction">SIFT <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
+                    title: '<span title="SIFT score predicts whether an amino acid substitution affects protein function. SIFT value less than 0.05 represents a \'deleterious\' prediction. SIFT value greater than or equal to 0.05 represents a \'tolerated\' prediction">SIFT <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
                     width: 50,
                     disableSort: true,
                     formula: function(row) {
@@ -1166,7 +1217,7 @@
                     }
                 },  {
                     name: 'polyphen',
-                    title: '<span title="Polyphen predicts the possible impact of an amino acid substitution on the structure and function of a protein. The higher the values, the more damaging the prediction">Polyphen <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
+                    title: '<span title="Polyphen score predicts the possible impact of an aninoacid subsitution on the structure and function of a protein. Polyphen scores can be benign (<0.446), possibly damaging (0.446-0.908) or probably damaging (>0.908)">Polyphen <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
                     width: 60,
                     disableSort: true,
                     formula: function(row) {
@@ -1181,7 +1232,7 @@
                     }
                 }, {
                     name: 'phastcons',
-                    title: 'PhastCons',
+                    title: '<span title="phastCons scores represent probabilities of negative selection and range between 0 and 1">phastCons <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
                     visible: false,
                     width: 60,
                     disableSort: true,
@@ -1194,7 +1245,7 @@
                     },
                 }, {
                     name: 'phylop',
-                    title: 'phyloP',
+                    title: '<span title="phyloP scores  measure the level of conservation of positions. Positive scores measure conservation whereas negative scores measure acceleration">phyloP <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
                     visible: false,
                     width: 50,
                     disableSort: true,
@@ -1207,7 +1258,7 @@
                     }
                 }, {
                     name: 'gerp',
-                    title: '<span title="GERP score estimates the level of conservation of positions. Scores ≥ 2 indicate evolutionary constraint to and ≥ 3 indicate purifying selection">GERP <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
+                    title: '<span title="GERP score estimates the level of conservation of positions. Positive scores represents a substitution deficit and this indicate that a site may be under evolutionary constraint. Negative scores indicate that a site is probably evolving neutrally. Some author suggest that scores >=2 indicate evolutionary constraint and >=3 indicate purifying selection">GERP <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
                     width: 50,
                     disableSort: true,
                     formula: function(row) {
@@ -1222,7 +1273,7 @@
                     }
                 }, {
                     name: 'cadd',
-                    title: '<span title="CADD scores the deleteriousness of snvs and indels. Higher values indicate more likely to have deleterious effects">CADD <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
+                    title: '<span title="CADD tool scores the deleteriousness of snvs and indels. Higher values indicate more likely to have deleterious effects">CADD <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
                     width: 50,
                     disableSort: true,
                     formula: function(row) {
@@ -1248,8 +1299,9 @@
                     }
                 }, {
                     name: 'phenotypes',
-                    title: 'Phenotypes',
-                    width: 450,
+                    title: '<span title="Information about relationships among human variations and Clinvar and Cosmic databases">Phenotypes <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
+                    //width: 450,
+                    width: 300,
                     columns: [{
                         name: 'clinvar',
                         title: 'Clinvar',
@@ -1275,6 +1327,7 @@
                             }
 
                         }
+                    /* No data about GWAS in cellbase
                     }, {
                         name: 'gwas',
                         title: 'GWas',
@@ -1287,12 +1340,12 @@
                                 return ".";
                             }
 
-                        }
+                        }*/
                     }]
                 },
                 {
                     name: 'addressBook',
-                    title: '<span title="Send a request to the reference person informed of your interest in this variant">Request<br/>contact <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
+                    title: '<span title="Send a request to the reporter of this variant">Contact <br/> request <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
                     width: 60,
                     disableSort: true,
                     formula: function (row) {
@@ -1318,7 +1371,7 @@
                                 + "\t"+"./,"+ "\t"+"0Freq"+ "\t"+ "1Freq"+ "\t"+ "MAF"+"\n";
 
                         if (!!window.CSVS_LIMIT_MAX && r.numTotalResults > window.CSVS_LIMIT_MAX)
-                            alert('Only a maximum of '+ CSVS_LIMIT_MAX + ' variants is downloaded.');
+                            new StvDialog().alert('Only a maximum of '+ CSVS_LIMIT_MAX + ' variants is downloaded.');
 
                         for( var i = 0; i < r.result.length; i++){
                             stringToSave = stringToSave + me._csvToString(r.result[i]);
@@ -1408,14 +1461,13 @@
             if (regionValue != null) {
                 regions = regionValue.split(",");
                 if (regions.length > this.maxLength && !this.isLogged) {
-                    alert("The total size of all provided regions can't exceed " + this.maxLength + " positions");
+                    new StvDialog().alert("The total size of all provided regions can't exceed " + this.maxLength + " positions");
                     return
                 }
             }
 
             if (!this.saturation && !this.handleHighlights())
                 return
-
 
             var genes = [];
             if (geneValue != null) {
@@ -1426,7 +1478,7 @@
                 }
 
                 if (genes.length > 5 && !this.isLogged) {
-                    alert("The maximum number of genes is 5");
+                    new StvDialog().alert("The maximum number of genes is 5");
                     return;
                 }
 
@@ -1454,7 +1506,7 @@
                                 regions.push(region.toString());
 
                             } else {
-                                alert("Wrong gene: " + gene);
+                                new StvDialog().alert("Wrong gene: " + gene);
                             }
                         }
                     }
@@ -1542,7 +1594,7 @@
             }
             // e -> If event is click check region/gene
             if (regions.length == 0 && genes.length == 0 && e != undefined) {
-                alert("Please add a region/gene and check any subpopulation/technology");
+                new StvDialog().alert("Please add a region/gene and check any subpopulation/technology");
             }
 
             query.gene = geneValue;
@@ -1961,7 +2013,7 @@
                     for (var j = 0; j < variant.annots.populationFrequencies.length; j++) {
 
                         var pfreq = variant.annots.populationFrequencies[j];
-
+                        /* Remove CSVS
                         if (pfreq.study.toLowerCase() === "1000genomes_phase_1") {
                             switch (pfreq.population) {
                                 case "ALL":
@@ -1984,7 +2036,9 @@
                                     variant.aaf1000GEUR = Number(maf).toFixed(3)
                                     break;
                             }
-                        } else if (pfreq.study.toLowerCase() === "1kg_phase3") {
+                        } else
+                            */
+                        if (pfreq.study.toLowerCase() === "1kg_phase3") {
                             switch (pfreq.population) {
                                 case "ALL":
                                     variant.aaf1000G_PHASE_3_ALL = Number(pfreq.altAlleleFreq).toFixed(3);
