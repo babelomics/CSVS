@@ -30,7 +30,7 @@ csvs_simulation_launcher.sh <model_vcf> <output_dir> <log_dir> \
 <output_dir>:    Directory where output files for this test will be located.
 <log_dir>:       Directory where log files for this test will be located.
 <sample_list>:   Comma-separated string with all tested sample IDs
-<model_size>:    (Optional) Allow to create sub-models of different sizes for validation purposes. Options can be "max" (default) or "all" (progressive create models with all possible sizes) 
+<model_size>:    (Optional) Allow to create sub-models of different sizes for validation purposes. Options can be "max" (default) or "all" (create models progressively increasing size) 
 <bed_file>:      (Optional) Capture regions from where variants should be considered in BED format.
 ```
 
