@@ -2,26 +2,26 @@
 
 ## Description
 
-This tool checks the number of variants and the number of novel variants produced by one or several samples. These metrics are helpful to determine whether the pipeline finished as expected or there were some kind of issue while running and samples are undesired. Given that the number of variants and new variants expected could be different depending on the followed strategy (WES, WGS, panels, etc), different models were trained for that purpose.
+This tool checks the number of variants and the number of novel variants produced by one or several samples. These metrics are helpful to determine if a specific sample may be undesired given an unexpected percentage of novel variants against a model distribution. Given that the number of variants and new variants expected could be different depending on the followed strategy (WES, WGS, panels, etc), different models were trained for that purpose.
 
-The provided scripts allows both create new models or test new vcfs against the models already created.
+The provided scripts allows both create new model distributions or test new vcfs against the models already created.
 
 ## Requirements
 
 The scripts are developed to be executed in a HPC enviroment with a Slurm queue manager. This cluster must contain the following modules (__module load__):
 
 * R >= 3.5.0 
-    * //ggplot2// library
-    * //plyr// library
-    * //gridExtra// library
+    * *ggplot2* library
+    * *plyr* library
+    * *gridExtra* library
 * Python 3
-    * //numpy// library
-    * //scikit-allel// library
+    * *numpy* library
+    * *scikit-allel* library
 * bcftools >= 1.8 
 
 ### Usage (in cluster)
 
-1) For calculating number of novel variants for a set of new samples:
+*2) For calculating number of novel variants for a set of new samples:*
 ```
 csvs_evaluation_launcher.sh <model_vcf> <output_dir> <log_dir> \
                             <cohort_id> <sample_list> <test_vcf> \
@@ -37,12 +37,10 @@ csvs_evaluation_launcher.sh <model_vcf> <output_dir> <log_dir> \
 <chr_flag>:      (Optional) Flag to determine if input VCFs have chr tag (yes/no).
 ```
 
-There are two models that can be used to test the number of new variants according to the strategy:
+The comma-separated format file named **<cohort_id>.test.csv** is created in the <output_dir> directory with the percentage of novel variants per sample.
 
-WES: `/mnt/lustre/scratch/CBRA/projects/CSVS/QC_Test/WES/model/model_no_outliers/121wes.intersected.sorted.vcf.gz`
-WGS: `/mnt/lustre/scratch/CBRA/projects/CSVS/QC_Test/WGS/model/185wgs.combined.vcf.gz`
 
-2) For finding outliers against the stablished model:
+*3) For finding outliers against the stablished model:*
 ```
 csvs_outliers_launcher.sh <model_tsv> <output_dir> <cohort_id>
 
@@ -51,8 +49,4 @@ csvs_outliers_launcher.sh <model_tsv> <output_dir> <cohort_id>
 <cohort_id>:     Given name (String) for the tested cohort (sample_id if only one sample).
 ```
 
-There are two models CSV that can be used to get outliers according to the strategy:
-
-WES: `/mnt/lustre/scratch/CBRA/projects/CSVS/QC_Test/WES/model/model_no_outliers/121wes.sim.max.csv`
-
-WGS: `/mnt/lustre/scratch/CBRA/projects/CSVS/QC_Test/WGS/model/sim_185wgs/185wgs.max.sim.csv`
+A list of undesired samples whose percentages of novel variants do not follow the expected model distributions will be provided in the <output_dir>/<cohort_id>.test.outliers.txt file
