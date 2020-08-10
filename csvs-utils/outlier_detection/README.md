@@ -30,9 +30,11 @@ csvs_simulation_launcher.sh <model_vcf> <output_dir> <log_dir> \
 <output_dir>:    Directory where output files for this test will be located.
 <log_dir>:       Directory where log files for this test will be located.
 <sample_list>:   Comma-separated string with all tested sample IDs
-<model_size>:    (Optional) Allow to create sub-models of <model_size> size for validation purposes.
+<model_size>:    (Optional) Allow to create sub-models of different sizes for validation purposes. Options can be "max" (default) or "all" (progressive create models with all possible sizes) 
 <bed_file>:      (Optional) Capture regions from where variants should be considered in BED format.
 ```
+
+The distribution of novel variants for the new model is provided at **<output_dir>/<model_size>.sim.csv**.
 
 **2) For calculating number of novel variants for a set of new samples:**
 ```
@@ -62,4 +64,4 @@ csvs_outliers_launcher.sh <model_tsv> <output_dir> <cohort_id>
 <cohort_id>:     Given name (String) for the tested cohort (sample_id if only one sample).
 ```
 
-A list of undesired samples whose percentages of novel variants do not follow the expected model distributions will be provided in the <output_dir>/<cohort_id>.test.outliers.txt file
+A list of undesired samples whose percentages of novel variants do not follow the expected model distribution will be provided in the **<output_dir>/<cohort_id>.test.outliers.txt** output
