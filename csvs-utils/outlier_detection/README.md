@@ -2,7 +2,7 @@
 
 ## Description
 
-This tool checks the number of variants and the number of novel variants produced by one or several samples. These metrics are helpful to determine if a specific sample may be undesired given an unexpected percentage of novel variants against a model distribution. Given that the number of variants and new variants expected could be different depending on the followed strategy (WES, WGS, panels, etc), different models were trained for that purpose.
+This tool checks the number of variants and the number of novel variants produced by one or several samples. These metrics are helpful to determine if a specific sample may be undesired given an unexpected percentage of novel variants against a model distribution. Given that the expected number of variants and novel variants could be different depending on the followed strategy (WES, WGS, panels, etc), different models were trained for that purpose.
 
 The provided scripts allows both create new model distributions or test new vcfs against the models already created.
 
@@ -21,7 +21,20 @@ The scripts are developed to be executed in a HPC enviroment with a Slurm queue 
 
 ### Usage (in cluster)
 
-*2) For calculating number of novel variants for a set of new samples:*
+**1) For creating a new model from a set of validated VCFs:**
+```
+csvs_simulation_launcher.sh <model_vcf> <output_dir> <log_dir> \
+                            <sample_list> [<model_size>] [<bed_file>]
+
+<model_vcf>:     Aggregated multi-sample VCF files with all samples used for model
+<output_dir>:    Directory where output files for this test will be located.
+<log_dir>:       Directory where log files for this test will be located.
+<sample_list>:   Comma-separated string with all tested sample IDs
+<model_size>:    (Optional) Allow to create sub-models of <model_size> size for validation purposes.
+<bed_file>:      (Optional) Capture regions from where variants should be considered in BED format.
+```
+
+**2) For calculating number of novel variants for a set of new samples:**
 ```
 csvs_evaluation_launcher.sh <model_vcf> <output_dir> <log_dir> \
                             <cohort_id> <sample_list> <test_vcf> \
@@ -37,10 +50,10 @@ csvs_evaluation_launcher.sh <model_vcf> <output_dir> <log_dir> \
 <chr_flag>:      (Optional) Flag to determine if input VCFs have chr tag (yes/no).
 ```
 
-The comma-separated format file named **<cohort_id>.test.csv** is created in the <output_dir> directory with the percentage of novel variants per sample.
+The comma-separated file named **<cohort_id>.test.csv** is created in the <output_dir> directory with the percentage of novel variants per sample.
 
 
-*3) For finding outliers against the stablished model:*
+**3) For finding outliers against the stablished model:**
 ```
 csvs_outliers_launcher.sh <model_tsv> <output_dir> <cohort_id>
 
