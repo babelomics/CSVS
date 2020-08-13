@@ -1,0 +1,3 @@
+[submodule "csvs-utils/sptest"]
+	path = csvs-utils/sptest
+	url = https://github.com/erdanieee/sptest.git
