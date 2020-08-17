@@ -1,21 +1,23 @@
-
 CSVS_HOST = "";
-CELLBASE_VERSION = "v4";
-
-
-
+CELLBASE_VERSION = "";
 CELLBASE_HOST = "";
 OPENCGA_HOST = "";
-
 STEVIA_SERVER_HOST = "";
 
 STV_APP="CSVS";
 
 // Version file download
-VERSION_FILE = "3 January 2020";
-CSVS_EMAIL='';
+VERSION_FILE = "June 9, 2020";
+CSVS_EMAIL='csvs@clinbioinfosspa.es';
 
+// Limit download file
 CSVS_LIMIT_MAX=10;
+
+// Connect WebService get info (transcripts...)
+WS_HOST='';
+WS_VERSION='';
+WS_ENSEMBL='';
+WS_ASSEMBLY='';
 
 // Mail
 URL_MAIL='';
@@ -32,4 +34,3 @@ PASS='';
 TITLE_APP="Collaborative Spanish Variant Server";
 ACRONYM_APP ="CSVS";
 PHENOTYPE="Spanish";
-
