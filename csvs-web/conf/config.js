@@ -34,3 +34,18 @@ PASS='';
 TITLE_APP="Collaborative Spanish Variant Server";
 ACRONYM_APP ="CSVS";
 PHENOTYPE="Spanish";
+
+// Version Database
+VERSIONS={
+    "history":[
+        {
+            "version": "2.0.2",
+            "date": "June, 9 2020",
+            "actual": "yes"
+        },
+        {
+            "version": "2.0.1",
+            "date": "January, 3 2020"
+        }
+    ]
+};
