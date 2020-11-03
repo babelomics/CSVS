@@ -1200,7 +1200,36 @@
                                 }
                             }
                     }]
-                }, {
+                },  {
+                    title: "<span title='Alternate Allele Frequency in Genome Aggregation Database (gnomAD)'>gnomAD AAF <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
+                    width: 130,
+                    name: 'gnomAD',
+                    columns: [{
+                        name: "aafGNOMAD_GEN_ALL",
+                        title: "GENOME ALL",
+                        defaultValue: ".",
+                        disableSort: true,
+                        formula: function (row) {
+                            if (row.aafGNOMAD_GEN_ALL != null) {
+                                return row.aafGNOMAD_GEN_ALL;
+                            } else {
+                                return ".";
+                            }
+                        }
+                    }, {
+                        name: "aafGNOMAD_EXO_ALL",
+                        title: "EXOME ALL",
+                        defaultValue: ".",
+                        disableSort: true,
+                        formula: function (row) {
+                            if (row.aafGNOMAD_EXO_ALL != null) {
+                                return row.aafGNOMAD_EXO_ALL;
+                            } else {
+                                return ".";
+                            }
+                        }
+                    }]
+                 }, {
                     name: 'sift',
                     title: '<span title="SIFT score predicts whether an amino acid substitution affects protein function. SIFT value less than 0.05 represents a \'deleterious\' prediction. SIFT value greater than or equal to 0.05 represents a \'tolerated\' prediction">SIFT <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
                     width: 50,
@@ -2081,6 +2110,18 @@
                                     break;
                                 case "EUR":
                                     variant.aafexac_EUR = Number(pfreq.altAlleleFreq).toFixed(3)
+                                    break;
+                            }
+                        } else if (pfreq.study.toLowerCase() === "gnomad_genomes") {
+                            switch (pfreq.population) {
+                                case "ALL":
+                                    variant.aafGNOMAD_GEN_ALL = Number(pfreq.altAlleleFreq).toFixed(3);
+                                    break;
+                            }
+                        }   else if (pfreq.study.toLowerCase() === "gnomad_exomes") {
+                            switch (pfreq.population) {
+                                case "ALL":
+                                    variant.aafGNOMAD_EXO_ALL = Number(pfreq.altAlleleFreq).toFixed(3);
                                     break;
                             }
                         }
