@@ -199,4 +199,29 @@ public class VariantsWSServer extends CSVSWSServer {
     }
 
 
+    @GET
+    @Path("/rs")
+    @Produces("application/json")
+    @ApiOperation(value = "Get Variants By Region")
+    public Response getRs(@ApiParam(value = "rs") @QueryParam("rs") String rs
+    ) {
+        String errorAuthentication = checkAuthentication();
+        if (!errorAuthentication.isEmpty())
+            return createErrorResponse(errorAuthentication);
+
+        List<String> rsList = new ArrayList<>();
+        if (rs.length() > 0) {
+            String[] varSplit = rs.split(",");
+            rsList.addAll(Arrays.asList(varSplit));
+        }
+
+       List<Variant> variantRes = qm.getVariantsByRsList(rsList);
+
+        QueryResponse qr = createQueryResponse(variantRes);
+        qr.setNumTotalResults(variantRes.size());
+
+        qr.addQueryOption("rs", rs);
+        return createOkResponse(qr);
+    }
+
 }

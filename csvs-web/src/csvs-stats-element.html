@@ -66,6 +66,8 @@
             this.statsPerTechnology();
         },
         _createPieChart: function (container, text, data) {
+            if (data.length > 10)
+                container.style.height = "600px";
             var vpp = new Highcharts.Chart({
                 chart: {
                     plotBackgroundColor: null,
@@ -74,18 +76,34 @@
                     renderTo: container,
                     borderRadius: 10,
                     width: 1000
-
                 },
-                exporting: {},
+                exporting: {
+                    chartOptions: {
+                    chart: {
+                        height: 1000
+                    },
                 legend: {
-                    labelFormatter: function () {
-                        var maxLength = 20;
-                        var res = this.name;
-                        if (this.name.length > maxLength) {
-                            res = this.name.slice(0, maxLength) + '...';
+                            verticalAlign: 'bottom',
+                            itemWidth: 800,
+                            maxHeight: 800,
+                            navigation: {
+                              enabled: false
+                            }
                         }
-                        return res;
-                    }
+                }},
+                legend: {
+                    y: -10,
+                    verticalAlign: 'bottom',
+                    useHTML: true,
+                    itemWidth: 480,
+                    alignColumns: true,
+                    itemStyle : '{ "word-wrap": "break-word","textOverflow": "ellipsis","max-width":95%}',
+                    labelFormatter: function () {
+                        var maxLength = 60;
+                        var res = this.name;
+                        var control = res.includes("(controls)")? "(controls)":""
+                        return '<div title="'+this.name +  ' : ' + this.y +  '" style="white-space: nowrap; width: 350px;overflow: hidden; text-overflow: ellipsis ">'+ res + ": "  +  this.y + ' </div>';
+                    },
                 },
                 title: {
                     text: text
@@ -103,9 +121,15 @@
                             formatter: function () {
                                 var maxLength = 20;
                                 var res = this.point.name;
+                                var control = res.includes("(controls)")? "(controls)":"";
                                 if (res.length > maxLength) {
-                                    res = res.slice(0, maxLength) + '...';
+                                    var match = res.match(/[IVX]+ /g);
+                                    if (match != null && match.length > 0)
+                                        res = match + control ;
+                                    else
+                                      res = res.slice(0, maxLength) + '...'+ control ;
                                 }
+
                                 return '<b>' + res + '</b>: ' + this.point.y;
 
                             },

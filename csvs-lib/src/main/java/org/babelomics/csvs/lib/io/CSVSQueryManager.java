@@ -489,6 +489,29 @@ public class CSVSQueryManager {
     }
 
     /**
+     * Get variants by rs
+     * @param rsList
+     */
+    public List<Variant> getVariantsByRsList(List<String> rsList) {
+
+        Query<Variant> query = this.datastore.createQuery(Variant.class);
+        List<Variant> res = new ArrayList<>();
+
+
+        if (rsList != null && rsList.size() > 0) {
+            query.criteria("rs").in(rsList);
+        }
+
+        //System.out.println("query = " + query);
+
+        Iterable<Variant> aux = query.fetch();
+        for (Variant v : aux) {
+            res.add(v);
+        }
+        return res;
+    }
+
+    /**
      * Get saturation order by num variants new / num samples disease
      * @param regions
      * @param diseaseIdsOriginal

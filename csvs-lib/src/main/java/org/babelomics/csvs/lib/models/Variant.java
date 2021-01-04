@@ -16,7 +16,8 @@ import java.util.stream.Collectors;
 @Indexes({
         @Index(name = "index_variant_chr_pos_ref_alt", value = "c,p,r,a", unique = true),
         @Index(name = "index_variant_chIds", value = "_at.chIds"),
-        @Index(name = "d_dgid", value = "d.dgid")
+        @Index(name = "d_dgid", value = "d.dgid"),
+        @Index(name = "rs", value = "rs"),
 })
 public class Variant {
 
@@ -52,6 +53,9 @@ public class Variant {
 
     @Property("an")
     private Map<String, Object> annots;
+
+    @Property("rs")
+    private String rs;
 
     public Variant() {
         this.attr = new HashMap<>();
@@ -164,6 +168,13 @@ public class Variant {
         return diseasesSamplePanel;
     }
 
+    public String getRs() {
+        return rs;
+    }
+
+    public void setRs(String rs) {
+        this.rs = rs;
+    }
 
     private DiseaseCount searchDC(DiseaseCount diseaseCountSearch){
         if (this.diseases != null) {

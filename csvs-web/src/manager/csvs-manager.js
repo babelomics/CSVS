@@ -15,7 +15,10 @@ var CSVSManager = {
     variants: {
         fetch: function (args) {
             return CSVSManager._doRequest(args, 'variants', 'fetch');
-        }
+        },
+        rs: function (args) {
+            return CSVSManager._doRequest(args, 'variants', 'rs');
+        },
     },
     regions: {
         saturation: function (args) {
@@ -74,7 +77,13 @@ var CSVSManager = {
                 args.request.error(this);
             };
             request.open(method, url, async);
-            request.send();
+            console.log(args.request);
+            try {
+                request.send();
+            } catch (e) {
+                return null;
+            }
+
             return url;
         }
     }

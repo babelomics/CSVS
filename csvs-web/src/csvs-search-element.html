@@ -9,7 +9,7 @@
 
 <script src="../bower_components/stevia-elements/src/manager/cellbase-manager.js"></script>
 <script src="./manager/csvs-manager.js"></script>
-<script src="./manager/transcript-manager.js"></script>
+<script src="manager/ws-manager.js"></script>
 
 <link rel="import" href="./csvs-table-saturation.html">
 
@@ -47,7 +47,7 @@
             width: calc(100% - 290px);
         }
 
-        #saturationDiv {
+        #saturationDiv, .saturatDiv {
             margin: 20px 20px 20px 0px;
             background-color: #FFFFFF;
             width: calc(100% - 29em);
@@ -73,12 +73,12 @@
         #technologies_div {
             height: 50px;
             max-height: 50px;
-            width: 230px;
+            width: 225px;
             overflow-y: auto;
         }
         #highlights_div{
-            height: 550px;
-            max-height: 550px;
+           /* height: 550px;
+            max-height: 550px;*/
             width: 225px;
             overflow-y: auto;
         }
@@ -244,10 +244,10 @@
                             <div class="header horizontal layout flex">
                                 <div>Subpopulations</div>
                                 <div class="flex"></div>
-                                <div on-click="selectAllDiseases">
+                                <div on-click="selectAllDiseases" title="Select all subpopulations">
                                     <i class="fa fa-check-square-o check"></i>
                                 </div>
-                                <div on-click="deselectAllDiseases">
+                                <div on-click="deselectAllDiseases" title="Deselect all subpopulations">
                                     <i class="fa fa-square-o check"></i>
                                 </div>
                             </div>
@@ -294,10 +294,10 @@
                             <div class="header horizontal layout flex">
                                 <div>Technologies</div>
                                 <div class="flex"></div>
-                                <div on-click="selectAllTechnologies">
+                                <div on-click="selectAllTechnologies" title="Deselect all technologies">
                                     <i class="fa fa-check-square-o check"></i>
                                 </div>
-                                <div on-click="deselectAllTechnologies">
+                                <div on-click="deselectAllTechnologies" title="Select all technologies">
                                     <i class="fa fa-square-o check"></i>
                                 </div>
                             </div>
@@ -316,14 +316,16 @@
                         </stv-form-box>
                         <stv-form-box hidden$="{{saturation}}">
                             <div class="header horizontal layout flex">
-                                <div>Highlights</div>
+                                <div><span title="Variant highlight with a given deleteriousness or conservation thresholds">Highlights <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span></div>
+                                <!--
                                 <div class="flex"></div>
-                                <div on-click="selectAllHighlights" >
+                                <div on-click="selectAllHighlights" title="Select all Sequence Ontology terms">
                                     <i class="fa fa-check-square-o check"></i>
                                 </div>
-                                <div on-click="deselectAllHighlights">
+                                <div on-click="deselectAllHighlights" title="Deselect all Sequence Ontology terms">
                                     <i class="fa fa-square-o check"></i>
                                 </div>
+                                -->
                             </div>
                             <div class="container">
                                 <div id="highlights_div">
@@ -333,22 +335,24 @@
                                                 <label class="stv"><span>{{highlightGroup.group}}:</span></label>
                                                 <template is="dom-repeat" items="{{highlightGroup.groupValues}}" as="item">
                                                     <div style="padding-left: 15px; display:inline-block">
-                                                        <span style="display:inline-block; width: 60px">{{item.title}}:</span>
+                                                        <span style="display:inline-block; width: 70px" title="{{item.description}}">{{item.title}} <sup><i class="fa fa-info-circle" style="color:#666" aria-hidden="true"></i></sup>:</span>
                                                         <select class="highlightsOp stv stv-btn" style="display:inline-flex;"
                                                                 name="highlightOp" id="opc_{{item.name}}" key="{{item.name}}" value="{{item.op}}"  />
                                                         <template is="dom-repeat" items="{{item.ops}}" as="itemOp">
                                                             <option value="{{itemOp}}"> {{itemOp}} </option>
                                                         </template>
                                                         </select>
-                                                        <input type="text" class="highlightsName stv" style="width: auto; display:inline"
-                                                               name="highlight"  id="highlight_{{item.name}}" key="{{item.name}}" value="{{item.value}}" size="5"/>
+                                                        <input type="text" class="highlightsName stv" style="width: auto; display:inline" label="{{item.title}}"
+                                                               name="highlight"  id="highlight_{{item.name}}" key="{{item.name}}" value="{{item.value}}" size="5" min="{{item.limit.min}}" max="{{item.limit.max}}"
+                                                               inputmode="numeric" pattern="-?(0|([1-9]\d*))(\.\d+)?"
+                                                        />
                                                     </div>
                                                 </template>
                                             </label>
                                         </div>
                                     </template>
 
-                                    <div>
+                                    <div class="hidden">
                                         <csvs-consequencetypes id="highlightsConsequenceTypes" ></csvs-consequencetypes>
                                     </div>
 
@@ -383,10 +387,7 @@
                 </div>
             </div>
             <div id="saturationDiv" hidden$="{{!saturation}}" class="vertical layout">
-
-                <div id="chart" class="horizontal layout center-justified" ></div>
-                <div id="loading" hidden$="{{!loadingSaturation}}">
-                    <i class="fa fa-circle-o-notch fa-spin"></i> Loading...
+                <div id="chart" class="horizontal layout center-justified"  >
                 </div>
                 <div id=saturationDivTable" class="horizontal layout flex center-justified">
                     <csvs-table-saturation id="tvSaturation" ></csvs-table-saturation>
@@ -438,24 +439,35 @@
                             {
                                 name: "sift",
                                 title: "SIFT",
+                                description: "SIFT score predicts whether an amino acid substitution affects protein function. SIFT value less than 0.05 represents a 'deleterious' prediction. SIFT value greater than or equal to 0.05 represents a 'tolerated' prediction.",
                                 op: "<",
                                 value: "0.05",
                                 defaultValue: "0.05",
                                 defaultOp: "<",
-                                ops :["<","<="]
+                                ops :["<","<="],
+                                limit:{
+                                    min: 0,
+                                    max: 1
+                                }
                             },
                             {
                                 name: "polyphen",
                                 title: "Polyphen",
+                                description: "Polyphen score predicts the possible impact of an aninoacid subsitution on the structure and function of a protein. Polyphen scores can be benign (<0.446), possibly damaging (0.446-0.908) or probably damaging (>0.908).",
                                 op: ">",
                                 value: "0.91",
                                 defaultValue: "0.91",
                                 defaultOp: ">",
-                                ops :[">", ">="]
+                                ops :[">", ">="],
+                                limit:{
+                                    min: 0,
+                                    max: 1
+                                }
                             },
                             {
                                 name: "cadd",
                                 title: "CADD",
+                                description: "CADD tool scores the deleteriousness of snvs and indels. Higher values indicate more likely to have deleterious effects.",
                                 op: ">",
                                 value: "15",
                                 defaultValue: "15",
@@ -465,16 +477,21 @@
                         ]
                     },
                         {
-                            group: "Conservacion",
+                            group: "Conservation",
                             groupValues: [
                                 {
                                     name: "gerp",
                                     title: "GERP",
+                                    description: "GERP score estimates the level of conservation of positions. Positive scores represents a substitution deficit and this indicate that a site may be under evolutionary constraint. Negative scores indicate that a site is probably evolving neutrally. Some author suggest that scores >=2 indicate evolutionary constraint and >=3 indicate purifying selection.",
                                     op: ">",
                                     value: "2",
                                     defaultValue: "2",
                                     defaultOp: ">",
-                                    ops :[">", ">="]
+                                    ops :[">", ">="],
+                                    limit:{
+                                        min: -15,
+                                        max: 7
+                                    }
                                 }]
                         },
                     ]
@@ -688,8 +705,8 @@
             var target = e.currentTarget;
             var value = target.value;
             var splits = value.split(",");
-            if (splits.length > 3 && !this.isLogged) {
-                alert("The maximum number of genes is 3");
+            if (splits.length > 3) {
+                new StvDialog().alert("The maximum number of genes is 3");
             }
         },
         hiddenChanged: function(neo, old) {
@@ -711,7 +728,7 @@
                     obj = !!this.highlights[i].groupValues && this.highlights[i].groupValues.find(h  => h.name === field);
                 }
 
-                if (obj != null && obj != undefined && !!row && !!obj.value) {
+                if (obj != null && obj != undefined && (!!row || row == 0)  && !!obj.value) {
                     if (eval(row + " " + obj.op + " " + obj.value)) {
                         style.color = '#fff';
                         style.backgroundColor = '#f47070';
@@ -768,15 +785,27 @@
             var  pos = 0;
             for (var i = 0; i < this.highlights.length && highlightsNameValue.length ; i++) {
                 for (var j = 0; j < this.highlights[i].groupValues.length ; j++) {
-                        if (highlightsNameValue[pos].value !="" && !/^-?\d{1,9}(\.\d{1,2})?$/.test(highlightsNameValue[pos].value))
-                            msj = msj + "Format incorrect " + this.highlights[i].groupValues[j].title + ": " + highlightsNameValue[pos].value + "\n";
+                        if (highlightsNameValue[pos].value !=""){
+                            if (!/^-?\d{1,9}(\.\d{1,2})?$/.test(highlightsNameValue[pos].value)) {
+                                msj = msj + "Format incorrect: '" +  this.highlights[i].groupValues[j].title + " " +  highlightsOpValue[pos].value + " " + highlightsNameValue[pos].value + "'\n";
+                            } else {
+                                if (!!this.highlights[i].groupValues[j].limit)
+                                    if ((this.highlights[i].groupValues[j].limit.min != undefined && this.highlights[i].groupValues[j].limit.min > parseFloat(highlightsNameValue[pos].value)) ||
+                                        (this.highlights[i].groupValues[j].limit.max != undefined  && this.highlights[i].groupValues[j].limit.max < parseFloat(highlightsNameValue[pos].value)))
+                                        {
+                                            msj = msj + "Out of range in '" + this.highlights[i].groupValues[j].title + " " +  highlightsOpValue[pos].value + " " + highlightsNameValue[pos].value + "'"
+                                                + ": Allowed values are between '"+this.highlights[i].groupValues[j].limit.min+"' and '"+this.highlights[i].groupValues[j].limit.max+"'\n";
+                                        }
+                            }
+                        }
+
                         this.highlights[i].groupValues[j].value = highlightsNameValue[pos].value;
                         this.highlights[i].groupValues[j].op = highlightsOpValue[pos].value;
                         pos++;
                 }
             }
             if (msj != ""){
-                alert("Highlights: \n" + msj);
+                new StvDialog().alert("Highlights: \n" + msj);
                 return
             }
 
@@ -905,7 +934,7 @@
                     disableSort: true,
                     disableTooltip: true,
                     formula: function(row){
-                        if (row.genes != "" && row.genes != ".") {
+                        if (row.genes != "" && row.genes != "." && row.genes !=  undefined) {
                             var genes = row.genes.split(',');
                             var result=[];
                             genes.forEach(
@@ -936,13 +965,13 @@
                             return ".";
                     }
                 },{
-                    title: "Genotypes",
+                    title: '<span title="Genotype counts:\n 0/0: homozygous reference\n 0/1: heterozygous\n 1/1: homozygous alterntive\n ./.: missing">Genotypes <sup><i class="fa fa-info-circle aria-hidden="true"></i></sup></span>',
                     name: 'genotypes',
                     width: 200,
                     columns: [{
                         name: "gt00",
                         width: 50,
-                        title: "0/0",
+                        title: '0/0',
                         disableSort: true,
                         formula: function(row) {
                             if (row.stats != null && row.stats.gt00 != null)
@@ -953,7 +982,7 @@
                     }, {
                         name: "gt01",
                         width: 50,
-                        title: "0/1",
+                        title: '0/1',
                         disableSort: true,
                         formula: function(row) {
                             if (row.stats != null && row.stats.gt01 != null)
@@ -964,7 +993,7 @@
                     }, {
                         name: "gt11",
                         width: 50,
-                        title: "1/1",
+                        title: '1/1',
                         formula: function(row) {
                             if (row.stats != null && row.stats.gt11 != null)
                                 return row.stats.gt11;
@@ -974,7 +1003,7 @@
                     }, {
                         name: "gtmissing",
                         width: 50,
-                        title: "./.",
+                        title: './.',
                         disableSort: true,
                         formula: function(row) {
                             if (row.stats != null && row.stats.gtmissing != null)
@@ -984,14 +1013,14 @@
                         }
                     }]
                 }, {
-                    title: "Freq.",
+                    title: '<span title="Allele Frequency:\n 0 Freq: allele frequency for reference\n 1 Freq: allele frequency for alternative\n MAF: Minor Allele Frequency, the lowest value between 0 Freq and 1 Freq">Freq. <sup><i class="fa fa-info-circle aria-hidden="true"></i></sup></span>',
                     name: "freq",
                     width: 150,
                     disableSort: true,
                     columns: [{
                         name: "refFreq",
                         width: 50,
-                        title: "0 Freq",
+                        title:   '0 Freq',
                         formula: function(row) {
                             if (row.stats != null && row.stats.refFreq != null)
                                 return row.stats.refFreq;
@@ -1001,7 +1030,7 @@
                     }, {
                         name: "altFreq",
                         width: 50,
-                        title: "1 Freq",
+                        title: '1 Freq',
                         disableSort: true,
                         formula: function(row) {
                             if (row.stats != null && row.stats.altFreq != null)
@@ -1012,7 +1041,7 @@
                     }, {
                         name: "maf",
                         width: 50,
-                        title: "MAF",
+                        title: 'MAF',
                         disableSort: true,
                         formula: function(row) {
                             if (row.stats != null && row.stats.maf != null)
@@ -1021,8 +1050,9 @@
                                 return ".";
                         }
                     }]
+                /* Remove CSVS
                 }, {
-                    title: "<span title='Alternate Allele Frequency 1000G AAF (phase 1)'>1000G AAF (phase 1) <i class=\"fa fa-question-circle\"</i>\n</i></span>",
+                    title: "<span title='Alternate Allele Frequency in 1000 genomes project database (phase 1)'>1000G AAF (phase 1) <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                     width: 250,
                     name: 'aaf1000g',
                     visible: false,
@@ -1040,7 +1070,7 @@
                             }
                         }, {
                             name: "aaf1000GAME",
-                            title: "AME",
+                            title:  "<span title='AMR: American'>AMR <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                             defaultValue: ".",
                             disableSort: true,
                             formula: function(row) {
@@ -1052,7 +1082,7 @@
                             }
                         }, {
                             name: "aaf1000GASI",
-                            title: "ASI",
+                            title: "<span title='ASN: Asian'>ASN <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                             defaultValue: ".",
                             disableSort: true,
                             formula: function(row) {
@@ -1064,7 +1094,7 @@
                             }
                         }, {
                             name: "aaf1000GAFR",
-                            title: "AFR",
+                            title: "<span title='AFR: African'>AFR <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                             defaultValue: ".",
                             disableSort: true,
                             formula: function(row) {
@@ -1076,7 +1106,7 @@
                             }
                         }, {
                             name: "aaf1000GEUR",
-                            title: "EUR",
+                            title:  "<span title='EUR: European'>EUR <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                             defaultValue: ".",
                             disableSort: true,
                             formula: function(row) {
@@ -1086,9 +1116,9 @@
                                     return ".";
                                 }
                             }
-                        }]
+                        }]*/
                      }, {
-                        title: "<span title='Alternate Allele Frequency 1000G AAF (phase 3)'>1000G AAF (phase 3) <i class=\"fa fa-question-circle\"</i>\n</i></span>",
+                        title: "<span title='Alternate Allele Frequency in 1000 genomes project database (phase 3)'>1000G AAF (phase 3) <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                         width: 150,
                         name: 'aaf1000G3',
                         columns: [{
@@ -1105,7 +1135,7 @@
                             },
                         }, {
                             name: "aaf1000G_PHASE_3_AMR",
-                            title: "AME",
+                            title:  "<span title='AMR: American '>AMR <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                             defaultValue: ".",
                             visible: false,
                             disableSort: true,
@@ -1119,7 +1149,7 @@
 
                         }, {
                             name: "aaf1000G_PHASE_3_SAS",
-                            title: "South ASI",
+                            title:  "<span title='SAS: South Asian'>SAS <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                             defaultValue: ".",
                             visible: false,
                             formula: function(row) {
@@ -1131,7 +1161,7 @@
                             }
                         }, {
                             name: "aaf1000G_PHASE_3_EAS",
-                            title: "East ASI",
+                            title:  "<span title='EAS: East Asian'>EAS <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                             defaultValue: ".",
                             visible: false,
                             disableSort: true,
@@ -1144,7 +1174,7 @@
                             }
                         }, {
                             name: "aaf1000G_PHASE_3_AFR",
-                            title: "AFR",
+                            title: "<span title='AFR: African'>AFR <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                             defaultValue: ".",
                             visible: false,
                             disableSort: true,
@@ -1157,7 +1187,7 @@
                             }
                         }, {
                             name: "aaf1000G_PHASE_3_EUR",
-                            title: "EUR",
+                            title: "<span title='EUR: European'>EUR <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                             defaultValue: ".",
                             disableSort: true,
                             formula: function(row) {
@@ -1170,7 +1200,7 @@
                         } ]
 
                     }, {
-                        title: "<span title='Alternate Allele Frequency ExAC'>ExAC AAF <i class=\"fa fa-question-circle\"</i>\n</i></span>",
+                        title: "<span title='Alternate Allele Frequency in Exome Aggregation Consortium (ExAC) database'>ExAC AAF <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                         width: 65,
                         name: 'aafexac',
                         columns: [{
@@ -1188,7 +1218,7 @@
                             }
                         ]
                     }, {
-                        title: "<span title='Alternate Allele Frequency ESP 6500'>ESP 6500 AAF <i class=\"fa fa-question-circle\"</i>\n</i></span>",
+                        title: "<span title='Alternate Allele Frequency in Exome Sequencing Project (ESP) database'>ESP6500 AAF <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                         width: 100,
                         name: 'aaf6500',
                         columns: [{
@@ -1205,7 +1235,7 @@
                             }
                         }, {
                             name: "aafESP_EA",
-                            title: "Eur. Ame.",
+                            title: "<span title='EA: European American'>EA <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                             defaultValue: ".",
                             disableSort: true,
                             formula: function (row) {
@@ -1218,11 +1248,12 @@
                     }]
                 },  {
                     name: 'csvsAll',
-                    title: '<a class="csvs-downloads-element" href="' + CSVS_QUERY_URL+ '" title="Collaborative Spanish Variant Server" target="_blank">CSVS</a> <span title=\'Alternate Allele Frequency Collaborative Spanish Variant Server\'>AAF <i class="fa fa-question-circle"</i>\n</i></span>',
-                    //width: 150,
-                    columns: [{
-                            name: 'csvsHealthy',
-                            title: 'Control <br/> (MGP+IBS)',
+                    /*title: '<a class="csvs-downloads-element" href="' + CSVS_QUERY_URL+ '" title="Collaborative Spanish Variant Server" target="_blank">CSVS</a> <span title=\'Alternate Allele Frequency Collaborative Spanish Variant Server\'>AAF <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>',*/
+                    title: '<span title="Alternate Allele Frequency in Spanish local population (Medical Genome Project (MGP) and Iberian populations in Spain (IBS))">MGP+IBS AAF <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>',
+                    width: 100,
+                    //columns: [{
+                    //        name: 'csvsHealthy',
+                         //   title: "<span title='MGP: Medical Genome Project \n IBS: Iberian populations in Spain'>Control (MGP+IBS) <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                             disableSort: true,
                             formula: function(row) {
                                 if (row.csvsHealthy !== null  && typeof row.csvsHealthy !== 'undefined') {
@@ -1234,25 +1265,54 @@
                             styleFormula: function(row) {
                                 return me._getStyleFormula(row.csvsHealthy, 'csvsHealthy')
                             }
-                        }, {
-                            name: 'csvs',
-                            title: '<span title="Selected subpopulations CSVS">ALL <i class="fa fa-question-circle"</i>\n</i></span>',
-                            visible: false,
-                            disableSort: true,
-                            formula: function(row) {
-                                if (row.csvs !== null  && typeof row.csvs !== 'undefined') {
-                                    return row.csvs;
-                                } else {
-                                    return ".";
-                                }
-                            },
-                            styleFormula: function(row) {
-                                return me._getStyleFormula(row.csvs, 'csvs')
-                            }
-                        }]
+                        /* }, {
+                             name: 'csvs',
+                             title: '<span title="Selected subpopulations CSVS">ALL <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>',
+                             visible: false,
+                             disableSort: true,
+                             formula: function(row) {
+                                 if (row.csvs !== null  && typeof row.csvs !== 'undefined') {
+                                     return row.csvs;
+                                 } else {
+                                     return ".";
+                                 }
+                             },
+                             styleFormula: function(row) {
+                                 return me._getStyleFormula(row.csvs, 'csvs')
+                             }*/
+                      //  }]
                 }, {
+                    title: "<span title='Alternate Allele Frequency in Genome Aggregation Database (gnomAD)'>gnomAD AAF <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
+                    width: 130,
+                    name: 'gnomAD',
+                    columns: [{
+                        name: "aafGNOMAD_GEN_ALL",
+                        title: "GENOME ALL",
+                        defaultValue: ".",
+                        disableSort: true,
+                        formula: function (row) {
+                            if (row.aafGNOMAD_GEN_ALL != null) {
+                                return row.aafGNOMAD_GEN_ALL;
+                            } else {
+                                return ".";
+                            }
+                        }
+                    }, {
+                        name: "aafGNOMAD_EXO_ALL",
+                        title: "EXOME ALL",
+                        defaultValue: ".",
+                        disableSort: true,
+                        formula: function (row) {
+                            if (row.aafGNOMAD_EXO_ALL != null) {
+                                return row.aafGNOMAD_EXO_ALL;
+                            } else {
+                                return ".";
+                            }
+                        }
+                    }]
+                },{
                     name: 'sift',
-                    title: 'SIFT',
+                    title: '<span title="SIFT score predicts whether an amino acid substitution affects protein function. SIFT value less than 0.05 represents a \'deleterious\' prediction. SIFT value greater than or equal to 0.05 represents a \'tolerated\' prediction">SIFT <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
                     width: 50,
                     disableSort: true,
                     formula: function(row) {
@@ -1267,7 +1327,7 @@
                     }
                 },  {
                     name: 'polyphen',
-                    title: 'Polyphen',
+                    title: '<span title="Polyphen score predicts the possible impact of an aninoacid subsitution on the structure and function of a protein. Polyphen scores can be benign (<0.446), possibly damaging (0.446-0.908) or probably damaging (>0.908)">Polyphen <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
                     width: 60,
                     disableSort: true,
                     formula: function(row) {
@@ -1308,7 +1368,7 @@
                     }
                 }, {
                     name: 'gerp',
-                    title: 'GERP',
+                    title: '<span title="GERP score estimates the level of conservation of positions. Positive scores represents a substitution deficit and this indicate that a site may be under evolutionary constraint. Negative scores indicate that a site is probably evolving neutrally. Some author suggest that scores >=2 indicate evolutionary constraint and >=3 indicate purifying selection">GERP <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
                     width: 50,
                     disableSort: true,
                     formula: function(row) {
@@ -1323,7 +1383,7 @@
                     }
                 }, {
                     name: 'cadd',
-                    title: 'CADD',
+                    title: '<span title="CADD tool scores the deleteriousness of snvs and indels. Higher values indicate more likely to have deleterious effects">CADD <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
                     width: 50,
                     disableSort: true,
                     formula: function(row) {
@@ -1338,18 +1398,22 @@
                     }
                 }, {
                     name: 'ct',
-                    title: '<span title="Worst consequence type found among all transcripts">Worst consequence type <i class="fa fa-question-circle"</i>\n</i></span>',
+                    title: '<span title="Worst consequence type found among all transcripts">Worst consequence type <sup><i class="fa fa-info-circle" aria-hidden="true"></i></span>',
                     width: 150,
                     disableSort: true,
                     formula: function (row) {
-                        return row.annots.displayConsequenceType;
+                        if (row.annots != null  &&  row.annots != 'undefiend' && row.annots.displayConsequenceType != 'undefined') {
+                            return row.annots.displayConsequenceType;
+                        } else {
+                            return ".";
+                        }
                     },
                     styleFormula: function(row) {
                         return me._getStyleFormulaConsequence(row.annots.displayConsequenceType, 'ct')
                     }
                 }, {
                     name: 'act',
-                    title: '<span title="Annotation corresponds to the transcript introduced in \'SNPId/HGVSc/HGVSp\' textbox. If empty, annotation corresponds to the canonical transcript">Transcript of interest <i class="fa fa-question-circle"</i>\n</i></span>',
+                    title: '<span title="Annotation corresponds to the transcript introduced in \'SNPId/HGVSc/HGVSp\' textbox. If empty, annotation corresponds to the canonical transcript">Transcript of interest <sup><i class="fa fa-info-circle" aria-hidden="true"></i></span>',
                     width: 960,
                     disableSort: true,
                     columns: [{
@@ -1434,7 +1498,7 @@
                     },{
                     name: 'phenotypes',
                     title: 'Phenotypes',
-                    width: 450,
+                    width: 300, //450,
                     columns: [{
                         name: 'clinvar',
                         title: 'Clinvar',
@@ -1460,7 +1524,7 @@
                             }
 
                         }
-                    }, {
+                    }/*, {
                         name: 'gwas',
                         title: 'GWas',
                         width: 150,
@@ -1473,13 +1537,17 @@
                             }
 
                         }
-                    }]
+                    }*/]
                 },
             ];
             this.reloadChart({});
         },
         downloadFiles: function(e) {
-            this.query.limit = 0;
+            //this.query.limit = 0;
+            var newQuery = this.query;
+            newQuery.skip=(this.$.dataTable.currentPage -1) * this.$.dataTable.pageSize;
+            newQuery.enableSkip=true;
+
             var me = this;
             var url = CSVSManager.variants.fetch({
                 query: this.query,
@@ -1488,10 +1556,11 @@
                         var stringToSave = "Chr"+ "\t"+"Position"+ "\t"+"alleles"+ "\t"+"0/0"+ "\t"+"0/1"+ "\t"+"1/1"
                                 + "\t"+"./,"+ "\t"+"0Freq"+ "\t"+ "1Freq"+ "\t"+ "MAF"+"\n";
 
-                        if (!!CSVS_LIMIT_MAX && r.numTotalResults > CSVS_LIMIT_MAX)
-                            alert('Only first '+ CSVS_LIMIT_MAX + ' variants is downloaded.');
+                        if (!!window.CSVS_LIMIT_MAX && r.numTotalResults > window.CSVS_LIMIT_MAX)
+                            new StvDialog().alert('Only a maximum of '+ window.CSVS_LIMIT_MAX + ' variants is downloaded.');
 
-                        for( var i = 0; i < r.result.length; i++){
+                        //for( var i = 0; i < r.result.length; i++){
+                        for( var i = 0; i < window.CSVS_LIMIT_MAX; i++){
                             stringToSave = stringToSave + me._csvToString(r.result[i]);
                         }
                         var blob = new Blob([stringToSave], {
@@ -1553,6 +1622,7 @@
             return results;
         },
         submitForm: function(e) {
+            var msj = "";
 
             if (!!this.$.frequency) {
                 this.$.frequency.isEmpty = true;
@@ -1585,15 +1655,14 @@
             var regions = [];
             if (regionValue != null) {
                 regions = regionValue.split(",");
-                if (regions.length > this.maxLength && !this.isLogged) {
-                    alert("The total size of all provided regions can't exceed " + this.maxLength + " positions");
+                if (regions.length > this.maxLength ) {
+                    new StvDialog().alert("The total size of all provided regions can't exceed " + this.maxLength + " positions.");
                     return
                 }
             }
 
             if (!this.saturation && !this.handleHighlights())
                 return
-
 
             var genes = [];
             if (geneValue != null) {
@@ -1603,13 +1672,15 @@
                     genes[i] = genes[i].trim();
                 }
 
-                if (genes.length > 5 && !this.isLogged) {
-                    alert("The maximum number of genes is 5");
+                if (genes.length > 5 ) {
+                    new StvDialog().alert("The maximum number of genes is 5.");
                     return;
                 }
 
-                var gene = genes.join(",").toUpperCase();
-
+                // add search without uppercase
+                genes = genes.filter(n => n);
+                var geneUppercase = genes.join(",").toUpperCase();
+                var gene = geneUppercase + "," + genes.join(",");
                 var regionGene = {};
 
                 CellBaseManager.get({
@@ -1623,6 +1694,8 @@
                         include: 'chromosome,start,end'
                     },
                     success: function(data) {
+                        var genesUppercase = geneUppercase.split(",");
+
                         for (var i = 0; i < data.response.length; i++) {
                             var queryResult = data.response[i];
 
@@ -1630,10 +1703,16 @@
                                 var region = new Region(queryResult.result[0]);
                                 regionGene[region] = queryResult.id;
                                 regions.push(region.toString());
-
-                            } else {
-                                alert("Wrong gene: " + gene);
+                                // Remove list to search
+                                var index = genesUppercase.indexOf(queryResult.id.toUpperCase());
+                                if (index > -1) {
+                                    genesUppercase.splice(index, 1);
+                                }
                             }
+                        }
+
+                        if (genesUppercase.length > 0){
+                            msj = msj + "Wrong gene or gene not found: " + genesUppercase.join(",") +".\n";
                         }
                     }
                 });
@@ -1665,20 +1744,46 @@
                                 if (!elto.startsWith("ENS"))
                                     checkPosition = true;
                             } else
-                                alert("Wrong SNPId/HGVSc/HGVSp: " + elto);
+                                msj = msj + "Wrong SNPId/HGVSc/HGVSp: " + elto + ".\n";
                         }
                     }
                 }
 
-                if (snpsIds.length + cDnas.length + proteins.length > 10 && !this.isLogged) {
-                    alert("The maximum number of SNPId/HGVSc/HGVS is 10");
+                if (snpsIds.length + cDnas.length + proteins.length > 10 ) {
+                    new StvDialog().alert("The maximum number of SNPId/HGVSc/HGVS is 10.");
                     return;
                 }
 
                 var snpsId = snpsIds.join(",");
 
                 if (snpsIds.length > 0) {
-                    var regionSnpId = {};
+                    CSVSManager.variants.rs({
+                        query: {rs: snpsIds},
+                        request: {
+                            async: false,
+                            success: function(response) {
+
+                                if (!!response && !!response.result && response.result.length > 0) {
+                                    response.result.forEach(function (r) {
+                                        var region = new Region({chromosome: r.chromosome, start: r.position, end: r.position});
+                                        regions.push(region);
+                                    });
+                                } else {
+                                    if (regions.length == 0 && cDnas.length == 0 && proteins.length == 0)
+                                        msj = msj + "No result for this SNPid: " + snpsId + ".\n";
+                                }
+
+                            },
+                            error: function(response){
+                                msj = msj + 'There has been a problem with the server to get '+snpsId+'. Try again later.\n';
+
+                            }
+                        }
+                    });
+
+                   /* TODO when active WS rs */
+                   /*
+                   //var regionSnpId = {};
                     CellBaseManager.get({
                         species: 'hsapiens',
                         category: 'feature',
@@ -1690,21 +1795,26 @@
                             id: snpsId
                         },
                         success: function (data) {
-                            for (var i = 0; i < data.response.length; i++) {
-                                var queryResult = data.response[i];
+                            if (!!data) {
+                                for (var i = 0; i < data.response.length; i++) {
+                                    var queryResult = data.response[i];
 
-                                if (queryResult.result.length > 0) {
-                                    queryResult.result.forEach(r => {
-                                        var region = new Region(r);
-                                        regionSnpId[region] = queryResult.id;
-                                        regions.push(region.toString());
-                                    });
-                                } else {
-                                    alert("Wrong SNPId: " + snpsId);
+                                    if (queryResult.result.length > 0) {
+                                        queryResult.result.forEach(function (r) {
+                                            var region = new Region(r);
+                      //                      regionSnpId[region] = queryResult.id;
+                                            regions.push(region.toString());
+                                        });
+                                    } else {
+                                        msj = msj + "Wrong SNPId: " + snpsIds[i] + ".\n";
+                                    }
                                 }
                             }
+                        },
+                        error: function(data){
+                            msj = msj + 'There has been a problem with the server to get '+snpsId+'. Try again later.\n';
                         }
-                    });
+                    });*/
                 }
             }
 
@@ -1731,7 +1841,7 @@
             }
 
             // EXECUTE QUERY
-            if (regions.length > 0 || cDnas.length > 0 || proteins.length > 0 || consequencesTypes.length > 0) {
+            if ((regions.length > 0 || cDnas.length > 0 || proteins.length > 0 || consequencesTypes.length > 0 ) &&  msj == "" ) {
                 var regionQuery = regions.join(",");
                 query.regions = regionQuery;
                 query.diseases = diseaseIds.join(",");
@@ -1796,17 +1906,17 @@
                 }
             }
             // e -> If event is click check region/gene
-            var msj = "";
             if (e != undefined){
                 if (regions.length + genes.length  == 0 && checkPosition)
-                    msj = "Please add a chromosoma location, gene, SNPId for annotation HGVSc/HGVSp ";
+                    msj = msj + "Please add a chromosoma location, gene or SNPId for annotation HGVSc/HGVSp.\n";
 
                 if (regions.length + genes.length + consequencesTypes.length + cDnas.length + proteins.length  == 0 && !checkPosition)
-                    msj = "Please add a chromosoma location, gene, SNPId/HGVSc/HGVSp or Consequence Type";
+                    msj = msj + "Please add a chromosoma location, gene, SNPId/HGVSc/HGVSp or Consequence Type.\n";
             }
 
             if(msj != ""){
-                alert(msj);
+                new StvDialog().alert(msj);
+                return;
             } else {
                 query.gene = geneValue;
                 this.set('query', query);
@@ -2018,13 +2128,14 @@
 
             // Annotate
             var listTranscripts = [];
+            //var listRS= [];
             var query = positions.join(",");
             if (positions.length > 0) {
 
-                // Annotate HGVS
-                TranscriptManager.get({
-                    host: TRANSCRIPT_HOST,
-                    version: TRANSCRIPT_VERSION,
+                // Annotate HGVS (Transcript)
+                WSManager.get({
+                    host: WS_HOST,
+                    version: WS_VERSION,
                     // species: 'hsapiens',
                     //query: "ids=" + ensemblGeneIds.join("&ids=") ,//+ '&page=0&pageSize=10',
                     category:  'variants',
@@ -2041,6 +2152,25 @@
                             listTranscripts = response;
                     }
                 });
+/*
+                // Annotate RS (RS)
+                WSManager.get({
+                    host: WS_HOST,
+                    version: WS_VERSION,
+                    category:  'variants',
+                    subCategory:  'rs',
+                    body: JSON.stringify(positions),
+                    async: false,
+                    method: "POST",
+                    headers: {
+                        accept: "*",
+                        'Content-Type': "application/json"
+                    },
+                    success: function (response) {
+                        if (response != null)
+                            listRS = response;
+                    }
+                });*/
 
                 // Annotate CELLBASE
                 CellBaseManager.get({
@@ -2148,7 +2278,6 @@
                 data[referencePosition[z]].reference =  referenceVariant[z];
             }
 
-
             for (var i = 0; i < data.length; i++) {
                 var variant = data[i];
 
@@ -2157,9 +2286,11 @@
                 }
 
                 // Annotate SNPid
+                /* Get from Cellbase
                 if (variant.annots.id != null && variant.annots.id) {
                     variant.id = variant.annots.id;
-                }
+                }*/
+                variant.id = variant.rs;
 
                 // Annotate Cons
                 if (variant.annots.conservation != null && variant.annots.conservation.length > 0) {
@@ -2223,9 +2354,7 @@
                         }
                     }
                     // ADD annotation HGVS
-                    var pIndex = positions.findIndex(p =>{
-                        //console.log(p);
-                       // console.log(variant.chromosome + ":" + variant.position + ":" + variant.reference + ":"+ (variant.alternate != undefined ? variant.alternate:"-"))
+                    var pIndex = positions.findIndex(function(p){
                         return p === (variant.chromosome + ":" + variant.position + ":" +
                             (variant.reference != undefined && variant.reference != "" ? variant.reference: "-") + ":"+ (variant.alternate != undefined && variant.alternate != "" ? variant.alternate: "-"))
                             }
@@ -2233,6 +2362,12 @@
                     var search = 0;
                     // End 1.
 
+
+                    // Annotation RS
+  /*                  if (pIndex > -1 && listRS.length > 0 && pIndex < listRS.length){
+                       data[i].id = listRS[pIndex];
+                    }
+*/
                     for (var j = 0, l = variant.annots.consequenceTypes.length; j < l; j++) {
                         var ct = variant.annots.consequenceTypes[j];
 
@@ -2270,7 +2405,7 @@
                             // ADD annotation HGVS
                             if (pIndex > -1 && ct.ensemblTranscriptId) {
 
-                                var tIndex = listTranscripts[pIndex].findIndex(t => t.transcriptId == ct.ensemblTranscriptId);
+                                var tIndex = listTranscripts[pIndex] != undefined ? listTranscripts[pIndex].findIndex(t => t.transcriptId == ct.ensemblTranscriptId): -1;
                                 // Set consequenceTypes in listTranscripts
                                 if (tIndex > -1 && ct.sequenceOntologyTerms != undefined ) {
 
@@ -2292,7 +2427,7 @@
 
                                 // Set is search gen or HGVS
                                 if (tIndex > -1 && ct.geneName != null ) {
-                                    var isFounded = searchGenes.findIndex(g => g == ct.geneName);
+                                    var isFounded = searchGenes.findIndex(g => g.toUpperCase() == ct.geneName.toUpperCase());
                                     if (isFounded < 0) {
                                         isFounded = listTranscripts[pIndex][tIndex].hgvsc.findIndex(h => searchSnpIds.includes(h));
                                     }
@@ -2318,13 +2453,13 @@
                             transcriptShow = listTranscripts[pIndex];
                         }
                         // 2. Get canonical
-                        if (transcriptShow.length > 1){
+                        if (transcriptShow != undefined && transcriptShow.length > 1){
                             var indexCan = transcriptShow.findIndex(t =>  !!t.transcriptCanonical);
                             if (indexCan > -1)
                                 transcriptShow = transcriptShow.filter(t => !!t.transcriptCanonical);
                         }
                         // 3. Get worst
-                        if (transcriptShow.length >  1) {
+                        if (transcriptShow != undefined && transcriptShow.length >  1) {
                             var listConTyp = transcriptShow.map(t => t.consequenceTypes);
                             var unique = new Set(listConTyp);
                             if (unique.size > 1) {
@@ -2337,7 +2472,7 @@
                     }
                 }
 
-                if(transcriptShow.length > 0){
+                if (transcriptShow != undefined && transcriptShow.length > 0){
                     variant.transcriptShow = transcriptShow;
                 }
 
@@ -2346,7 +2481,7 @@
                     variant.polyphen = poly;
                 }
 
-                if (genes.length > 0) {
+                if (genes != undefined && genes.length > 0) {
                     variant.genes = genes.join(",");
                 }
 
@@ -2357,9 +2492,10 @@
                         var cadd_elem = variant.annots.functionalScore[j];
                         switch (cadd_elem.source.toLowerCase()) {
                             case 'cadd_raw':
-                                cadd = cadd_elem.score.toFixed(3);
+                                //cadd = cadd_elem.score.toFixed(3);
                                 break;
                             case 'cadd_scaled':
+                                cadd = cadd_elem.score.toFixed(3);
                                 break;
                         }
                     }
@@ -2437,7 +2573,7 @@
                     for (var j = 0; j < variant.annots.populationFrequencies.length; j++) {
 
                         var pfreq = variant.annots.populationFrequencies[j];
-
+                        /* Remove CSVS
                         if (pfreq.study.toLowerCase() === "1000genomes_phase_1") {
                             switch (pfreq.population) {
                                 case "ALL":
@@ -2460,7 +2596,9 @@
                                     variant.aaf1000GEUR = Number(maf).toFixed(3)
                                     break;
                             }
-                        } else if (pfreq.study.toLowerCase() === "1kg_phase3") {
+                        } else
+                            */
+                        if (pfreq.study.toLowerCase() === "1kg_phase3") {
                             switch (pfreq.population) {
                                 case "ALL":
                                     variant.aaf1000G_PHASE_3_ALL = Number(pfreq.altAlleleFreq).toFixed(3);
@@ -2505,11 +2643,22 @@
                                     variant.aafexac_EUR = Number(pfreq.altAlleleFreq).toFixed(3)
                                     break;
                             }
+                        } else if (pfreq.study.toLowerCase() === "gnomad_genomes") {
+                            switch (pfreq.population) {
+                                case "ALL":
+                                    variant.aafGNOMAD_GEN_ALL = Number(pfreq.altAlleleFreq).toFixed(3);
+                                    break;
+                            }
+                        }   else if (pfreq.study.toLowerCase() === "gnomad_exomes") {
+                            switch (pfreq.population) {
+                                case "ALL":
+                                    variant.aafGNOMAD_EXO_ALL = Number(pfreq.altAlleleFreq).toFixed(3);
+                                    break;
+                            }
                         }
                     }
                 }
             }
-
             return data;
         },
         _parseTotal: function(response) {
@@ -2523,7 +2672,7 @@
         handleRowClick: function(e) {
             var row = e.detail.row;
 
-            var indexTrack = this.$.gv.genomeViewer.trackListPanel.tracks.findIndex(t => t.title == (window.ACRONYM_APP ||'CSVS') );
+            var indexTrack = this.$.gv.genomeViewer.trackListPanel.tracks.findIndex(function(t){ return t.title == (window.ACRONYM_APP ||'CSVS') });
             if (indexTrack != -1 ) {
                 var params = this.$.gv.genomeViewer.trackListPanel.tracks[indexTrack].dataAdapter.params;
                 if (params.user != Cookies("bioinfo_user") || params.sid != Cookies("bioinfo_sid")) {
@@ -2556,10 +2705,8 @@
         handleGenomeViewerCreated: function() {
             var me = this;
 
-            var url =CSVS_HOST + '/regions/{region}/fetch';
-
             var adapter = new FeatureTemplateAdapter({
-                uriTemplate: url ,
+                uriTemplate: CSVS_HOST + '/regions/{region}/fetch' ,
                 params: {"user":Cookies("bioinfo_user"), "sid":Cookies("bioinfo_sid")},
                 species: this.$.gv.genomeViewer.species,
                 parse: function(response) {
@@ -2597,7 +2744,6 @@
                 "feature:click": function(e) {
 
                     var elem = e.feature;
-                    console.log(elem);
 
                     me.$.dataTable.selectElem(elem, function(x, y) {
                         return x.chromosome == y.chromosome && x.position == y.position &&
@@ -2605,6 +2751,32 @@
                     });
                 }
             }
+
+            // Ini: Modify cellbase genomeViewer
+            var newAdapterCellbase = new CellBaseAdapter({
+                category: "genomic",
+                subCategory: "region",
+                resource: "gene",
+                params: {
+                    exclude: 'transcripts,chunkIds'
+                },
+                species: {
+                   assembly:
+                       {
+                           name:'"GRCh37"'
+                        },
+                    id: 'hsapiens'
+                },
+
+                cacheConfig: {
+                    chunkSize: 100000
+                }
+            });
+            var indexTrack = this.$.gv.genomeViewer.trackListPanel.tracks.findIndex(function(t){ return t.title == (window.ACRONYM_APP ||'SNP') });
+            if (indexTrack != -1 ) {
+                this.$.gv.genomeViewer.trackListPanel.tracks[indexTrack].dataAdapter = newAdapterCellbase;
+            }
+            // End: Modify cellbase genomeViewer
 
             var track = new FeatureTrack({
                 title: window.ACRONYM_APP ||'CSVS',
@@ -2616,7 +2788,6 @@
                 dataAdapter: adapter
             });
 
-            console.log(track.id, "TrackID");
             this.$.gv.genomeViewer.addTrack(track);
         },
         diseasesChanged: function(neo, old) {
@@ -2778,6 +2949,16 @@
 
             var chart = new Highcharts.Chart({
                 _me: me,
+
+                loading: {
+                    labelStyle: {
+                        color: '#445D76',
+                        fontSize: "18px"
+                    },
+                    style: {
+                        backgroundColor:'rgba(150,150,150,0.2)'
+                    }
+                },
                 chart: {
                     type: 'line',
                     plotBackgroundColor: null,
@@ -2787,6 +2968,7 @@
                     borderRadius: 10,
                    // width: 1000,
                     height: 700,
+                    minWidth:900,
                     pointStart: 0,
                     _me: me
                 },
@@ -2846,7 +3028,12 @@
                 series: chartData
             });
 
-        },
+            if (this.loadingSaturation && Object.entries(data).length == 0)
+                chart.showLoading('<i class="fa fa-circle-o-notch fa-spin"></i> Loading... ');
+            else
+                chart.hideLoading();
+
+	},
 
         // show Subpopulation CSVS
         handleColumnVisible: function(e) {

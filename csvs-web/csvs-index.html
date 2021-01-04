@@ -92,8 +92,7 @@
             m.parentNode.insertBefore(a, m)
         })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
 
-        //ga('create', 'UA-48766088-1', 'auto');
-        ga('create', '', 'auto');
+        ga('create', window.ANALYTICS_GOOGLE, 'auto');
         ga('send', 'pageview');
 
 
@@ -102,11 +101,11 @@
                 AVAILABLE_SPECIES = s;
                 DEFAULT_SPECIES = AVAILABLE_SPECIES.vertebrates[0];
                 csvs = document.createElement('csvs-element');
-                csvs.setAttribute("title-app", window.TITLE_APP || "G. Population Variant Server");
-                csvs.setAttribute("acronym", window.ACRONYM_APP || "GPVS");
-                csvs.setAttribute("phenotype", window.PHENOTYPE  || "G.");
+                csvs.setAttribute("title-app", window.TITLE_APP || "Iberian Roma Population Variant Server");
+                csvs.setAttribute("acronym", window.ACRONYM_APP || "IRPVS");
+                csvs.setAttribute("phenotype", window.PHENOTYPE  || "Iberian Roma");
                 console.log(document.head);
-                document.head.getElementsByTagName("title")[0].innerHTML = window.TITLE_APP || "G. Population Variant Server";
+                document.head.getElementsByTagName("title")[0].innerHTML = window.TITLE_APP || "Iberian Roma Population Variant Server";
                 document.body.appendChild(csvs);
             });
         });
@@ -135,6 +134,7 @@
                     callback(taxonomies);
                 }
             });
+
         }
     </script>
 

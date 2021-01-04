@@ -1,0 +1,120 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/stevia-elements/src/stv-dialog/stv-dialog.html">
+
+
+<dom-module id="csvs-version">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+         :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+        }
+         #versionPanel {
+             width: 500px;
+             height: 400px;
+             min-width: 500px;
+             min-height: 400px;
+         }
+
+         #versionContent {
+             padding: 20px;
+             overflow-y: auto;
+             text-align: justify;
+             font-size: 14px;
+         }
+         .aversionContent{
+            text-decoration: underline;
+        }
+
+         #tversion {
+             border-collapse: collapse;
+             width: 100%;
+         }
+
+         #tversion td, #tversion tbody th {
+             border: 1px solid #ddd;
+             padding: 8px;
+         }
+
+         #tversion tbody tr:nth-child(even){background-color: #f2f2f2;}
+
+         #tversion tbody tr:hover {background-color: #ddd;}
+
+         #tversion tbody th {
+             padding-top: 12px;
+             padding-bottom: 12px;
+             text-align: left;
+             font-weight: bold
+         }
+
+
+
+
+    </style>
+    <template>
+        <stv-panel id="versionPanel" modal fixed closable on-close="handleVersion">
+            <div class="header">
+                <i class="fa fa-database"></i> Database version
+            </div>
+            <div id="versionContent" class="container flex">
+                <h1>Database versions:</h1>
+                <table id="tversion">
+                    <tr><th>Version</th>
+                        <th>Data</th>
+                        <th>Individuals</th>
+                        <th>Current</th>
+                    </tr>
+                    <template is="dom-repeat" items="{{history}}">
+                        <tr><td>{{item.version}}</td>  <td>{{item.date}}</td><td>{{item.individuals}}</td> <td>{{item.actual}}</td></tr>
+                    </template>
+                </table>
+
+            </div>
+        </stv-panel>
+    </template>
+
+    <script>
+        Polymer({
+            is: "csvs-version",
+            properties: {
+                hidden: {
+                    type: Boolean,
+                    value: false,
+                    reflectToAttribute: true,
+                    observer: 'hiddenChanged'
+                },
+                actual:{
+                    type:Object,
+                    value: {}
+                },
+                history:{
+                    type:Object,
+                    value: {}
+                },
+                url: {
+                    type:String,
+                    value: ""
+                }
+            },
+            ready: function() {
+                console.log(this.actual);
+                if (window.VERSIONS != null && Object.keys(window.VERSIONS).length !== 0){
+                    var versions = window.VERSIONS || {};
+
+                    this.history = versions.history;
+                    this.actual = versions.actual;
+                }
+            },
+            hiddenChanged: function() {
+                this.$.versionPanel._center();
+            },
+
+            handleVersion: function (e) {
+                this.fire('version-end');
+                this.$.versionPanel.hidden = false;
+                this.$.versionPanel.style = "top: 60px;left: 500px";
+            }
+        })
+    </script>
+</dom-module>

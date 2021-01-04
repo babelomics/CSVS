@@ -8,6 +8,8 @@ const fs = require('fs');
 
 var name = "csvs";
 var element = "csvs-element";
+var documentation = "csvs-documentation";
+var documentationData = "csvs-documentation-data";
 
 // Default
 var bp = path.join(__dirname, "build");
@@ -15,6 +17,11 @@ var indexHTML = path.join(__dirname, name + '-index.html');
 var buildIndexHTML = path.join(bp, 'index.html');
 var elementHTML = path.join(__dirname, element + '.html');
 var buildElementHTML = path.join(bp, element + '.html');
+
+var documentationHTML = path.join(__dirname, documentation + '.html');
+var buildDocumentationHTML = path.join(bp, documentation + '.html');
+var documentationDataHTML = path.join(__dirname, documentationData + '.html');
+var buildDocumentationDatatHTML = path.join(bp, documentationData + '.html');
 
 var vulcan = new Vulcanize({
     inlineScripts: true,
@@ -43,10 +50,24 @@ async.waterfall([
         });
     },
     function (cb) {
+        vulcan.process(documentationDataHTML, function (err, inlinedHtml) {
+            fs.writeFile(buildDocumentationDatatHTML, inlinedHtml, function (err) {
+                if (err) {
+                    cb(err);
+                } else {
+                    cb(null);
+                }
+            });
+        });
+    },
+    function (cb) {
         shell.cp('-r', indexHTML, buildIndexHTML);
+        shell.cp('-r', documentationHTML, buildDocumentationHTML);
         shell.cp('-r', path.join(__dirname, 'conf/'), bp);
         shell.cp('-r', path.join(__dirname, 'images/'), bp);
         shell.cp('-r', path.join(__dirname, 'bower_components', 'stevia-elements', 'fonts'), bp);
+        shell.mkdir('-p', path.join(bp, "bower_components","stevia-elements"));
+        shell.cp('-r', path.join(__dirname, 'bower_components', 'stevia-elements', 'conf'),  path.join(bp, "bower_components","stevia-elements"));
         shell.cp('-r', path.join(__dirname, 'bower_components', 'stevia-elements', 'css'), bp);
         shell.cp('-r', path.join(__dirname, 'bower_components', 'fontawesome', 'css'), path.join(bp, "fontawesome/"));
         shell.cp('-r', path.join(__dirname, 'bower_components', 'fontawesome', 'fonts'), path.join(bp, "fontawesome/"));
@@ -74,6 +95,11 @@ async.waterfall([
         shell.sed('-i', 'bower_components/stevia-elements/', '', buildIndexHTML);
         shell.sed('-i', 'bower_components/', '', buildIndexHTML);
         shell.sed('-i', 'jsorolla/src/lib/components/', '', buildIndexHTML);
+
+
+        shell.sed('-i', 'bower_components/stevia-elements/', '', buildDocumentationHTML);
+        shell.sed('-i', 'bower_components/', '', buildDocumentationHTML);
+        shell.sed('-i', 'jsorolla/src/lib/components/', '', buildDocumentationHTML);
 
         cb(null);
     }

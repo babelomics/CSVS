@@ -1,27 +1,12 @@
 /*
- * Copyright (c) 2020 GRG
- *
- * This file is part of JS Common Libs.
- *
- * JS Common Libs is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
- *
- * JS Common Libs is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with JS Common Libs. If not, see <http://www.gnu.org/licenses/>.
+ * 2020 GRG
  */
 
-var TranscriptManager = {
-    host: (typeof window.TRANSCRIPT_HOST === 'undefined') ? '' : window.TRANSCRIPT_HOST,
-    version: (typeof window.TRANSCRIPT_VERSION === 'undefined') ? 'v1' : window.TRANSCRIPT_VERSION,
-    ensembl: (typeof window.TRANSCRIPT_ENSEMBL === 'undefined') ? '82' : window.TRANSCRIPT_ENSEMBL,
-    assembly: (typeof window.TRANSCRIPT_ASSEMBLY === 'undefined') ? '37' : window.TRANSCRIPT_ASSEMBLY,
+var WSManager = {
+    host: (typeof window.WS_HOST === 'undefined') ? '' : window.WS_HOST,
+    version: (typeof window.WS_VERSION === 'undefined') ? 'v1' : window.WS_VERSION,
+    ensembl: (typeof window.WS_ENSEMBL === 'undefined') ? '82' : window.WS_ENSEMBL,
+    assembly: (typeof window.WS_ASSEMBLY === 'undefined') ? '37' : window.WS_ASSEMBLY,
 
     get: function (args) {
         var success = args.success;
@@ -39,12 +24,12 @@ var TranscriptManager = {
             }
         }
 
-        var url = TranscriptManager.url(urlConfig);
+        var url = WSManager.url(urlConfig);
         if (typeof url === 'undefined') {
             return;
         }
 
-        if (window.TRANSCRIPT_LOG != null && TRANSCRIPT_LOG === true) {
+        if (window.WS_LOG != null && WS_LOG === true) {
             console.log(url);
         }
 
@@ -57,14 +42,14 @@ var TranscriptManager = {
                 if (typeof success === "function") success(parsedResponse);
                 d = parsedResponse;
             } else {
-                console.log('Transcript returned a non json object or list, please check the url.');
+                console.log('WS returned a non json object or list, please check the url.');
                 console.log(url);
-                console.log(this.response)
+                console.log(this.response);
             }
         };
 
         request.onerror = function () {
-            console.log("TranscriptManager: Ajax call returned " + this.statusText);
+            console.log("WSManager: Ajax call returned " + this.statusText);
             if (typeof error === "function") error(this);
         };
 
@@ -84,7 +69,7 @@ var TranscriptManager = {
         try {
             request.send(body);
         } catch (e) {
-            console.log("TranscriptManager: Ajax call returned " + this.statusText);
+            console.log("WSManager: Ajax call returned " + this.statusText);
             if (typeof error === "function") error(this);
         }
 
@@ -134,42 +119,9 @@ var TranscriptManager = {
                 config[prop] = args[prop];
             }
         }
-/*
-        var query = '';
-        if (config.query != null) {
-            query = '/' + config.query.toString();
-        }*/
 
-        /*
-        //species can be the species code(String) or an object with text attribute
-        if (config.species && config.species.id != null) {
-            if (config.species.assembly != null) {
-                config.params["assembly"] = config.species.assembly.name;
-            }
-            // TODO Remove temporary fix
-            if (config.subCategory === 'chromosome') {
-                delete config.params["assembly"]
-            }
-            config.species = stv.utils.getSpeciesCode(config.species.scientificName);
-        }
-        */
-        // COMMENT var url = config.host + config.version + '/ensembl/' + config.ensembl + '/homo_sapiens/' + config.assembly + '/genes' + query + '?ids='+ config.params.ids;
 
         var url = config.host + config.version + '/ensembl/' + config.ensembl + '/homo_sapiens/' + config.assembly + '/' +  config.category + "/" + config.subCategory;
-
-
-
-
-        //if (config.category === 'meta') {
-//            url = config.host + '/webservices/rest/' + config.version + '/' + config.category + '/' + config.subCategory;
-  //      } else {
-            //url = config.host + '/webservices/rest/' + config.version + '/' + config.species + '/' + config.category + '/' + config.subCategory + query + '/' + config.resource;
-       // }
-
-        //url = stv.utils.addQueryParamtersToUrl(config.params, url);
-
-
-
 
         return url;
     }

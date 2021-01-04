@@ -56,7 +56,6 @@ public class CSVSMain {
         // Para regions 37
         PAR_REGIONS =  iniParRegions(properties.getProperty("PAR_REGIONS", "X:60001-2699520;Y:10001-2649520,X:154931044-155260560;Y:59034050-59363566"));
 
-
         HGVS_HOST  = properties.getProperty("HGVS.HOST", "");
     }
 
@@ -263,7 +262,6 @@ public class CSVSMain {
 
                 if (c.geneList.size() > 0) {
                     URI cellbaseUri = new URI(CELLBASE_HOST);
-
                     CellBaseClient cbc = new CellBaseClient(cellbaseUri, CELLBASE_VERSION, "hsapiens");
                     String id = Joiner.on(",").join(c.geneList).toUpperCase();
                     QueryOptions qo = new QueryOptions();
@@ -348,7 +346,7 @@ public class CSVSMain {
                     sb.append(ref).append("\t");
                     sb.append(alt).append("\t");
                     sb.append(id).append("\t");
-
+                    System.out.println(sb);
                     DiseaseCount dc = v.getStats();
 
                     sb.append(dc.getGt00()).append("\t");

@@ -1,0 +1,16 @@
+---
+#version: "v4"
+version: "v4-dev2"
+defaultSpecies: "hsapiens"
+logLevel: "info"
+logFile: ""
+rest:
+  hosts:
+  - "http://cellbase.clinbioinfosspa.es/cellbase-4.6.3"
+  #- "http://cellbase.clinbioinfosspa.es/cb"
+  #- "http://bioinfo.hpc.cam.ac.uk/cellbase"
+#  - "http://bioinfodev.hpc.cam.ac.uk/cellbase-4.5.0-rc"
+  #- "http://localhost:8080/cellbase-4.5.5"
+  timeout: 2000
+grpc:
+  host: "localhost:9090"
