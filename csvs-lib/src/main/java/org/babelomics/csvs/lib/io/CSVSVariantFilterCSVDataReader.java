@@ -10,16 +10,14 @@ import org.opencb.biodata.models.variant.VariantSourceEntry;
 import org.opencb.biodata.models.variant.VariantVcfFactory;
 import org.opencb.commons.io.DataReader;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 
 /**
  * @author Gema Roldán González <gema.roldan@juntadeandalucia.es>
@@ -49,8 +47,12 @@ public class CSVSVariantFilterCSVDataReader extends CSVSVariantCountCSVDataReade
         Path path = Paths.get(this.filePath);
 
         try {
+            if (path.toFile().getName().endsWith(".gz")) {
+                this.reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(path.toFile()))));
+            } else {
+                this.reader = Files.newBufferedReader(path, Charset.defaultCharset());
+            }
 
-            this.reader = Files.newBufferedReader(path, Charset.defaultCharset());
             printer = new PrintWriter("Filter_" + path.getFileName() );
 
         } catch (FileNotFoundException e) {
@@ -94,6 +96,14 @@ public class CSVSVariantFilterCSVDataReader extends CSVSVariantCountCSVDataReade
                     splits[0] = splits[0].toUpperCase().replace("CHR","");
                     if ("M".equals(splits[0])) {
                         splits[0] = "MT";
+                    }
+
+                    if (".".equals(splits[2])) {
+                        splits[2] = "";
+                    }
+
+                    if (".".equals(splits[3])) {
+                        splits[3] = "";
                     }
 
                     // Ignore chromosome Y when is a woman

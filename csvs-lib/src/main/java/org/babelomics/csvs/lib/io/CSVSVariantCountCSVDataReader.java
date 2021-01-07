@@ -8,13 +8,16 @@ import org.babelomics.csvs.lib.models.Region;
 import org.opencb.commons.io.DataReader;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 
 /**
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
@@ -83,7 +86,11 @@ public class CSVSVariantCountCSVDataReader implements DataReader<Variant> {
 
         Path path = Paths.get(this.filePath);
         try {
-            this.reader = Files.newBufferedReader(path, Charset.defaultCharset());
+            if (path.toFile().getName().endsWith(".gz")) {
+                this.reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(path.toFile()))));
+            } else {
+                this.reader = Files.newBufferedReader(path, Charset.defaultCharset());
+            }
         } catch (IOException e) {
             System.err.println("ERROR: opening inputFile");
             e.printStackTrace();

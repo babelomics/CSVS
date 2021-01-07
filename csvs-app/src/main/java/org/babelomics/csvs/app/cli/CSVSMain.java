@@ -269,16 +269,16 @@ public class CSVSMain {
                 Iterable<Variant> query = qm.getVariantsByRegionList(regionList, diseaseId, technologyId, c.skip, c.limit, false, count);
 
                 if (!c.csv) {
-                    System.out.println("chr\tpos\tref\talt\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF");
+                    System.out.println("chr\tpos\tref\talt\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF" + (!c.fileInfo ? "" :"\tfiles"));
                 } else {
                     pw = new PrintWriter(c.outfile);
-                    pw.append("chr\tpos\tref\talt\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF").append("\n");
+                    pw.append("chr\tpos\tref\talt\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF"+ (!c.fileInfo ? "" :"\tfiles")).append("\n");
                 }
 
                 for (Variant v : query) {
 
-                    String ref = (v.getReference() == null || v.getReference().isEmpty()) ? "." : v.getReference();
-                    String alt = (v.getAlternate() == null || v.getAlternate().isEmpty()) ? "." : v.getAlternate();
+                    String ref = (v.getReference() == null || v.getReference().isEmpty()) ? "" : v.getReference();
+                    String alt = (v.getAlternate() == null || v.getAlternate().isEmpty()) ? "" : v.getAlternate();
 
                     StringBuilder sb = new StringBuilder();
                     sb.append(v.getChromosome()).append("\t");
@@ -295,6 +295,16 @@ public class CSVSMain {
                     sb.append(dc.getRefFreq()).append("\t");
                     sb.append(dc.getAltFreq()).append("\t");
                     sb.append(dc.getMaf()).append("\t");
+
+                    if (c.fileInfo) {
+                        List<File>  files = qm.getInfoFile(v);
+
+                        if (files != null ){
+                            for (File f : files) {
+                                sb.append(f.getNameFile()).append(",");
+                            }
+                        }
+                    }
 
                     if (!c.csv) {
                         System.out.println(sb.toString());

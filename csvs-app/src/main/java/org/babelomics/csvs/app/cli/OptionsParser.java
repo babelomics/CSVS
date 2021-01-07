@@ -166,6 +166,8 @@ public class OptionsParser {
         String pass = "";
         @Parameter(names = {"--dbName"}, description = "DB Name", arity = 1)
         String dbName = "csvs";
+        @Parameter(names = {"--fileInfo"}, description = "Get info about file and person reference")
+        boolean fileInfo;
 
 
     }

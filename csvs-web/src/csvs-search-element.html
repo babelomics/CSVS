@@ -1962,9 +1962,11 @@
                         var cadd_elem = variant.annots.functionalScore[j];
                         switch (cadd_elem.source.toLowerCase()) {
                             case 'cadd_raw':
-                                cadd = cadd_elem.score.toFixed(3);
+                                //cadd = cadd_elem.score.toFixed(3);
                                 break;
+                            // it is used in prioritization
                             case 'cadd_scaled':
+                                cadd = cadd_elem.score.toFixed(3);
                                 break;
                         }
                     }

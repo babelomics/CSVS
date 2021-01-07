@@ -140,6 +140,26 @@ public class CSVSQueryManager {
         return res;
     }
 
+    /** Gets files from variant.
+     *
+     * @param v Variant to search.
+     * @return
+     */
+  /*  public List<File> getInfoFile(Variant v){
+        List<String> idFiles = new ArrayList<>();
+        Query<FileVariant> auxQuery = this.datastore.createQuery(FileVariant.class);
+        auxQuery.filter("vid", v.getId());
+
+        Iterable<FileVariant> aux = auxQuery.fetch();
+
+        for (FileVariant fv : aux) {
+            idFiles.add(fv.getId().toString());
+        }
+        Query<File> filesQuery = this.datastore.createQuery(File.class).field("_id").in(idFiles);
+
+        return filesQuery.asList();
+    }*/
+
     public Variant getVariant(String chromosome, int position, String reference, String alternate, List<Integer> diseaseIds, List<Integer> technologyIds) {
 
         Region r = new Region(chromosome, position, position);
@@ -931,34 +951,40 @@ public class CSVSQueryManager {
 
     /**
      * ContactRequest: Get file.
-     * @param variant Id variant
+     * @param v Id variant
      * @return
      */
-    public List<File> getInfoFile(String variant) {
+    public List<File> getInfoFile(String v) {
         // Gets ids variants
-        Variant v = getVariant(new Variant(variant) , null, null);
+        Variant variant =  getVariant(new Variant(v) , null, null);
+        return getInfoFile(variant);
+    }
 
-        // Get ids files
+    public List<File> getInfoFile(Variant variant) {
+        // Get ids file
         DBCollection myCol =  this.datastore.getCollection(FileVariant.class);
         BasicDBObject project = new BasicDBObject();
         project.put("fid", 1);
         project.put("_id", 0);
 
         List<ObjectId> ids_file = new ArrayList<>();
-        DBCursor myCursor = myCol.find(new BasicDBObject("$query", new BasicDBObject("vid",v.getId())), project);
+        DBCursor myCursor = myCol.find(new BasicDBObject("$query", new BasicDBObject("vid",variant.getId())), project);
         while (myCursor.hasNext()) {
             DBObject obj = myCursor.next();
             ids_file.add((ObjectId) obj.get("fid"));
         }
 
         // Get files
-        Query<File> queryFile = this.datastore.createQuery(File.class);
-        queryFile.field("_id").in(ids_file);
-        queryFile.order("pr");
-        // Get info
-        System.out.println(queryFile);
+        if(!ids_file.isEmpty()) {
+            Query<File> queryFile = this.datastore.createQuery(File.class);
+            queryFile.field("_id").in(ids_file);
 
-        return queryFile.asList();
+            // Get info
+           // System.out.println(queryFile);
+
+            return queryFile.asList();
+        } else
+            return null;
     }
 
     class AllVariantsIterable implements Iterable<Variant> {
