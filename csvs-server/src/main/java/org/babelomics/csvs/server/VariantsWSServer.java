@@ -5,10 +5,7 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.mutable.MutableLong;
-import org.babelomics.csvs.lib.models.DiseaseGroup;
-import org.babelomics.csvs.lib.models.File;
-import org.babelomics.csvs.lib.models.Technology;
-import org.babelomics.csvs.lib.models.Variant;
+import org.babelomics.csvs.lib.models.*;
 import org.babelomics.csvs.lib.ws.QueryResponse;
 import org.opencb.biodata.models.feature.Region;
 
@@ -233,6 +230,28 @@ public class VariantsWSServer extends CSVSWSServer {
         return createOkResponse(qr);
     }
 
+
+    @GET
+    @Path("/metadata")
+    @Produces("application/json")
+    @ApiOperation(value = "Contact request")
+    public Response getMetadata() {
+        List<Metadata> metadata = qm.getMetadata();
+        List<Metadata> metadataSummary = new ArrayList<>();
+
+        // Remove extra information
+        for(Metadata m : metadata){
+            Metadata newMetadata = new Metadata(m.getVersion(), m.getDate(), m.getIndividuals());
+            metadataSummary.add(newMetadata);
+        }
+
+
+        QueryResponse qr = createQueryResponse(metadataSummary);
+        qr.setNumResults(metadataSummary.size());
+        qr.setNumTotalResults(metadataSummary.size());
+
+        return createOkResponse(qr);
+    }
 
     /**
      * Method to preparate params to send mail.

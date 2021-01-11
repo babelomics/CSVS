@@ -66,7 +66,7 @@
                         <th>Current</th>
                     </tr>
                     <template is="dom-repeat" items="{{history}}">
-                        <tr><td>{{item.version}}</td>  <td>{{item.date}}</td><td>{{item.individuals}}</td> <td>{{item.actual}}</td></tr>
+                        <tr><td>{{item.version}}</td>  <td>{{getDate(item.date)}}</td><td>{{item.individuals}}</td> <td>{{item.current}}</td></tr>
                     </template>
                 </table>
 
@@ -84,10 +84,6 @@
                     reflectToAttribute: true,
                     observer: 'hiddenChanged'
                 },
-                actual:{
-                    type:Object,
-                    value: {}
-                },
                 history:{
                     type:Object,
                     value: {}
@@ -98,13 +94,38 @@
                 }
             },
             ready: function() {
-                console.log(this.actual);
-                if (window.VERSIONS != null && Object.keys(window.VERSIONS).length !== 0){
-                    var versions = window.VERSIONS || {};
-
-                    this.history = versions.history;
-                    this.actual = versions.actual;
+                this.getMetadata();
+            },
+            getMetadata: function(){
+                me = this;
+                try {
+                    CSVSManager.variants.metadata({
+                        request: {
+                            async: false,
+                            success: function (response) {
+                                if (response != undefined && response.result != undefined && response.result.length > 0) {
+                                    me.history =  response.result;
+                                    if (response.numResults > 0){
+                                        me.history[0].current= "yes";
+                                    }
+                                }
+                            },
+                            error: function(response) {
+                                console.log("Error load metadata");
+                                console.log(response);
+                            }
+                        }
+                    });
+                } catch (err){
+                    console.log("Error load metadata");
                 }
+            },
+            getDate: function(date){
+                var d = new Date(date);
+
+                var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                return  months[d.getMonth()] +" " + d.getDate() + ", " + d.getFullYear();
+
             },
             hiddenChanged: function() {
                 this.$.versionPanel._center();
@@ -115,6 +136,7 @@
                 this.$.versionPanel.hidden = false;
                 this.$.versionPanel.style = "top: 60px;left: 500px";
             }
+
         })
     </script>
 </dom-module>

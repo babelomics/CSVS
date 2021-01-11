@@ -23,7 +23,6 @@ import org.mongodb.morphia.query.Criteria;
 import org.mongodb.morphia.query.Query;
 import org.opencb.biodata.formats.variant.io.VariantReader;
 import org.opencb.biodata.formats.variant.io.VariantWriter;
-import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfReader;
 import org.opencb.biodata.models.variant.VariantSource;
 import org.opencb.biodata.tools.variant.tasks.VariantRunner;
 import org.opencb.commons.containers.list.SortedList;
@@ -32,15 +31,15 @@ import org.opencb.commons.io.DataWriter;
 import org.opencb.commons.run.Runner;
 import org.opencb.commons.run.Task;
 
-import java.awt.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import static java.lang.System.exit;
 
@@ -158,6 +157,48 @@ public class CSVSUtil {
             } catch (DuplicateKeyException e) {
                 System.err.println("Duplicated Technology: " + t);
             }
+        }
+    }
+
+    /**
+     * Add info metadata
+     * @param datastore
+     * @param newMetadata
+     */
+    public static void addNewMetadata(Datastore datastore, String newMetadata) {
+        CSVSQueryManager qm = new CSVSQueryManager(datastore);
+        Metadata metadata = new Metadata();
+
+        try {
+            String[] listDataMetadata = newMetadata.split(";");
+
+            if (listDataMetadata.length > 0){
+                metadata.setVersion(listDataMetadata[0]);
+            }
+            if (listDataMetadata.length > 1){
+                metadata.setDate(new SimpleDateFormat("MM/dd/yyyy").parse(listDataMetadata[1]));
+            }
+            if (listDataMetadata.length > 2){
+                metadata.setIndividuals(Integer.parseInt(listDataMetadata[2]));
+            }
+
+            if (listDataMetadata.length > 3){
+                if(listDataMetadata[3] != null && !listDataMetadata[3].isEmpty()) {
+                    List<String> files = Arrays.asList(listDataMetadata[3].split(","));
+                    metadata.setFilesName(files);
+                }
+            }
+            if (listDataMetadata.length > 4){
+                metadata.setVersionJava(listDataMetadata[4]);
+            }
+
+            datastore.save(metadata);
+        } catch (DuplicateKeyException e) {
+            System.err.println("Error to insert metadata: " + metadata);
+            e.printStackTrace();
+        } catch (ParseException e) {
+            System.err.println("Error to insert metadata: " + metadata );
+            e.printStackTrace();
         }
     }
 

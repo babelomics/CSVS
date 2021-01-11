@@ -134,6 +134,10 @@ public class CSVSMain {
                 CSVSUtil.addNewDisease(datastore, c.newDisease);
             }
 
+            if (c.newMetadata != null && c.newMetadata.length() > 0) {
+                CSVSUtil.addNewMetadata(datastore, c.newMetadata);
+            }
+
         } else if (command instanceof OptionsParser.CommandLoad) {
             OptionsParser.CommandLoad c = (OptionsParser.CommandLoad) command;
 

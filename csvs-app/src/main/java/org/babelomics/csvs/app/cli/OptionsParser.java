@@ -187,6 +187,9 @@ public class OptionsParser {
         @Parameter(names = {"--new-technology"}, description = "New technology", arity = 1)
         String newTechnology;
 
+        @Parameter(names = {"--new-metadata"}, description = "New metadata. Example(version,date mm/dd/aaaa,individuals,files,javaVersion): 3.0.0;10/29/2020;2048;file1;v2.1.1.", arity = 1)
+        String newMetadata;
+
         @Parameter(names = {"--host"}, description = "DB host", arity = 1)
         String host = "localhost";
         @Parameter(names = {"--user"}, description = "DB User", arity = 1)

@@ -6,8 +6,6 @@ STEVIA_SERVER_HOST = "";
 
 STV_APP="CSVS";
 
-// Version file download
-VERSION_FILE = "3.0.0 (October 29, 2020)";
 CSVS_EMAIL='csvs@clinbioinfosspa.es';
 
 // Limit download file
@@ -35,24 +33,3 @@ TITLE_APP="Collaborative Spanish Variant Server";
 ACRONYM_APP ="CSVS";
 PHENOTYPE="Spanish";
 
-// Version Database
-VERSIONS={
-    "history":[
-        {
-            "version": "3.0.0",
-            "date": "October, 29 2020",
-            "actual": "yes",
-            "individuals": 2048
-        },
-        {
-            "version": "2.0.2",
-            "date": "June, 9 2020",
-            "individuals": 2029
-        },
-        {
-            "version": "2.0.1",
-            "date": "January, 3 2020",
-            "individuals": 1941
-        }
-    ]
-};

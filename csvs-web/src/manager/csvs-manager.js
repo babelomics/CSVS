@@ -15,6 +15,9 @@ var CSVSManager = {
     variants: {
         fetch: function (args) {
             return CSVSManager._doRequest(args, 'variants', 'fetch');
+        },
+        metadata: function (args) {
+            return CSVSManager._doRequest(args, 'variants', 'metadata');
         }
     },
     regions: {

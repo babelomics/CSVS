@@ -987,6 +987,15 @@ public class CSVSQueryManager {
             return null;
     }
 
+    /**
+     * Get info metadata
+     * @return
+     */
+    public List<Metadata> getMetadata() {
+        List<Metadata> res = datastore.createQuery(Metadata.class).order("-date").asList();
+        return res;
+    }
+
     class AllVariantsIterable implements Iterable<Variant> {
 
         private Iterable iterable;

@@ -102,12 +102,45 @@
         properties: {
             version_file:{
                 type: String,
-                value: window.VERSION_FILE || ""
+                value: ""
             },
             to:{
                 type: String,
                 value: window.CSVS_EMAIL || ""
             }
+        },
+
+        ready: function() {
+            this.getMetadata();
+        },
+        getMetadata: function(){
+            me = this;
+            try {
+                CSVSManager.variants.metadata({
+                    request: {
+                        async: false,
+                        success: function (response) {
+                            if (response != undefined && response.result != undefined && response.result.length > 0) {
+                                if (response.numResults > 0){
+                                    me.version_file =  response.result[0].version + " (" + me.getDate(response.result[0].date) + ")";
+                                }
+                            }
+                        },
+                        error: function(response) {
+                            console.log("Error load metadata");
+                            console.log(response);
+                        }
+                    }
+                });
+            } catch (err){
+                console.log("Error load metadata");
+            }
+        },
+        getDate: function(date) {
+            var d = new Date(date);
+
+            var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            return months[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear();
         }
-    });
+    })
 </script>
