@@ -1,5 +1,6 @@
 package org.babelomics.csvs.lib.io;
 
+import org.apache.commons.lang3.StringUtils;
 import org.babelomics.csvs.lib.models.ParRegions;
 import org.opencb.biodata.formats.variant.vcf4.io.VariantVcfReader;
 import org.opencb.biodata.models.variant.VariantFactory;
@@ -125,10 +126,10 @@ public class CSVSVariantVcfReader implements VariantReader {
         String line;
         try {
             while ((line = reader.readLine()) != null && (line.trim().equals("") || line.startsWith("#"))) ;
-
             Boolean isReference=true;
             List<Variant> variants = null;
             // Look for a non reference position (alternative != '.')
+
             while (line != null && isReference) {
                 try {
                     if((line.toLowerCase()).startsWith("chr"))
@@ -181,6 +182,66 @@ public class CSVSVariantVcfReader implements VariantReader {
     }
 
     /**
+     * Use to transfor' 0', '.' or '1' in 1/1, 0/0 or ./.
+     * @param fields
+     * @param GTTemp
+     * @return
+     */
+    private String[] tranformAnnotation (String[] fields, String[]  GTTemp){
+        String[] GT = new String[2];
+        String checkTemp = GTTemp[0];
+
+        Pattern p = Pattern.compile("^[0-9]+$");
+        if (p.matcher(checkTemp).matches())
+            checkTemp = "NUMBER";
+
+        if (GTTemp.length < 2) {
+            switch (checkTemp){
+                case "NUMBER": // case "0": case "1": case "2": case "3": ...
+                    if ("MT".equals(fields[0])) {
+                        GT[0] = GTTemp[0];
+                        GT[1] = GTTemp[0];
+                        break;
+                    }
+
+                    // MALE
+                    if ("XY".equals(chromGender) && "X".equals(fields[0]) || ("Y".equals(fields[0]))) {
+                        GT[0] = GTTemp[0]; // Later use the function par
+                        break;
+                    }
+
+                    // FEMALE
+                    if ("XX".equals(chromGender) && "X".equals(fields[0])) {
+                        GT[0] = GTTemp[0];
+                        GT[1] = GTTemp[0];
+                        break;
+                    }
+
+                    // Case crom 1-22
+                    GT[0] = ".";
+                    GT[1] = ".";
+                    break;
+
+                case ".":
+                    // replace by ./.
+                    GT[0] = ".";
+                    GT[1] = ".";
+                    break;
+                default:
+                    // Trate biodata
+                    GT = null;
+
+            }
+            if (!".".equals(GT[0]) && !".".equals(GT[1]))
+                System.out.println("--> " + String.join("\t", fields) + "  --> " + String.join(":", GT));
+        } else {
+            GT[0] = GTTemp[0];
+            GT[1] = GTTemp[1];
+        }
+        return GT;
+        }
+
+    /**
      * Create new a line by alternate alleles.
      * @return
      */
@@ -201,92 +262,82 @@ public class CSVSVariantVcfReader implements VariantReader {
         // Create new lines
         List<String> newLines = new ArrayList<>();
 
+
         // Get data GT
         String[] fieldGT = fields[9].split(":");
         String[] GTTemp = fieldGT[0].split("[/\\|]");
-        String[] GT = new String[2];
-        if (GTTemp.length < 2) {
-            switch (GTTemp[0]){
-                case "0": case "1":
-                    if ("MT".equals(fields[0])) {
-                        GT[0] = GTTemp[0];
-                        GT[1] = GTTemp[0];
-                        break;
+        String[] GT = tranformAnnotation (fields, GTTemp);
+        if (GT == null)
+            return factory.create(source, cParRegions ? checkParRegions(fields) : String.join("\t", fields));
+
+        if (alternateAlleles.length == 1){
+            // Case Crom X or Y from XY whit values 0 or 1 (checkParRegions)
+            if (GT[1] == null) {
+                fieldGT[0] = GT[0];
+                fields[9] = String.join(":", fieldGT);
+                newLines.add(cParRegions ? checkParRegions(fields) : String.join("\t", fields));
+            } else {
+                // Case GT in "0/0","0/1","1/0","1/1","0|0","0|1","1|0","1|1", "./."
+                List<String> options = new ArrayList<>(Arrays.asList("0/0", "0/1", "1/0", "1/1", "./."));
+                if (options.contains(String.join("/", GT))) {
+                    fields[4] = alternateAlleles[0];
+                    fieldGT[0] = GT[0] + "/" + GT[1];
+                    fields[9] = String.join(":", fieldGT);
+                    newLines.add(cParRegions ? checkParRegions(fields) : String.join("\t", fields));
+                } else {
+                        System.out.println("--> ERROR " + String.join("\t", fields) + "  --> " + String.join(":", GT));
                     }
-
-                    // MALE
-                    if ("XY".equals(chromGender) && "X".equals(fields[0]) || ("Y".equals(fields[0]))) {
-                        GT[0] = GTTemp[0];
-                        break;
-                    }
-
-                    // FEMALE
-                    if("XX".equals(chromGender) && (("X".equals(fields[0]) || "MT".equals(fields[0])))) {
-                        GT[0] = GTTemp[0];
-                        GT[1] = GTTemp[0];
-                        break;
-                    }
-
-                    GT[0] = ".";
-                    GT[1] = ".";
-                    break;
-
-                case ".":
-                    // replace by ./.
-                    GT[0] = ".";
-                    GT[1] = ".";
-                    break;
-                default:
-                    // Trate biodata
-                    return factory.create(source, cParRegions ? checkParRegions(fields) : String.join("\t", fields));
-            }
-            if (!".".equals(GT[0]) && !".".equals(GT[1]))
-                System.out.println("--> " + String.join("\t", fields) + "  --> " + String.join(":", GT));
+                }
         } else {
-            GT[0] = GTTemp[0];
-            GT[1] = GTTemp[1];
-        }
-
-        // Case GT in "0/0","0/1","1/0","1/1","0|0","0|1","1|0","1|1" get only first
-        List<String> options = new ArrayList<>(Arrays.asList("0/0", "0/1", "1/0", "1/1"));
-        if (options.contains(String.join("/", GT)) || GT[1] == null) {
-            fields[4] = alternateAlleles[0];
-            if (!cParRegions)
-                fieldGT[0] = GT[0] + "/" + GT[1];
-            fields[9] = String.join(":", fieldGT);
-            newLines.add(cParRegions ? checkParRegions(fields) : String.join("\t", fields));
-        } else {
+            //multi-allelic
             // Divide
             for (int i = 0; i < alternateAlleles.length; i++) {
                 // Alternative
                 fields[4] = alternateAlleles[i];
 
-                // Generate field[9] (GT)
-                if (GT[0].equals(GT[1])) {
-                    // Replace GT por 1/1
-                    if (("" + (i + 1) + "").equals(GT[0]))
-                        fieldGT[0] = "1/1";
-                    else
-                        fieldGT[0] = "./.";
-                } else {
-                    if ("0".equals(GT[0]) || "0".equals(GT[1])) {
-                        // File alte = "0/1"
-                        if ("0".equals(GT[0]) && ("" + (i + 1) + "").equals(GT[1]) || "0".equals(GT[1]) && ("" + (i + 1) + "").equals(GT[0]))
-                            fieldGT[0] = "0/1";
+                // Crom X or Y from XY whit values 0 or 1 (checkParRegions)
+                if (GT[1] == null) {
+                    fieldGT[0] = GT[0];
+                    if ("0".equals(GT[0]))
+                        fieldGT[0] = "0";
+                    else {
+                        if (("" + (i + 1) + "").equals(GT[0]))
+                            fieldGT[0] = "1";
                         else
                             fieldGT[0] = "./.";
+                    }
+                } else {
+                    if ("0".equals(GT[0]) && "0".equals(GT[1])){
+                        fieldGT[0] = "0/0";
                     } else {
-                        // All "./."
-                        fieldGT[0] = "./.";
+                        // Generate field[9] (GT)
+                        if (GT[0].equals(GT[1])) {
+                            // Replace GT por 1/1
+                            if (("" + (i + 1) + "").equals(GT[0]))
+                                fieldGT[0] = "1/1";
+                            else
+                                fieldGT[0] = "./.";
+                        } else {
+                            if ("0".equals(GT[0]) || "0".equals(GT[1])) {
+                                // File alte = "0/1"
+                                if ("0".equals(GT[0]) && ("" + (i + 1) + "").equals(GT[1]) || "0".equals(GT[1]) && ("" + (i + 1) + "").equals(GT[0]))
+                                    fieldGT[0] = "0/1";
+                                else
+                                    fieldGT[0] = "./.";
+                            } else {
+                                // All "./."
+                                fieldGT[0] = "./.";
+                            }
+                        }
                     }
                 }
 
-
                 fields[9] = String.join(":", fieldGT);
-                //System.out.println("--> Divide " + String.join("\t", fields) + "  -->  GT Origin:  " + String.join(":", GT) + "    ---> Final:" +String.join(":", fields[9])+  " --> altr: " +  String.join(",", alternateAlleles));
                 newLines.add(cParRegions ? checkParRegions(fields) : String.join("\t", fields));
             }
+
         }
+
 
         for (String newLine: newLines) {
            // System.out.println(newLines);
@@ -344,15 +395,20 @@ public class CSVSVariantVcfReader implements VariantReader {
                         }
                         searchLine = searchReader.readLine();
                     }
-                    if (!find)
+                    if (!find) {
+                        if("0".equals(fieldGT[0]))  // is 0 and no found
+                            fieldGT[0] = "0/0";
+                        else
                         fieldGT[0] = "0/1";
+                    }
 
                     searchReader.close();
 
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }
+            } //else
+                //fieldGT[0] = "./.";
         } else {
             List<String> options = new ArrayList<>(Arrays.asList("0", "1"));
             if (options.contains(fieldGT[0]))
