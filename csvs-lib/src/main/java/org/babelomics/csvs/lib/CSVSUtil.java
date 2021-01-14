@@ -16,6 +16,7 @@ import org.babelomics.csvs.lib.models.*;
 import org.babelomics.csvs.lib.models.Panel;
 import org.babelomics.csvs.lib.models.Region;
 import org.babelomics.csvs.lib.stats.CSVSVariantStatsTask;
+import org.babelomics.csvs.lib.token.CSVSToken;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
@@ -1045,6 +1046,24 @@ public class CSVSUtil {
                 datastore.delete(p);
             }
         }
+    }
+
+    /**
+     * Generate token to downloads files
+     * @param email
+     */
+    public static void generateToken(String issuer, String audience, String email, int days, Map aditionalClaims, String SECRET_KEY){
+        CSVSToken csvsToken = new CSVSToken(SECRET_KEY);
+        String id = UUID.randomUUID().toString();
+        long ttlMillis = days *  1000L * 60 * 60 * 24;
+        String resultToken = csvsToken.createJWT(id, issuer, email, audience, aditionalClaims, ttlMillis);
+        System.out.println("Generated token: " + resultToken);
+        csvsToken.decodeJWT(resultToken);
+    }
+
+    public boolean isVerified(String token, String SECRET_KEY){
+       CSVSToken csvsToken = new CSVSToken(SECRET_KEY);
+       return csvsToken.isVerified(token);
     }
 
 }

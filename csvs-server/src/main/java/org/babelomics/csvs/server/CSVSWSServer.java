@@ -26,6 +26,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -45,6 +48,9 @@ public class CSVSWSServer {
 
     protected static ObjectWriter jsonObjectWriter;
     protected static ObjectMapper jsonObjectMapper;
+
+
+    static String SECRET_KEY;
 
     @DefaultValue("json")
     @QueryParam("of")
@@ -87,6 +93,12 @@ public class CSVSWSServer {
         String host = properties.getProperty("CSVS.DB.HOST", "localhost");
         String database = properties.getProperty("CSVS.DB.DATABASE", "csvs");
         int port = Integer.parseInt(properties.getProperty("CSVS.DB.PORT", "27017"));
+
+        DOWNLOAD_PATH = properties.getProperty("CSVS.DOWNLOAD_PATH", "");
+        //DOWNLOAD_PATH = "/home/groldan/aplicaciones/CSVS/";
+        URL_MAIL_DEFAULT = properties.getProperty("CSVS.URL_MAIL_DEFAULT", "http://localhost:8081");
+
+        SECRET_KEY = properties.getProperty("CSVS.SECRET_KEY", "");
 
         DOWNLOAD_PATH = properties.getProperty("CSVS.DOWNLOAD_PATH", "");
         // Config Mail

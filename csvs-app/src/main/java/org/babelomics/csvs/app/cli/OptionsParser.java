@@ -23,6 +23,7 @@ public class OptionsParser {
     private final CommandAnnot annot;
     private final CommandAnnotFile annotFile;
     private final CommandRecalculate recalculate;
+    private final CommandToken token;
 
 
     public OptionsParser() {
@@ -35,6 +36,7 @@ public class OptionsParser {
         jcommander.addCommand(annot = new CommandAnnot());
         jcommander.addCommand(annotFile = new CommandAnnotFile());
         jcommander.addCommand(recalculate = new CommandRecalculate());
+        jcommander.addCommand(token = new CommandToken());
     }
 
     interface Command {
@@ -286,6 +288,22 @@ public class OptionsParser {
         String dbName = "csvs";
     }
 
+    @Parameters(commandNames = {"token"}, commandDescription = "Create token to downloads files")
+    class CommandToken implements Command {
+        @Parameter(names = {"--email"}, description = "Email", arity = 1)
+        String email = "";
+        @Parameter(names = {"--name"}, description = "Name person", arity = 1)
+        String name = "";
+        @Parameter(names = {"--diseasesFile"}, description = "List diseases file authorized", arity = 1)
+        List<String> diseasesFile = new ArrayList<>();
+        @Parameter(names = {"--days"}, description = "Days token valid. Default: 30 days", arity = 1)
+        int days = 30;
+        @Parameter(names = {"--issuer"}, description = "Name aplication", arity = 1)
+        String issuer = "CSVS";
+        @Parameter(names = {"--audience"}, description = "DNS aplication", arity = 1)
+        String audience = "csvs.clinbioinfosspa.es";
+    }
+
     String parse(String[] args) throws ParameterException {
         jcommander.parse(args);
         return jcommander.getParsedCommand();
@@ -326,4 +344,6 @@ public class OptionsParser {
     }
 
     CommandRecalculate getRecalculateCommand() { return recalculate; }
+
+    CommandToken getTokenCommand() { return token; }
 }

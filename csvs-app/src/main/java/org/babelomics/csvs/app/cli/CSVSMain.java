@@ -6,6 +6,7 @@ import org.apache.commons.lang3.mutable.MutableLong;
 import org.babelomics.csvs.lib.CSVSUtil;
 import org.babelomics.csvs.lib.io.CSVSQueryManager;
 import org.babelomics.csvs.lib.models.*;
+import org.babelomics.csvs.lib.token.CSVSToken;
 import org.mongodb.morphia.Datastore;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.client.CellBaseClient;
@@ -22,9 +23,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
@@ -36,6 +35,7 @@ public class CSVSMain {
     protected static Properties properties = new Properties();
     static String CELLBASE_HOST, CELLBASE_VERSION;
     static List<ParRegions> PAR_REGIONS = new ArrayList<>();
+    static String SECRET_KEY;
     static {
         try {
             properties.load(is);
@@ -49,6 +49,11 @@ public class CSVSMain {
         CELLBASE_VERSION = properties.getProperty("CELLBASE.VERSION", "v3");
         // Para regions 37
         PAR_REGIONS =  iniParRegions(properties.getProperty("PAR_REGIONS", "X:60001-2699520;Y:10001-2649520,X:154931044-155260560;Y:59034050-59363566"));
+
+
+
+        SECRET_KEY = properties.getProperty("CSVS.SECRET_KEY", "");
+
     }
 
     private static List<ParRegions> iniParRegions(String parPegions) {
@@ -94,7 +99,6 @@ public class CSVSMain {
                 case "annot":
                     command = parser.getAnnotCommand();
                     break;
-
                 case "query":
                     command = parser.getQueryCommand();
                     break;
@@ -104,7 +108,9 @@ public class CSVSMain {
                 case "recalculate":
                     command = parser.getRecalculateCommand();
                     break;
-
+                case "token":
+                    command = parser.getTokenCommand();
+                    break;
                 default:
                     System.out.println("Command not implemented!!");
                     System.exit(1);
@@ -399,6 +405,14 @@ public class CSVSMain {
                     CSVSUtil.recalculateCheckUnload(c.diseaseId, c.technologyId, datastore);
                 }
             }
+        } else if (command instanceof OptionsParser.CommandToken) {
+            OptionsParser.CommandToken c = (OptionsParser.CommandToken) command;
+            Map aditionalClaims = new HashMap();
+
+            aditionalClaims.put(CSVSToken.SUBPOPULATIONS, c.diseasesFile);
+            aditionalClaims.put(CSVSToken.NAME, c.name);
+
+            CSVSUtil.generateToken(c.issuer, c.audience, c.email, c.days, aditionalClaims, SECRET_KEY);
         } else {
             System.err.println("Comand not found");
         }
