@@ -36,6 +36,7 @@
 <link rel="import" href="src/csvs-saturation-element.html">
 <link rel="import" href="src/csvs-how-to-cite.html">
 <link rel="import" href="src/csvs-version.html">
+<link rel="import" href="src/csvs-contributors.html">
 
 <dom-module id="csvs-element">
     <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
@@ -153,6 +154,7 @@
 
             <csvs-how-to-cite id="howToCite" acronym="{{acronym}}"  hidden on-how-to-cite-end="handleHowToCite"></csvs-how-to-cite>
             <csvs-version id="version"  hidden on-version-end="handleVersion"></csvs-version>
+            <csvs-contributors id="contributors"  hidden on-contributors-end="handleContributors"></csvs-contributors>
         </div>
 
         <stv-header id="stvHeader" user-data="{{userData}}" on-login="handleLogin" on-logout="handleLogout" selected-option="{{selectedOption}}" hide-jbos hide-browse isLogged="{{isLogged}}" hide-login hide
@@ -248,6 +250,9 @@
                     <div on-mousedown="handleVersion">
                         <li><i class="fa fa-database" aria-hidden="true"></i> &nbsp; Database version</li>
                     </div>
+                    <div on-mousedown="handleContributors">
+                        <li><i class="fa fa-handshake-o" aria-hidden="true"></i> &nbsp; Contributors</li>
+                    </div>
                 </ul>
             </stv-dropdown>
         </stv-header>
@@ -305,6 +310,10 @@
                 value: false
             },
             version:{
+                type:Boolean,
+                value: false
+            },
+            contributors:{
                 type:Boolean,
                 value: false
             },
@@ -460,6 +469,10 @@
         handleVersion: function() {
             this.$.version.hidden = !this.$.version.hidden;
         },
+        handleContributors: function() {
+            this.$.contributors.hidden = !this.$.contributors.hidden;
+        },
+
         selectedOptionChanged: function() {
             if (this.selectedOption == "saturation") {
                 this.saturation = true;
