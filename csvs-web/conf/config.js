@@ -33,3 +33,5 @@ TITLE_APP="Collaborative Spanish Variant Server";
 ACRONYM_APP ="CSVS";
 PHENOTYPE="Spanish";
 
+ANALYTICS_GOOGLE="";
+
