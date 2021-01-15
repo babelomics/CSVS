@@ -11,6 +11,7 @@ import htsjdk.variant.variantcontext.writer.VariantContextWriter;
 import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import htsjdk.variant.vcf.*;
 import org.babelomics.csvs.lib.annot.CellBaseAnnotator;
+import org.babelomics.csvs.lib.config.CSVSConfiguration;
 import org.babelomics.csvs.lib.io.*;
 import org.babelomics.csvs.lib.models.*;
 import org.babelomics.csvs.lib.models.Panel;
@@ -70,66 +71,20 @@ public class CSVSUtil {
         return datastore;
     }
 
-
-    public static void populateDiseases(Datastore datastore) {
-        List<DiseaseGroup> diseaseGroups = new ArrayList<>();
-
-        diseaseGroups.add(new DiseaseGroup(1, "I Certain infectious and parasitic diseases"));
-        diseaseGroups.add(new DiseaseGroup(2, "II Neoplasms"));
-        diseaseGroups.add(new DiseaseGroup(3, "III Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism"));
-        diseaseGroups.add(new DiseaseGroup(4, "IV Endocrine, nutritional and metabolic diseases"));
-        diseaseGroups.add(new DiseaseGroup(5, "V Mental and behavioural disorders"));
-        diseaseGroups.add(new DiseaseGroup(6, "VI Diseases of the nervous system"));
-        diseaseGroups.add(new DiseaseGroup(7, "VII Diseases of the eye and adnexa"));
-        diseaseGroups.add(new DiseaseGroup(8, "VIII Diseases of the ear and mastoid process"));
-        diseaseGroups.add(new DiseaseGroup(9, "IX Diseases of the circulatory system"));
-        diseaseGroups.add(new DiseaseGroup(10, "X Diseases of the respiratory system"));
-        diseaseGroups.add(new DiseaseGroup(11, "XI Diseases of the digestive system"));
-        diseaseGroups.add(new DiseaseGroup(12, "XII Diseases of the skin and subcutaneous tissue"));
-        diseaseGroups.add(new DiseaseGroup(13, "XIII Diseases of the musculoskeletal system and connective tissue"));
-        diseaseGroups.add(new DiseaseGroup(14, "XIV Diseases of the genitourinary system"));
-        diseaseGroups.add(new DiseaseGroup(15, "XV Pregnancy, childbirth and the puerperium"));
-        diseaseGroups.add(new DiseaseGroup(16, "XVI Certain conditions originating in the perinatal period"));
-        diseaseGroups.add(new DiseaseGroup(17, "XVII Congenital malformations, deformations and chromosomal abnormalities"));
-        diseaseGroups.add(new DiseaseGroup(18, "XVIII Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified"));
-        diseaseGroups.add(new DiseaseGroup(19, "XIX Injury, poisoning and certain other consequences of external causes"));
-        diseaseGroups.add(new DiseaseGroup(20, "XX External causes of morbidity and mortality"));
-        diseaseGroups.add(new DiseaseGroup(21, "XXI Factors influencing health status and contact with health services"));
-        diseaseGroups.add(new DiseaseGroup(22, "XXII Codes for special purposes"));
-        diseaseGroups.add(new DiseaseGroup(23, "MGP (267 healthy controls, Solid 5500)"));
-        diseaseGroups.add(new DiseaseGroup(24, "MGP (healthy controls, Solid 4)"));
-        diseaseGroups.add(new DiseaseGroup(25, "IBS (107 Spanish individuals from 1000genomes)"));
-        diseaseGroups.add(new DiseaseGroup(26, "Healthy controls"));
-        diseaseGroups.add(new DiseaseGroup(27, "I Certain infectious and parasitic diseases (controls)"));
-        diseaseGroups.add(new DiseaseGroup(28, "II Neoplasms (controls)"));
-        diseaseGroups.add(new DiseaseGroup(29, "III Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism (controls)"));
-        diseaseGroups.add(new DiseaseGroup(30, "IV Endocrine, nutritional and metabolic diseases (controls)"));
-        diseaseGroups.add(new DiseaseGroup(31, "V Mental and behavioural disorders (controls)"));
-        diseaseGroups.add(new DiseaseGroup(32, "VI Diseases of the nervous system (controls)"));
-        diseaseGroups.add(new DiseaseGroup(33, "VII Diseases of the eye and adnexa (controls)"));
-        diseaseGroups.add(new DiseaseGroup(34, "VIII Diseases of the ear and mastoid process (controls)"));
-        diseaseGroups.add(new DiseaseGroup(35, "IX Diseases of the circulatory system (controls)"));
-        diseaseGroups.add(new DiseaseGroup(36, "X Diseases of the respiratory system (controls)"));
-        diseaseGroups.add(new DiseaseGroup(37, "XI Diseases of the digestive system (controls)"));
-        diseaseGroups.add(new DiseaseGroup(38, "XII Diseases of the skin and subcutaneous tissue (controls)"));
-        diseaseGroups.add(new DiseaseGroup(39, "XIII Diseases of the musculoskeletal system and connective tissue (controls)"));
-        diseaseGroups.add(new DiseaseGroup(40, "XIV Diseases of the genitourinary system (controls)"));
-        diseaseGroups.add(new DiseaseGroup(41, "XV Pregnancy, childbirth and the puerperium (controls)"));
-        diseaseGroups.add(new DiseaseGroup(42, "XVI Certain conditions originating in the perinatal period (controls)"));
-        diseaseGroups.add(new DiseaseGroup(43, "XVII Congenital malformations, deformations and chromosomal abnormalities (controls)"));
-        diseaseGroups.add(new DiseaseGroup(44, "XVIII Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified (controls)"));
-        diseaseGroups.add(new DiseaseGroup(45, "XIX Injury, poisoning and certain other consequences of external causes (controls)"));
-        diseaseGroups.add(new DiseaseGroup(46, "XX External causes of morbidity and mortality (controls)"));
-        diseaseGroups.add(new DiseaseGroup(47, "XXI Factors influencing health status and contact with health services (controls)"));
-        diseaseGroups.add(new DiseaseGroup(48, "XXII Codes for special purposes (controls)"));
-
+    public static void populateDiseases(Datastore datastore, CSVSConfiguration configuration) {
+        List<DiseaseGroup> diseaseGroups = configuration.getDiseasesGroups();
+        int numLoader = 0;
+        // 1-22 reserved for icd10
+        if (diseaseGroups != null && !diseaseGroups.isEmpty())
         for (DiseaseGroup dg : diseaseGroups) {
             try {
                 datastore.save(dg);
+                    numLoader ++;
             } catch (DuplicateKeyException e) {
                 System.err.println("Duplicated Disease Group: " + dg);
             }
         }
+        System.out.println(numLoader + " diseaseGroups loaders!");
     }
 
     public static void addNewDisease(Datastore datastore, String disease) {
@@ -143,22 +98,20 @@ public class CSVSUtil {
         }
     }
 
-    public static void populateTechnologies(Datastore datastore) {
-        List<Technology> technologies = new ArrayList<>();
+    public static void populateTechnologies(Datastore datastore, CSVSConfiguration configuration) {
+        List<Technology> technologies = configuration.getTechnologies();
 
-        technologies.add(new Technology(1, "Illumina"));
-        technologies.add(new Technology(2, "SOLiD"));
-        technologies.add(new Technology(3, "Roche 454"));
-        technologies.add(new Technology(4, "IonTorrent"));
-        technologies.add(new Technology(5, "Nanopore"));
-
-        for (Technology t : technologies) {
-            try {
+        int numLoader = 0;
+        if (technologies != null && !technologies.isEmpty())
+           for (Technology t : technologies) {
+              try {
                 datastore.save(t);
-            } catch (DuplicateKeyException e) {
+                    numLoader ++;
+               } catch (DuplicateKeyException e) {
                 System.err.println("Duplicated Technology: " + t);
+                }
             }
-        }
+        System.out.println(numLoader + " technologies loaders!");
     }
 
     /**
@@ -669,7 +622,6 @@ public class CSVSUtil {
             }
         }
     }
-
 
     /**
      * Calculate examples of a variant for a new file - GENOME.

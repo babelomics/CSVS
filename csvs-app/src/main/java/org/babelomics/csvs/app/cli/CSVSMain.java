@@ -4,6 +4,7 @@ import com.beust.jcommander.ParameterException;
 import com.google.common.base.Joiner;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.babelomics.csvs.lib.CSVSUtil;
+import org.babelomics.csvs.lib.config.CSVSConfiguration;
 import org.babelomics.csvs.lib.io.CSVSQueryManager;
 import org.babelomics.csvs.lib.models.*;
 import org.babelomics.csvs.lib.token.CSVSToken;
@@ -127,14 +128,19 @@ public class CSVSMain {
 
             Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName);
 
+            if(c.populateDiseases || c.populateDiseases) {
+                new CSVSConfiguration();
+                CSVSConfiguration configuration = CSVSConfiguration.load("configuration.json");
 
-            if (c.populateDiseases) {
-                CSVSUtil.populateDiseases(datastore);
+                if (c.populateDiseases) {
+                        CSVSUtil.populateDiseases(datastore, configuration);
+                }
+
+                if (c.populateTechnologies) {
+                        CSVSUtil.populateTechnologies(datastore, configuration);
+                }
             }
 
-            if (c.populateTechnologies) {
-                CSVSUtil.populateTechnologies(datastore);
-            }
 
             if (c.newDisease != null && c.newDisease.length() > 0) {
                 CSVSUtil.addNewDisease(datastore, c.newDisease);

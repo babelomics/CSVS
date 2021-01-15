@@ -12,6 +12,7 @@ import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.process.runtime.Network;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.babelomics.csvs.lib.CSVSUtil;
+import org.babelomics.csvs.lib.config.CSVSConfiguration;
 import org.babelomics.csvs.lib.models.*;
 import org.junit.*;
 import org.mongodb.morphia.Datastore;
@@ -64,8 +65,10 @@ public class CSVSQueryManagerTest {
         datastore.ensureIndexes();
 
         qm = new CSVSQueryManager(datastore);
-        CSVSUtil.populateDiseases(datastore);
-        CSVSUtil.populateTechnologies(datastore);
+        new CSVSConfiguration();
+        CSVSConfiguration configuration = CSVSConfiguration.load("configuration.json");
+        CSVSUtil.populateDiseases(datastore, configuration);
+        CSVSUtil.populateTechnologies(datastore, configuration);
 
         // Load files
         URL url_d1_t1 = CSVSQueryManagerTest.class.getClassLoader().getResource("d1_t1.csv");
