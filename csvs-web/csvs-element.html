@@ -209,12 +209,6 @@
                     </div>
                 </template>
 
-                <div title="Web maintenance" style="padding-left: 30px" hidden >
-                    <div style="border-style: solid;border-color: black; background-color: #FFDB00; padding:5px; padding-left: 10px; padding-right: 10px">
-                        <img src="./images/exclamation-icon.png" width="35px"/>
-                        <span style="color:black; font-weight: 900; valing:center"> WEB UNDER MAINTENANCE </span></div>
-                </div>
-
                 <div title="Annotate VCF file" class="option" on-click="handleLoggedOnlyMenuOption" login-required data-option="annot" hidden>
                     <i class="fa fa-pencil-square-o"></i>
                     <span class="option-text">Annotate VCF File</span>
@@ -331,7 +325,12 @@
             },
             year:{
                 type: String
+            },
+            maintenance:{
+                type: Boolean,
+                value: window.MAINTENANCE != null ? window.MAINTENANCE : ""
             }
+
         },
         ready: function() {
             this.isLogged = this.$.stvHeader.isLogged;
