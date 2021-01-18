@@ -12,6 +12,7 @@ import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.process.runtime.Network;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.babelomics.csvs.lib.CSVSUtil;
+import org.babelomics.csvs.lib.config.CSVSConfiguration;
 import org.babelomics.csvs.lib.models.*;
 import org.junit.*;
 import org.mongodb.morphia.Datastore;
@@ -20,7 +21,6 @@ import org.opencb.biodata.models.feature.Region;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
@@ -41,7 +41,7 @@ public class CSVSQueryManagerTest {
     static CSVSQueryManager qm;
     static int port = 12345;
     static MongodExecutable mongodExecutable;
-    static String dbName = "csvs-query-manager-test-db";
+    static String dbName = "csvs-query-manager-test-db2";
 
 
     @BeforeClass
@@ -66,40 +66,88 @@ public class CSVSQueryManagerTest {
         datastore.ensureIndexes();
 
         qm = new CSVSQueryManager(datastore);
-        CSVSUtil.populateDiseases(datastore);
-        CSVSUtil.populateTechnologies(datastore);
+        new CSVSConfiguration();
+        CSVSConfiguration configuration = CSVSConfiguration.load("configuration.json");
+        CSVSUtil.populateDiseases(datastore, configuration);
+        CSVSUtil.populateTechnologies(datastore, configuration);
 
+        // Load files
         URL url_d1_t1 = CSVSQueryManagerTest.class.getClassLoader().getResource("d1_t1.csv");
         File file_d1_t1 = new File(url_d1_t1.toURI());
         CSVSUtil.loadVariants(file_d1_t1.toPath(), 1, 1, datastore);
 
-        URL url_d1_t2 = CSVSQueryManagerTest.class.getClassLoader().getResource("d1_t2.csv");
-        File file_d1_t2 = new File(url_d1_t2.toURI());
-        CSVSUtil.loadVariants(file_d1_t2.toPath(), 1, 2, datastore);
 
         URL url_d2_t1 = CSVSQueryManagerTest.class.getClassLoader().getResource("d2_t1.csv");
         File file_d2_t1 = new File(url_d2_t1.toURI());
         CSVSUtil.loadVariants(file_d2_t1.toPath(), 2, 1, datastore);
 
+        // Load panel
         URL url_d2_t2 = CSVSQueryManagerTest.class.getClassLoader().getResource("d2_t2.csv");
         File file_d2_t2 = new File(url_d2_t2.toURI());
-
         URL url_fileRegions = CSVSQueryManagerTest.class.getClassLoader().getResource("TruSight_One_v1.1.bed");
         File file_regions = new File(url_fileRegions.toURI());
-        //CSVSUtil.loadVariants(file_d2_t2.toPath(), 2, 2, datastore, null, "Nombre Apellido1 Apellido2");
-        CSVSUtil.loadVariants(file_d2_t2.toPath(), 2, 2, datastore, file_regions.toPath(), "Nombre Apellido1 Apellido2", true);
+        CSVSUtil.loadVariants(file_d2_t2.toPath(), 2, 2, datastore, file_regions.toPath(), "Nombre Apellido1 Apellido2", true, "XX");
 
+        // Recalculate panel
         List<Integer> diseases = new ArrayList<>();
         diseases.add(2);
         List<Integer> technologies = new ArrayList<>();
         technologies.add(2);
         CSVSUtil.recalculate(diseases, technologies, "TruSight_One_v1.1.bed", datastore);
 
+        // Load panel
+        URL url_d1_t2 = CSVSQueryManagerTest.class.getClassLoader().getResource("d1_t2.csv");
+        File file_d1_t2 = new File(url_d1_t2.toURI());
+        CSVSUtil.loadVariants(file_d1_t2.toPath(), 1, 2, datastore, file_regions.toPath(), "Nombre Apellido1 Apellido2", true, "XY");
+
+        // Recalculate panel
+        diseases = new ArrayList<>();
+        diseases.add(1);
+        CSVSUtil.recalculate(diseases, technologies, "TruSight_One_v1.1.bed",  datastore);
+
+        // Unload panel
+        CSVSUtil.unloadVariants(file_d1_t2.toPath(), 1, 2,  datastore);
+
+
+        // Load file
+        CSVSUtil.loadVariants(file_d1_t2.toPath(), 1, 2, datastore);
+        diseases = new ArrayList<>();
+        diseases.add(1);
+
+        // Recalculate all
+        CSVSUtil.recalculate(diseases, technologies,  datastore);
+
+
+
+        // Panel with Gender XX and XY
+        // Load files
+        URL url_d3_t1_XX = CSVSQueryManagerTest.class.getClassLoader().getResource("d3_t1_XX.csv");
+        File file_d3_t1_XX = new File(url_d3_t1_XX.toURI());
+        URL url_fileRegionsGender = CSVSQueryManagerTest.class.getClassLoader().getResource("Gender.bed");
+        File file_regionsGender = new File(url_fileRegionsGender.toURI());
+        CSVSUtil.loadVariants(file_d3_t1_XX.toPath(), 3, 1, datastore, file_regionsGender.toPath(), "Panel with gender XX", true, "XX");
+        URL url_d3_t1_XY = CSVSQueryManagerTest.class.getClassLoader().getResource("d3_t1_XY.csv");
+        File file_d3_t1_XY = new File(url_d3_t1_XY.toURI());
+        CSVSUtil.loadVariants(file_d3_t1_XY.toPath(), 3, 1, datastore, file_regionsGender.toPath(), "Panel with gender XY", true, "XY");
+
+
+        url_d3_t1_XY = CSVSQueryManagerTest.class.getClassLoader().getResource("d3_t1_XY_2.csv");
+        file_d3_t1_XY = new File(url_d3_t1_XY.toURI());
+        url_fileRegionsGender = CSVSQueryManagerTest.class.getClassLoader().getResource("TruSight_One_v1.1.bed");
+        file_regionsGender = new File(url_fileRegionsGender.toURI());
+        CSVSUtil.loadVariants(file_d3_t1_XY.toPath(), 3, 1, datastore, file_regionsGender.toPath(), "Panel with gender XY 2", true, "XY");
+
+
+        // Recalculate all
+        diseases = new ArrayList<>();
+        diseases.add(3);
+        technologies = new ArrayList<>();
+        technologies.add(1);
+        CSVSUtil.recalculate(diseases, technologies,  datastore);
     }
 
     @AfterClass
     public static void closeDB() {
-
 //        mongoclient.dropDatabase(dbName);
         mongodExecutable.stop();
     }
@@ -127,8 +175,11 @@ public class CSVSQueryManagerTest {
         assertEquals(d2.getVariants(), 6);
 
         Technology t1 = qm.getTechnologyById(1);
-        assertEquals(t1.getSamples(), 8);
-        assertEquals(t1.getVariants(), 6);
+        //assertEquals(t1.getSamples(), 8);
+        //assertEquals(t1.getVariants(), 6);
+        // add Gender test
+        assertEquals(t1.getSamples(), 11);
+        assertEquals(t1.getVariants(), 14);
 
     }
 
@@ -137,7 +188,7 @@ public class CSVSQueryManagerTest {
 
         List<DiseaseGroup> list = qm.getAllDiseaseGroups();
 
-        assertEquals(list.size(), 26);
+        assertEquals(list.size(), 48);
 
     }
 
@@ -223,6 +274,33 @@ public class CSVSQueryManagerTest {
         assertEquals(dc2.getGt11(), 0);
         assertEquals(dc2.getGtmissing(), 0);
 
+    }
+
+
+    @Test
+    public void testGetVariantsByRegionListGender() throws Exception {
+
+
+        List<Region> list = new ArrayList<>();
+        list.add(new Region("X", 1, 10));
+        list.add(new Region("Y", 1, 10));
+
+        List<Integer> d3= Arrays.asList(3);
+        List<Integer> t1 = Arrays.asList(1);
+
+
+        List<Variant> variants = Lists.newArrayList(qm.getVariantsByRegionList(list, d3, t1, 0, 100, false, new MutableLong(-1)));
+
+        //assertEquals(variants.size(), 1);
+        System.out.println("CSVS (testGetVariantsByRegionListGender): variants.size() = " + variants.size());
+        for(Variant v: variants) {
+            DiseaseCount dc1 = v.getStats();
+            System.out.println("CSVS (testGetVariantsByRegionListGender): dc1 = " + dc1 + "  Var:" + v.getChromosome() + ":" + v.getPosition()+ ":" + v.getReference() + ":" + v.getAlternate());
+        }
+       // assertEquals(dc1.getGt00(), 2);
+        //assertEquals(dc1.getGt01(), 2);
+        //assertEquals(dc1.getGt11(), 0);
+        //assertEquals(dc1.getGtmissing(), 0);
     }
 
     @Test
@@ -341,7 +419,7 @@ public class CSVSQueryManagerTest {
 //        tech.add(2);
 //
 
-        Map<Region, List<SaturationElement>> res = qm.getSaturation(regions, diseases, tech);
+        Map<Region, List<SaturationElement>> res = qm.getSaturationOrderIncrement(regions, diseases, tech);
 //        System.out.println(res);
 
         for (Map.Entry<Region, List<SaturationElement>> entry : res.entrySet()) {
@@ -359,7 +437,7 @@ public class CSVSQueryManagerTest {
 
         MutableLong count = new MutableLong(-1);
         List<Variant> list1 = Lists.newArrayList(qm.getAllVariants(new ArrayList<>(), new ArrayList<>(), 0, 100, count));
-        assertEquals(list1.size(), 7);
+        assertEquals(list1.size(), 15);
 
         List<Variant> list2 = Lists.newArrayList(qm.getAllVariants(new ArrayList<>(), new ArrayList<>(), 0, 3, count));
         assertEquals(list2.size(), 3);

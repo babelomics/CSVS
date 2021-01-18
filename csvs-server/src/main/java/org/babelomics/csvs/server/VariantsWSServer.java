@@ -5,10 +5,7 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.mutable.MutableLong;
-import org.babelomics.csvs.lib.models.DiseaseGroup;
-import org.babelomics.csvs.lib.models.File;
-import org.babelomics.csvs.lib.models.Technology;
-import org.babelomics.csvs.lib.models.Variant;
+import org.babelomics.csvs.lib.models.*;
 import org.babelomics.csvs.lib.ws.QueryResponse;
 import org.opencb.biodata.models.feature.Region;
 
@@ -50,8 +47,8 @@ public class VariantsWSServer extends CSVSWSServer {
         List<Integer> diseaseList = new ArrayList<>();
         List<Integer> technologyList = new ArrayList<>();
 
-        System.out.println("diseases = " + diseases);
-        System.out.println("technologies = " + technologies);
+        //System.out.println("diseases = " + diseases);
+        //System.out.println("technologies = " + technologies);
 
         int regionsSize = 0;
 
@@ -100,7 +97,7 @@ public class VariantsWSServer extends CSVSWSServer {
 
         long end = System.currentTimeMillis();
 
-        System.out.println("(end-start) = " + (end - start));
+        //System.out.println("(end-start) = " + (end - start));
 
         QueryResponse qr = createQueryResponse(variants);
         qr.setNumTotalResults(count.getValue());
@@ -160,8 +157,8 @@ public class VariantsWSServer extends CSVSWSServer {
             }
         }
 
-        System.out.println("diseaseList = " + diseaseList);
-        System.out.println("technologyList = " + technologyList);
+        //System.out.println("diseaseList = " + diseaseList);
+        //System.out.println("technologyList = " + technologyList);
 
         List<Variant> variantRes = qm.getVariants(variantList, diseaseList, technologyList);
 
@@ -179,30 +176,6 @@ public class VariantsWSServer extends CSVSWSServer {
         return createOkResponse(qr);
     }
 
-    @GET
-    @Path("/{variants}/addressBook")
-    @Produces("application/json")
-    @ApiOperation(value = "Get contact request By Region")
-    public Response getVariantsAddressBook(@ApiParam(value = "variants") @PathParam("variants") String variants) {
-
-        long start = System.currentTimeMillis();
-        List<Variant> listVariants = new ArrayList<>();
-        String[] splits = variants.split("&");
-        for (String v : splits){
-            listVariants.add(new Variant(v));
-        }
-        List<Integer> statesList = new ArrayList<>();
-        statesList.add(1);
-
-        List<String> resVariants = qm.getVariantsAddressBook(listVariants);
-        long end = System.currentTimeMillis();
-
-        QueryResponse qr = createQueryResponse(resVariants);
-        qr.setNumTotalResults(qr.getNumResults());
-
-        return createOkResponse(qr);
-    }
-
     @POST
     @Path("/{variant}/contact")
     @Produces("application/json")
@@ -216,10 +189,6 @@ public class VariantsWSServer extends CSVSWSServer {
                                 @ApiParam(value = "geneSearch") @FormParam("geneSearch") @DefaultValue("") String geneSearch,
                                 @ApiParam(value = "diseasesSearch") @FormParam("diseasesSearch") @DefaultValue("") String diseasesSearch,
                                 @ApiParam(value = "technologiesSearch") @FormParam("technologiesSearch") @DefaultValue("") String technologiesSearch
-
-
-
-
     ) {
         Map<String, Object> contact = new HashMap<String, Object>();
         contact.put("variant",variant);
@@ -270,6 +239,28 @@ public class VariantsWSServer extends CSVSWSServer {
     }
 
 
+    @GET
+    @Path("/metadata")
+    @Produces("application/json")
+    @ApiOperation(value = "Contact request")
+    public Response getMetadata() {
+        List<Metadata> metadata = qm.getMetadata();
+        List<Metadata> metadataSummary = new ArrayList<>();
+
+        // Remove extra information
+        for(Metadata m : metadata){
+            Metadata newMetadata = new Metadata(m.getVersion(), m.getDate(), m.getIndividuals());
+            metadataSummary.add(newMetadata);
+        }
+
+
+        QueryResponse qr = createQueryResponse(metadataSummary);
+        qr.setNumResults(metadataSummary.size());
+        qr.setNumTotalResults(metadataSummary.size());
+
+        return createOkResponse(qr);
+    }
+
     /**
      * Method to preparate params to send mail.
      *
@@ -282,8 +273,9 @@ public class VariantsWSServer extends CSVSWSServer {
         map.put(CSVSWSServer.FROM, configMail.get(CSVSWSServer.TO));
 
         StringBuffer text = new StringBuffer();
-        text.append("CSVS Pathopedia: ");
-        text.append(" Request information");
+        text.append("CSVS contact: ");
+        text.append(" Request information ");
+        text.append(contact.get("variant"));
 
         map.put(CSVSWSServer.SUBJECT, text.toString());
 

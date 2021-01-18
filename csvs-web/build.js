@@ -47,6 +47,8 @@ async.waterfall([
         shell.cp('-r', path.join(__dirname, 'conf/'), bp);
         shell.cp('-r', path.join(__dirname, 'images/'), bp);
         shell.cp('-r', path.join(__dirname, 'bower_components', 'stevia-elements', 'fonts'), bp);
+        shell.mkdir('-p', path.join(bp, "bower_components","stevia-elements"));
+        shell.cp('-r', path.join(__dirname, 'bower_components', 'stevia-elements', 'conf'),  path.join(bp, "bower_components","stevia-elements"));
         shell.cp('-r', path.join(__dirname, 'bower_components', 'stevia-elements', 'css'), bp);
         shell.cp('-r', path.join(__dirname, 'bower_components', 'fontawesome', 'css'), path.join(bp, "fontawesome/"));
         shell.cp('-r', path.join(__dirname, 'bower_components', 'fontawesome', 'fonts'), path.join(bp, "fontawesome/"));

@@ -14,7 +14,8 @@ import java.util.List;
 @Indexes({
         @Index(name = "index_file_c", fields = {@Field("c") }),
         @Index(name = "index_file_s", fields = {@Field("s") }),
-        @Index(name = "index_file_e", fields = {@Field("e") })
+        @Index(name = "index_file_e", fields = {@Field("e") }),
+        @Index(name = "index_file_c_s_e", fields = {@Field("c"),@Field("s"),@Field("e")}),
 })
 public class Region {
     @Id
@@ -117,6 +118,8 @@ public class Region {
         return regions;
     }
 
+    public ObjectId getId() { return id; }
+
     public String getChromosome() {
         return chromosome;
     }
@@ -140,6 +143,11 @@ public class Region {
     public void setEnd(int end) {
         this.end = end;
     }
+
+    public ObjectId getIdPanel() {
+        return idPanel;
+    }
+
 
     @Override
     public boolean equals(Object o) {

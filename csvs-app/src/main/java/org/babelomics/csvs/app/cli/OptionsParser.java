@@ -23,6 +23,7 @@ public class OptionsParser {
     private final CommandAnnot annot;
     private final CommandAnnotFile annotFile;
     private final CommandRecalculate recalculate;
+    private final CommandToken token;
 
 
     public OptionsParser() {
@@ -35,6 +36,7 @@ public class OptionsParser {
         jcommander.addCommand(annot = new CommandAnnot());
         jcommander.addCommand(annotFile = new CommandAnnotFile());
         jcommander.addCommand(recalculate = new CommandRecalculate());
+        jcommander.addCommand(token = new CommandToken());
     }
 
     interface Command {
@@ -66,6 +68,9 @@ public class OptionsParser {
 
         @Parameter(names = {"-c", "--checkPanel"}, description = "Check  variants in the panel and format file", arity = 1)
         boolean checkPanel=true;
+
+        @Parameter(names = {"-cg", "--chromGender"}, description = "Chromosomal Gender (XX or XY)", arity = 1)
+        String chromGender="" ;
 
         @Parameter(names = {"--host"}, description = "DB host", arity = 1)
         String host = "localhost";
@@ -110,6 +115,11 @@ public class OptionsParser {
         @Parameter(names = {"-o", "--output"}, description = "Output File", required = true, arity = 1)
         String output;
 
+        @Parameter(names = {"-cg", "--chromGender"}, description = "Chromosomal Gender (XX or XY)", arity = 1)
+        String chromGender="" ;
+
+        @Parameter(names = {"-r", "--replace_AF"}, description = "Replace AF when is distinct 'Allele Frequency'", arity = 1)
+        boolean replaceAF = false;
 
     }
 
@@ -158,6 +168,8 @@ public class OptionsParser {
         String pass = "";
         @Parameter(names = {"--dbName"}, description = "DB Name", arity = 1)
         String dbName = "csvs";
+        @Parameter(names = {"--fileInfo"}, description = "Get info about file and person reference")
+        boolean fileInfo;
 
 
     }
@@ -176,6 +188,9 @@ public class OptionsParser {
 
         @Parameter(names = {"--new-technology"}, description = "New technology", arity = 1)
         String newTechnology;
+
+        @Parameter(names = {"--new-metadata"}, description = "New metadata. Example(version,date mm/dd/aaaa,individuals,files,javaVersion): 3.0.0;10/29/2020;2048;file1;v2.1.1.", arity = 1)
+        String newMetadata;
 
         @Parameter(names = {"--host"}, description = "DB host", arity = 1)
         String host = "localhost";
@@ -250,14 +265,17 @@ public class OptionsParser {
     @Parameters(commandNames = {"recalculate"}, commandDescription = "Calculate examples of a variant studied in a region")
     class CommandRecalculate implements Command {
 
-        @Parameter(names = {"--diseaseId"}, description = "DiseaseId")
+        @Parameter(names = {"-d", "--diseaseId"},  description = "List diseaseId")
         List<Integer> diseaseId = new ArrayList<>();
 
-        @Parameter(names = {"--technologyId"}, description = "TechnologyId")
+        @Parameter(names = {"-t", "--technologyId"},  description = "List technologyId")
         List<Integer> technologyId = new ArrayList<>();
 
-        @Parameter(names = {"--panelName"}, description = "Panel name to recalculate", required = true, arity = 1)
+        @Parameter(names = {"--panelName"}, description = "Panel name to recalculate",  arity = 1)
         String panelName = "";
+
+        @Parameter(names = {"-i", "--input"}, description = "Path file to recalculate", arity = 1)
+        String input = null;
 
         @Parameter(names = {"--host"}, description = "DB host", arity = 1)
         String host = "localhost";
@@ -268,6 +286,22 @@ public class OptionsParser {
         String pass = "";
         @Parameter(names = {"--dbName"}, description = "DB Name", arity = 1)
         String dbName = "csvs";
+    }
+
+    @Parameters(commandNames = {"token"}, commandDescription = "Create token to downloads files")
+    class CommandToken implements Command {
+        @Parameter(names = {"--email"}, description = "Email", arity = 1)
+        String email = "";
+        @Parameter(names = {"--name"}, description = "Name person", arity = 1)
+        String name = "";
+        @Parameter(names = {"--diseasesFile"}, description = "List diseases file authorized", arity = 1)
+        List<String> diseasesFile = new ArrayList<>();
+        @Parameter(names = {"--days"}, description = "Days token valid. Default: 30 days", arity = 1)
+        int days = 30;
+        @Parameter(names = {"--issuer"}, description = "Name aplication", arity = 1)
+        String issuer = "CSVS";
+        @Parameter(names = {"--audience"}, description = "DNS aplication", arity = 1)
+        String audience = "csvs.clinbioinfosspa.es";
     }
 
     String parse(String[] args) throws ParameterException {
@@ -310,4 +344,6 @@ public class OptionsParser {
     }
 
     CommandRecalculate getRecalculateCommand() { return recalculate; }
+
+    CommandToken getTokenCommand() { return token; }
 }

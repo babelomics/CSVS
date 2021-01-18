@@ -18,7 +18,7 @@ import java.util.List;
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
  */
 @Path("/technologies")
-@Api(value = "technologies", description = "Technologies")
+@Api(value = "Technologies", description = "Technologies")
 @Produces(MediaType.APPLICATION_JSON)
 public class TechnologiesWSServer extends CSVSWSServer {
     public TechnologiesWSServer(@DefaultValue("") @PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)

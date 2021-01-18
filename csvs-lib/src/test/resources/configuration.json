@@ -1,0 +1,218 @@
+{
+  "diseasesGroups": [
+    {
+      "groupId": 1,
+      "name": "I Certain infectious and parasitic diseases"
+    },
+    {
+      "groupId": 2,
+      "name": "II Neoplasms"
+    },
+    {
+      "groupId": 3,
+      "name": "III Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism"
+    },
+    {
+      "groupId": 4,
+      "name": "IV Endocrine, nutritional and metabolic diseases"
+    },
+    {
+      "groupId": 5,
+      "name": "V Mental and behavioural disorders"
+    },
+    {
+      "groupId": 6,
+      "name": "VI Diseases of the nervous system"
+    },
+    {
+      "groupId": 7,
+      "name": "VII Diseases of the eye and adnexa"
+    },
+    {
+      "groupId": 8,
+      "name": "VIII Diseases of the ear and mastoid process"
+    },
+    {
+      "groupId": 9,
+      "name": "IX Diseases of the circulatory system"
+    },
+    {
+      "groupId": 10,
+      "name": "X Diseases of the respiratory system"
+    },
+    {
+      "groupId": 11,
+      "name": "XI Diseases of the digestive system"
+    },
+    {
+      "groupId": 12,
+      "name": "XII Diseases of the skin and subcutaneous tissue"
+    },
+    {
+      "groupId": 13,
+      "name": "XIII Diseases of the musculoskeletal system and connective tissue"
+    },
+    {
+      "groupId": 14,
+      "name": "XIV Diseases of the genitourinary system"
+    },
+    {
+      "groupId": 15,
+      "name": "XV Pregnancy,childbirth and the puerperium"
+    },
+    {
+      "groupId": 16,
+      "name": "XVI Certain conditions originating in the perinatal period"
+    },
+    {
+      "groupId": 17,
+      "name": "XVII Congenital malformations, deformations and chromosomal abnormalities"
+    },
+    {
+      "groupId": 18,
+      "name": "XVIII Symptoms,signs and abnormal clinical and laboratory findings, not elsewhere classified"
+    },
+    {
+      "groupId": 19,
+      "name": "XIX Injury,  poisoning and certain other consequences of external causes"
+    },
+    {
+      "groupId": 20,
+      "name": "XX External causes of morbidity and mortality"
+    },
+    {
+      "groupId": 21,
+      "name": "XXI Factors influencing health status and contact with health services"
+    },
+    {
+      "groupId": 22,
+      "name": "XXII Codes for special purposes"
+    },
+    {
+      "groupId": 23,
+      "name": "MGP (267 healthy controls,  Solid 5500)"
+    },
+    {
+      "groupId": 24,
+      "name": "MGP (healthy controls, Solid 4)"
+    },
+    {
+      "groupId": 25,
+      "name": "IBS (107 Spanish individuals from 1000genomes)"
+    },
+    {
+      "groupId": 26,
+      "name": "Healthy controls"
+    },
+    {
+      "groupId": 27,
+      "name": "I Certain infectious and parasitic diseases (controls)"
+    },
+    {
+      "groupId": 28,
+      "name": "II Neoplasms (controls)"
+    },
+    {
+      "groupId": 29,
+      "name": "III Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism (controls)"
+    },
+    {
+      "groupId": 30,
+      "name": "IV Endocrine, nutritional and metabolic diseases (controls)"
+    },
+    {
+      "groupId": 31,
+      "name": "V Mental and behavioural disorders (controls)"
+    },
+    {
+      "groupId": 32,
+      "name": "VI Diseases of the nervous system (controls)"
+    },
+    {
+      "groupId": 33,
+      "name": "VII Diseases of the eye and adnexa (controls)"
+    },
+    {
+      "groupId": 34,
+      "name": "VIII Diseases of the ear and mastoid process (controls)"
+    },
+    {
+      "groupId": 35,
+      "name": "IX Diseases of the circulatory system (controls)"
+    },
+    {
+      "groupId": 36,
+      "name": "X Diseases of the respiratory system (controls)"
+    },
+    {
+      "groupId": 37,
+      "name": "XI Diseases of the digestive system (controls)"
+    },
+    {
+      "groupId": 38,
+      "name": "XII Diseases of the skin and subcutaneous tissue (controls)"
+    },
+    {
+      "groupId": 39,
+      "name": "XIII Diseases of the musculoskeletal system and connective tissue (controls)"
+    },
+    {
+      "groupId": 40,
+      "name": "XIV Diseases of the genitourinary system (controls)"
+    },
+    {
+      "groupId": 41,
+      "name": "XV Pregnancy, childbirth and the puerperium (controls)"
+    },
+    {
+      "groupId": 42,
+      "name": "XVI Certain conditions originating in the perinatal period (controls)"
+    },
+    {
+      "groupId": 43,
+      "name": "XVII Congenital malformations, deformations and chromosomal abnormalities (controls)"
+    },
+    {
+      "groupId": 44,
+      "name": "XVIII Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified (controls)"
+    },
+    {
+      "groupId": 45,
+      "name": "XIX Injury, poisoning and certain other consequences of external causes (controls)"
+    },
+    {
+      "groupId": 46,
+      "name": "XX External causes of morbidity and mortality (controls)"
+    },
+    {
+      "groupId": 47,
+      "name": "XXI Factors influencing health status and contact with health services (controls)"
+    },
+    {
+      "groupId": 48,
+      "name": "XXII Codes for special purposes (controls)"
+    }
+  ],
+  "technologies": [
+    {
+      "technologyId": 1,
+      "name": "Illumina"
+    },
+    {
+      "technologyId": 2,
+      "name": "SOLiD"
+    },
+    {
+      "technologyId": 3,
+      "name": "Roche 454"
+    },
+    {
+      "technologyId": 4,
+      "name": "IonTorrent"
+    },
+    {
+      "technologyId": 5,
+      "name": "Nanopore"
+    }
+  ]
+}

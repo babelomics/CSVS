@@ -1,0 +1,179 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<dom-module id="csvs-table-saturation">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            width: 100%;
+        }
+
+        stv-table {
+            box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.2);
+            overflow-y: hidden;
+        }
+
+        stv-table::shadow #list {
+            min-height: 250px;
+        }
+
+        stv-table::shadow {
+            font-size: 11px;
+        }
+
+        stv-table::shadow .table-row {
+            height: 25px;
+        }
+
+        stv-table::shadow .table-header-field > .name.stv-table {
+            padding: 4px 0;
+        }
+
+        #menuSaturation {
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+
+        #menuSaturation> div {
+            font-size: 17px;
+            padding: 5px 5px;
+            margin: 0 20px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.1s;
+            cursor: pointer;
+        }
+
+        #menuSaturation {
+            margin-top: 15px;
+        }
+
+        #menuSaturation> div {
+            font-size: 17px;
+            padding: 5px 5px;
+            margin: 0 20px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.1s;
+            cursor: pointer;
+        }
+
+        #menuSaturation> div:hover {
+            border-bottom-color: rgba(125, 125, 125, 0.4);
+        }
+
+        #menuSaturation> div[selected] {
+            border-bottom-color: rgba(125, 125, 125, 0.7);
+        }
+        .centerSaturation{
+            padding: 0em 3em;
+        }
+    </style>
+    <template>
+        {{getDataSaturation(dataSaturation)}}
+
+        <div class="centerSaturation">
+            <div id="menuSaturation" class="color-2 color-hover-2 horizontal layout ">
+                <template is="dom-repeat" items="{{menuSaturation}}">
+                    <template is="dom-if" if="[[isSelected(index)]]">
+                        <div id="menuSaturation[[index]]" on-click="handleMenuSaturationClick" selected="">{{item.name}}
+                        </div>
+                    </template>
+                    <template is="dom-if" if="[[!isSelected(index)]]">
+                        <div id="menuSaturation[[index]]" on-click="handleMenuSaturationClick">{{item.name}}
+                        </div>
+                    </template>
+                </template>
+            </div>
+
+            <div class="horizontal layout flex">
+                <stv-table id="tableSaturation"  data="{{data}}"  hidden$="{{isSaturatonEmpty}}" enable-export enable-loading enable-paging page-size="10" ></stv-table>
+            </div>
+        </div>
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is: 'csvs-table-saturation',
+        properties: {
+            data: {
+                value: [],
+                type: Array
+            },
+            selectedSaturation:{
+                value: 0,
+                type: Number
+            },
+            menuSaturation:{
+                value: [],
+                type: Array
+            },
+            isSaturatonEmpty:{
+                type:Boolean,
+                value: false
+            }
+        },
+
+        ready: function() {
+            if(this.$.tableSaturation != undefined)
+                this.$.tableSaturation.columns = this._columns;
+        },
+        _columns:[{
+            name: '_disease',
+            title: "Subpopulations",
+            width: 350
+        }, {
+            name: 'x',
+            title: 'Num . samples',
+            width: 100
+        }, {
+            name: 'y',
+            title: 'Num. variants',
+            width: 100
+        }, {
+            name: '_count',
+            title: 'New. variants',
+            width: 100,
+            defaultValue: "."
+        },  {
+            name: '_samples',
+            title: 'Samples disease',
+        }
+        ],
+
+        isSelected: function(index){
+            if(index == this.selectedSaturation)
+                return true;
+            else
+                return false;
+        },
+        handleMenuSaturationClick: function(e) {
+            var i = e.model.index;
+            if ( i != this.selectedSaturation) {
+                // Remove selected
+                this.$.menuSaturation.children.namedItem("menuSaturation"+this.selectedSaturation).removeAttribute("selected");
+                // Add selected
+                this.selectedSaturation = i;
+                e.currentTarget.setAttribute("selected", "true");
+                this.getMenuData();
+            }
+        },
+
+        getDataSaturation: function(dataSaturation){
+            this.menuSaturation = dataSaturation;
+            this.getMenuData();
+        },
+
+
+        getMenuData: function () {
+            if (this.menuSaturation != null && this.menuSaturation != undefined &&
+                this.menuSaturation.length > 0 &&
+                this.menuSaturation.length > this.selectedSaturation) {
+                //this.data =  this.dataSaturation[this.selectedSaturation].data;
+                this.data = this.dataSaturation[this.selectedSaturation].data.slice(1, this.dataSaturation[this.selectedSaturation].data.length);
+                this.isSaturatonEmpty = false;
+            } else {
+                this.data = [{}];
+                this.isSaturatonEmpty = true;
+            }
+        }
+    });
+</script>

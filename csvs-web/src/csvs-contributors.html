@@ -1,0 +1,65 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/stevia-elements/src/stv-dialog/stv-dialog.html">
+
+<dom-module id="csvs-contributors">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+        }
+        #contributorsPanel {
+            width: 600px;
+            height: 580px;
+            min-width: 600px;
+            min-height: 580px;
+        }
+
+        #contributorsContent {
+            padding: 20px;
+            overflow-y: auto;
+            text-align: justify;
+            font-size: 14px;
+        }
+        .a{
+            text-decoration: underline;
+        }
+    </style>
+    <template>
+        <stv-panel id="contributorsPanel" modal fixed closable on-close="handleContributors">
+            <div class="header">
+                <i class="fa fa-handshake-o"></i> Contributors
+            </div>
+            <div id="contributorsContent" class="container flex">
+                <h1>Contributors:</h1>
+                <p></p>
+                <br/>
+            </div>
+        </stv-panel>
+    </template>
+
+    <script>
+        Polymer({
+            is: "csvs-contributors",
+            properties: {
+                hidden: {
+                    type: Boolean,
+                    value: false,
+                    reflectToAttribute: true,
+                    observer: 'hiddenChanged'
+                },
+            },
+
+            hiddenChanged: function() {
+                this.$.contributorsPanel._center();
+            },
+
+            handleContributors: function (e) {
+                this.fire('contributors-end');
+                this.$.contributorsPanel.hidden = false;
+                this.$.contributorsPanel.style = "top: 60px;left: 500px";
+            }
+        })
+    </script>
+</dom-module>

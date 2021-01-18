@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
+import org.apache.commons.lang3.StringUtils;
 import org.babelomics.csvs.lib.io.CSVSQueryManager;
 import org.babelomics.csvs.lib.ws.QueryResponse;
 import org.mongodb.morphia.Datastore;
@@ -21,11 +22,11 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -45,6 +46,10 @@ public class CSVSWSServer {
 
     protected static ObjectWriter jsonObjectWriter;
     protected static ObjectMapper jsonObjectMapper;
+
+    protected String sessionId;
+    static String SECRET_KEY;
+    static String SID = "sid";
 
     @DefaultValue("json")
     @QueryParam("of")
@@ -89,6 +94,12 @@ public class CSVSWSServer {
         int port = Integer.parseInt(properties.getProperty("CSVS.DB.PORT", "27017"));
 
         DOWNLOAD_PATH = properties.getProperty("CSVS.DOWNLOAD_PATH", "");
+        //DOWNLOAD_PATH = "/home/groldan/aplicaciones/CSVS/";
+        URL_MAIL_DEFAULT = properties.getProperty("CSVS.URL_MAIL_DEFAULT", "http://localhost:8081");
+
+        SECRET_KEY = properties.getProperty("CSVS.SECRET_KEY", "");
+
+        DOWNLOAD_PATH = properties.getProperty("CSVS.DOWNLOAD_PATH", "");
         // Config Mail
         URL_MAIL_DEFAULT = properties.getProperty("CSVS.URL_MAIL_DEFAULT", "http://localhost:8081");
         configMail.put(TO, properties.getProperty("CSVS.MAIL.TO", "csvs"));
@@ -127,13 +138,12 @@ public class CSVSWSServer {
 
 
     protected Response createErrorResponse(Object o) {
-        System.out.println("ERROR");
-        System.out.println("o.toString() = " + o.toString());
+        //System.out.println("ERROR");
+        //System.out.println("o.toString() = " + o.toString());
         QueryResult<ObjectMap> result = new QueryResult();
         result.setErrorMsg(o.toString());
-        QueryResponse qr = createQueryResponse(result);
-        //return createOkResponse(null);
-        return createOkResponse(qr);
+//        QueryResponse qr = createQueryResponse(result);
+        return createOkResponse(null);
     }
 
     protected Response createOkResponse(QueryResponse qr) {
@@ -271,6 +281,31 @@ public class CSVSWSServer {
             logger.error("CSVS: " + e);
         }
         return false;
+    }
+
+
+
+    /**
+     * Get sid
+     * @param httpHeaders
+     * @param sid
+     * @throws Exception
+     */
+    protected void verifyHeaders(HttpHeaders httpHeaders, String sid) throws Exception {
+
+        List<String> authorization = httpHeaders.getRequestHeader("Authorization");
+
+        if (authorization != null && authorization.get(0).length() > 7) {
+            String token = authorization.get(0);
+            if (!token.startsWith("Bearer ")) {
+                throw new Exception("Authorization header must start with Bearer JWToken");
+            }
+            this.sessionId = token.substring("Bearer".length()).trim();
+        }
+
+        if (StringUtils.isEmpty(this.sessionId)) {
+            this.sessionId = sid;
+        }
     }
 
 }

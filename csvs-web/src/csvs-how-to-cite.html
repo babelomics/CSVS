@@ -10,10 +10,10 @@
             box-sizing: border-box;
         }
          #howToCitePanel {
-             width: 500px;
-             height: 460px;
-             min-width: 500px;
-             min-height: 460px;
+             width: 600px;
+             height: 580px;
+             min-width: 600px;
+             min-height: 580px;
          }
 
          #howToCiteContent {
@@ -33,19 +33,32 @@
             </div>
             <div id="howToCiteContent" class="container flex">
                 <h1>How to cite:</h1>
-                <p>By downloading data from the CSVS database you accept the obligation of
+                <p>By downloading data from the {{acronym}} database you accept the obligation of
                     acknowledge its use in any publication, presentation, conference, poster or
                     any public event in which you present results obtained in any way using the
                     data downloaded.</p>
-                <p>To acknowledge the use of CSVS data use a sentence similar to this one:
-                    “These results were obtained using CSVS data (<a href="http://csvs.babelomics.org/" class="ahowToCiteContent" target="_blank">http://csvs.babelomics.org/</a>)
+                <p>To acknowledge the use of {{acronym}} data use a sentence similar to this one:
+                    “These results were obtained using {{acronym}} data (<a href="{{url}}" class="ahowToCiteContent" target="_blank">{{url}}</a>)"
                       and in any publication you must cite the reference:</p>
-                    <p>Dopazo J, Amadoz A, Bleda M, Garcia-Alonso L, Alemán A, García-García F,
+
+                <p>"Peña-Chilet M, Roldán G, Perez-Florido J, Ortuño FM, Carmona R, Aquino V,
+                    Lopez-Lopez D, Loucera C, Fernandez-Rueda JL, Gallego A, García-Garcia F,
+                    González-Neira A, Pita G, Núñez-Torres R, Santoyo-López J, Ayuso C, Minguez P, Avila-Fernandez A, Corton M, Moreno-Pelayo MÁ, Morin M, GallegoMartinez
+                    A, Lopez-Escamez JA, Borrego S, Antiñolo G, Amigo J, SalgadoGarrido
+                    J, Pasalodos-Sanchez S, Morte B; Spanish Exome Crowdsourcing
+                    Consortium, Carracedo Á, Alonso Á, Dopazo J. CSVS, a crowdsourcing
+                    database of the Spanish population genetic variability. Nucleic Acids Res.
+                    2020. doi: <a href="https://doi.org/10.1093/nar/gkaa794" class="ahowToCiteContent" target="_blank">10.1093/nar/gkaa794</a>".</p>
+                <p>If you use the MGP dataset you must acknowledge the MGP project citing the
+                    publication:</p>
+                <p>"Dopazo J, Amadoz A, Bleda M, Garcia-Alonso L, Alemán A, García-García F,
                     Rodriguez JA, Daub JT, Muntané G, Rueda A, Vela-Boza A, López-Domingo FJ,
                     Florido JP, Arce P, Ruiz-Ferrer M, Méndez-Vidal C, Arnold TE, Spleiss O,
                     Alvarez-Tejado M, Navarro A, Bhattacharya SS, Borrego S, Santoyo-López J,
                     Antiñolo G. 267 Spanish Exomes Reveal Population-Specific Differences in
-                        Disease-Related Genetic Variation. Mol Biol Evol. 2016 May;33(5):1205-18.</p>
+                    Disease-Related Genetic Variation. Mol Biol Evol. 2016 33(5):1205-18. doi:
+                    <a href="https://doi.org/10.1093/molbev/msw005" class="ahowToCiteContent" target="_blank">
+                        10.1093/molbev/msw005</a>".</p>
                 <br/>
             </div>
         </stv-panel>
@@ -60,6 +73,13 @@
                     value: false,
                     reflectToAttribute: true,
                     observer: 'hiddenChanged'
+                },
+                acronym:{
+                    type: String
+                },
+                url:{
+                    type:String,
+                    value: "http://csvs.babelomics.org/"
                 }
             },
 

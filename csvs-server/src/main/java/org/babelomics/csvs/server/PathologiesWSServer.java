@@ -4,25 +4,23 @@ package org.babelomics.csvs.server;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
+import io.jsonwebtoken.Claims;
+import org.babelomics.csvs.lib.CSVSUtil;
 import org.babelomics.csvs.lib.models.Opinion;
 import org.babelomics.csvs.lib.models.Pathology;
 import org.babelomics.csvs.lib.models.Variant;
+import org.babelomics.csvs.lib.token.CSVSToken;
 import org.babelomics.csvs.lib.ws.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.*;
+
 import org.bson.types.ObjectId;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Gema Roldán Gonzalez <gema.roldan@juntadeandalucia.es>
@@ -31,11 +29,23 @@ import java.util.Map;
 @Api(value = "pathologies", description = "Pathologies from variants")
 @Produces(MediaType.APPLICATION_JSON)
 public class PathologiesWSServer extends CSVSWSServer {
+    static int TOKEN_DAYS = 30;
+    static String TOKEN_ISSUER ="CSVS";
+    static String TOKEN_AUDIENCE = "csvs.clinbioinfosspa.es";
 
-    public PathologiesWSServer(@DefaultValue("") @PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest hsr)
+
+    public PathologiesWSServer(@DefaultValue("") @PathParam("version") String version, @Context UriInfo uriInfo,
+                               @Context HttpServletRequest httpServletRequest, @Context HttpHeaders httpHeaders)
             throws IOException {
-        super(version, uriInfo, hsr);
+        super(version, uriInfo, httpServletRequest);
+        try {
+            verifyHeaders(httpHeaders, uriInfo.getQueryParameters().getFirst("sid"));
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
     }
+
+
 
     @GET
     @Path("/{variants}/fetch")
@@ -110,7 +120,22 @@ public class PathologiesWSServer extends CSVSWSServer {
         }
 
         if (res != null) {
-            String urlParameters = preSendMail(res,  "add");
+            Map infoOpinion = new HashMap();
+            infoOpinion.put("variant", res.getVariant().getChromosome() + ":" + res.getVariant().getPosition()+ ":"+res.getVariant().getReference()+">"+res.getVariant().getAlternate());
+            infoOpinion.put("name", res.getName());
+            infoOpinion.put("institution", res.getInstitution());
+            infoOpinion.put("evidence", res.getEvidence());
+            infoOpinion.put("clinicalSignificance", res.getTypeDesc());
+            infoOpinion.put("state", res.getStateDesc());
+
+            Map aditionalClaims = new HashMap();
+
+            aditionalClaims.put("Info", infoOpinion);
+
+            String resultToken = CSVSUtil.generateToken(TOKEN_ISSUER, TOKEN_AUDIENCE, TOKEN_ISSUER, TOKEN_DAYS, aditionalClaims, SECRET_KEY);
+
+
+            String urlParameters = preSendMail(res,  "add", resultToken);
             sendMail(urlParameters);
         }
 
@@ -130,16 +155,44 @@ public class PathologiesWSServer extends CSVSWSServer {
 
         Opinion o = qm.getOpinion(new ObjectId(idOpinion));
         Opinion res = null;
-        if (o != null) {
+
+        CSVSToken csvsToken = new CSVSToken(SECRET_KEY);
+        Claims claims = null;
+        String msj = "";
+        try {
+            claims = csvsToken.decodeJWT(sessionId);
+
+            // check variant token equal idOpinion
+            if (claims.containsKey("Info")) {
+                Map aditionalClaims = (Map) claims.get("Info");
+                if (aditionalClaims.containsKey("variant")) {
+                    if (!res.getVariant().equals(aditionalClaims.get("variant")))
+                        msj = "Variant no equal to token";
+                } else {
+                    msj = "token no contain Variant";
+                }
+            } else
+                msj = "Token no contains Info";
+
+        } catch (Exception e){
+            logger.error("CSVS: Update pathologies " + e.toString());
+            msj = "Claims no valid";
+        }
+
+        if (o != null && "".equals(msj)) {
             res= qm.saveOpinion(o, state);
-            String urlParameters = preSendMail(res, "update");
+            String urlParameters = preSendMail(res, "update", sessionId);
             sendMail(urlParameters);
         }
 
-        QueryResponse qr = createQueryResponse(res);
-        qr.setNumResults(qr.getNumTotalResults());
+        if(!"".equals(msj)){
+            return createErrorResponse(msj);
+        } else {
+            QueryResponse qr = createQueryResponse(res);
+            qr.setNumResults(qr.getNumTotalResults());
 
-        return createOkResponse(qr);
+            return createOkResponse(qr);
+        }
     }
 
     /**
@@ -148,7 +201,7 @@ public class PathologiesWSServer extends CSVSWSServer {
      * @param opinion
      * @return
      */
-    private String preSendMail(Opinion opinion, String action) {
+    private String preSendMail(Opinion opinion, String action, String sid) {
         Map<String, String> map = new HashMap<String, String>();
         map.putAll(configMail);
         map.put(CSVSWSServer.FROM, configMail.get(CSVSWSServer.TO));
@@ -189,6 +242,8 @@ public class PathologiesWSServer extends CSVSWSServer {
             text.append("/");
             text.append(Opinion.PENDING);
             text.append("/update");
+            text.append("?sid=");
+            text.append(sid);
         }
 
         if(opinion.getState() != Opinion.PUBLISHED) {
@@ -199,6 +254,8 @@ public class PathologiesWSServer extends CSVSWSServer {
             text.append("/");
             text.append(Opinion.PUBLISHED);
             text.append("/update");
+            text.append("?sid=");
+            text.append(sid);
         }
 
         if(opinion.getState() != Opinion.REJECTED) {
@@ -209,6 +266,8 @@ public class PathologiesWSServer extends CSVSWSServer {
             text.append("/");
             text.append(Opinion.REJECTED);
             text.append("/update");
+            text.append("?sid=");
+            text.append(sid);
         }
         map.put(CSVSWSServer.TEXT, text.toString());
         map.put(CSVSWSServer.HTML, "<pre>" + text + "<pre>");

@@ -49,24 +49,38 @@
                 <form id="iron-form" >
                 <div class="horizontal layout">
                     <div class="flex">
-                        <label class="stv" for="">Subject:</label>
-                        <input class="stv" type="text" value="{{subject::input}}" />
+                        <label class="stv" for="subject">Subject:</label>
+                        <input class="stv" type="text" id="subject" value="{{subject::input}}" maxlength="60"/>
+                        <br>
+                        <label class="stv" for="email">Your mail:</label>
+                        <input class="stv" type="email" id="email" value="{{email::input}}" placeholder="name@example.com" maxlength="60">
                     </div>
                     <div style="margin-left:15px;">
-                        <label class="data" for="">Type:</label>
-                        <stv-select id="emailType" style="width:150px; margin-top:5px">
-                            <stv-option value="suggest">Suggest</stv-option>
+                        <label class="stv" >Type:</label>
+                        <stv-select id="emailType"  style="width:150px; margin-top:5px" on-change="handleEmailType">
+                            <stv-option value="suggest">Suggestion</stv-option>
                             <stv-option value="question">Question</stv-option>
                             <stv-option value="error">Error</stv-option>
+<!-- GPVS 
+                            <stv-option value="accountRequest">Account request</stv-option>
+-->
                         </stv-select>
+                        <br>
+                        <label class="stv" >To:</label>
+                        <br/>
+                        <label class="data">{{to}}</label>
+
                     </div>
                 </div>
                  <br>
-                 <label class="stv" for="">From:</label>
-                 <input class="stv" type="email" id="email" value="{{email::input}}" placeholder="name@example.com">
-                 <br>
-                <label class="stv" for="">Text:</label>
-                <textarea class="stv flex" name="" id="" cols="30" rows="10" value="{{text::input}}" required></textarea>
+                <label class="stv" for="institution">Name:</label>
+                <input class="stv" type="text" id="name" value="{{name::input}}" placeholder="Name" maxlength="100">
+                <br>
+                <label class="stv" for="institution">Institution:</label>
+                <input class="stv" type="text" id="institution" value="{{institution::input}}" placeholder="Name and surname" maxlength="100">
+                <br>
+                <label class="stv" for="tx">Text:</label>
+                <textarea class="stv flex" name="" id="tx" cols="30" rows="10" value="{{text::input}}" required></textarea>
                 <br>
                 <div class="horizontal layout center end-justified">
                     <div id="Sending" hidden$="{{!sending}}">
@@ -92,6 +106,18 @@
                 email: {
                     type: String,
                     value: ''
+                },
+                to:{
+                    type: String,
+                    value: window.CSVS_EMAIL || ""
+                },
+                name: {
+                    type: String,
+                    value: ""
+                },
+                institution: {
+                    type: String,
+                    value: ""
                 },
                 text: {
                     type: String,
@@ -121,13 +147,24 @@
                 me.message = "";
 
                 // Check mail
-                if (!_.isEmpty(email))
+                if (!_.isEmpty(email)) {
                     if (!/^(?:[^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*|"[^\n"]+")@(?:[^<>()[\].,;:\s@"]+\.)+[^<>()[\]\.,;:\s@"]{2,63}$/i.test(email))
                         msj = msj + 'Invalid email format. ';
+                } else {
+                      msj = msj + 'Please, add your mail. ';
+                }
 
+                if (this.$.emailType.value == 'accountRequest'){
+                    if (_.isEmpty(this.name))
+                        msj = msj + 'Please, add your name. ';
+                    if (_.isEmpty(this.institution))
+                        msj = msj + 'Please, add your institution. ';
+
+                } else {
                 // check text
                 if (_.isEmpty(text))
                     msj = msj + 'Please, add a text to the message. ';
+                }
 
                 if (!_.isEmpty(msj)) {
                     new StvDialog().alert(msj);
@@ -145,15 +182,22 @@
                 var subject = me.subject;
                 var emailType = me.$.emailType.selectedOptionText;
                 var email = me.email;
-                var text = me.text.trim();
+                var text = "";
 
+                if (!_.isEmpty(me.name))
+                    text = text + '<br>' + "Name: " + me.name;
+                if (!_.isEmpty(me.institution))
+                    text = text + '<br>' + "Institution: " + me.institution;
+                if (!_.isEmpty(me.text))
+                    text = text + '<br>' + me.text;
+
+
+                var acronym = "("+ window.ACRONYM_APP + ")" || '';
                 me.sending = true;
                 me.message = "";
 
-                $.ajax({
-                    url: window.URL_MAIL,
-                    data: {
-                        subject: emailType + ':' + subject,
+                var data = {
+                    subject: emailType + acronym +':' + subject,
                         text: text,
                         html: '<pre>'+text+'</pre>',
                         from: email || window.FROM_EMAIL || '',
@@ -165,7 +209,25 @@
                         ignoreTLS: window.IGNORE_TLS,
                         user: window.USER,
                         pass: window.PASS
-                    },
+                };
+
+                if (window.CSVS_BCC_EMAIL != ""){
+                    data['bcc'] = window.CSVS_BCC_EMAIL;
+                }
+
+                if (me.$.emailType.value == 'accountRequest' && window.CSVS_REQUEST_ACCOUNT_EMAIL != ""){
+                    if (window.CSVS_BCC_EMAIL == ""){
+                        data['bcc'] = "";
+                    } else {
+                        data['bcc'] = data['bcc'] + ",";
+                    }
+                    data['bcc'] = data['bcc'] + window.CSVS_REQUEST_ACCOUNT_EMAIL;
+                };
+
+
+                $.ajax({
+                    url: window.URL_MAIL,
+                    data: data,
                     dataType: "json",
                     contentType: 'application/json',
                     crossDomain: true,
@@ -197,10 +259,11 @@
                 this.$.emailPanel._center();
             },
             clean: function () {
-                this.subject = '';
+                this.$.subject.value = '';
                 this.email = '';
                 this.text = '';
                 this.$.emailType.value = "suggest";
+                //this.$.to.value = window.CSVS_EMAIL;
                 this.message = "";
             },
             handleFeedback: function (e) {
@@ -208,6 +271,14 @@
                 this.$.emailPanel.hidden = false;
                 this.$.emailPanel.style = "top: 60px;left: 500px";
                 this.clean();
+            },
+            handleEmailType: function(e){
+                if (this.$.emailType.value == 'accountRequest') {
+                    this.$.subject.value = "Account creation request";
+                } else {
+                    if (this.$.subject.value == "Account creation request")
+                        this.$.subject.value = "";
+                }
             }
         })
     </script>

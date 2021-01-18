@@ -39,6 +39,9 @@ public class File {
     @Property("n")
     private String nameFile;
 
+    @Property("gender")
+    private String chromGender;
+
     @Property("pr")
     private String personReference;
 
@@ -125,6 +128,14 @@ public class File {
         this.nameFile = nameFile;
     }
 
+    public String getChromGender() {
+        return chromGender;
+    }
+
+    public void setChromGender(String chromGender) {
+        this.chromGender = chromGender;
+    }
+
     public String getPersonReference() {
         return personReference;
     }
@@ -141,6 +152,21 @@ public class File {
         this.date = date;
     }
 
+    public int getDiseaseGroupId() {
+        return diseaseGroupId;
+    }
+
+    public void setDiseaseGroupId(int diseaseGroupId) {
+        this.diseaseGroupId = diseaseGroupId;
+    }
+
+    public int getTechnologyId() {
+        return technologyId;
+    }
+
+    public void setTechnologyId(int technologyId) {
+        this.technologyId = technologyId;
+    }
 
     public ObjectId getIdPanel() {
         return this.idPanel;
@@ -149,8 +175,4 @@ public class File {
     public void setIdPanel(ObjectId idPanel) {
         this.idPanel =    idPanel;
     }
-
-    public int getDiseaseGroupId() { return this.diseaseGroupId; }
-
-    public int getTechnologyId() { return this.technologyId;}
 }

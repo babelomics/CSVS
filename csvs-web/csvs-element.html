@@ -3,6 +3,7 @@
 
 <script src="bower_components/stevia-elements/src/manager/stevia-manager.js"></script>
 <script src="bower_components/stevia-elements/src/utils/utils.js"></script>
+<link rel="import" href="bower_components/stevia-elements/src/stv-dialog/stv-dialog.html">
 
 
 
@@ -24,7 +25,7 @@
 <script src="bower_components/stevia-elements/src/validator/bed-validator.js"></script>
 <script src="src/FilterHistory.js"></script>
 
-<script src="src/csvs-manager.js"></script>
+<script src="src/manager/csvs-manager.js"></script>
 <link rel="import" href="src/csvs-home.html">
 <link rel="import" href="src/csvs-search-element.html">
 <link rel="import" href="src/csvs-feedback.html">
@@ -34,6 +35,8 @@
 <link rel="import" href="src/csvs-annotation-result.html">
 <link rel="import" href="src/csvs-saturation-element.html">
 <link rel="import" href="src/csvs-how-to-cite.html">
+<link rel="import" href="src/csvs-version.html">
+<link rel="import" href="src/csvs-contributors.html">
 
 <dom-module id="csvs-element">
     <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
@@ -66,6 +69,8 @@
         stv-footer {
             position: absolute;
             bottom: 0;
+            height: auto;
+            padding-bottom: 1.5rem;
         }
 
         csvs-search-element,
@@ -98,11 +103,18 @@
             min-width: 600px;
             min-height: 400px;
         }
+
+        div.disabled {
+            color: #CCC;
+            opacity: 0.5;
+        }
     </style>
     <template>
 
         <div class="content" menu-option="home">
-            <csvs-home on-try="handleTry"></csvs-home>
+            <csvs-home on-try="handleTry" title-app="{{titleApp}}" acronym="{{acronym}}" phenotype="{{phenotype}}"
+                       atc="{{acceptTermsCond}}" on-checket-accept="handleAcceptTermsCond" on-msj-accept="handleMsjAccept"
+                       is-not-accept="{{_isNotAccept(acceptTermsCond)}}" is-accept="{{_isAccept(acceptTermsCond)}}"></csvs-home>
         </div>
 
         <div class="content" menu-option="search,saturation">
@@ -114,7 +126,7 @@
         </div>
 
         <div class="content" menu-option="downloads">
-            <csvs-downloads-element  id="csvsDownloadsElement"></csvs-downloads-element>
+            <csvs-downloads-element   file_conditions="{{acronym}}TermsAndConditions.pdf" id="csvsDownloadsElement"></csvs-downloads-element>
         </div>
 
         <div class="content" menu-option="annot">
@@ -140,36 +152,67 @@
             </stv-panel>
             <csvs-feedback id="feedback" hidden on-feedbackend="handleFeedback"></csvs-feedback>
 
-            <csvs-how-to-cite id="howToCite" hidden on-how-to-cite-end="handleHowToCite"></csvs-how-to-cite>
+            <csvs-how-to-cite id="howToCite" acronym="{{acronym}}"  hidden on-how-to-cite-end="handleHowToCite"></csvs-how-to-cite>
+            <csvs-version id="version"  hidden on-version-end="handleVersion"></csvs-version>
+            <csvs-contributors id="contributors"  hidden on-contributors-end="handleContributors"></csvs-contributors>
         </div>
 
         <stv-header id="stvHeader" user-data="{{userData}}" on-login="handleLogin" on-logout="handleLogout" selected-option="{{selectedOption}}" hide-jbos hide-browse isLogged="{{isLogged}}" hide-login hide
                     -signup>
             <div class="icon">
-                <img src="images/bier-text.svg" style="height: 50px;margin: 5px 0px 0 0;">
+                <img src="images/logo_CSVS.png" style="height: 50px;margin: 5px 0px 0 0;">
             </div>
-            <span class="title">Collaborative Spanish Variant Server</span>
+            <span class="title">{{titleApp}}</span>
             <span class="description"></span>
 
             <div id="menu" class="menu horizontal layout center flex">
-                <div title="Search" class="option" on-click="handleMenuOption" data-option="search">
-                    <i class="fa fa-search"></i>
-                    <span class="option-text">Search</span>
-                </div>
+                <template is="dom-if" if="{{_isAccept(acceptTermsCond)}}">
+                    <div title="Search" class="option" on-click="handleMenuOption" data-option="search">
+                        <i class="fa fa-search"></i>
+                        <span class="option-text">Search</span>
+                    </div>
 
-                <div title="Stats" class="option" on-click="handleMenuOption" data-option="stats">
-                    <i class="fa fa-pie-chart"></i>
-                    <span class="option-text">Stats</span>
-                </div>
+                    <div title="Stats" class="option" on-click="handleMenuOption" data-option="stats">
+                        <i class="fa fa-pie-chart"></i>
+                        <span class="option-text">Stats</span>
+                    </div>
 
-                <div title="Saturation" class="option" on-click="handleMenuOption" data-option="saturation">
-                    <i class="fa fa-line-chart"></i>
-                    <span class="option-text">Saturation</span>
-                </div>
+                    <div title="Saturation" class="option" on-click="handleMenuOption" data-option="saturation">
+                        <i class="fa fa-line-chart"></i>
+                        <span class="option-text">Saturation</span>
+                    </div>
 
-                <div title="Downloads" class="option" on-click="handleMenuOption" data-option="downloads">
-                    <i class="fa fa-download"></i>
-                    <span class="option-text">Downloads</span>
+                    <div title="Downloads" class="option" on-click="handleMenuOption" data-option="downloads">
+                        <i class="fa fa-download"></i>
+                        <span class="option-text">Downloads</span>
+                    </div>
+                </template>
+                <template is="dom-if" if="{{_isNotAccept(acceptTermsCond)}}">
+                    <div title="Checked I agree terms and conditions to search" class="option disabled" on-click="handleMsjAccept" data-option="search">
+                        <i class="fa fa-search"></i>
+                        <span class="option-text">Search</span>
+                    </div>
+
+                    <div title="Checked I agree terms and conditions to go to stats" class="option disabled" on-click="handleMsjAccept" data-option="stats">
+                        <i class="fa fa-pie-chart"></i>
+                        <span class="option-text">Stats</span>
+                    </div>
+
+                    <div title="Checked I agree terms and conditions to go to saturation" class="option disabled" on-click="handleMsjAccept" data-option="saturation">
+                        <i class="fa fa-line-chart"></i>
+                        <span class="option-text">Saturation</span>
+                    </div>
+
+                    <div title="hecked I agree terms and conditions to go to downloads" class="option disabled" on-click="handleMsjAccept" data-option="downloads">
+                        <i class="fa fa-download"></i>
+                        <span class="option-text">Downloads</span>
+                    </div>
+                </template>
+
+                <div title="Web maintenance" style="padding-left: 30px" hidden >
+                    <div style="border-style: solid;border-color: black; background-color: #FFDB00; padding:5px; padding-left: 10px; padding-right: 10px">
+                        <img src="./images/exclamation-icon.png" width="35px"/>
+                        <span style="color:black; font-weight: 900; valing:center"> WEB UNDER MAINTENANCE </span></div>
                 </div>
 
                 <div title="Annotate VCF file" class="option" on-click="handleLoggedOnlyMenuOption" login-required data-option="annot" hidden>
@@ -191,11 +234,8 @@
                 <div data-button><i class="fa fa-question-circle"></i></div>
 
                 <ul data-menu>
-                    <a href="https://github.com/babelomics/csvs/wiki" target="_blank">
+                    <a href="https://github.com/babelomics/CSVS/wiki" target="_blank">
                         <li><i class="fa fa-book"></i> &nbsp; Documentation</li>
-                    </a>
-                    <a href="https://github.com/babelomics/csvs/wiki/tutorial" target="_blank">
-                        <li><i class="fa fa-compass"></i> &nbsp; Tutorial</li>
                     </a>
                     <a href="https://github.com/babelomics/csvs/" target="_blank">
                         <li><i class="fa fa-github"></i> &nbsp; Source code</li>
@@ -207,14 +247,20 @@
                     <div on-mousedown="handleHowToCite">
                         <li><i class="fa fa-quote-right" aria-hidden="true"></i> &nbsp; How to Cite</li>
                     </div>
+                    <div on-mousedown="handleVersion">
+                        <li><i class="fa fa-database" aria-hidden="true"></i> &nbsp; Database version</li>
+                    </div>
+                    <div on-mousedown="handleContributors">
+                        <li><i class="fa fa-handshake-o" aria-hidden="true"></i> &nbsp; Contributors</li>
+                    </div>
                 </ul>
             </stv-dropdown>
         </stv-header>
 
         <stv-footer menu-option="home,login,singup,profile,remember">
-            CSVS: created by Clinical Bioinformatics Area
+            {{acronym}}: created by Clinical Bioinformatics Area
             <br> Fundación Progreso y Salud
-            <br> 2015-2017
+            <br> 2015-{{year}}
         </stv-footer>
     </template>
 </dom-module>
@@ -263,6 +309,29 @@
                 type:Boolean,
                 value: false
             },
+            version:{
+                type:Boolean,
+                value: false
+            },
+            contributors:{
+                type:Boolean,
+                value: false
+            },
+            titleApp:{
+                type: String
+            },
+            acronym:{
+                type: String
+            },
+            phenotype: {
+                type: String
+            },
+            acceptTermsCond: {
+                type: Boolean
+            },
+            year:{
+                type: String
+            }
         },
         ready: function() {
             this.isLogged = this.$.stvHeader.isLogged;
@@ -270,6 +339,8 @@
             this.getTechnologies();
             this.checkShowMenuOnLogin();
             this.selectedOption = "home";
+            this.acceptTermsCond = this.getAcceptTermsCond() == 'true'? true : false;
+            this.year = new Date().getFullYear();
         },
         getDiseases: function() {
             var me = this;
@@ -318,7 +389,6 @@
                     }
                 }
             });
-
         },
         getTechnologies: function() {
             var me = this;
@@ -396,6 +466,13 @@
         handleHowToCite: function() {
             this.$.howToCite.hidden = !this.$.howToCite.hidden;
         },
+        handleVersion: function() {
+            this.$.version.hidden = !this.$.version.hidden;
+        },
+        handleContributors: function() {
+            this.$.contributors.hidden = !this.$.contributors.hidden;
+        },
+
         selectedOptionChanged: function() {
             if (this.selectedOption == "saturation") {
                 this.saturation = true;
@@ -410,7 +487,37 @@
 
             this.selectedOption = "annot";
             this.$.annotationForm.relaunch(job);
-        }
+        },
 
+
+        handleAcceptTermsCond: function(e, isAccept) {
+            document.cookie = "CSVS_AcceptTermsCond" + "=" + isAccept  + ";path=/";
+            this.acceptTermsCond = isAccept;
+        },
+
+        getAcceptTermsCond: function() {
+            var name = "CSVS_AcceptTermsCond" + "=";
+            var decodedCookie = decodeURIComponent(document.cookie);
+            var ca = decodedCookie.split(';');
+            for(var i = 0; i <ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                    return c.substring(name.length, c.length);
+                }
+            }
+            return "";
+        },
+        _isAccept: function(atc) {
+            return !!atc;
+        },
+        _isNotAccept: function(atc) {
+            return !atc;
+        },
+        handleMsjAccept: function() {
+            new StvDialog().alert("Check I agree terms and conditions to Start.");
+        }
     });
 </script>

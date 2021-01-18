@@ -14,7 +14,6 @@
         }
 
         .main {
-            width: 70%;
             max-width: 780px;
             margin-left: auto;
             margin-right: auto;
@@ -67,60 +66,76 @@
 
         .megatitle {
             font-size: 80px;
-            padding-top: 30px;
+            padding-top: 25px;
             padding-bottom: 10px;
             text-shadow: 3px 3px 5px #444;
+        }
+        div.disabled {
+            color: #CCC;
+            opacity: 0.5;
         }
 
     </style>
     <template>
         <div class="main">
             <br>
-
             <div class="horizontal layout">
-                <div style="text-align: right; width: 300px;">
-                    <img src='../images/bier-text.svg' style="width:220px;">
+                <div style="text-align: right; width: 160px;">
+                    <img src='../images/logo_CSVS.png' style="width:160px;">
+                </div>
+                <div class="vertical layout center" style="text-align: left; margin-left: 30px;">
+                    <div style="text-align: center; width: 200px;">
+                        <br>
+                        <br>
+
+                        <div class="megatitle">{{acronym}}</div>
+                    </div>
                 </div>
                 <div class="vertical layout center" style="text-align: left; margin-left: 30px;">
                     <br>
-                    <br>
+                    <template is="dom-if" if="{{is-not-accept}}">
+                        <div id="atcId" class="megabutton disabled" on-click="handleMsjAccept">
+                            <i class="fa fa-sign-in">&nbsp;&nbsp;&nbsp;Start</i>
+                        </div>
+                    </template>
+                    <template is="dom-if" if="{{is-accept}}">
+                        <div class="megabutton" on-click="tryItNow">
+                            <i class="fa fa-sign-in">&nbsp;&nbsp;&nbsp;Start</i>
+                        </div>
+                    </template>
 
-                    <div class="megatitle">CSVS</div>
-                    <br>
-
-                    <div class="megabutton" on-click="tryItNow">
-                        <i class="fa fa-sign-in">&nbsp;&nbsp;&nbsp;Start</i>
-                    </div>
+                    <label class="paragraph2">
+                        <csvs-terms-conditions atc="{{atc}}"></csvs-terms-conditions>
+                    </label>
                 </div>
             </div>
 
             <div class="title">Overview</div>
             <div class="paragraph">
-                Welcome to the Collaborative Spanish Variant Server. CSVS was created to provide information about the
-                variability
-                of the Spanish population to the scientific/medical community.
+                Welcome to the {{titleApp}}. <span title="{{titleApp}}">{{acronym}}</span> is a crowdsourcing initiative to provide information about the genomic variability
+                of the {{phenotype}} population to the scientific/medical community.
                 It is useful for filtering polymorphisms and local variations in the process of prioritizing candidate
-                disease genes. CSVS currently stores information on <csvs-samples></csvs-samples> unrelated Spanish individuals.
-                We accept submissions from WES or WGS.
+                disease genes. <span title="{{titleApp}}">{{acronym}}</span> currently stores information on <csvs-samples></csvs-samples> unrelated {{phenotype}} individuals.
+                We accept submissions from <span title="whole exome sequencing">WES</span> or <span title="whole genome sequencing">WGS</span>.
             </div>
 
             <div class="title2">Supported by</div>
             <div class="paragraph">
-                <img style="margin:3px;height:40px;" src="../images/logobier.jpg"/>
-                <img style="margin:3px;height:40px;" src="../images/logo_Ciberer.jpg"/>
-                <img style="margin:3px;height:40px;" src="../images/logo_FPS.png"/>
-                <img style="margin:3px;height:40px;" src="../images/logoBabelomics_positive_trans.svg"/>
-                <img style="margin:3px;height:40px;" src="../images/LOGO_Micinn_Isciii.jpg"/>
-                <img style="margin:3px;height:40px;background-color:white;" src="../images/logo_ELIXIR_spain.png"/>
+                <a title="ciberer BIER" href="http://bier.ciberer.es/" target="_blank"><img style="margin:3px;height:40px;" src="../images/logobier.jpg"/></a>
+                <a title="ciberer" href="https://www.ciberer.es/" target="_blank"><img style="margin:3px;height:40px;" src="../images/logo_Ciberer.jpg"/></a>
+                <a title="Fundación Progreso y Salud" href="https://www.sspa.juntadeandalucia.es/fundacionprogresoysalud/es" target="_blank"><img style="margin:3px;height:40px;background-color: #05723A" src="../images/logo_FPS.png"/></a>
+                <a title="babelomics" href="http://babelomics.bioinfo.cipf.es/" target="_blank"><img style="margin:3px;height:40px;" src="../images/logoBabelomics_positive_trans.svg"/></a>
+                <a title="Instituto de Salud Carlos III" href="https://www.isciii.es/Paginas/Inicio.aspx" target="_blanck"><img  style="margin:3px;height:40px;" src="../images/LOGO_Micinn_Isciii.jpg"/></a>
+                <a title="ELIXIR SPAIN" href="https://elixir-europe.org/about-us/who-we-are/nodes/spain"  target="_blank"><img style="margin:3px;height:40px;background-color:white;" src="../images/logo_ELIXIR_spain.png"/></a>
+                <a title="Beacon network" href="https://beacon-network.org/" target="_blank"><img style="margin:3px;height:40px;background-color:white;" src="../images/logo_Beacon_Network.svg"/></a>
             </div>
 
             <div class="title2">Note:</div>
             <div class="paragraph2">
-                CSVS web application makes an intensive use of the HTML5 standard and other cutting-edge web
+                {{acronym}} web application makes an intensive use of the HTML5 standard and other cutting-edge web
                 technologies such as
                 Web Components, so only modern web browsers are fully supported, these include Chrome 36+, Firefox 32+,
-                IE
-                10+, Safari 7+
+                Microsoft Edge, Safari 7+
                 and Opera 24+.
             </div>
         </div>
@@ -129,13 +144,58 @@
 <script>
     Polymer({
         is: "csvs-home",
+        properties:{
+            titleApp:{
+                type: String,
+                value: "Collaborative Spanish Variant Server"
+            },
+            acronym:{
+                type: String,
+                value: "CSVS"
+            },
+            phenotype: {
+                type: String,
+                value: "Spanish"
+            }
+        },
         ready: function(){
         },
         tryItNow: function () {
             this.fire('try');
+        },
+        handleMsjAccept: function(){
+            this.fire('msj-accept');
         }
     });
 </script>
+
+<dom-module id="csvs-terms-conditions">
+    <template>
+        <div title="Check here to indicate that you have read agree with the terms and conditions of use of this data.">
+            <input  on-click="handleAcceptTC" type="checkbox"  name="acceptTermsCond" id="acceptTermsCond" value="true" checked="{{atc}}"/>
+            <label for="acceptTermsCond">
+                I agree the <a class="csvs-downloads-element" href="/downloads/CSVSTermsAndConditions_use_v2.pdf" alt="Terms and conditions of use"> terms and conditions in order to use this data</a>.
+            </label><br>
+        </div>
+    </template>
+
+    <script>
+        Polymer({
+            is: "csvs-terms-conditions",
+            properties: {
+                acceptTermsCond: {
+                    type: Boolean
+                },
+            },
+            ready: function() {
+            },
+            handleAcceptTC: function(e) {
+                this.fire('checket-accept', this.$.acceptTermsCond.checked);
+            }
+        });
+    </script>
+</dom-module>
+
 <dom-module id="csvs-samples">
     <template>{{samples}}
     </template>

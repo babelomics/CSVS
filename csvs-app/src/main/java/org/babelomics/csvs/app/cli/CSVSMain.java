@@ -4,11 +4,10 @@ import com.beust.jcommander.ParameterException;
 import com.google.common.base.Joiner;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.babelomics.csvs.lib.CSVSUtil;
+import org.babelomics.csvs.lib.config.CSVSConfiguration;
 import org.babelomics.csvs.lib.io.CSVSQueryManager;
-import org.babelomics.csvs.lib.models.DiseaseCount;
-import org.babelomics.csvs.lib.models.DiseaseGroup;
-import org.babelomics.csvs.lib.models.Technology;
-import org.babelomics.csvs.lib.models.Variant;
+import org.babelomics.csvs.lib.models.*;
+import org.babelomics.csvs.lib.token.CSVSToken;
 import org.mongodb.morphia.Datastore;
 import org.opencb.biodata.models.feature.Region;
 import org.opencb.cellbase.core.client.CellBaseClient;
@@ -25,9 +24,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * @author Alejandro Alemán Ramos <alejandro.aleman.ramos@gmail.com>
@@ -38,6 +35,8 @@ public class CSVSMain {
     protected static InputStream is = CSVSMain.class.getClassLoader().getResourceAsStream("csvs.properties");
     protected static Properties properties = new Properties();
     static String CELLBASE_HOST, CELLBASE_VERSION;
+    static List<ParRegions> PAR_REGIONS = new ArrayList<>();
+    static String SECRET_KEY;
     static {
         try {
             properties.load(is);
@@ -49,7 +48,29 @@ public class CSVSMain {
 
         CELLBASE_HOST = properties.getProperty("CELLBASE.HOST", "http://bioinfo.hpc.cam.ac.uk/cellbase/webservices/rest");
         CELLBASE_VERSION = properties.getProperty("CELLBASE.VERSION", "v3");
+        // Para regions 37
+        PAR_REGIONS =  iniParRegions(properties.getProperty("PAR_REGIONS", "X:60001-2699520;Y:10001-2649520,X:154931044-155260560;Y:59034050-59363566"));
+
+
+
+        SECRET_KEY = properties.getProperty("CSVS.SECRET_KEY", "");
+
     }
+
+    private static List<ParRegions> iniParRegions(String parPegions) {
+        List<ParRegions> listParRegions = new ArrayList<>();
+        String[] data = parPegions.split("[-:,;]");
+        for (int i = 0; i < data.length ; i=i+6){
+            listParRegions.add(
+                new ParRegions(
+                        new Region(data[i], Integer.parseInt(data[i+1]), Integer.parseInt(data[i+2])),
+                        new Region(data[i+3], Integer.parseInt(data[i+4]), Integer.parseInt(data[i+5])),
+                        Integer.parseInt(data[i+4]) - Integer.parseInt(data[i+1]))
+                );
+        }
+        return  listParRegions;
+    }
+
 
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException, URISyntaxException {
         OptionsParser parser = new OptionsParser();
@@ -79,7 +100,6 @@ public class CSVSMain {
                 case "annot":
                     command = parser.getAnnotCommand();
                     break;
-
                 case "query":
                     command = parser.getQueryCommand();
                     break;
@@ -89,7 +109,9 @@ public class CSVSMain {
                 case "recalculate":
                     command = parser.getRecalculateCommand();
                     break;
-
+                case "token":
+                    command = parser.getTokenCommand();
+                    break;
                 default:
                     System.out.println("Command not implemented!!");
                     System.exit(1);
@@ -106,18 +128,26 @@ public class CSVSMain {
 
             Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName);
 
+            if(c.populateDiseases || c.populateDiseases) {
+                new CSVSConfiguration();
+                CSVSConfiguration configuration = CSVSConfiguration.load("configuration.json");
 
-            if (c.populateDiseases) {
-                CSVSUtil.populateDiseases(datastore);
-            }
+                if (c.populateDiseases) {
+                        CSVSUtil.populateDiseases(datastore, configuration);
+                }
 
-            if (c.populateTechnologies) {
-                CSVSUtil.populateTechnologies(datastore);
+                if (c.populateTechnologies) {
+                        CSVSUtil.populateTechnologies(datastore, configuration);
+                }
             }
 
 
             if (c.newDisease != null && c.newDisease.length() > 0) {
                 CSVSUtil.addNewDisease(datastore, c.newDisease);
+            }
+
+            if (c.newMetadata != null && c.newMetadata.length() > 0) {
+                CSVSUtil.addNewMetadata(datastore, c.newMetadata);
             }
 
         } else if (command instanceof OptionsParser.CommandLoad) {
@@ -134,27 +164,31 @@ public class CSVSMain {
                 panelFile = Paths.get(c.panelFile);
 
             String personReference = c.personReference;
+            String chromGender = c.chromGender;
 
             if(c.filter){
-                if(c.panelFile == null) {
+                /*if(c.panelFile == null) {
                     System.out.println("Add param --panelFile");
                     System.exit(0);
-                }
-                CSVSUtil.filterFile(inputFile, panelFile, datastore);
+                }*/
+                CSVSUtil.filterFile(inputFile, panelFile, chromGender, datastore);
             } else {
 
-                CSVSUtil.loadVariants(inputFile, diseaseGroupId, technologyId, datastore, panelFile, personReference, c.checkPanel);
+                CSVSUtil.loadVariants(inputFile, diseaseGroupId, technologyId, datastore, panelFile, personReference, c.checkPanel, chromGender);
 
-                if (panelFile != null && c.recalculate) {
+                if (c.recalculate){
+                    // When load file affect all diseases and technologies with panels
                     List<Integer> diseases = new ArrayList<>();
-                    diseases.add(diseaseGroupId);
                     List<Integer> technologies = new ArrayList<>();
-                    technologies.add(technologyId);
 
-                    CSVSUtil.recalculate(diseases, technologies, panelFile.getFileName().toString(), datastore);
-                } else
-                    if (panelFile == null && c.recalculate)
-                        CSVSUtil.recalculate(inputFile, diseaseGroupId, technologyId, datastore);
+                    // Exome
+                    if (panelFile != null) {
+                        CSVSUtil.recalculate(diseases, technologies, panelFile.getFileName().toString(),  datastore);
+                    } else {
+                        // Genome - Check new variants in the panels
+                        CSVSUtil.recalculate(inputFile, diseases, technologies, datastore);
+                    }
+                }
             }
 
 
@@ -174,8 +208,9 @@ public class CSVSMain {
 
             Path input = Paths.get(c.input);
             Path output = Paths.get(c.output);
+            String chromGender = c.chromGender;
 
-            CSVSUtil.compressVariants(input, output);
+            CSVSUtil.compressVariants(input, output, c.replaceAF, chromGender, PAR_REGIONS);
         } else if (command instanceof OptionsParser.CommandAnnot) {
 
             OptionsParser.CommandAnnot c = (OptionsParser.CommandAnnot) command;
@@ -250,16 +285,16 @@ public class CSVSMain {
                 Iterable<Variant> query = qm.getVariantsByRegionList(regionList, diseaseId, technologyId, c.skip, c.limit, false, count);
 
                 if (!c.csv) {
-                    System.out.println("chr\tpos\tref\talt\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF");
+                    System.out.println("chr\tpos\tref\talt\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF" + (!c.fileInfo ? "" :"\tfiles"));
                 } else {
                     pw = new PrintWriter(c.outfile);
-                    pw.append("chr\tpos\tref\talt\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF").append("\n");
+                    pw.append("chr\tpos\tref\talt\t0/0\t0/1\t1/1\t./.\trefFreq\taltFreq\tMAF"+ (!c.fileInfo ? "" :"\tfiles")).append("\n");
                 }
 
                 for (Variant v : query) {
 
-                    String ref = (v.getReference() == null || v.getReference().isEmpty()) ? "." : v.getReference();
-                    String alt = (v.getAlternate() == null || v.getAlternate().isEmpty()) ? "." : v.getAlternate();
+                    String ref = (v.getReference() == null || v.getReference().isEmpty()) ? "" : v.getReference();
+                    String alt = (v.getAlternate() == null || v.getAlternate().isEmpty()) ? "" : v.getAlternate();
 
                     StringBuilder sb = new StringBuilder();
                     sb.append(v.getChromosome()).append("\t");
@@ -276,6 +311,16 @@ public class CSVSMain {
                     sb.append(dc.getRefFreq()).append("\t");
                     sb.append(dc.getAltFreq()).append("\t");
                     sb.append(dc.getMaf()).append("\t");
+
+                    if (c.fileInfo) {
+                        List<File>  files = qm.getInfoFile(v);
+
+                        if (files != null ){
+                            for (File f : files) {
+                                sb.append(f.getNameFile()).append(",");
+                            }
+                        }
+                    }
 
                     if (!c.csv) {
                         System.out.println(sb.toString());
@@ -315,7 +360,7 @@ public class CSVSMain {
                     sb.append(ref).append("\t");
                     sb.append(alt).append("\t");
                     sb.append(id).append("\t");
-
+                    System.out.println(sb);
                     DiseaseCount dc = v.getStats();
 
                     sb.append(dc.getGt00()).append("\t");
@@ -353,8 +398,27 @@ public class CSVSMain {
 
             Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName);
 
-            CSVSUtil.recalculate( c.diseaseId, c.technologyId, c.panelName, datastore);
+            if ( c.panelName != null && !"".equals(c.panelName))
+                // Exome - Panel
+                CSVSUtil.recalculate( c.diseaseId, c.technologyId, c.panelName, datastore);
+            else {
+                // Genome
+                if (c.input != null) {
+                    CSVSUtil.recalculate(Paths.get(c.input), c.diseaseId, c.technologyId, datastore);
+                } else {
+                    // All
+                    CSVSUtil.recalculate(c.diseaseId, c.technologyId, datastore);
+                    CSVSUtil.recalculateCheckUnload(c.diseaseId, c.technologyId, datastore);
+                }
+            }
+        } else if (command instanceof OptionsParser.CommandToken) {
+            OptionsParser.CommandToken c = (OptionsParser.CommandToken) command;
+            Map aditionalClaims = new HashMap();
 
+            aditionalClaims.put(CSVSToken.SUBPOPULATIONS, c.diseasesFile);
+            aditionalClaims.put(CSVSToken.NAME, c.name);
+
+            CSVSUtil.generateToken(c.issuer, c.audience, c.email, c.days, aditionalClaims, SECRET_KEY);
         } else {
             System.err.println("Comand not found");
         }

@@ -1,6 +1,51 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
-<link rel="import" href="csvs-pathopedia.html">
+
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<script>
+    CommonCSVSBehavior = {
+        properties: {
+            typeP: {
+                type: Object,
+                value: {
+                    "B": "Benign",
+                    "LB": "Likely Benign",
+                    "LP": "Likely Pathogenic",
+                    "P": "Pathogenic"
+                }
+            },
+        },
+        _toArray: function(obj) {
+            return Object.keys(obj).map(function(key) {
+                return {
+                    name: key,
+                    value: obj[key]
+                };
+            });
+        },
+        _getKeys: function (obj) {
+            return Object.keys(obj);
+        },
+        _getVariantUrl: function(variant, ref_ini, alt_ini){
+            if (variant != null) {
+                variant = variant.replace(" ", ":");
+                variant = variant.replace(">", ":");
+                if (ref_ini != undefined){
+                    variant = variant.replace(variant.split(":")[2], ref_ini);
+                }
+                if (alt_ini != undefined){
+                    variant = variant.replace(variant.split(":")[3], alt_ini);
+                }
+            }
+            return variant;
+        }
+    };
+</script>
 
 
 <!-- Ini: Main block -->
@@ -61,16 +106,16 @@
 
     </style>
     <template>
-        <template is="dom-if" if="{{file}}">
-            <paper-button on-click="openDropdownDialogAddressBook" title="Click to open contact request form">
-                <i class="fa fa-address-book-o" aria-hidden="true" ></i>
-            </paper-button>
-        </template>
+        <paper-button on-click="openDropdownDialogAddressBook" title="Click to open contact request form">
+            <i class="fa fa-address-book-o" aria-hidden="true" ></i>
+        </paper-button>
+
+
 
         <!-- Ini: New opinion -->
         <paper-dialog id="openDialogoAddressBook" title="" on-iron-overlay-opened="_disableScroll" on-iron-overlay-closed="_enableScroll" class="handlerScroll">
             <div align="right"><i class="fa fa-close" dialog-dismiss></i></div>
-            <csvs-open-address-book variant="{{variant}}" file="{{file}}" id="new_address_book" alt_ini="{{alt_ini}}" ref_ini="{{ref_ini}}" search="{{search}}"></csvs-open-address-book>
+            <csvs-open-address-book variant="{{variant}}" id="new_address_book" alt_ini="{{alt_ini}}" ref_ini="{{ref_ini}}" search="{{search}}"></csvs-open-address-book>
         </paper-dialog>
         <!-- End: New opinion -->
 
@@ -91,9 +136,6 @@
                 variant:{
                     type: String,
                 },
-                file:{
-                    type: String,
-                },
                 ref_ini:{
                     type: String
                 },
@@ -104,7 +146,7 @@
                     type: Object
                 }
             },
-            behaviors: [PathopediaBehavior],
+            behaviors: [CommonCSVSBehavior],
             openDropdownDialogAddressBook: function(e) {
                 this.$.new_address_book._clear();
                 // Call enable scroll parent
@@ -250,7 +292,7 @@
                     type: Object
                 }
             },
-            behaviors: [PathopediaBehavior],
+            behaviors: [CommonCSVSBehavior],
             validAll:function(){
                 this.$.name.invalid = false;
                 this.$.institution.invalid = false;
@@ -333,3 +375,80 @@
         });
     </script>
 </dom-module>
+
+
+
+<!-- Ini: Title variant -->
+<dom-module id="title-variant">
+    <template>
+        <style>
+            :host {
+                display: block;
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+            .cut{
+                max-width:550px;
+                width:  auto;
+                text-overflow:ellipsis;
+                white-space:nowrap;
+                overflow:hidden;
+
+            }
+            .cut:hover {
+                height: auto;
+                white-space: initial;
+                overflow:visible;
+                overflow-wrap: break-word;
+
+                display: inline-block;
+            }
+            .parent-div {
+                display: inline-flex;
+            }
+
+            .pat_label{
+                display: inline-block;
+                color: #666;
+                line-height: 21px;
+                margin-right: 5px;
+            }
+        </style>
+
+        <label class="pat_label">Chr:</label>{{chr}}
+        <label class="pat_label">Position:</label>{{position}}
+        <label class="pat_label">Alleles:</label><div class="parent-div"><label class="cut">{{alleles}}</label></div>
+    </template>
+    <script>
+        Polymer({
+            is: 'title-variant',
+            properties: {
+                variant: {
+                    type: String,
+                },
+
+                chr: {
+                    type: String,
+                    computed: '_getField(variant, 0)',
+                },
+                position: {
+                    type: String,
+                    computed: '_getField(variant,1)',
+                },
+                alleles: {
+                    type: String,
+                    computed: '_getField(variant, 2)',
+                },
+
+            },
+            _getField: function(variant, pos) {
+                var fields = variant.split(/[:-\s]+/);
+                if (fields.length > pos)
+                    return fields[pos];
+            },
+
+        });
+    </script>
+
+</dom-module>
+<!-- End: Title variant -->
