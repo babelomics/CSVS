@@ -121,7 +121,8 @@ public class PathologiesWSServer extends CSVSWSServer {
 
         if (res != null) {
             Map infoOpinion = new HashMap();
-            infoOpinion.put("variant", res.getVariant().getChromosome() + ":" + res.getVariant().getPosition()+ ":"+res.getVariant().getReference()+">"+res.getVariant().getAlternate());
+            Variant resVariant = res.getVariant();
+            infoOpinion.put("variant", resVariant.getChromosome() + ":" + resVariant.getPosition()+ ":"+resVariant.getReference()+">"+resVariant.getAlternate());
             infoOpinion.put("name", res.getName());
             infoOpinion.put("institution", res.getInstitution());
             infoOpinion.put("evidence", res.getEvidence());
@@ -166,7 +167,9 @@ public class PathologiesWSServer extends CSVSWSServer {
             if (claims.containsKey("Info")) {
                 Map aditionalClaims = (Map) claims.get("Info");
                 if (aditionalClaims.containsKey("variant")) {
-                    if (!res.getVariant().equals(aditionalClaims.get("variant")))
+                    Variant oVariant = o.getVariant();
+                    String oVariantString = oVariant.getChromosome() + ":" + oVariant.getPosition()+ ":"+oVariant.getReference()+">"+oVariant.getAlternate();
+                    if (!oVariantString.equals(aditionalClaims.get("variant")))
                         msj = "Variant no equal to token";
                 } else {
                     msj = "token no contain Variant";

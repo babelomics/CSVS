@@ -142,8 +142,9 @@ public class CSVSWSServer {
         //System.out.println("o.toString() = " + o.toString());
         QueryResult<ObjectMap> result = new QueryResult();
         result.setErrorMsg(o.toString());
-//        QueryResponse qr = createQueryResponse(result);
-        return createOkResponse(null);
+        QueryResponse qr = createQueryResponse(result);
+        //return createOkResponse(null);
+        return createOkResponse(qr);
     }
 
     protected Response createOkResponse(QueryResponse qr) {
