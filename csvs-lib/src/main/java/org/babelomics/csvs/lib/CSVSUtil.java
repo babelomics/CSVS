@@ -202,8 +202,12 @@ public class CSVSUtil {
 
         File fDb = datastore.createQuery(File.class).field("sum").equal(sha256).get();
 
+        // Check the same name
         if (fDb == null) {
+            fDb = datastore.createQuery(File.class).field("n").equal(variantsPath.getFileName().toString()).get();
+        }
 
+        if (fDb == null) {            
             Query<DiseaseGroup> queryDiseaseGroup = datastore.createQuery(DiseaseGroup.class).field("groupId").equal(diseaseGroupId);
             DiseaseGroup dg = queryDiseaseGroup.get();
 
