@@ -255,7 +255,7 @@
     </style>
     <template>
         <div align="center">
-            <p>Request information form: <title-variant  variant={{variant}}></title-variant></p>
+            <p>Request information form: <title-variant-contact  variant={{variant}}></title-variant-contact></p>
         </div>
 
         <paper-input label="Your name" id="name" required error-message="Required" on-input="validAll" char-counter maxlength="150"></paper-input>
@@ -379,7 +379,7 @@
 
 
 <!-- Ini: Title variant -->
-<dom-module id="title-variant">
+<dom-module id="title-variant-contact">
     <template>
         <style>
             :host {
@@ -421,7 +421,7 @@
     </template>
     <script>
         Polymer({
-            is: 'title-variant',
+            is: 'title-variant-contact',
             properties: {
                 variant: {
                     type: String,

@@ -1851,6 +1851,8 @@
 
                                                 var alt = ("alternateIni" in data[j]) ? data[j].alternateIni :  data[j].alternate;
                                                 var ref = ("referenceIni" in data[j]) ? data[j].referenceIni :  data[j].reference;
+                                                if (ref == "-")
+                                                    ref ="";
 
 
                                                 if (obj.variant.alternate == alt && obj.variant.reference == ref) {
