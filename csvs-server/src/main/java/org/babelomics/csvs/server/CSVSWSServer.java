@@ -7,14 +7,14 @@ import com.google.common.collect.Lists;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
-import org.babelomics.csvs.lib.connect.ClientOpencga;
+import org.babelomics.csvs.lib.CSVSUtil;
 import org.babelomics.csvs.lib.io.CSVSQueryManager;
+import org.babelomics.csvs.lib.models.LogQuery;
 import org.babelomics.csvs.lib.ws.QueryResponse;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.commons.datastore.core.QueryResult;
-import org.opencb.opencga.client.exceptions.ClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +31,7 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import org.opencb.biodata.models.feature.Region;
 
 @Path("/")
 public class CSVSWSServer {
@@ -106,6 +107,15 @@ public class CSVSWSServer {
 
         qm = new CSVSQueryManager(datastore);
 
+        // Set Num max query by user and num max minuts before use again the query
+        Map<String, String> mapConfig = new HashMap();
+        mapConfig.put(CSVSQueryManager.NUM_MAX_QUERY, properties.getProperty("CSVS.NUM_MAX_QUERY", "-1"));
+        mapConfig.put(CSVSQueryManager.NUM_MAX_MINUT, properties.getProperty("CSVS.NUM_MAX_MINUT", "-1"));
+        mapConfig.put(CSVSQueryManager.SIZE_REGION_MAX,properties.getProperty("CSVS.SIZE_REGION_MAX", "-1"));
+        mapConfig.put(CSVSQueryManager.SIZE_GENE_MAX, properties.getProperty("CSVS.SIZE_GENE_MAX", "-1"));
+        mapConfig.put(CSVSQueryManager.SIZE_SNP_HGVS_MAX, properties.getProperty("CSVS.SIZE_SNP_HGVS_MAX", "-1"));
+
+        qm.setParametersConfig(mapConfig);
     }
 
     public CSVSWSServer(@PathParam("version") String version, @Context UriInfo uriInfo, @Context HttpServletRequest httpServletRequest) throws IOException {
@@ -119,6 +129,10 @@ public class CSVSWSServer {
         this.sessionIp = httpServletRequest.getRemoteAddr();
     }
 
+    /**
+     * Check user is Autehticate
+     * @return
+     */
     protected String checkAuthentication(){
         String result = "";
         //if (false) {
@@ -126,24 +140,25 @@ public class CSVSWSServer {
             if (sid == null || user == null) {
                 result = "Empty user or token";
             } else {
-                ClientOpencga clientOpenca = new ClientOpencga();
-                try {
-                    Map<String, String> info = clientOpenca.info(this.user, this.sid);
-                    if (info.containsKey("error"))
-                        result = info.get("error");
-                    if (!info.containsKey("email") || info.get("email").isEmpty())
-                        result = "User not logged";
-                } catch (ClientException e) {
-                    e.printStackTrace();
-                    result = e.getMessage();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    result = e.getMessage();
-                }
+                result = CSVSUtil.checkAuthentication(this.user, this.sid);
             }
         }
         return result;
     }
+
+    /**
+     * Check num querys
+     * @param logQuery
+     * @return
+     */
+    protected String checkLogQuery( LogQuery logQuery){
+        String result = "";
+        if (autentication) {
+            return qm.checkLogQuery(logQuery);
+        }
+        return result;
+    }
+
 
     protected Response createErrorResponse(Object o) {
         System.out.println("ERROR");

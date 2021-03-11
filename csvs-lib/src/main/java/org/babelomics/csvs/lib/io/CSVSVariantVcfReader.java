@@ -129,7 +129,6 @@ public class CSVSVariantVcfReader implements VariantReader {
             Boolean isReference=true;
             List<Variant> variants = null;
             // Look for a non reference position (alternative != '.')
-
             while (line != null && isReference) {
                 try {
                     if((line.toLowerCase()).startsWith("chr"))
@@ -189,10 +188,15 @@ public class CSVSVariantVcfReader implements VariantReader {
      */
     private String[] tranformAnnotation (String[] fields, String[]  GTTemp){
         String[] GT = new String[2];
+        String checkTemp = GTTemp[0];
+
+        Pattern p = Pattern.compile("^[0-9]+$");
+        if (p.matcher(checkTemp).matches())
+            checkTemp = "NUMBER";
 
         if (GTTemp.length < 2) {
-            switch (GTTemp[0]){
-                case "0": case "1":
+            switch (checkTemp){
+                case "NUMBER": // case "0": case "1": case "2": case "3": ...
                     if ("MT".equals(fields[0])) {
                         GT[0] = GTTemp[0];
                         GT[1] = GTTemp[0];

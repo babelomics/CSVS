@@ -12,6 +12,7 @@ import htsjdk.variant.variantcontext.writer.VariantContextWriterBuilder;
 import htsjdk.variant.vcf.*;
 import org.babelomics.csvs.lib.annot.CellBaseAnnotator;
 import org.babelomics.csvs.lib.config.CSVSConfiguration;
+import org.babelomics.csvs.lib.connect.ClientOpencga;
 import org.babelomics.csvs.lib.io.*;
 import org.babelomics.csvs.lib.models.*;
 import org.babelomics.csvs.lib.models.Panel;
@@ -32,6 +33,7 @@ import org.opencb.commons.io.DataReader;
 import org.opencb.commons.io.DataWriter;
 import org.opencb.commons.run.Runner;
 import org.opencb.commons.run.Task;
+import org.opencb.opencga.client.exceptions.ClientException;
 
 import java.awt.*;
 import java.io.FileInputStream;
@@ -969,5 +971,27 @@ public class CSVSUtil {
             }
         }
     }
+
+
+    public static String  checkAuthentication(String user, String sid){
+        String result = "";
+        ClientOpencga clientOpenca = new ClientOpencga();
+        try {
+            Map<String, String> info = clientOpenca.info(user, sid);
+            if (info.containsKey("error"))
+                result = info.get("error");
+            if (!info.containsKey("email") || info.get("email").isEmpty())
+                result = "User not logged";
+        } catch (ClientException e) {
+            e.printStackTrace();
+            result = e.getMessage();
+        } catch (IOException e) {
+            e.printStackTrace();
+            result = e.getMessage();
+        }
+        return result;
+    }
+
+
 
 }

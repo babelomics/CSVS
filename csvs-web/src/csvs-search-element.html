@@ -588,9 +588,17 @@
                 observer: 'hiddenChanged',
                 nofity: true
             },
-            maxLength: {
+            sizeRegionMax: {
                 type: Number,
-                value: 1000000
+                value: !!window.SIZE_REGION_MAX ? window.SIZE_REGION_MAX : -1
+            },
+            sizeGeneMax:{
+                type: Number,
+                value: !!window.SIZE_GENE_MAX ? window.SIZE_GENE_MAX: 3
+            },
+            sizeSnpHGVsMax:{
+                type: Number,
+                value: !!window.SIZE_SNP_HGVS_MAX ? window.SIZE_SNP_HGVS_MAX: 10
             },
             isLogged: {
                 type: Boolean
@@ -1653,10 +1661,25 @@
 
 
             var regions = [];
-            if (regionValue != null) {
+            if (regionValue != null &&  this.sizeRegionMax > -1) {
                 regions = regionValue.split(",");
-                if (regions.length > this.maxLength ) {
-                    new StvDialog().alert("The total size of all provided regions can't exceed " + this.maxLength + " positions.");
+
+                var rDialog = [];
+                var total=0;
+                for (var iR = 0; iR < regions.length; iR++) {
+                    var r = regions[iR].trim().split(/[:-]/);
+                    if (r.length < 3)
+                        rDialog.push(regions[iR]);
+                    else {
+                        total = total + (r[2]-r[1]);
+                        if ( total > this.sizeRegionMax) {
+                            rDialog.push(regions[iR]);
+                        }
+                    }
+                }
+
+                if (rDialog.length > 0) {
+                    new StvDialog().alert("The total size of all provided regions can't exceed " + this.sizeRegionMax + " positions: " + rDialog.join(","));
                     return
                 }
             }
@@ -1672,8 +1695,8 @@
                     genes[i] = genes[i].trim();
                 }
 
-                if (genes.length > 5 ) {
-                    new StvDialog().alert("The maximum number of genes is 5.");
+                if (genes.length > this.sizeGeneMax ) {
+                    new StvDialog().alert("The maximum number of genes is "+ this.sizeGeneMax + ".");
                     return;
                 }
 
@@ -1749,8 +1772,8 @@
                     }
                 }
 
-                if (snpsIds.length + cDnas.length + proteins.length > 10 ) {
-                    new StvDialog().alert("The maximum number of SNPId/HGVSc/HGVS is 10.");
+                if (snpsIds.length + cDnas.length + proteins.length > this.sizeSnpHGVsMax ) {
+                    new StvDialog().alert("The maximum number of SNPId/HGVSc/HGVS is "+ this.sizeSnpHGVsMax + ".");
                     return;
                 }
 
@@ -1840,8 +1863,11 @@
                 }
             }
 
+
+
             // EXECUTE QUERY
-            if ((regions.length > 0 || cDnas.length > 0 || proteins.length > 0 || consequencesTypes.length > 0 ) &&  msj == "" ) {
+            //|| consequencesTypes.length > 0
+            if ((regions.length > 0 || cDnas.length > 0 || proteins.length > 0  ) &&  msj == "" ) {
                 var regionQuery = regions.join(",");
                 query.regions = regionQuery;
                 query.diseases = diseaseIds.join(",");
@@ -1910,8 +1936,12 @@
                 if (regions.length + genes.length  == 0 && checkPosition)
                     msj = msj + "Please add a chromosoma location, gene or SNPId for annotation HGVSc/HGVSp.\n";
 
+                /* Limit num positions
                 if (regions.length + genes.length + consequencesTypes.length + cDnas.length + proteins.length  == 0 && !checkPosition)
                     msj = msj + "Please add a chromosoma location, gene, SNPId/HGVSc/HGVSp or Consequence Type.\n";
+                    */
+                if (regions.length + genes.length + cDnas.length + proteins.length  == 0 && !checkPosition)
+                    msj = msj + "Please add a chromosoma location, gene or SNPId/HGVSc/HGVSp.\n";
             }
 
             if(msj != ""){
@@ -2090,8 +2120,13 @@
             var doubleVariant = [];
             var referencePosition = [];
             var referenceVariant = [];
-            if (data != undefined && data.length > 0 && data[0] != undefined && data[0].errorMsg == "User not logged"){
-                alert(data[0].errorMsg);
+            if (data != undefined && data.length > 0 && data[0] != undefined && data[0].errorMsg != undefined){
+                if (data[0].errorMsg == "User not logged" || data[0].errorMsg.search("queries"))
+                    alert(data[0].errorMsg);
+                else {
+                    alert("Problem to get info from server");
+                    console.log(data[0].errorMsg);
+                }
                 return [];
             }
 

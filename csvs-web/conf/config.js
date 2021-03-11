@@ -1,4 +1,4 @@
-CSVS_HOST = "http://192.168.150.147:9799/rest";
+CSVS_HOST = "http://localhost:8080/rest";
 
 CELLBASE_VERSION = "";
 CELLBASE_HOST = "";
@@ -29,7 +29,7 @@ CSVS_LIMIT_MAX=10;
 WS_HOST='';
 WS_VERSION='';
 WS_ENSEMBL='';
-WS_ASSEMBLY='';
+WS_ASSEMBLY='37';
 
 
 URL_MAIL='';
@@ -59,3 +59,9 @@ VERSIONS={
         }
     ]
 };
+
+//MAINTENANCE="1/30/2022";
+
+SIZE_REGION_MAX= 2310000;
+SIZE_GENE_MAX=5;
+SIZE_SNP_HGVS_MAX=10;

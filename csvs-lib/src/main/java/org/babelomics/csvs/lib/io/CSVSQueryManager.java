@@ -1,5 +1,6 @@
 package org.babelomics.csvs.lib.io;
 
+import com.google.common.collect.Lists;
 import com.mongodb.*;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.mutable.MutableLong;
@@ -14,6 +15,7 @@ import javax.swing.text.html.StyleSheet;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
 import java.util.*;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -29,9 +31,15 @@ import java.util.stream.Collectors;
  */
 public class CSVSQueryManager {
 
-    private static final String EMPTY_TERM = "EMPTY SO TERMS" ;
     final Datastore datastore;
-    static final int DECIMAL_POSITIONS = 3;
+    private static final String EMPTY_TERM = "EMPTY SO TERMS" ;
+    final int DECIMAL_POSITIONS = 3;
+    private Map<String, String> mapConfig = new HashMap<>();
+    public static final String NUM_MAX_QUERY = "NUM_MAX_QUERY";
+    public static final String NUM_MAX_MINUT = "NUM_MAX_MINUT";
+    public static final String SIZE_REGION_MAX = "SIZE_REGION_MAX";
+    public static final String SIZE_GENE_MAX = "SIZE_GENE_MAX";
+    public static final String SIZE_SNP_HGVS_MAX = "SIZE_SNP_HGVS_MAX";
 
 
     public CSVSQueryManager(String host, String dbName) {
@@ -47,6 +55,87 @@ public class CSVSQueryManager {
 
     public CSVSQueryManager(Datastore datastore) {
         this.datastore = datastore;
+    }
+
+    public void setParametersConfig( Map<String, String> mapConfig){
+        this.mapConfig = mapConfig;
+    }
+    public Integer getParConfig(String key){
+        if (!this.mapConfig.containsKey(key))
+            return -1;
+        else
+            return Integer.parseInt(this.mapConfig.get(key));
+    }
+
+
+    /**
+     * Check num querys and time last query.
+     * @param logQuery
+     * @return
+     */
+
+    public  String  checkLogQuery(LogQuery logQuery) {
+        String result = "";
+        if (getParConfig(SIZE_REGION_MAX) != -1 && logQuery.getRegion().size() > 0) {
+            int sumBase = 0;
+            List<String> regions = logQuery.getRegion();
+            for (int i = 0; i < regions.size() ; i++) {
+                Region r = new Region(regions.get(i));
+                sumBase = sumBase + r.getEnd()-r.getStart();
+            }
+            // num genes + cromosomal location + snpid
+            if (sumBase > getParConfig(SIZE_GENE_MAX) * getParConfig(SIZE_REGION_MAX)  + getParConfig(SIZE_REGION_MAX) + getParConfig(SIZE_SNP_HGVS_MAX) )
+                result = "The total size of all provided regions can't exceed " + getParConfig(SIZE_REGION_MAX) + " positions";
+        }
+        if (getParConfig(SIZE_SNP_HGVS_MAX) != -1 && (logQuery.getProteinsList().size() + logQuery.getCdnasList().size()) > getParConfig(SIZE_SNP_HGVS_MAX) )
+            result = "The maximum number of HGVSc/HGVS is " + getParConfig(SIZE_SNP_HGVS_MAX)+ ".";
+
+
+        if (getParConfig(NUM_MAX_QUERY) != -1 && getParConfig(NUM_MAX_MINUT) != -1 ) {
+            long expiremilis = getParConfig(NUM_MAX_MINUT);
+
+            DBObject obj = new BasicDBObject();
+            obj.put("userId", logQuery.getUserId());
+            Date firstDate = new Date();
+            obj.put("date", new BasicDBObject("$lte", new Date(logQuery.getDate().getTime() - expiremilis)));
+            datastore.getCollection(LogQuery.class).remove(obj);
+
+            Iterator ilistLogQueryUser = datastore.createQuery(LogQuery.class).field("userId").equal(logQuery.getUserId()).iterator();
+
+            List<String> newQuerysRegion = logQuery.getRegion();
+            List<String> newQuerysCdna = logQuery.getCdnasList();
+            List<String> newQuerysProteins = logQuery.getProteinsList();
+
+            int numLogQueryUser = 0;
+
+            while (ilistLogQueryUser.hasNext() && !newQuerysRegion.isEmpty()) {
+                LogQuery oObj = (LogQuery) ilistLogQueryUser.next();
+                firstDate = oObj.getDate();
+
+                // Delete querys repeats
+                Lists.newArrayList(oObj.getRegion()).stream().forEach(x -> newQuerysRegion.remove(x));
+                Lists.newArrayList(oObj.getCdnasList()).stream().forEach(x -> newQuerysCdna.remove(x));
+                Lists.newArrayList(oObj.getProteinsList()).stream().forEach(x -> newQuerysProteins.remove(x));
+
+                numLogQueryUser++;
+            }
+
+            // Add new query
+            if (newQuerysRegion.size() > 0 || newQuerysCdna.size() > 0 || newQuerysProteins.size() > 0) {
+                if (numLogQueryUser >= getParConfig(NUM_MAX_QUERY)) {
+                    Duration d = Duration.between(  logQuery.getDate().toInstant()  , new Date(firstDate.getTime() + expiremilis).toInstant() );
+                    long minutesPart = d.toMinutes();
+                    long secondsPart = d.minusMinutes( minutesPart ).getSeconds() ;
+                    long min= getParConfig(NUM_MAX_MINUT)/60000;
+                    result = "You can't make more than " + getParConfig(NUM_MAX_QUERY) + " queries distinct in " + min + " minutes. The time remaining to search is " + (minutesPart != 0 ? minutesPart+" minutes ": "") + (secondsPart != 0 ? secondsPart+" seconds ": "") + ".";
+                } else {
+                    logQuery.setRegion(newQuerysRegion);
+                    datastore.save(logQuery);
+                }
+            }
+        }
+
+        return result;
     }
 
     public DiseaseGroup getDiseaseById(int id) {
@@ -378,11 +467,11 @@ public class CSVSQueryManager {
 
         int i = 0;
         for (Region r : regions) {
-         //   List<String> chunkIds = getChunkIds(r);
+            // List<String> chunkIds = getChunkIds(r);
             Query<Variant> auxQuery = this.datastore.createQuery(Variant.class);
 
             List<Criteria> and = new ArrayList<>();
-            //and.add(auxQuery.criteria("_at.chIds").in(chunkIds));
+            // and.add(auxQuery.criteria("_at.chIds").in(chunkIds));
             and.add(auxQuery.criteria("chromosome").equal(r.getChromosome()));
             and.add(auxQuery.criteria("position").greaterThanOrEq(r.getStart()));
             and.add(auxQuery.criteria("position").lessThanOrEq(r.getEnd()));
@@ -445,7 +534,7 @@ public class CSVSQueryManager {
         }
 
 
-        System.out.println("query = " + query);
+       // System.out.println("query = " + query);
 
         Iterable<Variant> aux = query.fetch();
 

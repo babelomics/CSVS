@@ -1,0 +1,71 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<script>
+    CsvsApplicationBehavior = {
+        properties: {
+            selectedOption: {
+                type: String,
+                reflectToAttribute: true,
+                observer: 'checkUtilInfo'
+            },
+        },
+        observers: [
+            'selectedOptionChanged(selectedOption)',
+        ],
+
+        ready: function() {
+        },
+
+        checkUtilInfo: function(neo) {
+            var me = this;
+
+            if (neo == "search" &&  Cookies('csvs-ok-info-help') == null){
+                var utilInfo = Polymer.dom(this).querySelector('#utilInfo');
+                if (utilInfo == null) {
+                    var utilInfo = document.createElement('div');
+                    utilInfo.classList.add('stv-note', 'stv-note-info');
+                    utilInfo.setAttribute('id', 'utilInfo');
+                    utilInfo.style.position = 'fixed';
+                    utilInfo.style.left = '0';
+                    utilInfo.style.right = '0';
+                    utilInfo.style.top = '10px';
+                    utilInfo.style.zIndex = '10000';
+                    utilInfo.style.fontSize = '16px';
+                    utilInfo.style.maxWidth = '510px';
+                    utilInfo.style.margin = '0 auto';
+                    utilInfo.style.overflow = 'auto';
+                    utilInfo.style.boxShadow = '0px 0px 6px 3px rgba(0, 0, 0, 0.30)';
+                    //utilInfo.style.backgroundColor = 'rgb(232, 244, 253)';
+                    //utilInfo.style.color = 'rgb(13, 60, 97)';
+
+                    var msg = [
+                        'For IRPVS documentation and database version, click on top-right  <i class="fa fa-question-circle"> icon. </i>',
+                        '<div style="padding-top: 10px;font-size:12px;"> ' +
+                        '<div style="display: inline-block; width: 90%">' +
+                        '<input type="checkbox" id="infoCheck" name="infoCheck">' +
+                        '<label for="vehicle1">Do not display this warning again.</label>' +
+                        '</div>' +
+                        '<div style="text-align:right;text-decoration:underline;display: inline-block;width: 10%"><div id="btnUtilInfo" name="btnUtilInfo">OK</div></div>' +
+                        '</div>'
+                    ];
+                    utilInfo.innerHTML = msg.join(' ');
+                    var btnUtilInfo = utilInfo.querySelector('#btnUtilInfo');
+
+                    if (btnUtilInfo != null) {
+                        btnUtilInfo.addEventListener('click', function () {
+                            var infoCheck = utilInfo.querySelector('#infoCheck');
+                            if (infoCheck.checked == true) {
+                                Cookies.set('csvs-ok-info-help', 'true', {
+                                    expires: 3600 * 24 * 30
+                                }); // Expires in 1 month
+                            }
+                            Polymer.dom(me.root).removeChild(utilInfo);
+                        });
+                    }
+
+                    Polymer.dom(this.root).appendChild(utilInfo);
+                }
+            }
+        },
+    };
+</script>

@@ -5,6 +5,7 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.mutable.MutableLong;
+import org.babelomics.csvs.lib.models.LogQuery;
 import org.babelomics.csvs.lib.models.Variant;
 import org.babelomics.csvs.lib.ws.QueryResponse;
 import org.opencb.biodata.models.feature.Region;
@@ -18,6 +19,7 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 
@@ -51,6 +53,8 @@ public class VariantsWSServer extends CSVSWSServer {
         if (!errorAuthentication.isEmpty())
             return createErrorResponse(errorAuthentication);
 
+
+        List<String> regionListQuery = new ArrayList<>();
         List<Region> regionList = new ArrayList<>();
         List<Integer> diseaseList = new ArrayList<>();
         List<Integer> technologyList = new ArrayList<>();
@@ -58,11 +62,10 @@ public class VariantsWSServer extends CSVSWSServer {
         List<String> proteinsList = new ArrayList<>();
         List<String> consequencesTypesList = new ArrayList<>();
 
-        System.out.println("diseases = " + diseases);
-        System.out.println("technologies = " + technologies);
+       // System.out.println("diseases = " + diseases);
+        //System.out.println("technologies = " + technologies);
 
         int regionsSize = 0;
-
 
         if (regions.length() > 0) {
             String[] regSplits = regions.split(",");
@@ -70,6 +73,7 @@ public class VariantsWSServer extends CSVSWSServer {
                 Region r = Region.parseRegion(s);
                 regionList.add(r);
                 regionsSize += r.getEnd() - r.getStart();
+                regionListQuery.add(s);
             }
         }
 
@@ -77,7 +81,6 @@ public class VariantsWSServer extends CSVSWSServer {
             String[] disSplits = diseases.split(",");
             for (String d : disSplits) {
                 diseaseList.add(Integer.valueOf(d));
-
             }
         }
 
@@ -101,6 +104,11 @@ public class VariantsWSServer extends CSVSWSServer {
         }
 
 
+        String errorLogQuery = checkLogQuery(new LogQuery(user, new Date(), regionListQuery, cdnasList, proteinsList));
+        if (!errorLogQuery.isEmpty())
+            return createErrorResponse(errorLogQuery);
+
+
         MutableLong count = new MutableLong(-1);
 
         if (csv) {
@@ -116,7 +124,7 @@ public class VariantsWSServer extends CSVSWSServer {
         Iterable<Variant> variants = qm.getVariantsByRegionList(regionList, diseaseList, technologyList, skip, limit, skipCount, count, cdnasList, proteinsList, consequencesTypesList);
         long end = System.currentTimeMillis();
 
-        System.out.println("(end-start) = " + (end - start));
+       // System.out.println("(end-start) = " + (end - start));
 
         QueryResponse qr = createQueryResponse(variants);
         qr.setNumTotalResults(count.getValue());
@@ -179,8 +187,8 @@ public class VariantsWSServer extends CSVSWSServer {
             }
         }
 
-        System.out.println("diseaseList = " + diseaseList);
-        System.out.println("technologyList = " + technologyList);
+       // System.out.println("diseaseList = " + diseaseList);
+       // System.out.println("technologyList = " + technologyList);
 
         List<Variant> variantRes = qm.getVariants(variantList, diseaseList, technologyList);
 

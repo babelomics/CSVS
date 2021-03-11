@@ -37,6 +37,9 @@
 <link rel="import" href="src/csvs-how-to-cite.html">
 <link rel="import" href="src/csvs-version.html">
 
+<link rel="import" href="src/csvs-application-behavior.html">
+
+
 <dom-module id="csvs-element">
     <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
         :host {
@@ -245,7 +248,7 @@
 <script>
     Polymer({
         is: 'csvs-element',
-        behaviors: [StvApplicationBehavior],
+        behaviors: [StvApplicationBehavior, CsvsApplicationBehavior],
         properties: {
             diseases: {
                 type: Array,
@@ -298,6 +301,10 @@
             },
             acceptTermsCond: {
                 type: Boolean
+            },
+            maintenance:{
+                type: Boolean,
+                value: window.MAINTENANCE != null ? window.MAINTENANCE : ""
             },
         },
         ready: function() {
