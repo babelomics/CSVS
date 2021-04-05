@@ -1,5 +1,6 @@
 package org.babelomics.csvs.lib.io;
 
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.mongodb.*;
 import org.apache.commons.collections.ListUtils;
@@ -94,14 +95,37 @@ public class CSVSQueryManager {
         if (getParConfig(NUM_MAX_QUERY) != -1 && getParConfig(NUM_MAX_MINUT) != -1 ) {
             long expiremilis = getParConfig(NUM_MAX_MINUT);
 
-            DBObject obj = new BasicDBObject();
-            obj.put("userId", logQuery.getUserId());
+            // 1. Get query user
+            Iterator<LogQuery> iLogQueryUser =  datastore.createQuery(LogQuery.class).field("userId").equal(logQuery.getUserId()).order("-date").iterator();
+
             Date firstDate = new Date();
-            obj.put("date", new BasicDBObject("$lte", new Date(logQuery.getDate().getTime() - expiremilis)));
-            datastore.getCollection(LogQuery.class).remove(obj);
+            // 2. If distinct session more that max_minutes delete all
+            if (iLogQueryUser.hasNext()) {
+                List <LogQuery> listLogQueryUser = Lists.newArrayList(iLogQueryUser);
+                LogQuery last = listLogQueryUser != null && !listLogQueryUser.isEmpty() ? listLogQueryUser.get(0) : null;
+
+                Duration diffInMillies = Duration.between( listLogQueryUser.get(0).getDate().toInstant(), logQuery.getDate().toInstant());
+                if (!last.getIdSession().equals(logQuery.getIdSession())) {
+                    if (diffInMillies.toMillis() > expiremilis) {
+                        DBObject obj = new BasicDBObject();
+                        obj.put("userId", logQuery.getUserId());
+                        datastore.getCollection(LogQuery.class).remove(obj);
+                    }
+                } else {
+                    // 3. If it is same session and more that max_query and more that max_minutes, then delete all
+                    if (diffInMillies.toMillis() > expiremilis && listLogQueryUser.size() >= getParConfig(NUM_MAX_QUERY)) {
+                        DBObject obj = new BasicDBObject();
+                        obj.put("userId", logQuery.getUserId());
+                        datastore.getCollection(LogQuery.class).remove(obj);
+                    }
+                }
+            }
+
 
             Iterator ilistLogQueryUser = datastore.createQuery(LogQuery.class).field("userId").equal(logQuery.getUserId()).iterator();
 
+
+            // Check if add
             List<String> newQuerysRegion = logQuery.getRegion();
             List<String> newQuerysCdna = logQuery.getCdnasList();
             List<String> newQuerysProteins = logQuery.getProteinsList();
@@ -123,11 +147,11 @@ public class CSVSQueryManager {
             // Add new query
             if (newQuerysRegion.size() > 0 || newQuerysCdna.size() > 0 || newQuerysProteins.size() > 0) {
                 if (numLogQueryUser >= getParConfig(NUM_MAX_QUERY)) {
-                    Duration d = Duration.between(  logQuery.getDate().toInstant()  , new Date(firstDate.getTime() + expiremilis).toInstant() );
+                    Duration d = Duration.between( logQuery.getDate().toInstant(), new Date(firstDate.getTime() + expiremilis).toInstant());
                     long minutesPart = d.toMinutes();
                     long secondsPart = d.minusMinutes( minutesPart ).getSeconds() ;
                     long min= getParConfig(NUM_MAX_MINUT)/60000;
-                    result = "You can't make more than " + getParConfig(NUM_MAX_QUERY) + " queries distinct in " + min + " minutes. The time remaining to search is " + (minutesPart != 0 ? minutesPart+" minutes ": "") + (secondsPart != 0 ? secondsPart+" seconds ": "") + ".";
+                    result = "You can't make more than " + getParConfig(NUM_MAX_QUERY) + " queries. The time remaining to search is " + (minutesPart != 0 ? minutesPart+" minutes ": "") + (secondsPart != 0 ? secondsPart+" seconds ": "") + ".";
                 } else {
                     logQuery.setRegion(newQuerysRegion);
                     datastore.save(logQuery);

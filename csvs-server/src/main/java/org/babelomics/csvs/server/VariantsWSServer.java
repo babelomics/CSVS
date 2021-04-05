@@ -104,7 +104,7 @@ public class VariantsWSServer extends CSVSWSServer {
         }
 
 
-        String errorLogQuery = checkLogQuery(new LogQuery(user, new Date(), regionListQuery, cdnasList, proteinsList));
+        String errorLogQuery = checkLogQuery(new LogQuery(user, sid, new Date(), regionListQuery, cdnasList, proteinsList));
         if (!errorLogQuery.isEmpty())
             return createErrorResponse(errorLogQuery);
 

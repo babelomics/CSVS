@@ -22,6 +22,9 @@ public class LogQuery {
     @Property("userId")
     private String userId;
 
+    @Property("idSession")
+    private String idSession;
+
     @Property("date")
     private Date date;
 
@@ -37,17 +40,19 @@ public class LogQuery {
     public LogQuery() {
     }
 
-    public LogQuery(ObjectId id, String userId, Date date, List<String> region, List<String> cdnasList, List<String> proteinsList) {
+    public LogQuery(ObjectId id, String userId, String idSession, Date date, List<String> region, List<String> cdnasList, List<String> proteinsList) {
         this.id = id;
         this.userId = userId;
+        this.idSession = idSession;
         this.date = date;
         this.region = region;
         this.cdnasList = cdnasList;
         this.proteinsList = proteinsList;
     }
 
-    public LogQuery(String userId, Date date, List<String> region, List<String> cdnasList, List<String> proteinsList) {
+    public LogQuery(String userId,String idSession,  Date date, List<String> region, List<String> cdnasList, List<String> proteinsList) {
         this.userId = userId;
+        this.idSession = idSession;
         this.date = date;
         this.region = region;
         this.cdnasList = cdnasList;
@@ -74,6 +79,14 @@ public class LogQuery {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public String getIdSession() {
+        return idSession;
+    }
+
+    public void setIdSession(String idSession) {
+        this.idSession = idSession;
     }
 
     public Date getDate() {

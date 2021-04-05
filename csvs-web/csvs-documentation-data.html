@@ -283,14 +283,15 @@
                             <div class="paragraph">1. Position:<br>
                                 This filter has three possibilities:
                                 <ul>
-                                    <li>Chromosomal Location: Region where narrow your search. Chromosome: Start-End. <br/>
-                                        Example: 1:10004570-1004646.
+                                    <li>Chromosomal Location: Region where narrow your search. Chromosome: Start-End. The maximum size is 2,310,000 bases.<br/>
+                                        Example: 1:876400-879676.
+
                                     </li>
                                     <li>Gene: Get variants for a particular gene (or a set of genes separated by commas. <br/>
                                         Example: BRCA2,PPL. The maximum number of genes allowed is 5.
                                     </li>
                                     <li>SNPId/HGVSc/HGVSp: You can search variants by SNPId, HGVS transcript nomenclature (HGVSc) or HGVS
-                                        protein nomenclature (HGVSp). In the last case, gene is mandatory.<br/>
+                                        protein nomenclature (HGVSp). In the last case, gene is mandatory.  The maximum number of HGVS allowed is 10.<br/>
 
                                         Example 1. SNPId: if the snp doesn't exist in the database, it displays the message: "No result for this SNPid"<br/>
                                         <img src="images/documentation/filter_example_SNPId.png"/><br/>
@@ -304,6 +305,10 @@
                                     </li>
                                 </ul>
                                 Either a search region or a gene or SNPId/HGVSc/HGVSp must be introduced for searching variants.
+
+                                <div>
+                                    NOTE: The number of searches distinct that can be made is 20. Then it takes 5 minutes to be able to search again.
+                                </div>
                             </div>
                             <div class="paragraph">
                                 2. Consequence Type:<br/>
