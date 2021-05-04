@@ -837,6 +837,7 @@
             var lastQuery = '';
             this.geneValue = "PPL";
 
+
             this.async(function () { // DOM READY
                 me.selectedMenuTool = me.$.menu.querySelector('div');
                 me.$.gv.createGenomeViewer();
@@ -846,6 +847,15 @@
 
                 this.initTitleMenu();
             }, 50);
+
+            // Load region from request
+            if (window.location.search != "" && window.location.search.includes("?regions=")) {
+                this.$.filterPosition.load({
+                    region: window.location.search.replace("?regions=","")
+                });
+                // Search
+                this.submitForm();
+            }
 
             this.columns = [{
                     name: 'chromosome',
