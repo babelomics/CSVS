@@ -81,6 +81,8 @@ public class OptionsParser {
         String pass = "";
         @Parameter(names = {"--dbName"}, description = "DB Name", arity = 1)
         String dbName = "csvs";
+        @Parameter(names = {"--uri"}, description = "URI connect database", arity = 1)
+        String uri = "";
     }
 
     @Parameters(commandNames = {"unload"}, commandDescription = "Unloads variants from the DB")
@@ -104,6 +106,8 @@ public class OptionsParser {
         String pass = "";
         @Parameter(names = {"--dbName"}, description = "DB Name", arity = 1)
         String dbName = "csvs";
+        @Parameter(names = {"--uri"}, description = "URI connect database", arity = 1)
+        String uri = "";
     }
 
     @Parameters(commandNames = {"count"}, commandDescription = "Calculate genotype counts")
@@ -170,6 +174,8 @@ public class OptionsParser {
         String dbName = "csvs";
         @Parameter(names = {"--fileInfo"}, description = "Get info about file and person reference")
         boolean fileInfo;
+        @Parameter(names = {"--uri"}, description = "URI connect database", arity = 1)
+        String uri = "";
 
 
     }
@@ -200,6 +206,8 @@ public class OptionsParser {
         String pass = "";
         @Parameter(names = {"--dbName"}, description = "DB Name", arity = 1)
         String dbName = "csvs";
+        @Parameter(names = {"--uri"}, description = "URI connect database", arity = 1)
+        String uri = "";
 
 
     }
@@ -228,6 +236,8 @@ public class OptionsParser {
         String pass = "";
         @Parameter(names = {"--dbName"}, description = "DB Name", arity = 1)
         String dbName = "csvs";
+        @Parameter(names = {"--uri"}, description = "URI connect database", arity = 1)
+        String uri = "";
 
     }
 
@@ -243,6 +253,8 @@ public class OptionsParser {
         String pass = "";
         @Parameter(names = {"--dbName"}, description = "DB Name", arity = 1)
         String dbName = "csvs";
+        @Parameter(names = {"--uri"}, description = "URI connect database", arity = 1)
+        String uri = "";
 
         @Parameter(names = {"--diseaseId"}, description = "DiseaseId")
         List<Integer> diseaseId = new ArrayList<>();
@@ -286,6 +298,8 @@ public class OptionsParser {
         String pass = "";
         @Parameter(names = {"--dbName"}, description = "DB Name", arity = 1)
         String dbName = "csvs";
+        @Parameter(names = {"--uri"}, description = "URI connect database", arity = 1)
+        String uri = "";
     }
 
     @Parameters(commandNames = {"token"}, commandDescription = "Create token to downloads files")

@@ -51,7 +51,7 @@ import static java.lang.System.exit;
  */
 public class CSVSUtil {
 
-    public static Datastore getDatastore(String host, String user, String pass, String dbName) {
+    public static Datastore getDatastore(String host, String user, String pass, String dbName, String uri) {
 
         Datastore datastore;
 
@@ -63,7 +63,12 @@ public class CSVSUtil {
             mongoClient = new MongoClient(host);
         } else {
             MongoCredential credential = MongoCredential.createCredential(user, dbName, pass.toCharArray());
-            mongoClient = new MongoClient(new ServerAddress(host), Arrays.asList(credential));
+            if (uri.isEmpty()) {
+                mongoClient = new MongoClient(new ServerAddress(host), Arrays.asList(credential));
+            } else{
+                MongoClientURI mongoClientURI = new MongoClientURI(uri);
+                mongoClient = new MongoClient(mongoClientURI);
+            }
         }
 
         datastore = morphia.createDatastore(mongoClient, dbName);

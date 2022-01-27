@@ -126,7 +126,7 @@ public class CSVSMain {
         if (command instanceof OptionsParser.CommandSetup) {
             OptionsParser.CommandSetup c = (OptionsParser.CommandSetup) command;
 
-            Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName);
+            Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName, c.uri);
 
             if(c.populateDiseases || c.populateDiseases) {
                 new CSVSConfiguration();
@@ -157,7 +157,7 @@ public class CSVSMain {
             int diseaseGroupId = c.disease;
             int technologyId = c.technology;
 
-            Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName);
+            Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName, c.uri);
 
             Path panelFile = null;
             if (!c.panelFile.isEmpty())
@@ -200,7 +200,7 @@ public class CSVSMain {
             int diseaseGroupId = c.disease;
             int technologyId = c.technology;
 
-            Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName);
+            Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName, c.uri);
 
             CSVSUtil.unloadVariants(inputFile, diseaseGroupId, technologyId, datastore);
         } else if (command instanceof OptionsParser.CommandCount) {
@@ -220,14 +220,14 @@ public class CSVSMain {
             boolean override = c.override;
             boolean gene = c.gene;
 
-            Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName);
+            Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName, c.uri);
 
             CSVSUtil.annot(ct, remove, override, gene, datastore, CELLBASE_HOST, CELLBASE_VERSION);
 
         } else if (command instanceof OptionsParser.CommandQuery) {
             OptionsParser.CommandQuery c = (OptionsParser.CommandQuery) command;
 
-            Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName);
+            Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName, c.uri);
 
             CSVSQueryManager qm = new CSVSQueryManager(datastore);
 
@@ -389,14 +389,14 @@ public class CSVSMain {
             OptionsParser.CommandAnnotFile c = (OptionsParser.CommandAnnotFile) command;
             String input = c.input;
             String output = c.outdir + "/" + c.outfile;
-            Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName);
+            Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName, c.uri);
 
             CSVSUtil.annotFile(input, output, c.diseaseId, c.technologyId, datastore);
 
         } else if (command instanceof OptionsParser.CommandRecalculate) {
             OptionsParser.CommandRecalculate c = (OptionsParser.CommandRecalculate) command;
 
-            Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName);
+            Datastore datastore = CSVSUtil.getDatastore(c.host, c.user, c.pass, c.dbName, c.uri);
 
             if ( c.panelName != null && !"".equals(c.panelName))
                 // Exome - Panel
