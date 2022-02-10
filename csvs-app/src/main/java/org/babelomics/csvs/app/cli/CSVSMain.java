@@ -317,7 +317,20 @@ public class CSVSMain {
 
                         if (files != null ){
                             for (File f : files) {
-                                sb.append(f.getNameFile()).append(",");
+                                boolean show = true;
+
+                                if (diseaseId!= null && !diseaseId.isEmpty()) {
+                                    if (!diseaseId.contains(f.getDiseaseGroupId()))
+                                        show = false;
+                                }
+
+                                if (technologyId!= null && !technologyId.isEmpty()) {
+                                    if (!technologyId.contains(f.getTechnologyId()))
+                                        show = false;
+                                }
+
+                                if (show)
+                                    sb.append(f.getNameFile()).append(",");
                             }
                         }
                     }
