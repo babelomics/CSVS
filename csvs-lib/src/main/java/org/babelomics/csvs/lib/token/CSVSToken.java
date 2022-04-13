@@ -30,7 +30,6 @@ public class CSVSToken implements ICSVSToken {
         Date now = new Date(nowMillis);
 
         //We will sign our JWT with our ApiKey secret
-        System.out.println(this.SECRET_KEY);
         byte[] apiKeySecretBytes = SECRET_KEY.getBytes(StandardCharsets.UTF_8);
         Key signingKey = new SecretKeySpec(apiKeySecretBytes, signatureAlgorithm.getJcaName());
 

@@ -676,7 +676,7 @@ public class CSVSUtil {
                 int numVariants = 0;
                 List<ObjectId> variantObjId = new ArrayList<>();
 
-                AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
+                AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).outputMode(AggregationOptions.OutputMode.CURSOR).build();
 
                 List<BasicDBObject> aggList = new ArrayList<>();
                 BasicDBObject group = new BasicDBObject().append("_id", "$vid").append("sumFile", new BasicDBObject("$sum",1)).append("itemsFileId", new BasicDBObject("$addToSet","$fid"));
