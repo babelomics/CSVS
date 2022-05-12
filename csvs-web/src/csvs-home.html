@@ -26,7 +26,7 @@
 
         .paragraph2 {
             font-size: 14px;
-            padding: 0 0 10px 0;
+            padding: 0 0 8px 0;
         }
 
         .title {
@@ -75,6 +75,23 @@
             opacity: 0.5;
         }
 
+        .rectangle {
+            font-family: monospace;
+            font-size: 12px;
+            text-align: center;
+            vertical-align: top;
+            margin: -4px -15px;
+            -webkit-transform: rotate(20deg);
+            -moz-transform: rotate(30deg);
+            -ms-transform: rotate(30deg);
+            -o-transform: rotate(30deg);
+            transform: rotate(30deg);
+            width: 40px;
+            text-align: center;
+            color: white;
+            background-color: #f44336;
+            position: absolute;
+        }
     </style>
     <template>
         <div class="main">
@@ -120,7 +137,7 @@
             </div>
 
             <div class="title2">Supported by</div>
-            <div class="paragraph">
+            <div class="paragraph2">
                 <a title="ciberer BIER" href="http://bier.ciberer.es/" target="_blank"><img style="margin:3px;height:40px;" src="../images/logobier.jpg"/></a>
                 <a title="ciberer" href="https://www.ciberer.es/" target="_blank"><img style="margin:3px;height:40px;" src="../images/logo_Ciberer.jpg"/></a>
                 <a title="Fundación Progreso y Salud" href="https://www.sspa.juntadeandalucia.es/fundacionprogresoysalud/es" target="_blank"><img style="margin:3px;height:40px;background-color: #05723A" src="../images/logo_FPS.png"/></a>
@@ -131,13 +148,11 @@
                 <a title="IMPACT-data" href="https://www.isciii.es/QueHacemos/Financiacion/IMPaCT/Paginas/default.aspx" target="_blank"><img style="margin:3px;height:40px;background-color:white;" src="../images/IMPaCT.png"/></a>
             </div>
 
-            <div class="title2">Note:</div>
+            <div class="title2">Related tools</div>
             <div class="paragraph2">
-                {{acronym}} web application makes an intensive use of the HTML5 standard and other cutting-edge web
-                technologies such as
-                Web Components, so only modern web browsers are fully supported, these include Chrome 36+, Firefox 32+,
-                Microsoft Edge, Safari 7+
-                and Opera 24+.
+                <a title="SPACNACS: SPAnish Copy Number Alteration Collaborative Server" href="http://csvs.clinbioinfosspa.es/spacnacs"
+                   target="_blank"  style="margin:3px;height:40px;"><img style="margin:3px;height:40px;" src="../images/logo_extend_SPACNACS.png"/>
+                    <span class="rectangle">NEW</span></a>
             </div>
         </div>
     </template>
