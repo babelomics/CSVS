@@ -1,6 +1,7 @@
 {
-    "name": "Collaborative Spanish Variant Server",
-    "version": "1.1.1",
+    "name": "csvs",
+    "description": "Collaborative Spanish Variant Server",
+    "version": "2.1.1",
     "homepage": "https://github.com/babelomics/csvs",
     "authors": [
         "aaleman <alejandro.aleman.ramos@gmail.com>",
@@ -27,17 +28,15 @@
         "pako": "~0.2.6",
         "uri.js": "~1.16.0",
         "stevia-elements": "https://github.com/babelomics/stevia-elements.git#steviaCSVS",
-        "jsorolla": "https://github.com/opencb/jsorolla.git#release-1.1.x",
         "paper-dialog": "PolymerElements/paper-dialog#^1.0.4",
-        "paper-input": "PolymerElements/paper-input#^1.1.25"
-        "jsorolla": "https://github.com/opencb/jsorolla.git#release-1.1.x",
-
+        "paper-input": "PolymerElements/paper-input#^1.1.25",
         "paper-progress": "^2.1.0",
         "paper-dialog": "PolymerElements/paper-dialog#^1.0.4",
         "paper-tabs": "PolymerElements/paper-tabs#^2.0.0",
         "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^2.0.2",
         "paper-listbox": "PolymerElements/paper-listbox#^2.1.1",
         "paper-item": "PolymerElements/paper-item#^2.1.1",
-        "paper-checkbox": "PolymerElements/paper-checkbox#^2.0.4"
+        "paper-checkbox": "PolymerElements/paper-checkbox#^2.0.4",
+        "jsorolla": "https://github.com/opencb/jsorolla.git#release-1.1.x"
     }
 }
