@@ -351,6 +351,7 @@
                     <div on-click="handleMenuClick" data-option="frequency">Frequencies</div>
                     <div on-click="handleMenuClick" data-option="phenotype">Phenotype</div>
                     <div on-click="handleMenuClick" data-option="effect">Effect</div>
+                    <div on-click="handleMenuClick" data-option="pharmacogenomic">Pharmacogenomic</div>
                 </div>
 
                 <div id="tools" class="horizontal layout flex">
@@ -358,6 +359,8 @@
                     <stv-variant-frequencies id="frequency" hidden class="tool"></stv-variant-frequencies>
                     <stv-variant-phenotype id="phenotype" hidden class="tool"></stv-variant-phenotype>
                     <stv-variant-effect id="effect" hidden class="tool"></stv-variant-effect>
+                    <csvs-variant-pharmacogenomic id="pharmacogenomic" hidden class="tool"></csvs-variant-pharmacogenomic>
+
                 </div>
             </div>
             <div id="saturationDiv" hidden$="{{!saturation}}" class="vertical layout">
@@ -878,7 +881,7 @@
                 }, {
                     name: 'genes',
                     title: 'Gene',
-                    width: 90,
+                    width: 100,
                     defaultValue: ".",
                     disableSort: true,
                     disableTooltip: true,
@@ -999,73 +1002,7 @@
                                 return ".";
                         }
                     }]
-                /* Remove CSVS
-                }, {
-                    title: "<span title='Alternate Allele Frequency in 1000 genomes project database (phase 1)'>1000G AAF (phase 1) <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
-                    width: 250,
-                    name: 'aaf1000g',
-                    visible: false,
-                    columns: [{
-                            name: "aaf1000G",
-                            title: "ALL",
-                            defaultValue: ".",
-                            disableSort: true,
-                            formula: function(row) {
-                                if (row.aaf1000G != null) {
-                                    return row.aaf1000G;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        }, {
-                            name: "aaf1000GAME",
-                            title:  "<span title='AMR: American'>AMR <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
-                            defaultValue: ".",
-                            disableSort: true,
-                            formula: function(row) {
-                                if (row.aaf1000GAME != null) {
-                                    return row.aaf1000GAME;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        }, {
-                            name: "aaf1000GASI",
-                            title: "<span title='ASN: Asian'>ASN <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
-                            defaultValue: ".",
-                            disableSort: true,
-                            formula: function(row) {
-                                if (row.aaf1000GASI != null) {
-                                    return row.aaf1000GASI;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        }, {
-                            name: "aaf1000GAFR",
-                            title: "<span title='AFR: African'>AFR <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
-                            defaultValue: ".",
-                            disableSort: true,
-                            formula: function(row) {
-                                if (row.aaf1000GAFR != null) {
-                                    return row.aaf1000GAFR;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        }, {
-                            name: "aaf1000GEUR",
-                            title:  "<span title='EUR: European'>EUR <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
-                            defaultValue: ".",
-                            disableSort: true,
-                            formula: function(row) {
-                                if (row.aaf1000GEUR != null) {
-                                    return row.aaf1000GEUR;
-                                } else {
-                                    return ".";
-                                }
-                            }
-                        }]*/
+ 
                      }, {
                         title: "<span title='Alternate Allele Frequency in 1000 genomes project database (phase 3)'>1000G AAF (phase 3) <sup><i class=\"fa fa-info-circle\" aria-hidden=\"true\"></i></sup></span>",
                         width: 150,
@@ -1351,27 +1288,52 @@
                             }
 
                         }
-                    /* No data about GWAS in cellbase
-                    }, {
-                        name: 'gwas',
-                        title: 'GWas',
-                        width: 150,
-                        disableSort: true,
-                        formula: function(row) {
-                            try {
-                                return row.phenotypes.gwas;
-                            } catch (e) {
-                                return ".";
-                            }
-
-                        }*/
                     }]
-                },
-                {
+            }, {
+                name: 'pharmacogenomics',
+                title: '<span title=" Exist information about pharmacogenomics databases (https://www.pharmgkb.org/)">Pharmacogenomics <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
+                width: 150,
+                defaultValue: "",
+                disableSort: true,
+                disableTooltip: true,
+                formula: function (row) {
+                    try {
+
+                        if (row.pharma != undefined && row.pharma.length > 0) {
+                            var result = [];
+
+                            row.pharma.forEach(
+                                function (p) {
+                                    if (p.starAllele != null) {
+                                        var search = p.gene + (p.starAllele.startsWith("*") ? "" : " ") + p.starAllele;
+                                        if (p.starAllelePA != null) {
+                                            result.push("<a class='link' href='https://www.pharmgkb.org/haplotype/" + p.starAllelePA + "' target='_blank' " +
+                                                "title = \"" + search + "\">" + p.starAllele + " (" + p.r + ">" + p.a + ")" + "</a>");
+                                        } else {
+
+                                            result.push("<a class='link' href='https://www.pharmgkb.org/search?type=haplotype&query=" + search + "' target='_blank' " +
+                                                "title = \"" + search + "\">" + p.starAllele + " (" + p.r + ">" + p.a + ")" + "</a>");
+                                        }
+                                    } else {
+                                        return ".";
+                                    }
+                                }
+                            );
+                            return result.join(", ");
+                        } else {
+                            return "";
+                        }
+                    } catch (e) {
+                        return "";
+                    }
+
+                }
+            }, {
                     name: 'addressBook',
                     title: '<span title="Send a request to the reporter of this variant">Contact <br/> request <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
                     width: 60,
                     disableSort: true,
+                    disableTooltip: true,
                     formula: function (row) {
                         var variant = row.chromosome + ":" + row.position + " " + row.reference + ">" + row.alternate;
                     return "<csvs-address-book variant='"+ variant + "'></csvs-address-book>";
@@ -1381,6 +1343,7 @@
                     name: 'pathopedia',
                     title: 'Pathopedia <br/><br/><csvs-desc-pathopedia></csvs-desc-pathopedia>',
                     width: 190,
+                    disableTooltip: true,
                     formula: function (row) {
                         var variant = row.chromosome + ":" + row.position + " " + row.reference + ">" + row.alternate;
                         var refIni = ("referenceIni" in row)? " ref_ini='" + row.referenceIni + "'" : "";
@@ -1476,7 +1439,6 @@
             return results;
         },
         submitForm: function(e) {
-
             if (!!this.$.frequency) {
                 this.$.frequency.isEmpty = true;
             }
@@ -1487,6 +1449,9 @@
             }
             if (!!this.$.effect)
                 this.$.effect.isEmpty = true;
+
+            if (!!this.$.pharmacogenomic)
+                this.$.pharmacogenomic.isEmpty = true;
 
             var me = this;
             var query = {};
@@ -1858,7 +1823,6 @@
                                             if (obj.variant.chromosome == data[j].chromosome &&
                                                 obj.variant.position == data[j].position) {
 
-
                                                 var alt = ("alternateIni" in data[j]) ? data[j].alternateIni :  data[j].alternate;
                                                 var ref = ("referenceIni" in data[j]) ? data[j].referenceIni :  data[j].reference;
                                                 if (ref == "-")
@@ -1876,6 +1840,68 @@
                                             }
                                         }
                                     }
+                                }
+
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Pharma
+            var query = positionsPathopedia.join("&");
+            if (positionsPathopedia.length > 0) {
+
+                var positionsRs = [];
+                for (var i = 0; i < data.length; i++) {
+                    positionsRs.push(data[i].ids);
+                }
+
+                CSVSManager.pharmacogenomics.annotation({
+                    query: { variants: query, rs: positionsRs.join(",")},
+                    request: {
+                        async: false,
+                        success: function (response) {
+                            if (response != undefined && response.numResults > 0) {
+                                for (var i = 0; i < response.result.length; i++) {
+                                    var obj = response.result[i];
+
+                                    for (var j = 0; j < obj.variants.length; j++) {
+                                        var objVariant = obj.variants[j];
+                                        for (var indexData = 0; indexData < data.length; indexData++) {
+
+                                            if ((objVariant.chromosome == data[indexData].chromosome &&
+                                                objVariant.position == data[indexData].position)  || objVariant.ids == data[indexData].ids) {
+
+                                                var alt = ("alternateIni" in data[indexData]) ? data[indexData].alternateIni : data[indexData].alternate;
+                                                var ref = ("referenceIni" in data[indexData]) ? data[indexData].referenceIni : data[indexData].reference;
+                                                if (ref == "-")
+                                                    ref = "";
+
+                                                if (objVariant.reference == ref && (objVariant.alternate == ref || objVariant.alternate == alt)) {
+                                                //if ((objVariant.reference == ref) || objVariant.ids == data[indexData].ids) {
+                                                    if (data[indexData].pharma == undefined) {
+                                                        data[indexData].pharma = [];
+                                                    }
+                                                     var genePA = obj.pharmaIds != null ? obj.pharmaIds.filter(function(item ){ return item.ty == "gene" && item.name == obj.gene}):null;
+                                                     var starAllelePA = obj.pharmaIds != null ? obj.pharmaIds.filter(function(item){return item.ty === "haplotype" && item.name == obj.gene +  (obj.starAllele.startsWith("*") ? "" : " ") + obj.starAllele}) : null;
+                                                     var idsPA = obj.pharmaIds != null && data[indexData].ids != null ? obj.pharmaIds.filter(function(item){return item.ty === "variant" && item.name == data[indexData].ids}) : null;
+
+                                                      data[indexData].pharma.push({
+                                                        "gene": obj.gene,
+                                                        "starAllele": obj.starAllele,
+                                                        "r": ref,
+                                                        "a": objVariant.alternate,
+                                                        "numVariants":  obj.variants != null ? obj.variants.length : "",
+                                                        "genePA": genePA != null && genePA.length > 0 ? genePA[0].idPA:null,
+                                                        "starAllelePA": starAllelePA != null && starAllelePA.length > 0 ? starAllelePA[0].idPA : null,
+                                                        "idsPA": idsPA != null && idsPA.length > 0 ? idsPA[0].idPA : null
+                                                    });
+                                                }
+                                            }
+                                        }
+                                    }
+
                                 }
 
                             }
@@ -2104,31 +2130,7 @@
                     for (var j = 0; j < variant.annots.populationFrequencies.length; j++) {
 
                         var pfreq = variant.annots.populationFrequencies[j];
-                        /* Remove CSVS
-                        if (pfreq.study.toLowerCase() === "1000genomes_phase_1") {
-                            switch (pfreq.population) {
-                                case "ALL":
-                                    variant.aaf1000G = Number(pfreq.altAlleleFreq).toFixed(3);
-                                    break;
-
-                                case "AMR":
-                                    variant.maf1000GAME = Number(pfreq.altAlleleFreq).toFixed(3)
-                                    break;
-
-                                case "ASN":
-                                    variant.maf1000GASI = Number(pfreq.altAlleleFreq).toFixed(3)
-                                    break;
-
-                                case "AFR":
-                                    variant.aaf1000GAFR = Number(pfreq.altAlleleFreq).toFixed(3)
-                                    break;
-
-                                case "EUR":
-                                    variant.aaf1000GEUR = Number(maf).toFixed(3)
-                                    break;
-                            }
-                        } else
-                            */
+         
                         if (pfreq.study.toLowerCase() === "1kg_phase3") {
                             switch (pfreq.population) {
                                 case "ALL":
@@ -2249,13 +2251,13 @@
         handleRowClick: function(e) {
             var row = e.detail.row;
 
-
             // Call if change row
             if (this.$.effect.row != row){
                 this.$.gv.genomeViewer.setRegion(row);
                 this.$.effect.row = row;
                 this.$.frequency.row = row;
                 this.$.phenotype.row = row;
+                this.$.pharmacogenomic.row = row;
             }
 
         },
