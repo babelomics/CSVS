@@ -1147,6 +1147,113 @@ public class CSVSQueryManager {
         return result;
     }
 
+ /**
+     * Get list pharmacogenomic variants.
+     * @param regions
+     * @param skip
+     * @param limit
+     * @param skipCount
+     * @param count
+     * @return
+     */
+    public Iterable<AnnotationPharmaAllele> getPharmaVariantsAnnotationByRegionList(List<Region> regions, List<Variant> variants,
+                                                                                    List<String> names, List<String> listRs,
+                                                                                    Integer skip, Integer limit, boolean skipCount, MutableLong count) {
+
+        List<Criteria> or = new ArrayList<>();
+
+        int i = 0;
+        for (Region r : regions) {
+            Query<AnnotationPharmaAllele> auxQuery = this.datastore.createQuery(AnnotationPharmaAllele.class);
+            List<Criteria> and = new ArrayList<>();
+
+            and.add(auxQuery.criteria("region.chromosome").equal(r.getChromosome()));
+            and.add(auxQuery.criteria("region.start").greaterThanOrEq(r.getStart()));
+            and.add(auxQuery.criteria("region.end").lessThanOrEq(r.getEnd()));
+
+            or.add(auxQuery.and(and.toArray(new Criteria[and.size()])));
+        }
+
+        if ( variants != null && !variants.isEmpty()) {
+            Criteria[] orVariant = new Criteria[variants.size()];
+            int iVariant = 0;
+            for (Variant v : variants) {
+                Query<AnnotationPharmaAllele> auxQuery = this.datastore.createQuery(AnnotationPharmaAllele.class);
+
+                List<Criteria> and = new ArrayList<>();
+                and.add(auxQuery.criteria("variants.c").equal(v.getChromosome()));
+                and.add(auxQuery.criteria("variants.p").equal(v.getPosition()));
+                and.add(auxQuery.criteria("variants.r").equal(v.getReference()));
+                //and.add(auxQuery.criteria("variants.a").equal(v.getAlternate()));
+
+                orVariant[iVariant++] = auxQuery.and(and.toArray(new Criteria[and.size()]));
+            }
+            Query<Variant> queryVariant = this.datastore.createQuery(Variant.class);
+            or.add(queryVariant.or(orVariant));
+        }
+
+        for (String n : names) {
+            Query<AnnotationPharmaAllele> auxQuery = this.datastore.createQuery(AnnotationPharmaAllele.class);
+
+            List<Criteria> and = new ArrayList<>();
+            and.add(auxQuery.criteria("gene").equal(n.split("_")[0]));
+            if (n.split("_").length > 1) {
+                and.add(auxQuery.criteria("starAllele").equal(n.split("_")[1]));
+            }
+
+            or.add(auxQuery.and(and.toArray(new Criteria[and.size()])));
+        }
+
+        if (!listRs.isEmpty()){
+            Query<AnnotationPharmaAllele> auxQuery = this.datastore.createQuery(AnnotationPharmaAllele.class);
+            or.add(auxQuery.criteria("variants.i").in(listRs));
+        }
+
+        Query<AnnotationPharmaAllele> query = this.datastore.createQuery(AnnotationPharmaAllele.class);
+
+        Criteria[] orCriteria = new Criteria[or.size()];
+        int indexOrCriteria = 0;
+        for ( Criteria c : or){
+            orCriteria[indexOrCriteria] = c;
+            indexOrCriteria++;
+        }
+
+        query.or(orCriteria);
+
+        if (skip != null && limit != null) {
+            query.offset(skip).limit(limit);
+        }
+
+        Iterable<AnnotationPharmaAllele> aux = query.fetch();
+
+        if (!skipCount) {
+            count.setValue(query.countAll());
+        }
+
+        List<AnnotationPharmaAllele> res = new ArrayList<>();
+
+        for (AnnotationPharmaAllele v : aux) {
+            // Add pharma id
+
+            List<String> namesPharmaId = new ArrayList<>();
+            namesPharmaId.add(v.getGene());
+            namesPharmaId.add(v.getGene() + (v.getStarAllele().startsWith("*") ? "" : " ") +  v.getStarAllele());
+            namesPharmaId.addAll(v.getVariants().stream().map(Variant::getIds).collect(Collectors.toList()));
+            Query<AnnotationPharmaIds> queryId = this.datastore.createQuery(AnnotationPharmaIds.class);
+            queryId.field("name").in(namesPharmaId);
+            List<AnnotationPharmaIds> resPharmaIds = new ArrayList<>();
+
+            for (AnnotationPharmaIds pharmaIds : queryId.fetch()) {
+                resPharmaIds.add(pharmaIds);
+            }
+            v.setPharmaIds(resPharmaIds);
+
+            res.add(v);
+        }
+
+        return res;
+    }
+
 
     class AllVariantsIterable implements Iterable<Variant> {
 

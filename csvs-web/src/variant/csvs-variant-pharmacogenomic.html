@@ -1,0 +1,166 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<dom-module id="csvs-variant-pharmacogenomic">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            width: 100%;
+        }
+
+        stv-table {
+            box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.2);
+            overflow-y: hidden;
+        }
+
+        stv-table::shadow #list {
+            min-height: 200px;
+        }
+
+        stv-table::shadow {
+            font-size: 11px;
+        }
+
+        stv-table::shadow .table-row {
+            height: 25px;
+        }
+
+        stv-table::shadow .table-header-field > .name.stv-table {
+            padding: 4px 0;
+        }
+
+         a.link {
+             text-decoration: underline;
+         }
+    </style>
+    <template>
+        <div hidden$="{{isEmpty}}" class="horizontal layout wrap ">
+            <stv-table id="tableVariantPharma"  data="{{data}}"  hidden$="{{isEmpty}}" on-rowclick="handleRowClick" enable-export enable-loading enable-resize  enable-paging page-size="10" ></stv-table>
+        </div>
+
+
+           <div hidden$="{{!isEmpty}}" style="padding:20px 50px;">
+               No results found.
+           </div>
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is: 'csvs-variant-pharmacogenomic',
+        properties: {
+            row: {
+                type: Object,
+                observer: 'rowChanged'
+            },
+            isEmpty: {
+                value: true,
+                type: Boolean
+            }
+        },
+
+        _columnsVariantPharma:[{
+            name: 'gene',
+            title: 'Gene Name',
+            width: 120,
+            defaultValue: ".",
+            disableSort: false,
+            disableTooltip: false,
+            type: " ",
+            formula: function(row) {
+                if (row.starAllele != null) {
+                    if (row.genePA != null){
+                        return "<a class='link' href='https://www.pharmgkb.org/gene/" + row.genePA + "' target='_blank' " +
+                            "title = \"" + row.gene + "\">" + row.gene + "</a>";
+                    } else {
+                        return "<a class='link' href='https://www.pharmgkb.org/search?type=gene&query=" + row.gene + "' target='_blank' " +
+                            "title = \"" + row.gene + "\">" + row.gene + "</a>";
+                    }
+                } else {
+                    return ".";
+                }
+            },
+        },{
+            name: 'starAllele',
+            title: 'Haplotype',
+            width: 400,
+            defaultValue: ".",
+            disableSort: false,
+            disableTooltip: false,
+            formula: function(row) {
+                if (row.starAllele != null) {
+                    var search = row.gene + (row.starAllele.startsWith("*") ? "" : " ") + row.starAllele;
+                    if (row.starAllelePA != null) {
+                        return "<a class='link' href='https://www.pharmgkb.org/haplotype/" + row.starAllelePA + "' target='_blank' " +
+                            "title = \"" + search + "\">" + row.starAllele + "</a>";
+                    } else {
+
+                        return "<a class='link' href='https://www.pharmgkb.org/search?type=haplotype&query=" + search + "' target='_blank' " +
+                            "title = \"" + search + "\">" + row.starAllele + "</a>";
+                    }
+                } else {
+                    return ".";
+                }
+            },
+        },
+            {
+                name: 'numVariants',
+                title: 'Num variants of haplotype',
+                width: 150,
+                disableSort: true,
+            },
+            {
+                name: 'id',
+                title: 'id selected',
+                width: 90,
+                disableSort: true,
+                formula: function(row) {
+                    if (row.id != null) {
+                        if(row.idsPA != null){
+                            return "<a class='link' href='https://www.pharmgkb.org/variant/" + row.idsPA + "' target='_blank' " +
+                                "title = \"" + row.id + "\">" + row.id + "</a>";
+                        } else {
+                            return "<a class='link' href='https://www.pharmgkb.org/search?type=variant&query=" + row.id + "' target='_blank' " +
+                                "title = \"" + row.id + "\">" + row.id + "</a>";
+                        }
+                    } else {
+                        return ".";
+                    }
+                },
+            },
+            {
+                name: 'alleles',
+                title: 'Alleles',
+                width: 90,
+                disableSort: true,
+                formula: function(row) {
+                    return row.r + ">" + row.a;
+                }
+            }
+         ],
+
+        ready: function() {
+            this.$.tableVariantPharma.columns =  this._columnsVariantPharma;
+            //this.$.tableVariantPharma.setAttribute("enable-filter", "");
+        },
+
+
+        rowChanged: function (neo, old) {
+            this.$.tableVariantPharma.currentPage = 1;
+            var data = neo.pharma == undefined ? [] : neo.pharma;
+            if (data.length > 0) {
+                data.forEach(function(d){
+                    d.id = neo.id;
+                    d.c = neo.chromosome;
+                    d.p = neo.position;
+                });
+            }
+            this.$.tableVariantPharma.data = data;
+            this.isEmpty = (this.$.tableVariantPharma.data.length > 0) ? false : true;
+
+            return ;
+        },
+
+
+
+    });
+</script>

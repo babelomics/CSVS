@@ -35,6 +35,12 @@ var CSVSManager = {
             return CSVSManager._doRequest(args, 'pathologies', 'fetch');
         }
     },
+    pharmacogenomics: {
+        annotation: function (args) {
+            return CSVSManager._doRequest(args, 'pharmaVariants', 'annotation');
+        }
+
+    },
 
     _url: function (args, api, action) {
         var host = CSVSManager.host;
