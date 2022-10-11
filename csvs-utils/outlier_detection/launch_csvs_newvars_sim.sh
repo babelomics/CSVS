@@ -8,8 +8,10 @@ bedfile=${5-none}
 
 ml numpy
 ml scikit-allel
-ml bcftools
-ml sequencing-qc-stats
+ml bcftools/1.14
+ml vcftools
+ml csvs-utils
+
 
 # Filter aggregated VCF by bedfile if provided
 if [[ "$bedfile" != "none" ]]; then

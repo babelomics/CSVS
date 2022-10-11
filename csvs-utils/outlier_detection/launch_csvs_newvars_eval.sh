@@ -10,9 +10,9 @@ bedfile=${7:-none}
 
 ml numpy
 ml scikit-allel
-ml bcftools
+ml bcftools/1.14
 ml vcftools
-ml sequencing-qc-stats
+ml csvs-utils
 
 # Merge test VCFs and aggregated VCF
 
@@ -111,7 +111,7 @@ fi
 # Check new variants for each test VCF
 csvs_simulation.py --aggregated_vcf $aggVCF \
                    --output $output_path/$output \
-	 	   --samples $sample_list\
-	           --mode "eval"
+                   --samples $sample_list\
+                   --mode "eval"
 
 
