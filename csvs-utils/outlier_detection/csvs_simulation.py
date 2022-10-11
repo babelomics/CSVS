@@ -16,30 +16,30 @@ def main():
 
 	args = parser.parse_args()
 
-	print "Reading aggregated VCF..."
+	print("Reading aggregated VCF...");
 	read_start = datetime.now()
 	aggVCF = allel.read_vcf(args.aggregated_vcf, fields=['calldata/GT', 'samples']);
-	print "Reading DONE in %s..." % (datetime.now()-read_start)
+	print("Reading DONE in %s..." % (datetime.now()-read_start));
 
 	# Run simulation if mode sim
 	if args.mode == "sim":
 		simulate_model(aggVCF, args.samples, args.output, args.ddbb_size)
-		print "Simulation FINISHED. Total time: %s" % (datetime.now()-read_start)
+		print("Simulation FINISHED. Total time: %s" % (datetime.now()-read_start));
 	elif args.mode == "eval":
 		evaluate_model(aggVCF, args.samples, args.output)
 	else:
-		print 'ERROR: Mode is not recognized. Please, introduce "eval" or "sim" for --mode input'
+		print('ERROR: Mode is not recognized. Please, introduce "eval" or "sim" for --mode input');
 
 
 
 def simulate_model(aggVCF, samples, outfile, ddbb_size="all"):
 
-	print "Preparing variant matrix..."
+	print("Preparing variant matrix...");
 	matrix_start = datetime.now()
 	matrix = np.any(aggVCF['calldata/GT'] != [-1, -1], axis=2)
 	if (np.all(matrix)):
 			matrix = np.any(aggVCF['calldata/GT'] != [0, 0], axis=2)
-	print "Matrix DONE in %s..." % (datetime.now()-matrix_start)
+	print("Matrix DONE in %s..." % (datetime.now()-matrix_start));
 
 	# Use all available samples if not provided by user
 	if samples == None:
@@ -67,20 +67,20 @@ def simulate_model(aggVCF, samples, outfile, ddbb_size="all"):
 			dbsize = [len(dbsamples)]
 
 		# Calculate matrix of relations
-		#print "Adding common variants in %s to matrix..." % (sample)
+		#print("Adding common variants in %s to matrix..." % (sample))
 		#start = datetime.now()
 		#pairs[i,i] = sum((matrix[:,i] & matrix[:,i]))
 		#for pair in dbsamples:
 		#	pairs[i, pair] = sum((matrix[:,i] & matrix[:,pair]))
-		#print pairs[i,:]
-		#print "DONE in %s" % (datetime.now()-start)
+		#print(pairs[i,:])
+		#print("DONE in %s" % (datetime.now()-start))
 
 		# Compare test VCF against iterative databases
-		print "Testing for %s (%s/%s)..." % (sample, i+1, nsamples)
+		print("Testing for %s (%s/%s)..." % (sample, i+1, nsamples));
 		for idx in dbsize:
 
 			start = datetime.now()
-			print "    Creating database with %s samples..." % (idx+1)
+			print("    Creating database with %s samples..." % (idx+1));
 			# Get variables in database
 			dbidxs = dbsamples[0:idx+1]
 			dbvar  = np.any(matrix[:,dbidxs], axis=1)
@@ -89,10 +89,10 @@ def simulate_model(aggVCF, samples, outfile, ddbb_size="all"):
 			# Get new variables
 			nnewvars=sum(np.logical_and(vcftest, np.logical_not(dbvar)))
 
-			#print "    New variants      = %s " % (nnewvars)
-			#print "    Variants in test  = %s " % (nvarvcf)
-			#print "    New variants perc = %.2f " % (100*float(nnewvars)/float(nvarvcf))
-			print "    DONE in %s" % (datetime.now()-start)
+			#print("    New variants      = %s " % (nnewvars))
+			#print("    Variants in test  = %s " % (nvarvcf))
+			#print("    New variants perc = %.2f " % (100*float(nnewvars)/float(nvarvcf)))
+			print("    DONE in %s" % (datetime.now()-start));
 
 			outf.write("%s	%s	%s	%s	%s	%f\n" % (sample,(idx+1),nvarvcf,nvardb,nnewvars,100*float(nnewvars)/float(nvarvcf)))
 
@@ -104,13 +104,13 @@ def evaluate_model(aggVCF, test_samples, outfile):
 	test_samples = test_samples.split(",")
 
 	# Prepare matrix
-	print "Preparing variant matrix..."
+	print("Preparing variant matrix...");
 	matrix_start = datetime.now()
 	#matrix = np.any(aggVCF['calldata/GT'] != [-1, -1], axis=2)
 	matrix = np.any(aggVCF['calldata/GT'] != [-1, -1], axis=2)
 	if (np.all(matrix)):
 			matrix = np.any(aggVCF['calldata/GT'] != [0, 0], axis=2)
-	print "Matrix DONE in %s..." % (datetime.now()-matrix_start)
+	print("Matrix DONE in %s..." % (datetime.now()-matrix_start));
 
 	# Separate database from test samples
 	allsamples = aggVCF['samples']
@@ -130,14 +130,14 @@ def evaluate_model(aggVCF, test_samples, outfile):
 
 		count += 1
 		start = datetime.now()
-		print "Testing for %s (%s/%s)..." % (s, count, nsamples)
+		print("Testing for %s (%s/%s)..." % (s, count, nsamples));
 		i = aggVCF['samples'].tolist().index(s)
 		vcftest = matrix[:,i]
 		nvarvcf = sum(vcftest)
 
 		# Get new variables
 		nnewvars = sum(np.logical_and(vcftest, np.logical_not(dbvar)))
-		print "    DONE in %s" % (datetime.now()-start)
+		print("    DONE in %s" % (datetime.now()-start));
 
 		outf.write("%s	%s	%s	%s	%s	%f\n" % (s,dbsize,nvarvcf,nvardb,nnewvars,100*float(nnewvars)/float(nvarvcf)))
 
