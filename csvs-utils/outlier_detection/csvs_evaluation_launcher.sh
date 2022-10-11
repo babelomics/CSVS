@@ -9,7 +9,8 @@ vcflist=${6:-none}
 bedfile=${7:-none}
 chrtag=${8:-no}
 
-toolpath=$(dirname "$0")
+cmdpath=$(which "$0")
+toolpath=$(dirname "$cmdpath")
 
 sbatch --job-name=$jobname-csvs-eval \
 	   --mem=64G --cpus-per-task=8 \

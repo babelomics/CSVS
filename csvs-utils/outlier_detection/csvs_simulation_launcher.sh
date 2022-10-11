@@ -7,7 +7,8 @@ samplelist=$4
 ddbbsize=${5:-all}
 bedfile=${6:-none}
 
-toolpath=$(dirname "$0")
+cmdpath=$(which "$0")
+toolpath=$(dirname "$cmdpath")
 
 if [[ "$ddbbsize" != "max" ]]; then
 
