@@ -8,8 +8,13 @@ ml R/4.1.2
 ml csvs-utils
 
 # Get script path
-cmdpath=$(which "$0")
-toolpath=$(dirname "$cmdpath")
+if [ -n $SLURM_JOB_ID ]; then
+   toolpath=$(scontrol show job $SLURM_JOB_ID | awk -F= '/Command=/{print $2}' | cut -f1 -d' ')
+   toolpath=`dirname $toolpath`
+else
+   cmdpath=$(which "$0")
+   toolpath=$(dirname "$cmdpath")
+fi
 
 # Run R
 R -e "source('${toolpath}/plot_csvs_simulation.R'); csvs_test('${model}', '${outpath}/${name}.test.csv', output_outliers='${outpath}/${name}.test.outliers.txt')"
