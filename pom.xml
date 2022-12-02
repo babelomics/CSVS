@@ -184,7 +184,7 @@
             <dependency>
                 <groupId>com.github.samtools</groupId>
                 <artifactId>htsjdk</artifactId>
-                <version>1.141</version>
+                <version>3.0.1</version>
             </dependency>
 
             <dependency>
