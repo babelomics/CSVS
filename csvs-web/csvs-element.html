@@ -241,7 +241,7 @@
         <stv-footer menu-option="home,login,singup,profile,remember">
             {{acronym}}: created by Clinical Bioinformatics Area
             <br> Fundación Progreso y Salud
-            <br> 2015-2021
+            <br> 2015-{{year}}
         </stv-footer>
     </template>
 </dom-module>
@@ -302,6 +302,9 @@
             acceptTermsCond: {
                 type: Boolean
             },
+			year:{
+				type: String
+			},
             maintenance:{
                 type: Boolean,
                 value: window.MAINTENANCE != null ? window.MAINTENANCE : ""
@@ -314,6 +317,7 @@
             this.checkShowMenuOnLogin();
             this.selectedOption = "home";
             this.acceptTermsCond = this.getAcceptTermsCond() == 'true'? true : false;
+            this.year = new Date().getFullYear();
         },
         getDiseases: function() {
             var me = this;
