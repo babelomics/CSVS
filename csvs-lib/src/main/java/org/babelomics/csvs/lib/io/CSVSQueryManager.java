@@ -1138,7 +1138,7 @@ public class CSVSQueryManager {
 
         List<DBObject> idVariantsResults = myCol.distinct("vid", new BasicDBObject("vid",new BasicDBObject("$in", ids.keySet())));
 
-        if(idVariantsResults!=null){
+        if (idVariantsResults!=null){
             for(int i = 0; i < idVariantsResults.size(); i++){
                 result.add( ids.get(idVariantsResults.get(i)));
             }
@@ -1254,6 +1254,88 @@ public class CSVSQueryManager {
         return res;
     }
 
+
+    /**
+     * Get list pharmacogenomic variants.
+     * @param regions
+     * @param skip
+     * @param limit
+     * @param skipCount
+     * @param count
+     * @return
+     */
+    public Iterable<AnnotationSecFindings> getSecFindingsVariantsAnnotationByRegionList(List<Region> regions, List<Variant> variants,
+                                                                                    List<String> names, List<String> listRs,
+                                                                                    Integer skip, Integer limit, boolean skipCount, MutableLong count) {
+
+        List<Criteria> or = new ArrayList<>();
+
+        int i = 0;
+        for (Region r : regions) {
+            Query<AnnotationSecFindings> auxQuery = this.datastore.createQuery(AnnotationSecFindings.class);
+            List<Criteria> and = new ArrayList<>();
+
+            and.add(auxQuery.criteria("region.chromosome").equal(r.getChromosome()));
+            and.add(auxQuery.criteria("region.start").greaterThanOrEq(r.getStart()));
+            and.add(auxQuery.criteria("region.end").lessThanOrEq(r.getEnd()));
+
+            or.add(auxQuery.and(and.toArray(new Criteria[and.size()])));
+        }
+
+        if ( variants != null && !variants.isEmpty()) {
+            Criteria[] orVariant = new Criteria[variants.size()];
+            int iVariant = 0;
+            for (Variant v : variants) {
+                Query<AnnotationSecFindings> auxQuery = this.datastore.createQuery(AnnotationSecFindings.class);
+
+                List<Criteria> and = new ArrayList<>();
+                and.add(auxQuery.criteria("c").equal(v.getChromosome()));
+                and.add(auxQuery.criteria("p").equal(v.getPosition()));
+                and.add(auxQuery.criteria("r").equal(v.getReference()));
+                and.add(auxQuery.criteria("a").equal(v.getAlternate()));
+
+                orVariant[iVariant++] = auxQuery.and(and.toArray(new Criteria[and.size()]));
+            }
+            Query<Variant> queryVariant = this.datastore.createQuery(Variant.class);
+            or.add(queryVariant.or(orVariant));
+        }
+
+        for (String n : names) {
+            Query<AnnotationSecFindings> auxQuery = this.datastore.createQuery(AnnotationSecFindings.class);
+
+            List<Criteria> and = new ArrayList<>();
+            and.add(auxQuery.criteria("gene").equal(n.split("_")[0]));
+            or.add(auxQuery.and(and.toArray(new Criteria[and.size()])));
+        }
+
+        if (!listRs.isEmpty()){
+            Query<AnnotationSecFindings> auxQuery = this.datastore.createQuery(AnnotationSecFindings.class);
+            or.add(auxQuery.criteria("i").in(listRs));
+        }
+
+        Query<AnnotationSecFindings> query = this.datastore.createQuery(AnnotationSecFindings.class);
+
+        Criteria[] orCriteria = new Criteria[or.size()];
+        int indexOrCriteria = 0;
+        for ( Criteria c : or){
+            orCriteria[indexOrCriteria] = c;
+            indexOrCriteria++;
+        }
+
+        query.or(orCriteria);
+
+        if (skip != null && limit != null) {
+            query.offset(skip).limit(limit);
+        }
+
+        Iterable<AnnotationSecFindings> aux = query.fetch();
+
+        if (!skipCount) {
+            count.setValue(query.countAll());
+        }
+
+        return aux;
+    }
 
     class AllVariantsIterable implements Iterable<Variant> {
 

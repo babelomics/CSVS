@@ -39,7 +39,12 @@ var CSVSManager = {
         annotation: function (args) {
             return CSVSManager._doRequest(args, 'pharmaVariants', 'annotation');
         }
+    },
 
+    secondaryFindings: {
+        annotation: function (args) {
+            return CSVSManager._doRequest(args, 'secondaryFindingsVariants', 'annotation');
+        }
     },
 
     _url: function (args, api, action) {

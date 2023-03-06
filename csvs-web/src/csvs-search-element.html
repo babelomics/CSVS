@@ -1161,7 +1161,7 @@
                             }
                         }
                     }]
-                 }, {
+                }, {
                     name: 'sift',
                     title: '<span title="SIFT score predicts whether an amino acid substitution affects protein function. SIFT value less than 0.05 represents a \'deleterious\' prediction. SIFT value greater than or equal to 0.05 represents a \'tolerated\' prediction">SIFT <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
                     width: 50,
@@ -1289,46 +1289,78 @@
 
                         }
                     }]
-            }, {
-                name: 'pharmacogenomics',
-                title: '<span title=" Exist information about pharmacogenomics databases (https://www.pharmgkb.org/)">Pharmacogenomics <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
-                width: 150,
-                defaultValue: "",
-                disableSort: true,
-                disableTooltip: true,
-                formula: function (row) {
-                    try {
+                }, {
+                    name: 'pharmacogenomics',
+                    title: '<span title=" Exist information about pharmacogenomics databases (https://www.pharmgkb.org/)">Pharmacogenomics <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
+                    width: 150,
+                    defaultValue: "",
+                    disableSort: true,
+                    disableTooltip: true,
+                    formula: function (row) {
+                        try {
+                            if (row.pharma != undefined && row.pharma.length > 0) {
+                                var result = [];
+                                row.pharma.forEach(
+                                    function (p) {
+                                        if (p.starAllele != null) {
+                                            var search = p.gene + (p.starAllele.startsWith("*") ? "" : " ") + p.starAllele;
+                                            if (p.starAllelePA != null) {
+                                                result.push("<a class='link' href='https://www.pharmgkb.org/haplotype/" + p.starAllelePA + "' target='_blank' " +
+                                                    "title = \"" + search + "\">" + p.starAllele + " (" + p.r + ">" + p.a + ")" + "</a>");
+                                            } else {
 
-                        if (row.pharma != undefined && row.pharma.length > 0) {
-                            var result = [];
-
-                            row.pharma.forEach(
-                                function (p) {
-                                    if (p.starAllele != null) {
-                                        var search = p.gene + (p.starAllele.startsWith("*") ? "" : " ") + p.starAllele;
-                                        if (p.starAllelePA != null) {
-                                            result.push("<a class='link' href='https://www.pharmgkb.org/haplotype/" + p.starAllelePA + "' target='_blank' " +
-                                                "title = \"" + search + "\">" + p.starAllele + " (" + p.r + ">" + p.a + ")" + "</a>");
+                                                result.push("<a class='link' href='https://www.pharmgkb.org/search?type=haplotype&query=" + search + "' target='_blank' " +
+                                                    "title = \"" + search + "\">" + p.starAllele + " (" + p.r + ">" + p.a + ")" + "</a>");
+                                            }
                                         } else {
-
-                                            result.push("<a class='link' href='https://www.pharmgkb.org/search?type=haplotype&query=" + search + "' target='_blank' " +
-                                                "title = \"" + search + "\">" + p.starAllele + " (" + p.r + ">" + p.a + ")" + "</a>");
+                                            return ".";
                                         }
-                                    } else {
-                                        return ".";
                                     }
-                                }
-                            );
-                            return result.join(", ");
-                        } else {
+                                );
+                                return result.join(", ");
+                            } else {
+                                return "";
+                            }
+                        } catch (e) {
                             return "";
                         }
-                    } catch (e) {
-                        return "";
                     }
-
-                }
-            }, {
+                }, {
+                    name: 'secondaryFindings',
+                    title: '<span title=" For variants labeled as secondary finding according to ACMG recommendations, phenotype and OMIM disorder related with the gene are indicated, as well as the inheritance model for the disease (AD, autosomal dominant; AR, autosomal recessive; SD, semidominant; XL, X-linked). External link to the OMIM disorder is available if you click on the text (see documentation for more information)">Secondary findings <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
+                    width: 150,
+                    defaultValue: "",
+                    disableSort: true,
+                    disableTooltip: true,
+                    formula: function (row) {
+                        try {
+                            if (row.secFindings != undefined && row.secFindings.length > 0) {
+                                var result = [];
+                                var tooltip=[]
+                                row.secFindings.forEach(
+                                    function (sf) {
+                                        result.push("(" + sf.inheritance + ") ");
+                                        sf.omims.forEach(
+                                            function (sfOmim) {
+                                                var titleSF = "(" + sf.inheritance + ") " + "OMIM:" + sfOmim + " - " + sf.genericPhenotype + ", " +  sf.gene ;
+                                                tooltip.push(titleSF);
+                                                result.push("<a class='link' href='https://www.omim.org/entry/" + sfOmim + "' target='_blank' " +
+                                                "title = \"" + titleSF + "\">" +
+                                                "OMIM:" + sfOmim + "</a>");
+                                            }
+                                        )
+                                        result.push(sf.genericPhenotype);
+                                    }
+                                );
+                                return "<span title=\"" + tooltip.join("; ")+ "\">" + result.join(", ") + "</span>";
+                            } else {
+                                return "";
+                            }
+                        } catch (e) {
+                            return "";
+                        }
+                    }
+                }, {
                     name: 'addressBook',
                     title: '<span title="Send a request to the reporter of this variant">Contact <br/> request <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
                     width: 60,
@@ -1338,8 +1370,7 @@
                         var variant = row.chromosome + ":" + row.position + " " + row.reference + ">" + row.alternate;
                     return "<csvs-address-book variant='"+ variant + "'></csvs-address-book>";
                     }
-                },
-                {
+                }, {
                     name: 'pathopedia',
                     title: 'Pathopedia <br/><br/><csvs-desc-pathopedia></csvs-desc-pathopedia>',
                     width: 190,
@@ -1769,7 +1800,7 @@
             var me = this;
             var data = response.result;
             var positions = [];
-            var positionsPathopedia = [];
+            var positionsSearch = [];
             var positionsDoubleVariant = [];
             var doubleVariant = [];
             var referencePosition = [];
@@ -1779,7 +1810,7 @@
                 var row = data[i];
 
                 //Add posisition to search pathopedia
-                positionsPathopedia.push(row.chromosome + ":" + row.position + ":" + row.reference + ":" + row.alternate);
+                positionsSearch.push(row.chromosome + ":" + row.position + ":" + row.reference + ":" + row.alternate);
 
                 if(row.alternate == ""){
                     positionsDoubleVariant.push(i);
@@ -1807,8 +1838,8 @@
             }
 
             // Pathopedia
-            var query = positionsPathopedia.join("&");
-            if (positionsPathopedia.length > 0) {
+            var query = positionsSearch.join("&");
+            if (positionsSearch.length > 0) {
                 CSVSManager.pathologies.fetch({
                     id: query,
                     request: {
@@ -1849,8 +1880,8 @@
             }
 
             // Pharma
-            var query = positionsPathopedia.join("&");
-            if (positionsPathopedia.length > 0) {
+            var query = positionsSearch.join("&");
+            if (positionsSearch.length > 0) {
 
                 var positionsRs = [];
                 for (var i = 0; i < data.length; i++) {
@@ -1909,6 +1940,61 @@
                     }
                 });
             }
+
+            // Secondary findings
+            var query = positionsSearch.join("&");
+            if (positionsSearch.length > 0) {
+                var positionsRs = [];
+                for (var i = 0; i < data.length; i++) {
+                    positionsRs.push(data[i].ids);
+                }
+
+                CSVSManager.secondaryFindings.annotation({
+                    query: { variants: query, rs: positionsRs.join(",")},
+                    request: {
+                        async: false,
+                        success: function (response) {
+                            if (response != undefined && response.numResults > 0) {
+                                for (var i = 0; i < response.result.length; i++) {
+                                    var objVariant = response.result[i];
+                                    for (var indexData = 0; indexData < data.length; indexData++) {
+
+                                        if ((objVariant.chromosome == data[indexData].chromosome &&
+                                            objVariant.position == data[indexData].position)  || objVariant.ids == data[indexData].ids) {
+
+                                            var alt = ("alternateIni" in data[indexData]) ? data[indexData].alternateIni : data[indexData].alternate;
+                                            var ref = ("referenceIni" in data[indexData]) ? data[indexData].referenceIni : data[indexData].reference;
+                                            if (ref == "-")
+                                                ref = "";
+                                            if (alt == "-")
+                                                alt = "";
+
+                                            if (objVariant.reference == ref && (objVariant.alternate == alt || objVariant.alternate == alt)) {
+                                            //if ((objVariant.reference == ref) || objVariant.ids == data[indexData].ids) {
+                                                if (data[indexData].secFindings == undefined) {
+                                                    data[indexData].secFindings = [];
+                                                }
+                                                  data[indexData].secFindings.push({
+                                                    "gene": objVariant.gene,
+                                                    "r": ref,
+                                                    "a": objVariant.alternate,
+                                                    "omims" : objVariant.omims,
+                                                    "inheritance": objVariant.inheritance,
+                                                    "genericPhenotype": objVariant.genericPhenotype
+                                                });
+                                            }
+                                        }
+                                    }
+
+
+                                }
+
+                            }
+                        }
+                    }
+                });
+            }
+
 
             // Annotate
             var query = positions.join(",");
