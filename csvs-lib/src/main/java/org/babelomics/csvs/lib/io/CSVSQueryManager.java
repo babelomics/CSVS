@@ -5,6 +5,7 @@ import com.mongodb.Cursor;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.babelomics.csvs.lib.models.*;
+import org.babelomics.csvs.lib.models.prs.PrsGraphic;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
@@ -1147,6 +1148,7 @@ public class CSVSQueryManager {
         return result;
     }
 
+    /***************** Pharma **********************/
  /**
      * Get list pharmacogenomic variants.
      * @param regions
@@ -1254,9 +1256,10 @@ public class CSVSQueryManager {
         return res;
     }
 
+    /***************** SecFindings **********************/
 
     /**
-     * Get list pharmacogenomic variants.
+     * Get list secondary finding.
      * @param regions
      * @param skip
      * @param limit
@@ -1336,6 +1339,118 @@ public class CSVSQueryManager {
 
         return aux;
     }
+
+ /***************** RPS **********************/
+
+    public Iterable<Prs> getPRS(List<String> searchPrsList, List<String> adSourcesList, List<String> adScoresList,
+                                List<String> adLisPsgList,
+                                int skip, int limit, boolean skipCount, MutableLong count) {
+        Query<Prs> query = this.datastore.createQuery(Prs.class);
+
+        Criteria[] or = new Criteria[searchPrsList.size() * 3];
+        List<Criteria> and = new ArrayList<>();
+        Query<Prs> auxQuery = this.datastore.createQuery(Prs.class);
+        int i = 0;
+        List<Criteria> orEfos = new ArrayList<>();
+        for (String id : searchPrsList) {
+            orEfos.add(auxQuery.criteria("idPgs").equal(id));
+            orEfos.add(auxQuery.criteria("efos.id").equal(id));
+            orEfos.add(auxQuery.criteria("efos.label").containsIgnoreCase(id));
+        }
+        if (!orEfos.isEmpty()) {
+            and.add(auxQuery.or(orEfos.toArray(new Criteria[orEfos.size()])));
+        }
+
+        if (adSourcesList != null && !adSourcesList.isEmpty()) {
+            List<Criteria> ancestrySources = new ArrayList<>();
+            if (adSourcesList.contains(Prs.NOT_REPORTED)){
+                ancestrySources.add(auxQuery.criteria("sources").doesNotExist());
+            }
+            ancestrySources.add(auxQuery.criteria("sources.ancestry").in(adSourcesList));
+            and.add(auxQuery.or(ancestrySources.toArray(new Criteria[ancestrySources.size()])));
+        }
+
+        if (adScoresList != null && !adScoresList.isEmpty()) {
+            List<Criteria> ancestryScores = new ArrayList<>();
+            if (adScoresList.contains(Prs.NOT_REPORTED)){
+                ancestryScores.add(auxQuery.criteria("scores").doesNotExist());
+            }
+
+            ancestryScores.add(auxQuery.criteria("scores.ancestry").in(adScoresList));
+            and.add(auxQuery.or(ancestryScores.toArray(new Criteria[ancestryScores.size()])));
+        }
+
+        if (adLisPsgList != null && !adLisPsgList.isEmpty()) {
+             List<Criteria> ancestryListPgs = new ArrayList<>();
+            if (adLisPsgList.contains(Prs.NOT_REPORTED)){
+                ancestryListPgs.add(auxQuery.criteria("listPgs").doesNotExist());
+            }
+            ancestryListPgs.add(auxQuery.criteria("listPgs.ancestry").in(adLisPsgList));
+
+            and.add(auxQuery.or(ancestryListPgs.toArray(new Criteria[ancestryListPgs.size()])));
+        }
+
+        query.and(and.toArray(new Criteria[and.size()]));
+
+        //if (skip != 0 && limit != 0) {
+        query.offset(skip).limit(limit);
+        //}
+
+        Iterable<Prs> aux = query.fetch();
+
+        if (!skipCount) {
+            count.setValue(query.countAll());
+        }
+
+        return aux;
+    }
+
+    public List<PrsGraphic> getGraphicPRS(String idPgs, String sequencingType, MutableLong count) {
+        List<PrsGraphic> result = new ArrayList<>();
+        Query<PrsGraphic> query = this.datastore.createQuery(PrsGraphic.class);
+        if (idPgs != null) {
+            query.and(query.criteria("idPgs").equal(idPgs));
+        }
+        if (sequencingType != null) {
+            query.and(query.criteria("seqType").equal(sequencingType));
+        }
+
+        List<PrsGraphic> aux = query.asList();
+        count.setValue(query.countAll());
+
+        return aux;
+    }
+
+
+    /**
+     * Get list ancestries distinct and sort.
+     * @param ad
+     * @param count
+     * @return
+     */
+    public List<String> getAncestries(String ad, MutableLong count) {
+        List ancestries = new ArrayList();
+        DBCollection dbCollection= this.datastore.getCollection(Prs.class);
+
+        if (!ad.isEmpty()) {
+            ancestries = (List) dbCollection.distinct(ad + ".ancestry").stream()
+                    .sorted().collect(Collectors.toList());
+
+            // Add no reported
+            if (!ancestries.contains(Prs.NOT_REPORTED)) {
+                Query<Prs> query = this.datastore.createQuery(Prs.class);
+                query.and(query.criteria(ad + ".ancestry").doesNotExist());
+                if (query.fetch().hasNext()) {
+                    ancestries.add(Prs.NOT_REPORTED);
+                }
+            }
+        }
+        count.setValue(ancestries.size());
+        return ancestries;
+    }
+
+
+
 
     class AllVariantsIterable implements Iterable<Variant> {
 

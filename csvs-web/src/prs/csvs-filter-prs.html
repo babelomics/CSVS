@@ -1,0 +1,329 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/stevia-elements/src/stv-form-box.html">
+
+
+
+<dom-module id="csvs-filter-prs">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .inputValue {
+            width: 170px;
+            margin-left: 4px;
+        }
+
+        .popus {
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .numFilter {
+            /*padding: 1px 7px;*/
+            background-color: #445D76;
+            border-radius: 50%;
+            color: #fff;
+            font-weight: bold;
+            font-size: 12px;
+            margin-left: 10px;
+            margin-top: 2px;
+            line-height: 20px;
+            height: 20px;
+            width: 20px;
+            text-align: center;
+        }
+
+        #filterPrs_div{
+            height: 600px;
+            max-height: 600px;
+            width: 225px;
+            overflow-y: auto;
+        }
+
+        .check {
+            cursor: pointer;
+            color: var(--secondary-text-color);
+            padding-right: 2px;
+        }
+
+        .check:hover {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .titleCategory{
+            background-color: #f0f0f0;
+        }
+    </style>
+    <template>
+        <stv-form-box collapsible$="{{collapsible}}" collapsed$="{{collapsed}}">
+            <div class="header horizontal layout flex">
+                <div> Polygenic Risk Score </div>
+                <div class="flex"></div>
+                <div on-click="selectAllAncestries" title="Select all">
+                    <i class="fa fa-check-square-o check"></i>
+                </div>
+                <div on-click="deselectAllAncestries" title="Deselect all">
+                    <i class="fa fa-square-o check"></i>
+                </div>
+            </div>
+            <div class="flex"></div>
+            <div id="prs" class="container vertical layout">
+                <div id="filterPrs_div">
+                    <csvs-prs id="filterPrs"></csvs-prs>
+                </div>
+            </div>
+        </stv-form-box>
+    </template>
+    <script>
+        Polymer({
+            is: "csvs-filter-prs",
+            properties: {
+                collapsible: {
+                    type: Boolean,
+                    reflectToAttribute: true,
+                    value: false
+                },
+                collapsed: {
+                    type: Boolean,
+                    reflectToAttribute: true,
+                    value: false
+                },
+                ancestry: {
+                    type: Object,
+                    value:{},
+                },
+            },
+
+            selectAllAncestries: function (e, d, s) {
+                var checkboxes = this.getElementsByClassName("ancestryName");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    if (e.target.name == undefined || e.target.name != undefined && elem.name == e.target.name)
+                        elem.checked = true;
+                }
+                e.stopPropagation();
+            },
+
+            deselectAllAncestries: function (e, d, s) {
+                var checkboxes = this.getElementsByClassName("ancestryName");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    if (e.target.name == undefined || e.target.name != undefined && elem.name == e.target.name)
+                        elem.checked = false;
+                }
+                e.stopPropagation();
+            },
+
+            getAllAncestries: function(){
+                var me = this;
+                var ads = ["listPgs", "scores", "sources"];
+                var ancestries = {
+                            group: "Ancestry Distribution (%)",
+                            name: "ad",
+                            groupValues: [
+                                {
+                                    key: "listPgs",
+                                    category: "Source of Variant Associations (GWAS)",
+                                    ops: []
+                                }, {
+                                    key: "scores",
+                                    category: "Score Development/Training",
+                                        ops: [ ]
+                                }, {
+                                    key : "sources",
+                                    category: "PGS Evaluation",
+                                    ops: []
+                                }
+                            ]
+                        };
+
+                me.ancestry = ancestries;
+                ads.forEach(ad =>
+                    CSVSManager.prs.ancestry({
+                            query: {"ad": ad},
+                            request: {
+                                async: false,
+                                success: function(response) {
+                                    try {
+                                        const index = ancestries.groupValues.findIndex((element) => element.key == ad);
+                                        response.result.forEach(v =>
+                                                me.ancestry.groupValues[index].ops.push({"name": v})
+                                        );
+                                        me.$.filterPrs.ancestry = me.ancestry;
+                                    } catch (e) {
+                                        console.log("Problem loading ancestries");
+                                    }
+                                }
+                            }
+                    })
+                );
+
+            },
+
+            ready: function() {
+                this.getAllAncestries();
+            },
+
+            reset: function(){
+                var checkboxes = this.getElementsByClassName("ancestryName");
+                for (var i = 0; i < checkboxes.length; i++) {
+                        checkboxes[i].checked = true;
+                }
+                this.$.filterPrs.$.searchPrs.value = "";
+            }
+        });
+    </script>
+</dom-module>
+
+<dom-module id="csvs-prs">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .inputValue {
+            width: 170px;
+            margin-left: 4px;
+        }
+
+        .popus {
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .numFilter {
+            /*padding: 1px 7px;*/
+            background-color: #445D76;
+            border-radius: 50%;
+            color: #fff;
+            font-weight: bold;
+            font-size: 12px;
+            margin-left: 10px;
+            margin-top: 2px;
+            line-height: 20px;
+            height: 20px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .check {
+            cursor: pointer;
+            color: var(--secondary-text-color);
+            padding-right: 2px;
+        }
+
+        .check:hover {
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .titleCategory{
+            background-color: #f0f0f0;
+        }
+    </style>
+    <template>
+        <div>
+            <label class="stv">PRS id / Trait / Description:</label>
+            <textarea class="stv searchPrs" id="searchPrs" name="searchPrs" placeholder="PGS000001" value="{{prsValue::change}}" rows="3">
+            </textarea>
+        </div>
+        <div class="horizontal layout" style="padding-top: 15px;">
+            <label class="stv"><span>{{ancestry.group}}:</span></label>
+        </div>
+        <div class="horizontal layout">
+            <div style="padding-left: 5px">
+                <template is="dom-repeat" items="{{ancestry.groupValues}}" as="itemAncestry">
+                    <template is="dom-if" if="{{itemAncestry.key}}">
+                        <div class="stv-control titleCategory" >
+                            <div style="display:inline-block; min-width:140px">
+                                <label class="stv" ><span>{{itemAncestry.category}}</span></label>
+                            </div>
+                            <div on-click="selectAllAncestry"  style="display:inline" title="Select all">
+                                <i class="fa fa-check-square-o check" name="{{itemAncestry.key}}"></i>
+                            </div>
+                            <div on-click="deselectAllAncestry" style="display:inline" title="Deselect all">
+                                <i class="fa fa-square-o check " name="{{itemAncestry.key}}"></i>
+                            </div>
+                        </div>
+                        <template is="dom-repeat" items={{itemAncestry.ops}} as="ops">
+                            <div style="padding-left: 15px">
+                                <label class="stv-control">
+                                    <input type="checkbox"  class="ancestryName" name="{{itemAncestry.key}}"  value="{{ops.name}}" checked />
+                                    <span style="width: 200px; word-break:break-word" title="{{ops.name}}">{{ops.name}}</span>
+                                </label>
+                            </div>
+                        </template>
+                    </template>
+                </template>
+            </div>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: "csvs-prs",
+            properties: {
+                  prsValue: {
+                    type: String,
+                    notify: true,
+                    value: ''
+                  },
+
+                 ancestry: {
+                    type: Object,
+                    value:{}
+                },
+            },
+
+            selectAllAncestry: function (e, d, s) {
+                var checkboxes = this.getElementsByClassName("ancestryName");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    if (e.target.name == undefined || e.target.name != undefined && elem.name == e.target.name)
+                        elem.checked = true;
+                }
+                e.stopPropagation();
+            },
+
+            deselectAllAncestry: function (e, d, s) {
+                var checkboxes = this.getElementsByClassName("ancestryName");
+                for (var i = 0; i < checkboxes.length; i++) {
+                    var elem = checkboxes[i];
+                    if (e.target.name == undefined || e.target.name != undefined && elem.name == e.target.name)
+                        elem.checked = false;
+                }
+                e.stopPropagation();
+            },
+
+
+
+        checkPrs: function(){
+            var prsQuery = this.$.searchPrs.value.toUpperCase().replace(/\n/gi, ',');
+            if (prsQuery != '') {
+                return prsQuery;
+            } else {
+                return null;
+            }
+       },
+
+       getSelectedAncestry: function(category){
+            var result = [];
+            var checkboxes = this.getElementsByClassName("ancestryName");
+            for (var i = 0; i < checkboxes.length; i++) {
+                var elem = checkboxes[i];
+                if ( elem.checked && elem.name === category){
+                   result.push(elem.value);
+                   }
+            }
+
+            return result;
+       },
+
+    });
+    </script>
+</dom-module>

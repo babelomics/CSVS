@@ -1,0 +1,97 @@
+<!--link rel="import" href="../bower_components/polymer/polymer.html"-->
+<link rel="import" href="./csvs-filter-prs.html">
+<link rel="import" href="./csvs-table-prs.html">
+
+
+<dom-module name="csvs-prs-element">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            width: 100%;
+            background-color: var(--text-primary-color);
+            color: var(--primary-text-color);
+        }
+
+        #filter-form-element {
+            background-color: #FFFFFF;
+            width: 300px;
+            margin: 20px;
+            min-height: 900px;
+        }
+
+        #stv-filter-position {
+            width: 300px;
+        }
+
+        stv-tooltip::shadow .closeInfo::shadow {
+            margin-left: 490px;
+        }
+
+
+        #prsDiv {
+            border-radius: 0px !important;
+            margin: 20px 20px 20px 0px;
+            background-color: #FFFFFF;
+            width: calc(100% - 290px);
+        }
+    </style>
+    <template>
+
+        <div class="horizontal layout">
+            <div id="filter-form-element">
+                <form class="vertical layout" id="filter_form">
+                    <div id="buttons_container" class="horizontal layout end-justified" style="margin:10px 5px;">
+                        <div class="stv-btn stv-btn-shdw flex" on-click="clearForm" style="margin-right: 3px;">
+                            Clear
+                        </div>
+                        <div class="stv-btn stv-btn-shdw flex" on-click="submitForm">Search</div>
+                    </div>
+                    <csvs-filter-prs id="filterPrs"></csvs-filter-prs>
+                </form>
+            </div>
+
+            <div id="prsDiv" class="vertical layout">
+                <div id=prsDivTable" class="horizontal layout  center-justified">
+                    <csvs-table-prs id="prsTable" ></csvs-table-prs>
+                </div>
+            </div>
+        </div>
+    </template>
+</dom-module>
+<script>
+    Polymer({
+        is: 'csvs-prs-element',
+        properties: {
+
+        },
+        ready: function() {
+        },
+
+        submitForm: function() {
+            var me = this;
+            var prsValue = this.$.filterPrs.$.filterPrs.checkPrs();
+
+            var listPrs = prsValue != null ? prsValue.split(",") : [];
+            for (var i = 0; i < listPrs.length; i++) {
+                listPrs[i] = listPrs[i].trim();
+            }
+
+            var listPrs = listPrs.join(",");
+
+            var newQuery = {"searchPrs": listPrs,
+                             "adSources": this.$.filterPrs.$.filterPrs.getSelectedAncestry("sources").join(","),
+                             "adListPgs": this.$.filterPrs.$.filterPrs.getSelectedAncestry("listPgs").join(","),
+                             "adScores": this.$.filterPrs.$.filterPrs.getSelectedAncestry("scores").join(",")
+                            };
+            newQuery.limit = 10;
+            this.$.prsTable.newQuery= newQuery;
+        },
+
+        clearForm: function() {
+            this.$.filterPrs.reset();
+        },
+
+
+    });
+</script>

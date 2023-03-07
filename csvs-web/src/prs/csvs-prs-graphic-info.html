@@ -1,0 +1,109 @@
+<!--link rel="import" href="../../bower_components/polymer/polymer.html"-->
+<dom-module id="csvs-prs-graphic-info">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+        }
+        .prsLabel{
+            font-size: 13px;
+        }
+   }
+    </style>
+    <template>
+        <div>
+            <template is="dom-repeat" items="{{columnsPrs}}" as="itemColumn">
+                  <div>
+                      <template is="dom-if" if="{{itemColumn.description}}">
+                        <label class="stv" id="{{itemColumn.name}}_desc" title="{{itemColumn.description}}">{{itemColumn.title}}
+                                <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup>:</label>
+                      </template>
+                      <template is="dom-if" if="{{!itemColumn.description}}">
+                          <label class="stv" id="{{itemColumn.name}}">{{itemColumn.title}}:</label>
+                      </template>
+                      <label class="{{itemColumn.name}}">
+                          <template is="dom-repeat" items="{{getInfo(itemColumn, itemColumn.name, dataGraphic)}}" as="itemValues">
+                              <template is="dom-if" if="{{itemValues.key}}">
+                                  <br/>
+                                   <label class="stv" style="padding-left: 30px"> {{itemValues.key}}: </label>
+                              </template>
+                              <label class="prsLabel">{{itemValues.value}}</label>
+                          </template>
+                      </label>
+                  </div>
+            </template>
+        </div>
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is: 'csvs-prs-graphic-info',
+        properties: {
+            dataGraphic: {
+                value: {},
+                type: Object,
+
+            },
+            columnsPrs:{
+               value: [],
+                type: Array
+            }
+        },
+
+        getInfo: function(itemColumn, name, dataGraphic){
+            if (!!itemColumn.formula ) {
+                return itemColumn.formula(this.formatExpo, this.dataGraphic);
+            } else {
+                return  name in this.dataGraphic ? [{"value": this.dataGraphic[name] }] : [{"value":""}];
+            }
+        },
+
+        formatExpo: function(x, f) {
+            return Number.parseFloat(x).toExponential(f);
+        },
+
+        reloadDataGraphicInfo: function(){
+            this.columnsPrs = this._columnsPrs;
+        },
+
+        _columnsPrs:[{
+                name: 'idPgs',
+                title: "Polygenic Score ID",
+            }, {
+                name: 'normal',
+                title: 'Normally distributed',
+                description: 'PRS follows a normal distribution (shapiro test > 0.05)'
+            }, {
+                name: 'min',
+                title: 'Min',
+            }, {
+                name: 'max',
+                title: 'Max',
+            }, {
+                name: 'stdDev',
+                title: 'Std.dev.',
+            }, {
+                name: 'mean',
+                title: 'Mean',
+            },{
+                name: 'decile',
+                title: 'Deciles',
+                formula: function(formatExpo, row){
+                    var result = [];
+                    if (!!row.decile){
+                        for (i = 0; i < row.decile.length; i++){
+                            result.push({"key": "decile " + i, "value": formatExpo(row.decile[i], 2)});
+                        }
+                    }
+                    return result;
+                },
+            }
+            ],
+
+         ready: function() {
+            this.columnsPrs = this._columnsPrs;
+        },
+
+    });
+</script>

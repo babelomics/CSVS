@@ -47,6 +47,18 @@ var CSVSManager = {
         }
     },
 
+    prs: {
+        ancestry: function (args) {
+                    return CSVSManager._doRequest(args, 'prs', 'ancestry/fetch');
+        },
+        fetch: function (args) {
+            return CSVSManager._doRequest(args, 'prs', 'fetch');
+        },
+        graphic: function (args) {
+            return CSVSManager._doRequest(args, 'prs', 'graphic');
+        },
+    },
+
     _url: function (args, api, action) {
         var host = CSVSManager.host;
         if (typeof args.request.host !== 'undefined' && args.request.host != null) {

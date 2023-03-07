@@ -1,0 +1,241 @@
+<!--link rel="import" href="../bower_components/polymer/polymer.html"-->
+<!--link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html"-->
+<link rel="import" href="./csvs-prs-graphic-info.html">
+
+<dom-module name="csvs-prs-graphic-element">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            width: 100%;
+            background-color: var(--text-primary-color);
+            color: var(--primary-text-color);
+        }
+
+        #menuSeqType {
+            margin-top: 15px;
+        }
+
+        #menuSeqType> div {
+            font-size: 17px;
+            padding: 5px;
+            margin: 0 20px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.1s;
+            cursor: pointer;
+        }
+
+        #menuSeqType> div:hover {
+            border-bottom-color: rgba(125, 125, 125, 0.4);
+        }
+
+        #menuSeqType> div[selected] {
+            border-bottom-color: rgba(125, 125, 125, 0.7);
+        }
+
+        #prsGraphicInfo{
+             padding: 0px 40px;
+        }
+
+    </style>
+    <template>
+        <div >
+            <div id="menuSeqType" class="color-2 color-hover-2 horizontal layout ">
+                <div id="menuSeqTypeG" on-click="handleMenuSeqTypeClick" option="G" selected="" hidden$="{{_hiddenMenu('G')}}">Genome</div>
+                <div id="menuSeqTypeE" on-click="handleMenuSeqTypeClick" option="E" hidden$="{{_hiddenMenu('E')}}">Exome</div>
+            </div>
+            <div id="divGraphicPrs" class="horizontal layout style-scope" style="display: inline-flex; padding-top: 15px;" hidden$="{{_hiddenMenu('')}}">
+                <csvs-prs-graphic-info id="prsGraphicInfo"></csvs-prs-graphic-info>
+                <div id="chartPrs" class="color-2 color-hover-2 horizontal layout center-justified"></div>
+            </div>
+            <div id="divGraphicPrsNoData" class="horizontal layout style-scope" style="padding-top: 15px;" hidden$="{{!_hiddenMenu('')}}">
+                No results found.
+            </div>
+        </div>
+    </template>
+</dom-module>
+<script>
+    Polymer({
+        is: 'csvs-prs-graphic-element',
+        properties: {
+            idPgsSelected: {
+                type: String,
+                value : "",
+                observer: 'getDataGraphic'
+            },
+            efosLabels: {
+                type: String,
+                value : ""
+            },
+            selectedSequencingType:{
+                value: "",
+                type: String,
+                observer: 'reloadChart'
+            },
+            dataGraphic:{
+                type: Array,
+                value: []
+            },
+            menuSequencingType:{
+                type: Array,
+                value: [],
+                observer: 'reloadMenu'
+            }
+        },
+
+        ready: function() {
+        },
+
+        _hiddenMenu: function(option){
+            var result = true;
+            if (!!this.menuSequencingType && this.menuSequencingType.length > 0){
+                result = option == '' ? false:  (this.getIndexDataGraphic(option) != -1 ? false : true);
+           }
+            return result;
+        },
+
+        reloadMenu: function(){
+            this.$.divGraphicPrs.setAttribute("hidden", "true");
+            this.$.divGraphicPrsNoData.removeAttribute("hidden");
+            // Remove hidden
+            if (this._hiddenMenu("G")){
+                    this.$.menuSeqTypeG.setAttribute("hidden", "true");
+            } else {
+                    this.$.menuSeqTypeG.removeAttribute("hidden");
+                    this.$.divGraphicPrs.removeAttribute("hidden");
+                    this.$.divGraphicPrsNoData.setAttribute("hidden", "true");
+            }
+            if (this._hiddenMenu("E")){
+                    this.$.menuSeqTypeE.setAttribute("hidden", "true");
+            } else {
+                    this.$.menuSeqTypeE.removeAttribute("hidden");
+                    this.$.divGraphicPrs.removeAttribute("hidden");
+                    this.$.divGraphicPrsNoData.setAttribute("hidden", "true");
+            }
+        },
+
+       getIndexDataGraphic: function(optionMenu){
+            var index = -1;
+            if (!!this.dataGraphic){
+               index = this.dataGraphic.findIndex(g => g.seqType === optionMenu);
+            }
+            return index;
+       },
+
+       getDataGraphicElement:function(){
+            var index = this.getIndexDataGraphic(this.selectedSequencingType);
+            return index != -1 ? this.dataGraphic(index) : [];
+       },
+
+       reloadChart: function() {
+            var data = [];
+            var categories = [];
+            var index = this.getIndexDataGraphic(this.selectedSequencingType);
+            if (index != -1){
+                for (var i = 1; i <= this.dataGraphic[index].plotX.length; i++){
+                    categories.push([this.dataGraphic[index].plotX[i-1],this.dataGraphic[index].plotX[i]]);
+                }
+                data = this.dataGraphic[index].plotY;
+                this.$.prsGraphicInfo.dataGraphic = this.dataGraphic[index];
+            } else {
+               this.$.prsGraphicInfo.dataGraphic = {};
+            }
+
+            // Remove selected
+            if (this.selectedSequencingType == "G"){
+                    this.$.menuSeqType.children.namedItem("menuSeqTypeG").setAttribute("selected", "true");
+                    this.$.menuSeqType.children.namedItem("menuSeqTypeE").removeAttribute("selected");
+            }
+            if (this.selectedSequencingType == "E"){
+                    this.$.menuSeqType.children.namedItem("menuSeqTypeG").removeAttribute("selected");
+                    this.$.menuSeqType.children.namedItem("menuSeqTypeE").setAttribute("selected", "true");
+            }
+
+            var title = this.efosLabels;
+            var listColors =  this.selectedSequencingType === "E" ?  ["#90ed7d"] : ["#7cb5ec"];
+            var vpp = new Highcharts.Chart({
+                chart: {
+                    renderTo: this.$.chartPrs,
+                    type: 'column',
+
+                },
+                title: {
+                    text: title
+                },
+                colors: listColors,
+                plotOptions: {
+                     column: {
+                        dataLabels: {
+                            enabled: true
+                        },
+                    },
+                },
+                tooltip: {
+                    useHTML: true,
+                    formatter: function() {
+                        var point = this.point;
+                        return ' Range: <b>[' + this.x + ']</b><br> Frequency: <b>' + this.y + '</b>';
+                    }
+                },
+                xAxis: {
+                    allowDecimals: true,
+                    categories: categories,
+                    crosshair: true
+                },
+                yAxis: {
+                    title: "",
+                    crosshair: true
+                },
+                series: [{
+                    name: this.selectedSequencingType === "E" ? "Exome" : "Genome",
+                    pointPadding: 0,
+                    groupPadding: 0,
+                    borderWidth: 0,
+                    shadow: false,
+                    data: data
+                }]
+            });
+        },
+
+
+        handleMenuSeqTypeClick: function(e) {
+            var v = e.currentTarget.getAttribute("option");
+            if ( v != this.selectedSequencingType) {
+                // Remove selected
+                if (this.selectedSequencingType != ""){
+                    this.$.menuSeqType.children.namedItem("menuSeqType"+this.selectedSequencingType).removeAttribute("selected");
+                }
+                // Add selected
+                this.selectedSequencingType = v;
+                e.currentTarget.setAttribute("selected", "true");
+                this.reloadChart();
+            }
+        },
+
+        getDataGraphic: function() {
+            var me = this;
+            var newQuery = this.idPgsSelected != "" ? {"idPgs": this.idPgsSelected,limit:10, skip:0} : {limit:10, skip:0};
+            CSVSManager.prs.graphic({
+                    query: newQuery,
+                    request: {
+                        success: function(response) {
+                            me.dataGraphic = response.result;
+                            var menuSequencingTypeTmp = [];
+                            if ( response.result.length > 0){
+                                response.result.forEach((r)=> menuSequencingTypeTmp.push(r.seqType));
+                                me.selectedSequencingType = me.dataGraphic[0].seqType;
+                            } else {
+                               me.selectedSequencingType = "";
+                            }
+                            me.menuSequencingType = menuSequencingTypeTmp;
+                            try {
+                               me.reloadChart();
+                            } catch (e) {
+                                //me.reloadChart();
+                                console.log(e);
+                            }
+                        }
+                    }
+                });
+        },
+    });
+</script>

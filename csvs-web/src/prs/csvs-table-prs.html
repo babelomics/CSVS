@@ -1,0 +1,232 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="./csvs-prs-graphic-element.html">
+
+<dom-module id="csvs-table-prs">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            display: block;
+            position: relative;
+            width: 100%;
+        }
+
+        stv-table {
+            box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.2);
+            overflow-y: hidden;
+        }
+
+        stv-table::shadow #list {
+            min-height: 300px;
+        }
+
+        stv-table::shadow {
+            font-size: 11px;
+        }
+
+        stv-table::shadow .table-row {
+            height: 30px;
+        }
+
+        stv-table::shadow .table-header-field > .name.stv-table {
+            padding: 4px 0;
+        }
+
+
+    </style>
+    <template>
+        <div class=" ">
+            <div>
+                <stv-table id="tablePrs"  request="{{request}}" enable-select enable-resize enable-paging enable-remote
+                       enable-loading  on-rowclick="handleRowClick" page-size="10"></stv-table>
+            </div>
+            <div>
+                <csvs-prs-graphic-element id="prsGraphicElement" ></csvs-prs-graphic-element>
+            </div>
+        </div>
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is: 'csvs-table-prs',
+        properties: {
+            data: {
+                value: [],
+                type: Array
+            },
+            newQuery:{
+                type: Object,
+                value:{},
+                observer: "updateQuery"
+            }
+        },
+
+        ready: function() {
+            if ( this.$.tablePrs != undefined ){
+                this.$.tablePrs.columns = this._columns;
+            }
+        },
+
+         _parse: function(response) {
+            return response.result;
+         },
+
+        _parseTotal: function(response) {
+            var total = 0;
+            if (response != null) {
+                total = response.numTotalResults;
+            }
+            return total;
+        },
+
+        _selectElem: function(response){
+            if (response != null && response.result.length > 0 ){
+                this.$.tablePrs.selectElem(response.result[0], function(x, y, graphic) {
+                        return x.idPgs == y.idPgs;
+                    });
+                this.$.prsGraphicElement.idPgsSelected = response.result[0].idPgs;
+
+                // Add text efosLabels
+                var efosLabels = [];
+                if (response.result[0] != null && response.result[0].efos != null){
+                        response.result[0].efos.forEach(e=> efosLabels.push(e.label));
+                }
+                this.$.prsGraphicElement.efosLabels = efosLabels.join(", ");
+
+            }
+        },
+
+        updateQuery: function() {
+            var me = this;
+            var url = CSVSManager.prs.fetch({
+                        query: this.newQuery,
+                        request: {
+                            url: true
+                        }
+                    });
+            this.request = {
+                url: url,
+                auxTotalCount: -1,
+                parse: function(response) {
+                    return me._parse(response);
+                },
+                parseTotal: function(response) {
+                    return me._parseTotal(response);
+                },
+                selectElem: function(response){
+                    return me._selectElem(response);
+                }
+            };
+        },
+
+        handleRowClick: function(e) {
+            this.$.prsGraphicElement.idPgsSelected = e.detail.row.idPgs;
+
+            // Add text efosLabels
+            var efosLabels = [];
+            if (e.detail.row != null && e.detail.row.efos != null){
+                    e.detail.row.efos.forEach(e=> efosLabels.push(e.label));
+            }
+            this.$.prsGraphicElement.efosLabels = efosLabels.join(", ");
+        },
+
+
+
+        _columns:[{
+            name: 'idPgs',
+            title: "Polygenic Score ID",
+            width: 100,
+            disableSort: true,
+            disableTooltip: true,
+            formula: function(row){
+                if (row.idPgs != undefined) {
+                        return "<a class='link' href='https://www.pgscatalog.org/score/" + row.idPgs + "' target='_blank' " +
+                            "title='https://www.pgscatalog.org/score/" + row.idPgs + "'>" + row.idPgs + "</a>";
+                } else
+                    return ".";
+                }
+            }, {
+            name: 'efosIds',
+            title: 'Mapped Trait(s) <br/> (EFO ID)',
+            width: 120,
+            disableTooltip: true,
+            formula: function(row) {
+                if (row != null && row.efos != null){
+                    var efosIds = [];
+                    row.efos.forEach(e=> efosIds.push("<a class='link' href='https://www.pgscatalog.org/trait/" + e.id + "' target='_blank' " +
+                            "title='https://www.pgscatalog.org/trait/" + e.id + "'>" + e.id + "</a>"));
+                    return efosIds.join(", ");
+                } else{
+                    return ".";
+                }
+                }
+            }, {
+            name: 'efosLabels',
+            title: 'Mapped Trait(s)  (EFO label)',
+            width: 360,
+            formula: function(row) {
+                if (row != null && row.efos != null){
+                    var efosLabels = []
+                    row.efos.forEach(e=> efosLabels.push(e.label));
+                    return efosLabels.join(", ");
+                } else {
+                    return ".";
+                }
+            }
+            }, {
+            name: 'ad',
+            title: 'Ancestry Distribution (%)',
+            width: 680,
+            columns: [{
+                        name: "listPgs",
+                        width: 260,
+                        title: 'Source of Variant Associations (GWAS)',
+                        disableSort: true,
+                        formula: function(row) {
+                            if ( row.listPgs != null) {
+                                var l = [];
+                                row.listPgs.forEach(e => l.push(e.ancestry + ": " + e.value))
+                                return l.join(", ");
+                            } else {
+                                return ".";
+                            }
+                        }
+                    }, {
+                        name: "sources",
+                        width: 210,
+                        title: 'Score Development/Training',
+                        disableSort: true,
+                        formula: function(row) {
+                            if (row.scores != null) {
+                                var l = [];
+                                row.scores.forEach(e => l.push(e.ancestry + ": " + e.value))
+                                return l.join(", ");
+                            } else {
+                                return ".";
+                            }
+                        }
+                    }, {
+                        name: "scores",
+                        width: 210,
+                        title: 'PGS Evaluation',
+                        disableSort: true,
+                        formula: function(row) {
+                            if (row.sources != null) {
+                                var l = [];
+                                row.sources.forEach(e => l.push(e.ancestry + ": " + e.value))
+                                return l.join(", ");
+                            } else {
+                                return ".";
+                            }
+                        }
+                    }
+            ]
+             }, {
+            name: 'releaseDate',
+            title: 'Release Date',
+            width: 100,
+        }
+        ],
+
+
+    });
+</script>

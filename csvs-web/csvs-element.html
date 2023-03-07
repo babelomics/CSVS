@@ -38,6 +38,7 @@
 <link rel="import" href="src/csvs-version.html">
 <link rel="import" href="src/csvs-contributors.html">
 <link rel="import" href="src/variant/csvs-variant-pharmacogenomic.html">
+<link rel="import" href="src/prs/csvs-prs-element.html">
 
 <dom-module id="csvs-element">
     <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
@@ -75,6 +76,7 @@
         }
 
         csvs-search-element,
+        csvs-prs-element,
         csvs-stats-element
         {
             height: calc(100vh - 60px);
@@ -138,8 +140,11 @@
             <csvs-annotation-result id="annotationResult"></csvs-annotation-result>
         </div>
 
+        <div class="content" menu-option="prs">
+            <csvs-prs-element diseases="{{diseases}}" technologies="{{technologies}}" id="csvsPrsElement"></csvs-prs-element>
+        </div>
 
-        <div class="content" menu-option="home,search,stats,downloads,annot,result,saturation">
+        <div class="content" menu-option="home,search,stats,downloads,annot,result,saturation,prs">
             <stv-panel hidden collapsible closable movable id="fileBrowserPanel" on-hidden="handlePanelHidden">
                 <div class="header">
                     <i class="fa fa-folder-open-o"></i> File Browser
@@ -187,6 +192,10 @@
                         <i class="fa fa-download"></i>
                         <span class="option-text">Downloads</span>
                     </div>
+                    <div title="Polygenic Risk Score" class="option" on-click="handleMenuOption" data-option="prs">
+                        <i class="fa fa-area-chart"></i>
+                        <span class="option-text">Prs</span>
+                    </div>
                 </template>
                 <template is="dom-if" if="{{_isNotAccept(acceptTermsCond)}}">
                     <div title="Checked I agree terms and conditions to search" class="option disabled" on-click="handleMsjAccept" data-option="search">
@@ -204,9 +213,14 @@
                         <span class="option-text">Saturation</span>
                     </div>
 
-                    <div title="hecked I agree terms and conditions to go to downloads" class="option disabled" on-click="handleMsjAccept" data-option="downloads">
+                    <div title="Checked I agree terms and conditions to go to downloads" class="option disabled" on-click="handleMsjAccept" data-option="downloads">
                         <i class="fa fa-download"></i>
                         <span class="option-text">Downloads</span>
+                    </div>
+
+                    <div title="Checked I agree terms and conditions to go to prs" class="option disabled" on-click="handleMsjAccept" data-option="prs">
+                        <i class="fa fa-area-chart"></i>
+                        <span class="option-text">Prs</span>
                     </div>
                 </template>
 
