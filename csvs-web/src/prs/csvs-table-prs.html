@@ -30,6 +30,9 @@
             padding: 4px 0;
         }
 
+        #tablePrs{
+            min-width: 300px;
+        }
 
     </style>
     <template>
@@ -145,29 +148,15 @@
                     return ".";
                 }
             }, {
-            name: 'efosIds',
-            title: 'Mapped Trait(s) <br/> (EFO ID)',
-            width: 120,
-            disableTooltip: true,
-            formula: function(row) {
-                if (row != null && row.efos != null){
-                    var efosIds = [];
-                    row.efos.forEach(e=> efosIds.push("<a class='link' href='https://www.pgscatalog.org/trait/" + e.id + "' target='_blank' " +
-                            "title='https://www.pgscatalog.org/trait/" + e.id + "'>" + e.id + "</a>"));
-                    return efosIds.join(", ");
-                } else{
-                    return ".";
-                }
-                }
-            }, {
             name: 'efosLabels',
             title: 'Mapped Trait(s)  (EFO label)',
-            width: 360,
+            width: 450,
             formula: function(row) {
                 if (row != null && row.efos != null){
                     var efosLabels = []
-                    row.efos.forEach(e=> efosLabels.push(e.label));
-                    return efosLabels.join(", ");
+                    row.efos.forEach(e=> efosLabels.push("<a class='link' href='https://www.pgscatalog.org/trait/" + e.id + "' target='_blank' " +
+                            "title='https://www.pgscatalog.org/trait/" + e.id + "'>" + e.label + "</a>"));
+                    return efosLabels.join("; ");
                 } else {
                     return ".";
                 }
@@ -175,10 +164,10 @@
             }, {
             name: 'ad',
             title: 'Ancestry Distribution (%)',
-            width: 680,
+            width: 710,
             columns: [{
                         name: "listPgs",
-                        width: 260,
+                        width: 270,
                         title: 'Source of Variant Associations (GWAS)',
                         disableSort: true,
                         formula: function(row) {
@@ -192,7 +181,7 @@
                         }
                     }, {
                         name: "sources",
-                        width: 210,
+                        width: 220,
                         title: 'Score Development/Training',
                         disableSort: true,
                         formula: function(row) {
@@ -206,7 +195,7 @@
                         }
                     }, {
                         name: "scores",
-                        width: 210,
+                        width: 220,
                         title: 'PGS Evaluation',
                         disableSort: true,
                         formula: function(row) {

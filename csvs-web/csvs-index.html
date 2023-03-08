@@ -97,6 +97,10 @@
 
 
         window.addEventListener('WebComponentsReady', function(e) {
+            var path = e.path || (e.composedPath && e.composedPath());
+            const url = !!path ? path[0].location : null;
+            const tab = !!url ? new URL(url).searchParams.get('tab') : null;
+
             getSpecies(function(s) {
                 AVAILABLE_SPECIES = s;
                 DEFAULT_SPECIES = AVAILABLE_SPECIES.vertebrates[0];
@@ -104,6 +108,9 @@
                 csvs.setAttribute("title-app", window.TITLE_APP || "Collaborative Spanish Variant Server");
                 csvs.setAttribute("acronym", window.ACRONYM_APP || "CSVS");
                 csvs.setAttribute("phenotype", window.PHENOTYPE  || "Spanish");
+                if (tab === 'prs'){
+                    csvs.setMenu(tab ? tab: "home");
+                }
                 document.head.getElementsByTagName("title")[0].innerHTML = window.TITLE_APP || "Collaborative Spanish Variant Server";
                 document.body.appendChild(csvs);
             });

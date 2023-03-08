@@ -218,7 +218,7 @@
                         <span class="option-text">Downloads</span>
                     </div>
 
-                    <div title="Checked I agree terms and conditions to go to prs" class="option disabled" on-click="handleMsjAccept" data-option="prs">
+                    <div title="Polygenic Risk Score" class="option" on-click="handleMenuOption" data-option="prs">
                         <i class="fa fa-area-chart"></i>
                         <span class="option-text">Prs</span>
                     </div>
@@ -365,7 +365,6 @@
             this.getDiseases();
             this.getTechnologies();
             this.checkShowMenuOnLogin();
-            this.selectedOption = "home";
             this.acceptTermsCond = this.getAcceptTermsCond() == 'true'? true : false;
             this.year = new Date().getFullYear();
         },

@@ -214,7 +214,8 @@
         getDataGraphic: function() {
             var me = this;
             var newQuery = this.idPgsSelected != "" ? {"idPgs": this.idPgsSelected,limit:10, skip:0} : {limit:10, skip:0};
-            CSVSManager.prs.graphic({
+            if (this.idPgsSelected != ""){
+                CSVSManager.prs.graphic({
                     query: newQuery,
                     request: {
                         success: function(response) {
@@ -236,6 +237,7 @@
                         }
                     }
                 });
+            }
         },
     });
 </script>

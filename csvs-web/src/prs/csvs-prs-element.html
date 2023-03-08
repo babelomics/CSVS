@@ -40,12 +40,12 @@
 
         <div class="horizontal layout">
             <div id="filter-form-element">
-                <form class="vertical layout" id="filter_form">
+                <form class="vertical layout" id="filter_prs_form">
                     <div id="buttons_container" class="horizontal layout end-justified" style="margin:10px 5px;">
                         <div class="stv-btn stv-btn-shdw flex" on-click="clearForm" style="margin-right: 3px;">
                             Clear
                         </div>
-                        <div class="stv-btn stv-btn-shdw flex" on-click="submitForm">Search</div>
+                        <div class="stv-btn stv-btn-shdw flex" id="prsBtnSearch" on-click="submitForm">Search</div>
                     </div>
                     <csvs-filter-prs id="filterPrs"></csvs-filter-prs>
                 </form>

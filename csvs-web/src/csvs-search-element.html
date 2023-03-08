@@ -50,6 +50,7 @@
             margin: 20px 20px 20px 0px;
             background-color: #FFFFFF;
             width: calc(100% - 290px);
+            min-width: 300px;
         }
 
         #saturationDiv, .saturatDiv {
@@ -355,6 +356,7 @@
                 </div>
 
                 <div id="tools" class="horizontal layout flex">
+
                     <jso-genome-viewer-element id="gv" class="tool" on-created="handleGenomeViewerCreated"></jso-genome-viewer-element>
                     <stv-variant-frequencies id="frequency" hidden class="tool"></stv-variant-frequencies>
                     <stv-variant-phenotype id="phenotype" hidden class="tool"></stv-variant-phenotype>
