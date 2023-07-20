@@ -150,8 +150,9 @@ public class CSVSQueryManager {
                     Duration d = Duration.between( logQuery.getDate().toInstant(), new Date(firstDate.getTime() + expiremilis).toInstant());
                     long minutesPart = d.toMinutes();
                     long secondsPart = d.minusMinutes( minutesPart ).getSeconds() ;
-                    long min= getParConfig(NUM_MAX_MINUT)/60000;
-                    result = "You can't make more than " + getParConfig(NUM_MAX_QUERY) + " queries. The time remaining to search is " + (minutesPart != 0 ? minutesPart+" minutes ": "") + (secondsPart != 0 ? secondsPart+" seconds ": "") + ".";
+                    String minutesPartText = minutesPart == 0 ? "" : (minutesPart == 1 ? minutesPart + " minute ": minutesPart+" minutes ");
+                    String secondsPartText = secondsPart == 0 ? "" : (secondsPart == 1 ? secondsPart + " second ": secondsPart+" seconds ");
+                    result = "You can't make more than " + getParConfig(NUM_MAX_QUERY) + " queries. Remaining time for a new search: " + minutesPartText + secondsPartText + ".";
                 } else {
                     logQuery.setRegion(newQuerysRegion);
                     datastore.save(logQuery);
