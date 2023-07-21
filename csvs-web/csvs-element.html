@@ -140,7 +140,7 @@
         </div>
 
 
-        <div class="content" menu-option="home,search,stats,downloads,annot,result,saturation,login">
+        <div class="content" menu-option="home,search,stats,downloads,annot,result,saturation">
             <stv-panel hidden collapsible closable movable id="fileBrowserPanel" on-hidden="handlePanelHidden">
                 <div class="header">
                     <i class="fa fa-folder-open-o"></i> File Browser
@@ -159,8 +159,8 @@
 
         </div>
 
-        <stv-header id="stvHeader" user-data="{{userData}}" on-login="handleLogin" on-logout="handleLogout" selected-option="{{selectedOption}}" hide-jbos hide-browse isLogged="{{isLogged}}"
-                    hide-anonymous="true" hide-request-account="true"  hide-signup>
+        <stv-header id="stvHeader" user-data="{{userData}}" on-login="handleLogin" on-logout="handleLogout" selected-option="{{selectedOption}}" hide-jbos hide-browse isLogged="{{isLogged}}" 
+                    hide-login hide-signup>
             <div class="icon">
                 <img src="images/logo-gpvs.png" style="height: 50px;margin: 5px 0px 0 0;">
             </div>
@@ -169,7 +169,7 @@
 
             <div id="menu" class="menu horizontal layout center flex">
                 <template is="dom-if" if="{{_isAccept(acceptTermsCond)}}">
-                    <div title="Search" class="option" on-click="handleMenuOption" login-required  data-option="search">
+                    <div title="Search" class="option" on-click="handleMenuOption" data-option="search">
                         <i class="fa fa-search"></i>
                         <span class="option-text">Search</span>
                     </div>
@@ -213,7 +213,7 @@
             <stv-dropdown dark class="helpmenu" >
                 <div data-button id="help"><i class="fa fa-question-circle"></i></div>
                 <ul data-menu>
-                    <template is="dom-if" if="{{isLogged}}">
+                    
                         <a href="csvs-documentation.html" target="_blank" >
                             <li><i class="fa fa-book"></i> &nbsp; Documentation</li>
                         </a>
@@ -231,7 +231,7 @@
                         <div on-mousedown="handleVersion">
                             <li><i class="fa fa-database" aria-hidden="true"></i> &nbsp; Database version</li>
                         </div>
-                    </template>
+                   
                 </ul>
 
             </stv-dropdown>
@@ -380,15 +380,11 @@
             array[x] = b;
         },
         handleTry: function() {
-            if (this.isLogged || this.$.stvHeader.hideLogin)
                 this.setMenu("search");
-            else
-                this.setMenu("login");
         },
         handleLogin: function() {
             this.isLogged = this.$.stvHeader.isLogged;
             this.checkShowMenuOnLogin();
-            this.$.help.hidden = false;
         },
         handleLogout: function() {
             this.isLogged = this.$.stvHeader.isLogged;
@@ -396,7 +392,6 @@
             this.setMenu("home");
             this.$.fileBrowserPanel.hide();
             this.$.jobBrowserPanel.hide();
-            this.$.help.hidden = true;
         },
         handleJobSelect: function(e) {
             var me = this;
