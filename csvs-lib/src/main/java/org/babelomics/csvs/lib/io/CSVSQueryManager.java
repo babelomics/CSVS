@@ -246,7 +246,8 @@ public class CSVSQueryManager {
 
             for (Variant v : variants) {
                 v.setStats(null);
-                v.setAnnots(null);
+                v.setAnnotsSequence(null);
+                v.setAnnotSearch(null);
             }
             res.add(variants);
         }
@@ -449,15 +450,23 @@ public class CSVSQueryManager {
         List<String> listP = new ArrayList<>();
         List<String> listC = new ArrayList<>();
 
+        List<String> listCRegex = new ArrayList<>();
+        List<String> listPRegex = new ArrayList<>();
+
         List<Criteria> hgvs = new ArrayList<Criteria>();
         List<String> ann_c_p = new ArrayList<String>();
+
         // Add new filters cdnas and aa
         if (cdnas != null && !cdnas.isEmpty()) {
-
             listC = cdnas.stream().filter(c -> c.startsWith("ENS")).collect(Collectors.toList());
             if (listC != null && listC.size() > 0) {
                 numCriteria++;
                 //hgvs.add(query.criteria("annot-s.hgvsc").in(listC));
+            }
+
+            listCRegex = cdnas.stream().filter(c -> c.startsWith("ENS") && !c.split(":")[0].contains(".")).collect(Collectors.toList());
+            if (listCRegex != null && listCRegex.size() > 0) {
+                numCriteria++;
             }
 
             List<String> ann_c = cdnas.stream().filter(c -> !c.startsWith("ENS")).collect(Collectors.toList());
@@ -466,10 +475,15 @@ public class CSVSQueryManager {
             }
         }
         if (proteins != null && !proteins.isEmpty()) {
-            //hgvs.add(query.criteria("annots.hgvsp").in(proteins));
+            //hgvs.add(query.criteria("annotSearch.hgvsp").in(proteins));
             listP = proteins.stream().filter(p -> p.startsWith("ENS")).collect(Collectors.toList());
             if (listP != null && listP.size() > 0) {
-                //hgvs.add(query.criteria("annots.hgvsc").in(listP));
+                //hgvs.add(query.criteria("annotSearch.hgvsc").in(listP));
+                numCriteria++;
+            }
+
+            listPRegex = cdnas.stream().filter(c -> c.startsWith("ENS") && !c.split(":")[0].contains(".")).collect(Collectors.toList());
+            if (listPRegex != null && listPRegex.size() > 0) {
                 numCriteria++;
             }
 
@@ -508,10 +522,39 @@ public class CSVSQueryManager {
         Query<Variant> query = this.datastore.createQuery(Variant.class);
 
         if (listC != null && listC.size() > 0) {
-            or[i++] = query.criteria("annots.hgvsc").in(listC);
+            or[i++] = query.criteria("annotSearch.hgvsc").in(listC);
         }
+
+        if (listCRegex != null && listCRegex.size() > 0) {
+            String cRegex = "";
+            for (String c :listCRegex) {
+                String[] temp = c.split(":");
+                if (temp != null && temp.length == 2 ){
+                    if (cRegex.length() != 0){
+                        cRegex = cRegex + "|";
+                    }
+                    cRegex = cRegex + "^" + temp[0] + "." + "[1-9]?" + "[0-9]*" + ":" + temp[1] + "$" ;
+                }
+            }
+            or[i++] = query.criteria("annotSearch.hgvsc").contains(cRegex);
+        }
+
         if (listP != null && listP.size() > 0) {
-            or[i++] = query.criteria("annots.hgvsp").in(listP);
+            or[i++] = query.criteria("annotSearch.hgvsp").in(listP);
+        }
+
+        if (listPRegex != null && listPRegex.size() > 0) {
+            String pRegex = "";
+            for (String c :listPRegex) {
+                String[] temp = c.split(":");
+                if (temp != null && temp.length == 2 ){
+                    if (pRegex.length() != 0){
+                        pRegex = pRegex + "|";
+                    }
+                    pRegex = pRegex + "^" + temp[0] + "." + "[1-9]?" + "[0-9]*" + ":" + temp[1] + "$" ;
+                }
+            }
+            or[i++] = query.criteria("annotSearch.hgvsp").contains(pRegex);
         }
 
         if (or.length > 0)
@@ -540,7 +583,7 @@ public class CSVSQueryManager {
 
 
         if (ann_c_p != null && !ann_c_p.isEmpty()) {
-            query.filter("annots.ann_c_p", new BasicDBObject("$in", ann_c_p));
+            query.filter("annotSearch.ann_c_p", new BasicDBObject("$in", ann_c_p));
         }
 
         if (consequenceTypes != null && !consequenceTypes.isEmpty()) {
@@ -548,9 +591,9 @@ public class CSVSQueryManager {
                     .filter(c -> EMPTY_TERM.contains(c.toUpperCase()))
                     .findFirst();
             if (op.isPresent()){
-                query.or(query.criteria("annots.ct").doesNotExist(), query.criteria("annots.ct").in(consequenceTypes) );
+                query.or(query.criteria("annotSearch.ct").doesNotExist(), query.criteria("annotSearch.ct").in(consequenceTypes) );
             } else {
-                query.filter("annots.ct", new BasicDBObject("$in", consequenceTypes));
+                query.filter("annotSearch.ct", new BasicDBObject("$in", consequenceTypes));
             }
         }
 

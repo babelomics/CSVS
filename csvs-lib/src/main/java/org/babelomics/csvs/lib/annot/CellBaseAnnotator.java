@@ -131,7 +131,7 @@ public class CellBaseAnnotator {
                         }
 
                         if (cts.size() > 0) {
-                            variant.getAnnots().put(CT_TAG, cts);
+                            variant.getAnnotSearch().put(CT_TAG, cts);
                         }
                     }
 
@@ -166,14 +166,14 @@ public class CellBaseAnnotator {
 
                 });
                 if (dataHgvsp.size() > 0 ) {
-                    variant.getAnnots().put(HGVSP_TAG, dataHgvsp);
+                    variant.getAnnotSearch().put(HGVSP_TAG, dataHgvsp);
                 }
                 if (dataHgvsc.size() > 0 ) {
-                    variant.getAnnots().put(HGVSC_TAG, dataHgvsc);
+                    variant.getAnnotSearch().put(HGVSC_TAG, dataHgvsc);
                 }
 
                 if (listPC.size() > 0 ) {
-                    variant.getAnnots().put(HGVS_C_P_TAG, listPC);
+                    variant.getAnnotSearch().put(HGVS_C_P_TAG, listPC);
                 }
 
             }

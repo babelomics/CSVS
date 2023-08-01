@@ -1430,11 +1430,10 @@
                             width: 200,
                             disableSort: true,
                             formula: function (row) {
-                                if (!!row.transcriptShow && row.transcriptShow.length > 0 ) {
-                                    var desGene = !!row.genes && row.genes.includes(",")  ? " ("+row.transcriptShow[0].transcriptName+")" : "";
-                                    //return row.transcriptShow[0].transcriptId + desGene;
-                                    return "<a class='link' href='http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary?t=" + row.transcriptShow[0].transcriptId +"' target='_blank' " +
-                                        "title=" + row.transcriptShow[0].transcriptId + desGene  +">"+row.transcriptShow[0].transcriptId + desGene+"</a>";
+                                if (!!row.transcriptShow  ) {
+                                    var desGene = !!row.genes && row.genes.includes(",")  ? " ("+row.transcriptShow.transcriptName+")" : "";
+                                    return "<a class='link' href='http://grch37.ensembl.org/Homo_sapiens/Transcript/Summary?t=" + row.transcriptShow.transcriptId +"' target='_blank' " +
+                                        "title=" + row.transcriptShow.transcriptId + desGene  +">"+row.transcriptShow.transcriptId + desGene+"</a>";
 
                                 } else
                                     return ".";
@@ -1445,9 +1444,9 @@
                             width: 250,
                             disableSort: true,
                             formula: function (row) {
-                                if (!!row.transcriptShow && row.transcriptShow.length > 0 ) {
-                                    if (row.transcriptShow[0].hgvsc.length > 0){
-                                        return row.transcriptShow[0].hgvsc.join(",");
+                                if (!!row.transcriptShow  ) {
+                                    if (row.transcriptShow.hgvsc.length > 0){
+                                        return row.transcriptShow.hgvsc.join(",");
                                     } else
                                         return ".";
                                 } else
@@ -1459,14 +1458,11 @@
                             width: 250,
                             disableSort: true,
                             formula: function (row) {
-                                if (!!row.transcriptShow && row.transcriptShow.length > 0 ) {
-                                    if (row.transcriptShow[0].hgvsp.length > 0){
-                                        return row.transcriptShow[0].hgvsp.join(",");
-                                    } else
-                                        return ".";
+                                if (!!row.transcriptShow  && !!row.transcriptShow.hgvsp && row.transcriptShow.hgvsp.length > 0){
+                                        return row.transcriptShow.hgvsp.join(",");
                                 } else
                                     return ".";
-                                return position.join(", ");
+
                                 }
                         }, {
                             name: 'exonOverlap',
@@ -1475,14 +1471,10 @@
                             disableSort: true,
                             formula: function (row) {
                                 var exon = [];
-                                if (!!row.transcriptShow && row.transcriptShow.length > 0 ) {
-                                    if (!!row.transcriptShow[0].exonOverlap && row.transcriptShow[0].exonOverlap.length > 0) {
-                                        row.transcriptShow[0].exonOverlap.forEach(e =>
+                                if (!!row.transcriptShow && !!row.transcriptShow.exonOverlap && row.transcriptShow.exonOverlap.length > 0) {
+                                        row.transcriptShow.exonOverlap.forEach(e =>
                                             exon.push(e.number));
                                         return exon.join(",");
-                                    }
-                                    else
-                                        return ".";
                                 } else
                                     return ".";
                             }
@@ -1492,14 +1484,14 @@
                             width: 180,
                             disableSort: true,
                             formula: function(row){
-                                if (!!row.transcriptShow && row.transcriptShow.length > 0 ) {
-                                    return row.transcriptShow[0].consequenceTypes;
+                                if (!!row.transcriptShow ) {
+                                    return row.transcriptShow.consequenceTypes;
                                 } else
                                     return ".";
                             },
                             styleFormula: function(row) {
-                                if (!!row.transcriptShow && row.transcriptShow.length > 0 ) {
-                                    return me._getStyleFormulaConsequence(row.transcriptShow[0].consequenceTypes, 'ct')
+                                if (!!row.transcriptShow ) {
+                                    return me._getStyleFormulaConsequence(row.transcriptShow.consequenceTypes, 'ct')
                                 }
                             }
                         }]
@@ -1933,8 +1925,8 @@
             }
             // e -> If event is click check region/gene
             if (e != undefined){
-                if (regions.length + genes.length  == 0 && checkPosition)
-                    msj = msj + "Please add a chromosoma location, gene or SNPId for annotation HGVSc/HGVSp.\n";
+               // if (regions.length + genes.length  == 0 && checkPosition)
+                 //   msj = msj + "Please add a chromosoma location, gene or SNPId for annotation HGVSc/HGVSp.\n";
 
                 /* Limit num positions
                 if (regions.length + genes.length + consequencesTypes.length + cDnas.length + proteins.length  == 0 && !checkPosition)
@@ -2158,36 +2150,41 @@
                 }
 
                 var variant = row.chromosome + ":" + row.position + ":" + row.reference + ":" + row.alternate;
+
+                /* Ini: add info transcript */
+
+
                 positions.push(variant);
             }
 
             // Annotate
-            var listTranscripts = [];
+            // var listTranscripts = [];
+
             //var listRS= [];
             var query = positions.join(",");
             if (positions.length > 0) {
-
-                // Annotate HGVS (Transcript)
-                WSManager.get({
-                    host: WS_HOST,
-                    version: WS_VERSION,
-                    // species: 'hsapiens',
-                    //query: "ids=" + ensemblGeneIds.join("&ids=") ,//+ '&page=0&pageSize=10',
-                    category:  'variants',
-                    subCategory:  'hgvs',
-                    body: JSON.stringify(positions),
-                    async: false,
-                    method: "POST",
-                    headers: {
-                        accept: "*/*",
-                        'Content-Type': "application/json"
+/*
+                                // Annotate HGVS (Transcript)
+                                WSManager.get({
+                                    host: WS_HOST,
+                                    version: WS_VERSION,
+                                    // species: 'hsapiens',
+                                    //query: "ids=" + ensemblGeneIds.join("&ids=") ,//+ '&page=0&pageSize=10',
+                                    category:  'variants',
+                                    subCategory:  'hgvs',
+                                    body: JSON.stringify(positions),
+                                    async: false,
+                                    method: "POST",
+                                    headers: {
+*///                                        accept: "*/*",
+/*                        'Content-Type': "application/json"
                     },
                     success: function (response) {
                         if (response != null)
                             listTranscripts = response;
                     }
                 });
-/*
+
                 // Annotate RS (RS)
                 WSManager.get({
                     host: WS_HOST,
@@ -2350,7 +2347,6 @@
                     }
                 }
 
-                var transcriptShow = [];
 
                 // Annotate CT && Subs. Score
                 if (variant.annots.consequenceTypes != null && variant.annots.consequenceTypes.length > 0) {
@@ -2440,6 +2436,40 @@
                             // ADD annotation HGVS
                             if (pIndex > -1 && ct.ensemblTranscriptId) {
 
+                                var geneAnnotationTranscript = variant.annotsSequence != undefined && variant.annotsSequence.genes != undefined ? variant.annotsSequence.genes.find(g => g.ensembl == ct.ensemblGeneId) : null;
+                                var transcriptAnnotation = geneAnnotationTranscript != null && geneAnnotationTranscript.transcripts != null ? geneAnnotationTranscript.transcripts.find(t => t.ensembl == ct.ensemblTranscriptId) : null;
+
+
+                                // Get transcript worst consequenceType
+                                if (transcriptAnnotation){
+
+                                    if (transcriptAnnotation.canonical){
+                                        var worst = this._getWorst(transcriptAnnotation.consequences);
+                                        var worstTranscriptShow = null;
+                                        if (variant.transcriptShow != undefined) {
+                                            var listConTyp = [variant.transcriptShow.consequenceTypes, worst];
+                                             worstTranscriptShow = this._getWorst(listConTyp);
+                                        }
+
+                                        if ( worstTranscriptShow == null || worstTranscriptShow == worst){
+                                            var hgvsp = [];
+                                            if (transcriptAnnotation.translations != null ){
+                                                transcriptAnnotation.translations.forEach(t=> hgvsp.push(...t.hgvsp));
+                                            }
+                                            variant.transcriptShow = {
+                                                transcriptName: ct.geneName,
+                                                transcriptId: transcriptAnnotation.ensembl,
+                                                exonOverlap: ct.exonOverlap,
+                                                consequenceTypes: worst,
+                                                hgvsc: transcriptAnnotation.hgvsc,
+                                                hgvsp: hgvsp
+                                            }
+                                        }
+                                    }
+                                }
+
+
+/*
                                 var tIndex = listTranscripts[pIndex] != undefined ? listTranscripts[pIndex].findIndex(t => t.transcriptId == ct.ensemblTranscriptId): -1;
                                 // Set consequenceTypes in listTranscripts
                                 if (tIndex > -1 && ct.sequenceOntologyTerms != undefined ) {
@@ -2474,12 +2504,13 @@
                                         search = 1;
                                     } else
                                         listTranscripts[pIndex][tIndex]["search"] = 0;
-                                }
+                                }*/
                             }
                         }
                     }
 
                     if (pIndex > -1){
+                        /*
                         variant.transcripts = listTranscripts[pIndex];
                         // 1. Get search
                         if (search){
@@ -2503,13 +2534,13 @@
                             } else
                                 transcriptShow = [transcriptShow[0]];
 
-                        }
+                        }*/
                     }
                 }
 
-                if (transcriptShow != undefined && transcriptShow.length > 0){
-                    variant.transcriptShow = transcriptShow;
-                }
+               // if (transcriptShow != undefined && transcriptShow.length > 0){
+                //    variant.transcriptShow = transcriptShow;
+               // }
 
                 if (sif != -1 && poly != -1) {
                     variant.sift = sif;

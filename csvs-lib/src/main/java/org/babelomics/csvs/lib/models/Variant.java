@@ -51,15 +51,19 @@ public class Variant {
     @Transient
     private DiseaseCount stats;
 
+    @Property("annot")
+    private Map<String, Object> annotsSequence;
+
     @Property("an")
-    private Map<String, Object> annots;
+    private Map<String, Object> annotSearch;
 
     @Property("rs")
     private String rs;
 
     public Variant() {
         this.attr = new HashMap<>();
-        this.annots = new HashMap<>();
+        this.annotsSequence = new HashMap<>();
+        this.annotSearch = new HashMap<>();
         this.diseases = new ArrayList<>();
         this.stats = new DiseaseCount();
     }
@@ -135,12 +139,20 @@ public class Variant {
         return id;
     }
 
-    public Map<String, Object> getAnnots() {
-        return annots;
+    public Map<String, Object> getAnnotsSequence() {
+        return annotsSequence;
     }
 
-    public void setAnnots(Map<String, Object> annots) {
-        this.annots = annots;
+    public void setAnnotsSequence(Map<String, Object> annotsSequence) {
+        this.annotsSequence = annotsSequence;
+    }
+
+    public Map<String, Object> getAnnotSearch() {
+        return annotSearch;
+    }
+
+    public void setAnnotSearch(Map<String, Object> annotSearch) {
+        this.annotSearch = annotSearch;
     }
 
     public DiseaseCount getStats() {
@@ -292,7 +304,8 @@ public class Variant {
                 ", alternate='" + alternate + '\'' +
 //                ", attr=" + attr +
                 ", diseases=" + disIds +
-//                ", annots=" + annots +
+//                ", annotsSequence=" + annotsSequence +
+//                ", annotSearch=" + annotSearch +
                 '}';
     }
 
