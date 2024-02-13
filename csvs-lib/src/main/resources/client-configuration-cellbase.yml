@@ -6,7 +6,7 @@ logLevel: "info"
 logFile: ""
 rest:
   hosts:
-  - "http://cellbase.clinbioinfosspa.es/cellbase-4.6.3"
+  - "https://cellbase.clinbioinfosspa.es/cellbase-4.6.3"
   #- "http://cellbase.clinbioinfosspa.es/cb"
   #- "http://bioinfo.hpc.cam.ac.uk/cellbase"
 #  - "http://bioinfodev.hpc.cam.ac.uk/cellbase-4.5.0-rc"

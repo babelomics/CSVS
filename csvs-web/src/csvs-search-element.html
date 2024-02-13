@@ -913,7 +913,6 @@
                 me.selectedMenuTool = me.$.menu.querySelector('div');
                 me.$.gv.createGenomeViewer();
                 me.$.gv.genomeViewer.draw();
-
             }, 50);
 
             this.columns = [{
@@ -933,6 +932,27 @@
                     disableSort: true,
                     formula: function(row) {
                         return row.reference + ">" + row.alternate;
+                    }
+                }, {
+                    name: 'grch38',
+                    title: '<span title="The coordinates in this column are given for informative purposes only. They result from a liftover from the reference GRCh37 to GRCh38. As such, some inaccuracies can be expected due to differences between the reference sequences.">grch38 <sup><i class="fa fa-exclamation-triangle aria-hidden="true"></i></sup></span>',
+                    width: 100,
+                    width: 100,
+                    disableSort: true,
+                    formula: function(row) {
+                         var grch38 = "";
+                         if (!!row.annotsSequence && !!row.annotsSequence.grch38){
+                            if (!!row.annotsSequence.grch38.p){
+                                grch38 = grch38 + row.chromosome + ":" + row.annotsSequence.grch38.p
+                            }
+                            if (!!row.annotsSequence.grch38.r){
+                                grch38 = grch38 + ":" + row.annotsSequence.grch38.r
+                            }
+                            if (!!row.annotsSequence.grch38.a){
+                                grch38 = grch38 + ">" + row.annotsSequence.grch38.a
+                            }
+                         }
+                         return grch38;
                     }
                 }, {
                     name: 'genes',
@@ -1926,14 +1946,14 @@
             // e -> If event is click check region/gene
             if (e != undefined){
                // if (regions.length + genes.length  == 0 && checkPosition)
-                 //   msj = msj + "Please add a chromosoma location, gene or SNPId for annotation HGVSc/HGVSp.\n";
+                 //   msj = msj + "Please add a chromosomal location, gene or SNPId for annotation HGVSc/HGVSp.\n";
 
                 /* Limit num positions
                 if (regions.length + genes.length + consequencesTypes.length + cDnas.length + proteins.length  == 0 && !checkPosition)
-                    msj = msj + "Please add a chromosoma location, gene, SNPId/HGVSc/HGVSp or Consequence Type.\n";
+                    msj = msj + "Please add a chromosomal location, gene, SNPId/HGVSc/HGVSp or Consequence Type.\n";
                     */
                 if (regions.length + genes.length + cDnas.length + proteins.length  == 0 && !checkPosition)
-                    msj = msj + "Please add a chromosoma location, gene or SNPId/HGVSc/HGVSp.\n";
+                    msj = msj + "Please add a chromosomal location, gene or SNPId/HGVSc/HGVSp.\n";
             }
 
             if(msj != ""){
