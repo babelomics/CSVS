@@ -93,7 +93,7 @@
                     var result = [];
                     if (!!row.decile){
                         for (i = 0; i < row.decile.length; i++){
-                            result.push({"key": "decile " + i, "value": formatExpo(row.decile[i], 2)});
+                            result.push({"key": "decile " + (i+1), "value": formatExpo(row.decile[i], 2)});
                         }
                     }
                     return result;
