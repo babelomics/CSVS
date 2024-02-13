@@ -23,6 +23,15 @@
         <load-on-startup>1</load-on-startup>
     </servlet>
 
+    <filter>
+        <filter-name>CorsFilter</filter-name>
+        <filter-class>org.babelomics.csvs.server.CORSFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>CorsFilter</filter-name>
+        <url-pattern>*</url-pattern>
+    </filter-mapping>	
+
     <servlet-mapping>
         <servlet-name>CSVS</servlet-name>
         <url-pattern>/rest/*</url-pattern>
