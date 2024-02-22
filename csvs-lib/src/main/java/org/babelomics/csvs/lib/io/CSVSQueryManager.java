@@ -3,6 +3,7 @@ package org.babelomics.csvs.lib.io;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.mongodb.*;
+import com.mongodb.Cursor;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.babelomics.csvs.lib.models.*;
@@ -397,11 +398,14 @@ public class CSVSQueryManager {
         aggList.add(group);
         aggList.add(sort);
 
-        AggregationOutput aggregation = collection.aggregate(aggList);
+        // OLD MongoDB AggregationOutput aggregation = collection.aggregate(aggList);
+        Cursor aggregation = collection.aggregate(aggList, AggregationOptions.builder().outputMode(AggregationOptions.OutputMode.CURSOR).build());
 
         Map<Long, IntervalFrequency> ids = new HashMap<>();
 
-        for (DBObject intervalObj : aggregation.results()) {
+        while (aggregation.hasNext()) {
+            DBObject intervalObj = aggregation.next();
+        // OLD MongoDB for (DBObject intervalObj : aggregation.results()) {
 
             Long _id = Math.round((Double) intervalObj.get("_id"));//is double
 
@@ -856,10 +860,13 @@ public class CSVSQueryManager {
         aggList.add(group);
         aggList.add(project);
 
-        AggregationOutput aggregation = collection.aggregate(aggList);
+        // OLD MongoDB AggregationOutput aggregation = collection.aggregate(aggList);
+        Cursor aggregation = collection.aggregate( aggList, AggregationOptions.builder().outputMode(AggregationOptions.OutputMode.CURSOR).build() );
 
-        for (DBObject fileObj : aggregation.results()) {
-            res = (Integer) fileObj.get("total");
+        // OLD MongoDB for (DBObject fileObj : aggregation.results()) {
+          // OLD MongoDB res = (Integer) fileObj.get("total");
+        while (aggregation.hasNext()) {
+            res = (Integer) aggregation.next().get("total");
         }
         return res;
     }
@@ -918,11 +925,14 @@ public class CSVSQueryManager {
         aggList.add(group);
 
         // System.out.println("QUERY: " + aggList);
-        AggregationOutput aggregation = collection.aggregate(aggList);
+        // OLD MongoDB AggregationOutput aggregation = collection.aggregate(aggList);
+        Cursor aggregation = collection.aggregate(aggList, AggregationOptions.builder().outputMode(AggregationOptions.OutputMode.CURSOR).build() );
         //  System.out.println("RESULT: " + aggregation.results());
         Map<String, Integer> res = new HashMap<>();
 
-        for (DBObject fileObj : aggregation.results()) {
+        // OLD MongoDB for (DBObject fileObj : aggregation.results()) {
+        while (aggregation.hasNext()) {
+            DBObject fileObj = aggregation.next();
             res.put((String) fileObj.get("_id"), (Integer) fileObj.get("Sum"));
         }
 
@@ -957,9 +967,11 @@ public class CSVSQueryManager {
             aggList.add(new BasicDBObject("$match", match));
             aggList.add(new BasicDBObject("$group", group));
 
-            Iterator aggregation = datastore.getCollection(File.class).aggregate(aggList).results().iterator();
+            // OLD MongoDB Iterator aggregation = datastore.getCollection(File.class).aggregate(aggList).results().iterator();
 
-            if(aggregation.hasNext()){
+            Cursor aggregation = datastore.getCollection(File.class).aggregate(aggList, AggregationOptions.builder().outputMode(AggregationOptions.OutputMode.CURSOR).build());
+
+            if (aggregation.hasNext()){
                 BasicDBObject oObj = (BasicDBObject) aggregation.next();
                 res = (int) oObj.get("samples");
             }
@@ -989,7 +1001,8 @@ public class CSVSQueryManager {
             aggList.add(new BasicDBObject("$match", match));
             aggList.add(new BasicDBObject("$group", group));
 
-            Iterator aggregation = datastore.getCollection(File.class).aggregate(aggList).results().iterator();
+            // OLD MongoDB Iterator aggregation = datastore.getCollection(File.class).aggregate(aggList).results().iterator();
+            Cursor aggregation = datastore.getCollection(File.class).aggregate( aggList, AggregationOptions.builder().outputMode(AggregationOptions.OutputMode.CURSOR).build() );
 
             while (aggregation.hasNext()) {
                 BasicDBObject oObj = (BasicDBObject) aggregation.next();

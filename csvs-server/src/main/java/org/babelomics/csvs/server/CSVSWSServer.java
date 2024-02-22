@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.collect.Lists;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import org.babelomics.csvs.lib.CSVSUtil;
@@ -90,6 +91,7 @@ public class CSVSWSServer {
         String database = properties.getProperty("CSVS.DB.DATABASE", "csvs");
         int port = Integer.parseInt(properties.getProperty("CSVS.DB.PORT", "27017"));
         LIMIT_MAX= Integer.parseInt(properties.getProperty("CSVS.LIMIT_MAX", "0"));
+        String uri = properties.getProperty("CSVS.DB.URI", "");
 
         autentication = Boolean.parseBoolean(properties.getProperty("CSVS.AUTENTICATION", "false"));
 
@@ -99,8 +101,15 @@ public class CSVSWSServer {
         if (user.equals("") && pass.equals("")) {
             mongoClient = new MongoClient(host);
         } else {
+
             MongoCredential credential = MongoCredential.createCredential(user, database, pass.toCharArray());
-            mongoClient = new MongoClient(new ServerAddress(host, port), Arrays.asList(credential));
+            if (uri.isEmpty()) {
+                mongoClient = new MongoClient(new ServerAddress(host, port), Arrays.asList(credential));
+            }
+            else {
+                MongoClientURI mongoClientURI = new MongoClientURI(uri);
+                mongoClient = new MongoClient(mongoClientURI);
+            }
         }
 
         datastore = morphia.createDatastore(mongoClient, database);
