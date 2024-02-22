@@ -1644,6 +1644,18 @@
         submitForm: function(e) {
             var msj = "";
 
+            if (!!this.$.dataTable) {
+               if(this.$.dataTable.$.list.childNodes.length > 0){
+                this.$.dataTable.$.list.innerHTML ="";
+              }
+            }
+
+            if (!!this.$.gv) {
+               if(this.$.gv.$.content.childNodes.length > 0){
+                   this.$.gv.$.content.innerHTML ="";
+               }
+            }
+
             if (!!this.$.frequency) {
                 this.$.frequency.isEmpty = true;
             }
@@ -2102,8 +2114,10 @@
                     me.set('numTotalResults', total);
                     return total;
                 },
+                selectElem: function(response){
+                    return me._selectElem(response);
+                }
             };
-
         },
 
         _getWorst: function(listConsType) {
@@ -2755,10 +2769,24 @@
             }
             return total;
         },
+        _selectElem: function(response){
+            if(this.$.dataTable.$.wrap.childNodes.length > 4 && this.$.dataTable.$.wrap.childNodes[5].childNodes.length > 0){
+                this.$.dataTable.$.wrap.childNodes[5].childNodes[0].click();
+            } else {
+                if (response != null && response.queryOptions != null && response.queryOptions.regions != null &&
+                        response.queryOptions.regions.length > 0){
+                   this.$.gv.genomeViewer.setRegion(response.queryOptions.regions[0].chromosome + ":"+
+                                                    response.queryOptions.regions[0].start +"-"+
+                                                    response.queryOptions.regions[0].end);
+                }
+            }
+        },
+
         handleRowClick: function(e) {
             var row = e.detail.row;
 
             var indexTrack = this.$.gv.genomeViewer.trackListPanel.tracks.findIndex(function(t){ return t.title == (window.ACRONYM_APP ||'CSVS') });
+
             if (indexTrack != -1 ) {
                 var params = this.$.gv.genomeViewer.trackListPanel.tracks[indexTrack].dataAdapter.params;
                 if (params.user != Cookies("bioinfo_user") || params.sid != Cookies("bioinfo_sid")) {
@@ -2767,6 +2795,11 @@
                         "sid": Cookies("bioinfo_sid")
                     };
                 }
+            }
+            // Remove info SNP
+            var d = document.getElementById("content");
+             if (d.childNodes.length > 0) {
+                d.removeChild(d.childNodes[0]);
             }
 
             this.$.gv.genomeViewer.setRegion(row);
@@ -2795,6 +2828,9 @@
                 uriTemplate: CSVS_HOST + '/regions/{region}/fetch' ,
                 params: {"user":Cookies("bioinfo_user"), "sid":Cookies("bioinfo_sid")},
                 species: this.$.gv.genomeViewer.species,
+                cacheConfig: {
+                     chunkSize: 1000
+                },
                 parse: function(response) {
                     var itemsArray = [];
 
@@ -2804,6 +2840,7 @@
                             var elem = r[j];
                             elem.start = elem.position;
                             elem.end = elem.position;
+
                         }
                         itemsArray.push(r);
                     }
@@ -2813,13 +2850,10 @@
                 parseHistogram: function(response) {
                     var itemsArray = [];
                     for (var i = 0; i < response.result.length; i++) {
-                        var r = response.result[i]
-                        for (var j = 0; j < r.length; j++) {
-                            var interval = r[j];
-                            interval.features_count = interval.featuresCount;
-                            console.log(interval.features_count);
-                            itemsArray.push(interval);
-                        }
+                        var interval = response.queryOptions.regions[i]
+                        interval.features_count = response.result[i].length;
+                        console.log(interval.features_count);
+                        itemsArray.push(interval);
                     }
                     return itemsArray;
                 }
@@ -2837,32 +2871,6 @@
                     });
                 }
             }
-
-            // Ini: Modify cellbase genomeViewer
-            var newAdapterCellbase = new CellBaseAdapter({
-                category: "genomic",
-                subCategory: "region",
-                resource: "gene",
-                params: {
-                    exclude: 'transcripts,chunkIds'
-                },
-                species: {
-                   assembly:
-                       {
-                           name:'"GRCh37"'
-                        },
-                    id: 'hsapiens'
-                },
-
-                cacheConfig: {
-                    chunkSize: 100000
-                }
-            });
-            var indexTrack = this.$.gv.genomeViewer.trackListPanel.tracks.findIndex(function(t){ return t.title == (window.ACRONYM_APP ||'SNP') });
-            if (indexTrack != -1 ) {
-                this.$.gv.genomeViewer.trackListPanel.tracks[indexTrack].dataAdapter = newAdapterCellbase;
-            }
-            // End: Modify cellbase genomeViewer
 
             var track = new FeatureTrack({
                 title: window.ACRONYM_APP ||'CSVS',

@@ -14,7 +14,7 @@
         }
 
         .main {
-            max-width: 780px;
+            max-width: 880px;
             margin-left: auto;
             margin-right: auto;
 
@@ -75,9 +75,32 @@
             color: /*#CCC;*/ #212121;
             opacity: 0.5;
         }
+
+        .scroll{
+            overflow: auto;
+            max-height: calc(100vh - 150px);
+            line-height: 1.4em;
+            padding: 0px 10px;
+        }
+
+        .scroll::-webkit-scrollbar {
+            height: 12px;
+            width: 12px;
+            background:  var(--default-primary-color);
+        }
+
+        .scroll::-webkit-scrollbar-thumb {
+            background: var(--dark-primary-color);
+            -webkit-border-radius: 1ex;
+        }
+
+        .scroll::-webkit-scrollbar-corner {
+            background: #000;
+        }
+
     </style>
     <template>
-        <div class="main" style="overflow: auto;max-height: calc(100vh - 150px);line-height: 1.4em">
+        <div class="main scroll">
             <br>
 
             <div class="horizontal layout" >

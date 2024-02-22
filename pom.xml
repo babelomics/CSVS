@@ -20,7 +20,7 @@
         <cellbase.version>3.1.1</cellbase.version>
         <jcl.version>3.0.0</jcl.version>
         <compileSource>1.8</compileSource>
-        <gpvs.version>2.0.0-gpvs</gpvs.version>
+        <gpvs.version>2.0.1-gpvs</gpvs.version>
         <opencga.version>1.3.8</opencga.version>
     </properties>
 

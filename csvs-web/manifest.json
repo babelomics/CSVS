@@ -1,0 +1,20 @@
+{
+  "short_name": "IRPVS",
+  "name": "Iberian Roma Population Variant Server",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "./images/logo_GPVS.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#9ECBC4"
+}
