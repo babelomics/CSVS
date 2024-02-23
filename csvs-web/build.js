@@ -8,7 +8,7 @@ const fs = require('fs');
 
 var name = "csvs";
 var element = "csvs-element";
-var documentation = "csvs-documentation";
+var documentation = "irpvs-documentation";
 var documentationData = "csvs-documentation-data";
 
 // Default
