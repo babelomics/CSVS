@@ -467,7 +467,7 @@ var CSVSSearchColumns = {
                }
            }, {
                name: 'secondaryFindings',
-               title: '<span title=" For variants labeled as secondary finding according to ACMG recommendations, phenotype and OMIM disorder related with the gene are indicated, as well as the inheritance model for the disease (AD, autosomal dominant; AR, autosomal recessive; SD, semidominant; XL, X-linked). External link to the OMIM disorder is available if you click on the text (see documentation for more information)">Secondary findings <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
+               title: '<span title=" For variants labeled as secondary finding according to ACMG recommendations, phenotype and OMIM disorder related with the gene are indicated, as well as the inheritance model for the disease (AD, autosomal dominant; AR, autosomal recessive; XL, X-linked). External link to the OMIM disorder is available if you click on the text (see documentation for more information)">Secondary findings <sup><i class="fa fa-info-circle" aria-hidden="true"></i></sup></span>',
                width: 150,
                defaultValue: "",
                disableSort: true,
