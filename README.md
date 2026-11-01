@@ -19,11 +19,12 @@ CSVS is versioned following the rules from [Semantic versioning](http://semver.o
 
 The main developers and maintainers are:
 
-* Joaquin Dopazo (joaquin.dopazo@juntadeandalucia.es) (Founder and Project Leader)
-* Javier P Florido (javier.perez.florido.ext@juntadeandalucia.es)
-* Gema Roldán González (gema.roldan@juntadeandalucia.es)
+* Joaquin Dopazo (jdopazo@barcelonabeta.org) (Founder and Project Leader)
+* Javier Pérez Florido (jperez@barcelonabeta.org)
+* Juan Carlos Garrido (jgarrido@barcelonabeta.org)
 
 Former contributors
 
+* Gema Roldán González (gema.roldan@juntadeandalucia.es)
 * Alejandro Aleman
 * Susi Gallego (agallego@cipf.es)
